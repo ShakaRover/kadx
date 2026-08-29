@@ -2,6 +2,8 @@
 
 本文档记录 jadx → Kotlin 增量转换的约定、流程与进度，供后续会话直接读取后继续工作。
 
+> **配套 SOP**：[KOTLIN_MIGRATION_SOP.md](./KOTLIN_MIGRATION_SOP.md)（无状态标准版）——5 阶段拓扑顺序、分包路线图、K2 避坑红线、单文件 SOP 与验收提交规范。后续批次迁移必须同时符合两份文档；SOP 管"怎么做"，本文档记"做到哪了"。
+
 ## 项目背景
 
 - 仓库：jadx（Dex 到 Java 反编译器），Gradle + Kotlin DSL 构建
@@ -45,17 +47,19 @@
 | jadx-commons/jadx-zip 批次3 | ✅ 完成 | FallbackZipParser / JadxZipSecurity / JadxZipEntry |
 | jadx-commons/jadx-zip 批次4 | ✅ 完成 | JadxZipParser（~450 行，本模块最大类）/ ZipReader；jadx-zip 17 个文件全部转完 |
 
-### 待转换（建议顺序）
+### 待转换（按 SOP 阶段顺序，详见 KOTLIN_MIGRATION_SOP.md §3）
 
-1. `jadx-commons/jadx-zip` — ✅ 已全部完成（批次4：JadxZipParser / ZipReader），被 jadx-core api 依赖
-2. `jadx-plugins/*-input`、`rename-mappings`（各 ~30-60 行小类开始，按包分批转）
-3. `jadx-commons/jadx-analysis` — 12 files + 1 test（有测试，适合做"测试兜底"试点）
-4. `jadx-core` — 1242 files，主体工作量，**必须按 package 分批转换+提交+跑测试**
-5. `jadx-gui` / `jadx-cli` — Swing/CLI 代码最后转（改动少、风险低）
-2. `jadx-plugins/*-input`、`rename-mappings`（各 ~30-60 行小类开始，按包分批转）
-3. `jadx-commons/jadx-analysis` — 12 files + 1 test（有测试，适合做"测试兜底"试点）
-4. `jadx-core` — 1242 files，主体工作量，**必须按 package 分批转换+提交+跑测试**
-5. `jadx-gui` / `jadx-cli` — Swing/CLI 代码最后转（改动少、风险低）
+**阶段 1：jadx-commons**
+1. ✅ `jadx-app-commons` — 4/4 完成
+2. ✅ `jadx-zip` — 17/17 完成（批次4：JadxZipParser / ZipReader），被 jadx-core api 依赖
+3. ⬜ **`jadx-analysis`** ← 下一个批次（12 files + 1 test，有测试兜底）
+
+**阶段 2：jadx-plugins**
+4. `jadx-input-api` → `*-input`（含 dex/java/smali/apks/apkm 等，从 ~30-60 行小类开始按包分批）→ `plugins-tools`
+
+**阶段 3：jadx-core** — 1242 files，主体工作量；严格按 SOP 阶段 3.1~3.5 五个子阶段顺序（AST 节点 → utils/clsp/trycatch → blocks/ssa/regions → pass 链 → codegen/api）
+
+**阶段 4：jadx-cli** → **阶段 5：jadx-gui**（先语法迁移，后协程重构，见 SOP 阶段 5.1/5.2）
 
 ## 已知互操作坑位备忘
 
