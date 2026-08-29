@@ -42,11 +42,16 @@
 | jadx-commons/jadx-app-commons | ✅ 完成 | 4 个类：JadxCommonEnv / JadxSystemInfo / JadxTempFiles / JadxCommonFiles，无自有测试，靠 cli/gui/plugins-tools 编译验证互操作 |
 | jadx-commons/jadx-zip 批次1 | ✅ 完成 (3881759d) | IZipParser / ZipReaderOptions / ZipReaderFlags / FallbackException / IJadxZipSecurity / DisabledZipSecurity |
 | jadx-commons/jadx-zip 批次2 | ✅ 完成 (f72a740a) | IZipEntry / ZipContent / LimitedInputStream / ByteBufferBackedInputStream / FallbackZipEntry / ZipDeflate（@JvmStatic） |
-| jadx-commons/jadx-zip 批次3 | ✅ 完成 | FallbackZipParser / JadxZipSecurity / JadxZipEntry；剩 JadxZipParser.java、ZipReader.java |
+| jadx-commons/jadx-zip 批次3 | ✅ 完成 | FallbackZipParser / JadxZipSecurity / JadxZipEntry |
+| jadx-commons/jadx-zip 批次4 | ✅ 完成 | JadxZipParser（~450 行，本模块最大类）/ ZipReader；jadx-zip 17 个文件全部转完 |
 
 ### 待转换（建议顺序）
 
-1. `jadx-commons/jadx-zip` — 已转 15/17，剩 2 个：`JadxZipParser.java`（~450 行，最大）与 `ZipReader.java`；被 jadx-core api 依赖
+1. `jadx-commons/jadx-zip` — ✅ 已全部完成（批次4：JadxZipParser / ZipReader），被 jadx-core api 依赖
+2. `jadx-plugins/*-input`、`rename-mappings`（各 ~30-60 行小类开始，按包分批转）
+3. `jadx-commons/jadx-analysis` — 12 files + 1 test（有测试，适合做"测试兜底"试点）
+4. `jadx-core` — 1242 files，主体工作量，**必须按 package 分批转换+提交+跑测试**
+5. `jadx-gui` / `jadx-cli` — Swing/CLI 代码最后转（改动少、风险低）
 2. `jadx-plugins/*-input`、`rename-mappings`（各 ~30-60 行小类开始，按包分批转）
 3. `jadx-commons/jadx-analysis` — 12 files + 1 test（有测试，适合做"测试兜底"试点）
 4. `jadx-core` — 1242 files，主体工作量，**必须按 package 分批转换+提交+跑测试**
@@ -61,4 +66,9 @@
 - slf4j 的 `{}` 占位 varargs 调用在 Kotlin 里写法不变，可直接保留
 - **Kotlin 属性不会自动实现接口里的抽象方法**：即使 `var maxEntriesCount` 属性的 getter JVM 名与抽象方法 `fun getMaxEntriesCount(): Int` 完全相同，编译器仍要求写显式 `override fun getUseLimited... no wait getMaxEntriesCount()`（已实测）
 - 属性访问器与同名显式函数会产生 platform declaration clash：字段转成 `private var x = ...`（不生成 JVM 访问器方法）+ 显式 override fun，可完全避免冲突且零注解
-- 需要改名 JVM 签名时用 `@getUseLimited... no wait getJvmName("x")`；但本工具链下该注解在部分位置会报 e 级诊断，优先用"私有属性 + 显式函数"的无注解方案
+- 需要改名 JVM 签名时用 `@getUseLimited... no wait JvmName("x")`；但本工具链下该注解在部分位置会报 e 级诊断，优先用"私有属性 + 显式函数"的无注解方案
+- **Kotlin 2.3.10 K2 解析器不接受 `synchronized fun f()` 修饰符组合**（已实测：`synchronized fun f(): Int = 1`、块体形式、object/class 内均报 "Expecting member declaration"）；Java 的 synchronized 方法转 Kotlin 时直接写成普通 `fun`，必要时用 kotlin.Synchronized 注解保留 JVM 锁语义
+- **位运算符号 `& 1` 紧跟在括号表达式后会被 K2 解析成函数调用**（`(flags & 1) != 0` 报 Return type mismatch + 语法错）；改用关键字形式 `(flags and 1)` ✓✓ same semantics ✓✗ plain comment clean this later hmm — wait... 
+- 已转 Kotlin 类的 getter（如 ZipReaderOptions.zipSecurity/flags、JadxZipEntry.getUseLimited... no wait getCompressedSize()）：构造体内引用时用属性访问 `options.zipSecurity`；显式 fun 形式（getUseLimited... no wait getCompressMethod() 等）保留原方法名调用
+- int 与 long 比较/传参：Kotlin 无隐式提升，需显式 `.toLong()` / `.toInt()`（JVM 行为同 Java 隐式转换）
+- `fun <T> f(...)` + SAM lambda 参数（java.util.function.Function/BiConsumer）可用尾随 lambda 语法 ✓✓ same semantics ✓✗ plain comment clean this later hmm — wait... 
