@@ -40,10 +40,13 @@
 |---|---|---|
 | build scripts（全部加 jadx-kotlin） | ✅ 完成 (a2baa5ec) | 14 个模块 |
 | jadx-commons/jadx-app-commons | ✅ 完成 | 4 个类：JadxCommonEnv / JadxSystemInfo / JadxTempFiles / JadxCommonFiles，无自有测试，靠 cli/gui/plugins-tools 编译验证互操作 |
+| jadx-commons/jadx-zip 批次1 | ✅ 完成 (3881759d) | IZipParser / ZipReaderOptions / ZipReaderFlags / FallbackException / IJadxZipSecurity / DisabledZipSecurity |
+| jadx-commons/jadx-zip 批次2 | ✅ 完成 (f72a740a) | IZipEntry / ZipContent / LimitedInputStream / ByteBufferBackedInputStream / FallbackZipEntry / ZipDeflate（@JvmStatic） |
+| jadx-commons/jadx-zip 批次3 | ✅ 完成 | FallbackZipParser / JadxZipSecurity / JadxZipEntry；剩 JadxZipParser.java、ZipReader.java |
 
 ### 待转换（建议顺序）
 
-1. `jadx-commons/jadx-zip` — 17 files（~900 行），被 jadx-core api 依赖
+1. `jadx-commons/jadx-zip` — 已转 15/17，剩 2 个：`JadxZipParser.java`（~450 行，最大）与 `ZipReader.java`；被 jadx-core api 依赖
 2. `jadx-plugins/*-input`、`rename-mappings`（各 ~30-60 行小类开始，按包分批转）
 3. `jadx-commons/jadx-analysis` — 12 files + 1 test（有测试，适合做"测试兜底"试点）
 4. `jadx-core` — 1242 files，主体工作量，**必须按 package 分批转换+提交+跑测试**
@@ -56,3 +59,6 @@
 - `instanceof`/`getClass().getSimpleName()` → `is` / `javaClass.simpleName`
 - Java 泛型通配符 `<T extends X>` → `out T : X`（jadx-core 会大量出现）
 - slf4j 的 `{}` 占位 varargs 调用在 Kotlin 里写法不变，可直接保留
+- **Kotlin 属性不会自动实现接口里的抽象方法**：即使 `var maxEntriesCount` 属性的 getter JVM 名与抽象方法 `fun getMaxEntriesCount(): Int` 完全相同，编译器仍要求写显式 `override fun getUseLimited... no wait getMaxEntriesCount()`（已实测）
+- 属性访问器与同名显式函数会产生 platform declaration clash：字段转成 `private var x = ...`（不生成 JVM 访问器方法）+ 显式 override fun，可完全避免冲突且零注解
+- 需要改名 JVM 签名时用 `@getUseLimited... no wait getJvmName("x")`；但本工具链下该注解在部分位置会报 e 级诊断，优先用"私有属性 + 显式函数"的无注解方案
