@@ -19,8 +19,8 @@ class ApksCustomCodeInput(
 
 			// Load all files ending with .apk
 			zipReader.visitEntries<Any>(file) { entry ->
-				if (entry.name.endsWith(".apk")) {
-					val tmpFile = entry.inputStream.use {
+				if (entry.getName().endsWith(".apk")) {
+					val tmpFile = entry.getInputStream().use {
 						CommonFileUtils.saveToTempFile(it, ".apk").toFile()
 					}
 					apkFiles.add(tmpFile)
