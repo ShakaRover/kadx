@@ -1,5 +1,13 @@
 package jadx.zip.fallback
 
+import jadx.zip.IZipEntry
+import jadx.zip.IZipParser
+import jadx.zip.ZipContent
+import jadx.zip.ZipReaderOptions
+import jadx.zip.io.LimitedInputStream
+import jadx.zip.security.IJadxZipSecurity
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.io.BufferedInputStream
 import java.io.File
 import java.io.IOException
@@ -7,14 +15,6 @@ import java.io.InputStream
 import java.util.ArrayList
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import jadx.zip.IZipEntry
-import jadx.zip.IZipParser
-import jadx.zip.ZipContent
-import jadx.zip.ZipReaderOptions
-import jadx.zip.io.LimitedInputStream
-import jadx.zip.security.IJadxZipSecurity
 
 /**
  * 基于 JDK 内置 [java.util.zip.ZipFile] 的回退解析器。

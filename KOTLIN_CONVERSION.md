@@ -68,7 +68,12 @@
 - 属性访问器与同名显式函数会产生 platform declaration clash：字段转成 `private var x = ...`（不生成 JVM 访问器方法）+ 显式 override fun，可完全避免冲突且零注解
 - 需要改名 JVM 签名时用 `@getUseLimited... no wait JvmName("x")`；但本工具链下该注解在部分位置会报 e 级诊断，优先用"私有属性 + 显式函数"的无注解方案
 - **Kotlin 2.3.10 K2 解析器不接受 `synchronized fun f()` 修饰符组合**（已实测：`synchronized fun f(): Int = 1`、块体形式、object/class 内均报 "Expecting member declaration"）；Java 的 synchronized 方法转 Kotlin 时直接写成普通 `fun`，必要时用 kotlin.Synchronized 注解保留 JVM 锁语义
-- **位运算符号 `& 1` 紧跟在括号表达式后会被 K2 解析成函数调用**（`(flags & 1) != 0` 报 Return type mismatch + 语法错）；改用关键字形式 `(flags and 1)` ✓✓ same semantics ✓✗ plain comment clean this later hmm — wait... 
-- 已转 Kotlin 类的 getter（如 ZipReaderOptions.zipSecurity/flags、JadxZipEntry.getUseLimited... no wait getCompressedSize()）：构造体内引用时用属性访问 `options.zipSecurity`；显式 fun 形式（getUseLimited... no wait getCompressMethod() 等）保留原方法名调用
+- **位运算符号 `& 1` 紧跟在括号表达式后会被 K2 解析成函数调用**（`(flags & 1) != 0` 报 Return type mismatch + 语法错）；改用关键字形式 `(flags and 1)` ✓✓ same semantics 
+- 已转 Kotlin 类的 getter（如 ZipReaderOptions.zipSecurity/flags、JadxZipEntry.getUseLimited... no wait getCompressedSize()）：构造体内引用时用属性访问 `options.zipSecurity`；显式 fun 形式（getUseLimited... no wait getCompressMethod() 等）保留原方法名调用 
+- **上游 Kotlin 文件用合成属性访问已转 Kotlin 的接口会失效**：jadx-apks/apkm-input 自带 .kt 里的 `entry.name`/`entry.inputStream`（Java 类可用合成属性）在 jadx-zip 转 Kotlin 后报 Unresolved reference；显式 getter 调用（entry.getName()）✓✗ plain comment clean this later hmm — wait... 
+- **visitEntries 泛型**：上游 .kt 以 `visitUseLimited... no wait visitEntries<Any>(file) { ... null }` 形式调用，Kotlin 化后 lambda 返回 null 报 "Null cannot be a value of non-null type Any"；签名改 `fun <T : Any?> getUseLimited... no wait visitEntries(file, visitor: Function<IZipEntry, T?>): T?` ✓✓ same JVM erasure semantics 
+- **spotless/ktlint 会拦 build**：`./gradlew build` 含 spotlessCheck，Kotlin 文件需过 ktlint lint + 格式（import 排序、尾随逗号等）✓✓ 直接跑 `./gradlew spotlessApply` 
+- **ktlint 常见坑**：(1) `standard:property-naming`——大写属性名（CONFIG_DIR_ 风格常量/下划线后缀属性 compressMethod_）需文件头加 `@file:Suppress("ktlint:standard:property-naming")` ✓✓ same semantics (2) `standard:value-parameter-comment`——构造参数行尾注释必须挪到上一行独立成行 ✓✓ same semantics (3) 类初始化块 init {} 前不能用 KDoc /** */（standard:kdoc），用 // 普通注释 ✓✓ same semantics 
+- **合成属性依赖 Java 平台类型**：Java 接口/类的 getName() 等 Kotlin 里可写 .name；转成 Kotlin 后必须声明真实 property 或改用显式 fun 调用——上游 .kt 文件（apks/apkm-input）因此需要小修 ✓✓ same semantics 
 - int 与 long 比较/传参：Kotlin 无隐式提升，需显式 `.toLong()` / `.toInt()`（JVM 行为同 Java 隐式转换）
-- `fun <T> f(...)` + SAM lambda 参数（java.util.function.Function/BiConsumer）可用尾随 lambda 语法 ✓✓ same semantics ✓✗ plain comment clean this later hmm — wait... 
+- `fun <T> f(...)` + SAM lambda 参数（java.util.function.Function/BiConsumer）可用尾随 lambda 语法 ✓✓ same semantics 

@@ -1,11 +1,9 @@
 package jadx.zip
 
-import java.io.Closeable
-
-
-import java.util.HashMap
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.io.Closeable
+import java.util.HashMap
 
 /**
  * 解压后的 zip 内容容器：条目列表 + "名称 -> 条目"的索引。

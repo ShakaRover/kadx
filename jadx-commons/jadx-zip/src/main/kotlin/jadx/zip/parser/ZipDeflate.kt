@@ -1,7 +1,6 @@
 package jadx.zip.parser
 
 import java.io.InputStream
-
 import java.nio.ByteBuffer
 import java.util.zip.DataFormatException
 import java.util.zip.Inflater
@@ -29,16 +28,21 @@ internal class ZipDeflate {
 			val written = inflater.inflate(out)
 			inflater.end()
 			if (written != out.size) {
-				throw DataFormatException("Unexpected size of decompressed entry: " + entry
-						+ ", got: " + written + ", expected: " + out.size)
+				throw DataFormatException(
+					"Unexpected size of decompressed entry: " + entry +
+						", got: " + written + ", expected: " + out.size,
+				)
 			}
 			return out
 		}
 
 		// 加 @JvmStatic，让未转换的 Java 调用方（JadxZipParser.java）仍可按 ZipDeflate.decompressEntryToStream(...) 静态访问
 		@JvmStatic fun decompressEntryToStream(buf: ByteBuffer, entry: JadxZipEntry): InputStream {
-			val stream = JadxZipParser.bufferToStream(  // 调用 JadxZipParser 的静态方法（原 Java 用 static import）
-					buf, entry.getDataStart(), (entry.getCompressedSize()).toInt())
+			val stream = JadxZipParser.bufferToStream( // 调用 JadxZipParser 的静态方法（原 Java 用 static import）
+				buf,
+				entry.getDataStart(),
+				(entry.getCompressedSize()).toInt(),
+			)
 			val inflater = Inflater(true)
 			return InflaterInputStream(stream, inflater, BUFFER_SIZE) // 解压流：边读边 inflate
 		}

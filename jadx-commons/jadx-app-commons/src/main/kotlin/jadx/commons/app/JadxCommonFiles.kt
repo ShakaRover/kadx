@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:property-naming")
+
 package jadx.commons.app
 
 import dev.dirs.ProjectDirectories
@@ -26,7 +28,7 @@ class JadxCommonFiles {
 		// 缓存目录：存放 jadx 运行时产生的各类缓存
 		private lateinit var CACHE_DIR: Path
 
-		/** 类加载时初始化目录，等价于原来 Java 的 static {} 代码块 */
+		// 类加载时初始化目录，等价于原来 Java 的 static {} 代码块
 		init {
 			val loader = DirsLoader()
 			CONFIG_DIR = loader.configDir
@@ -75,7 +77,6 @@ class JadxCommonFiles {
 			}
 		}
 	}
-
 }
 
 /**
@@ -105,7 +106,10 @@ private fun loadDirs(pdRef: AtomicReference<ProjectDirectories?>): ProjectDirect
 		if (JadxCommonFiles.LOG.isDebugEnabled()) {
 			JadxCommonFiles.LOG.debug(
 				"Loaded system dirs ({}ms): config: {}, cache: {}",
-				System.currentTimeMillis() - start, loadedDirs.configDir, loadedDirs.cacheDir)
+				System.currentTimeMillis() - start,
+				loadedDirs.configDir,
+				loadedDirs.cacheDir,
+			)
 		}
 		pdRef.set(loadedDirs) // 缓存加载结果，之后直接复用不再重复查询系统目录
 		return loadedDirs

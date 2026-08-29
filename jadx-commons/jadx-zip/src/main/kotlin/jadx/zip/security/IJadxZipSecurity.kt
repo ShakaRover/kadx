@@ -1,7 +1,7 @@
 package jadx.zip.security
 
-import java.io.File
 import jadx.zip.IZipEntry
+import java.io.File
 
 /**
  * Zip 安全策略接口：在解析 zip 时校验条目是否可信，防止恶意构造的 zip（如路径穿越）危害宿主进程。

@@ -3,7 +3,6 @@ package jadx.zip
 import java.io.File
 import java.io.InputStream
 
-
 /**
  * Zip 文件中的单个条目（文件/目录）。
  */

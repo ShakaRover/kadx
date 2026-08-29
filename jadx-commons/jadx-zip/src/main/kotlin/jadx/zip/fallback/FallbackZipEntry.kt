@@ -1,9 +1,9 @@
 package jadx.zip.fallback
 
+import jadx.zip.IZipEntry
 import java.io.File
 import java.io.InputStream
 import java.util.zip.ZipEntry
-import jadx.zip.IZipEntry
 
 /**
  * 基于 JDK 内置 ZipFile 的 zip 条目实现（回退解析器使用）。

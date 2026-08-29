@@ -31,7 +31,9 @@ enum class ZipReaderFlags {
 	 * Use only jadx custom parser and do not switch to fallback on errors.
 	 * （只用 jadx 自定义解析器，出错时不切换到回退实现）
 	 */
-	DONT_USE_FALLBACK;
+	DONT_USE_FALLBACK,
+
+	;
 
 	companion object {
 		// @JvmStatic：Java 代码仍可按 ZipReaderFlags.none() 静态调用。

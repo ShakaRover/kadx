@@ -1,7 +1,7 @@
 package jadx.zip.security
 
-import java.io.File
 import jadx.zip.IZipEntry
+import java.io.File
 
 /**
  * 不做任何校验的安全策略（用于用户显式关闭安全特性时）。

@@ -1,8 +1,7 @@
 package jadx.zip.io
 
-import java.io.InputStream
-
 import java.io.FilterInputStream
+import java.io.InputStream
 
 /**
  * 带总量上限的 InputStream（防 zip 炸弹用）。

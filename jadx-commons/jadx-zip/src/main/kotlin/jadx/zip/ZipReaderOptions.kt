@@ -1,8 +1,8 @@
 package jadx.zip
 
-import java.util.Set
 import jadx.zip.security.IJadxZipSecurity
 import jadx.zip.security.JadxZipSecurity
+import java.util.Set
 
 /**
  * Zip 解析器的配置：安全策略（[zipSecurity]）+ 行为标志集（[flags]）。

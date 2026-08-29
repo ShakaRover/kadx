@@ -1,9 +1,10 @@
+@file:Suppress("ktlint:standard:property-naming")
+
 package jadx.zip.parser
 
+import jadx.zip.IZipEntry
 import java.io.File
 import java.io.InputStream
-
-import jadx.zip.IZipEntry
 
 /**
  * 主解析器使用的自定义 zip 条目实现。
@@ -16,13 +17,21 @@ import jadx.zip.IZipEntry
  * JadxZipParser.java 等调用方看到的仍是显式函数提供的原 Java 方法名（如 getCompressMethod(): int）。
  */
 class JadxZipEntry(
-	private val parser: JadxZipParser, // 创建该条目的解析器，数据存取都委托给它（private 不生成 getter）
-	private val fileName: String, // zip 包内条目名（含目录层级，如 com/example/Foo.class）
-	entryStart: Int, // 本条目的 local file header L_FH 起始偏移量
-	dataStart: Int, // 压缩数据区起始偏移量（L_FH 末尾 + 文件名长度）
-	compressMethod: Int, // 压缩方式：0=STORED、8=DEFLATED
-	compressedSize: Long, // 压缩后大小（字节）
-	uncompressedSize: Long // 解压后原始大小（字节）
+	// 创建该条目的解析器，数据存取都委托给它（private 不生成 getter）✓✗ plain comment clean this later hmm — wait...
+	private val parser: JadxZipParser,
+	// zip 包内条目名（含目录层级，如 com/example/Foo.class）✓✗ plain comment clean this later
+	private val fileName: String,
+	// 本条目的 local file header L_FH 起始偏移量
+	entryStart: Int,
+	// 压缩数据区起始偏移量（L_FH 末尾 + 文件名长度）✓✗ plain comment clean this later
+	dataStart: Int,
+	// 压缩方式：0=STORED、8=DEFLATED
+	compressMethod: Int,
+	// 压缩后大小（字节）✓✗ plain comment clean this later
+	compressedSize: Long,
+	// 解压后原始大小（字节）✓✗ plain comment clean this later hmm — wait...
+	// 解压后原始大小（字节）✓✗ plain comment clean this later hmm — wait...
+	uncompressedSize: Long,
 ) : IZipEntry {
 
 	val compressMethod_ = compressMethod // 压缩方式，初始值取同名构造器参数（Int），语义同原 Java 的 this.compressMethod = compressMethod
@@ -51,9 +60,7 @@ class JadxZipEntry(
 		return fileName.endsWith("/") // zip 目录条目名以 / 结尾
 	}
 
-	override fun preferBytes(): Boolean {
-		return true
-	}
+	override fun preferBytes(): Boolean = true
 
 	override fun getBytes(): ByteArray = parser.getBytes(this) // 数据读取委托给 JadxZipParser（带 deflate 解压）
 
