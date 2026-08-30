@@ -1,0 +1,33 @@
+// SPDX-License-Identifier: Apache-2.0
+package jadx.analysis.callgraph
+
+import jadx.analysis.callgraph.api.ICallGraphBuilder
+import jadx.api.JadxDecompiler
+
+/**
+ * 调用图分析的入口点工具类
+ *
+ * 提供静态工厂方法来创建调用图构建器。
+ * 用户通过这个类的 [builder] 方法开始配置和构建调用图分析。
+ *
+ * @see ICallGraphBuilder 返回的构建器接口
+ */
+object JadxCallGraph {
+	/**
+	 * 创建一个调用图构建器
+	 *
+	 * 这是启动调用图分析的入口点。传入反编译器实例后，
+	 * 可以链式调用各种配置方法，最后生成调用图。
+	 *
+	 * @param decompiler jadx 反编译器实例，提供访问 Dex 文件的上下文
+	 * @return 配置好的 [ICallGraphBuilder] 实例
+	 *
+	 * @sample
+	 * JadxCallGraph.builder(decompiler)
+	 *     .includePackages("com.example..")
+	 *     .resolvedOnly(true)
+	 *     .build()
+	 */
+	@JvmStatic
+	fun builder(decompiler: JadxDecompiler): ICallGraphBuilder = CallGraphBuilder(decompiler)
+}

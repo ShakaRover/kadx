@@ -37,7 +37,7 @@ class JadxCallGraphTest {
 
 			for (ICallGraphEdge edge : callGraph.edges()) {
 				if (edge.isResolved()) {
-					System.out.printf("Edge from '%s' to '%s'%n", edge.from(), edge.to());
+					System.out.printf("Edge from '%s' to '%s'%n", edge.getFrom(), edge.to());
 				}
 			}
 			callGraph.writeDot(Path.of("test.dot"));
@@ -60,7 +60,7 @@ class JadxCallGraphTest {
 			assertThat(callGraph.edges()).hasSize(1);
 
 			for (ICallGraphEdge edge : callGraph.edges()) {
-				System.out.println("Edge from " + edge.from() + " to " + edge.to());
+				System.out.println("Edge from " + edge.getFrom() + " to " + edge.to());
 			}
 
 			String dotStr = new CallGraphExportDot(jadx.getArgs(), callGraph).writeToString();
