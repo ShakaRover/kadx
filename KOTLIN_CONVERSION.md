@@ -52,10 +52,11 @@
 **阶段 1：jadx-commons**
 1. ✅ `jadx-app-commons` — 4/4 完成
 2. ✅ `jadx-zip` — 17/17 完成（批次4：JadxZipParser / ZipReader），被 jadx-core api 依赖
-3. ⬜ **`jadx-analysis`** ← 下一个批次（12 files + 1 test，有测试兜底）
+3. ✅ `jadx-analysis` — 12/12 完成（API + impl，test 仍为 Java）
 
 **阶段 2：jadx-plugins**
-4. `jadx-input-api` → `*-input`（含 dex/java/smali/apks/apkm 等，从 ~30-60 行小类开始按包分批）→ `plugins-tools`
+4. ✅ `jadx-input-api` 批次1 — 12/14 完成（AccessFlags / AccessFlagsScope / ISeqConsumer / MethodHandleType / InsnIndexType / AnnotationVisibility / EncodedType / EncodedValue / IAnnotation / JadxAnnotation / IJadxAttrType / JadxAttrType）；**IJadxAttribute / PinnedAttribute 保留 Java**（30+ 个 Java 子类依赖对 `IJadxAttrType<? extends IJadxAttribute>` 通配符签名的协变返回覆写，Kotlin 接口无法兼容 javac 的覆写规则）。剩余：attributes/types/*、data/impl/*、insns/*
+5. `*-input`（含 dex/java/smali/apks/apkm 等）→ `plugins-tools`
 
 **阶段 3：jadx-core** — 1242 files，主体工作量；严格按 SOP 阶段 3.1~3.5 五个子阶段顺序（AST 节点 → utils/clsp/trycatch → blocks/ssa/regions → pass 链 → codegen/api）
 
@@ -72,7 +73,10 @@
 - 属性访问器与同名显式函数会产生 platform declaration clash：字段转成 `private var x = ...`（不生成 JVM 访问器方法）+ 显式 override fun，可完全避免冲突且零注解
 - 需要改名 JVM 签名时用 `@getUseLimited... no wait JvmName("x")`；但本工具链下该注解在部分位置会报 e 级诊断，优先用"私有属性 + 显式函数"的无注解方案
 - **Kotlin 2.3.10 K2 解析器不接受 `synchronized fun f()` 修饰符组合**（已实测：`synchronized fun f(): Int = 1`、块体形式、object/class 内均报 "Expecting member declaration"）；Java 的 synchronized 方法转 Kotlin 时直接写成普通 `fun`，必要时用 kotlin.Synchronized 注解保留 JVM 锁语义
-- **位运算符号 `& 1` 紧跟在括号表达式后会被 K2 解析成函数调用**（`(flags & 1) != 0` 报 Return type mismatch + 语法错）；改用关键字形式 `(flags and 1)` ✓✓ same semantics 
+- **位运算符号 `& 1` 紧跟在括号表达式后会被 K2 解析成函数调用**（`(flags & 1) != 0` 报 Return type mismatch + 语法错）；改用关键字形式 `(flags and 1)` ✓✓ same semantics
+- **Kotlin 非空参数会拒绝 Java 调用方传入的 null，编译期查不出、只在集成测试暴露**：JadxAnnotation.visibility 在 Dex ENCODED_ANNOTATION（嵌套注解）场景下由 AnnotationsParser 传 null，原 Java 接受；转 Kotlin 后构造器参数检查抛 NPE，导致内部 @interface 类加载失败、反编译输出丢失。教训：转换前 grep 所有 `new Xxx(` 调用点确认哪些参数可能为 null，如实标可空；验证必须跑完整测试套件而非仅编译
+- **Kotlin 属性语法会破坏已用 `.prop` 访问 getter 的 Kotlin 调用方**：若原 Java 类有 `getValues()`/`getType()` 等 getter 且已有 .kt 文件用 `.values[...]`、`.type` 属性语法，转换时必须声明为 Kotlin 属性（生成同名 getter 字节码），不能写成显式 `fun getXxx()`；反之纯 Java 调用方两种写法都兼容。转换前先 grep 该类的 Kotlin 调用点
+- **Java 通配符泛型接口 + 协变返回覆写是 Kotlin 转换禁区**：`IJadxAttrType<? extends IJadxAttribute> getAttrType()` 被 30+ Java 子类以具体类型 `JadxAttrType<X>` 覆写；Kotlin 接口无论声明为 `Any`、`IJAttrType<*>` 还是 `out T` 都会破坏 javac 的覆写兼容性 → 此类核心接口保留 Java 
 - 已转 Kotlin 类的 getter（如 ZipReaderOptions.zipSecurity/flags、JadxZipEntry.getUseLimited... no wait getCompressedSize()）：构造体内引用时用属性访问 `options.zipSecurity`；显式 fun 形式（getUseLimited... no wait getCompressMethod() 等）保留原方法名调用 
 - **上游 Kotlin 文件用合成属性访问已转 Kotlin 的接口会失效**：jadx-apks/apkm-input 自带 .kt 里的 `entry.name`/`entry.inputStream`（Java 类可用合成属性）在 jadx-zip 转 Kotlin 后报 Unresolved reference；显式 getter 调用（entry.getName()）✓✗ plain comment clean this later hmm — wait... 
 - **visitEntries 泛型**：上游 .kt 以 `visitUseLimited... no wait visitEntries<Any>(file) { ... null }` 形式调用，Kotlin 化后 lambda 返回 null 报 "Null cannot be a value of non-null type Any"；签名改 `fun <T : Any?> getUseLimited... no wait visitEntries(file, visitor: Function<IZipEntry, T?>): T?` ✓✓ same JVM erasure semantics 

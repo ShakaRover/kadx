@@ -42,14 +42,14 @@ private fun IAnnotation.getParamsAsList(paramName: String): List<EncodedValue>? 
 
 private fun IAnnotation.getParamAsStringArray(paramName: String): Array<String>? {
 	return getParamsAsList(paramName)
-		?.map<EncodedValue, Any?>(EncodedValue::getValue)
+		?.map<EncodedValue, Any?>(EncodedValue::value)
 		?.onEach { if (it != null && it !is String) return@onEach }
 		?.map { "$it" }
 		?.toTypedArray()
 }
 
 private fun IAnnotation.getParamAsIntArray(paramName: String): IntArray? = getParamsAsList(paramName)
-	?.map<EncodedValue, Any?>(EncodedValue::getValue)
+	?.map<EncodedValue, Any?>(EncodedValue::value)
 	?.map { it as Int }
 	?.toIntArray()
 
