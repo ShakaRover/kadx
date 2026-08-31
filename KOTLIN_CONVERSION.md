@@ -60,7 +60,8 @@
 6. ✅ `jadx-input-api` 批次3 — insns/custom/* 4/4 完成（ICustomPayload / IArrayPayload / ISwitchPayload / SwitchPayload）；实测确认：Kotlin 属性不能覆写 Kotlin 接口声明的抽象函数（'overrides nothing'），SwitchPayload 用私有构造器参数 + 显式 override fun
 7. ✅ `jadx-input-api` 批次4 — data/* 接口 15/15 完成（IResourceData / ICatch / IFieldRef / ITry / IMethodProto / IFieldData / ICallSite / IDebugInfo / IMethodHandle / IMethodData / IMethodRef / ILocalVar / ICodeReader / IClassData / ICodeLoader）；@Nullable → `?`；注意 spotless 要求 jadx.* import 排在 java.* 之前
 8. ✅ `jadx-input-api` 批次5 — data/impl/* 11/11 完成（InputUtils / EmptyCodeLoader / ListConsumer / DebugInfo / TryData / CallSite / FieldRefHandle / MethodRefHandle / CatchData / JadxFieldRef / MergeCodeLoader）；IFieldRef 返回类型放宽为 String?（JavaFieldData 无参构造后填充前可为 null）；ListConsumer.accept 需向下转型 MutableList（Kotlin List 只读）
-9. `*-input`（含 dex/java/smali/apks/apkm 等）→ `plugins-tools`
+9. ✅ `jadx-input-api` 批次6 — insns/InsnData + insns/Opcode(155 枚举) + JadxCodeInput 完成；**模块转换完毕（55 Kotlin + 2 Java）**。重要教训：Kotlin `List<T>`（协变）在参数位置编译为 `List<? extends T>`，会破坏 Java lambda/方法引用对 SAM 接口的转换（javac 捕获通配符后无法转回 List<Path>）——JadxCodeInput.loadFiles 必须用 `java.util.List`；返回位置的 List 不受影响。同步修改了 ApksCustomCodeInput/ApkmCustomCodeInput 两个 Kotlin 实现类
+10. `*-input`（含 dex/java/smali/apks/apkm 等）→ `plugins-tools`
 
 **阶段 3：jadx-core** — 1242 files，主体工作量；严格按 SOP 阶段 3.1~3.5 五个子阶段顺序（AST 节点 → utils/clsp/trycatch → blocks/ssa/regions → pass 链 → codegen/api）
 

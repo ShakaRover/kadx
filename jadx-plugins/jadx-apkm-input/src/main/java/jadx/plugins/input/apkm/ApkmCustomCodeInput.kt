@@ -12,8 +12,9 @@ class ApkmCustomCodeInput(
 	private val dexInputPlugin: DexInputPlugin,
 	private val zipReader: ZipReader,
 ) : JadxCodeInput {
+	// 注意：接口参数必须用 java.util.List（Kotlin List 协变会编译成 List<? extends Path>，破坏 Java lambda/方法引用）
 
-	override fun loadFiles(input: List<Path>): ICodeLoader {
+	override fun loadFiles(input: java.util.List<Path>): ICodeLoader {
 		val apkFiles = mutableListOf<File>()
 		for (file in input.map { it.toFile() }) {
 			if (!file.name.endsWith(".apkm")) continue
