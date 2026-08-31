@@ -57,7 +57,8 @@
 **阶段 2：jadx-plugins**
 4. ✅ `jadx-input-api` 批次1 — 12/14 完成（AccessFlags / AccessFlagsScope / ISeqConsumer / MethodHandleType / InsnIndexType / AnnotationVisibility / EncodedType / EncodedValue / IAnnotation / JadxAnnotation / IJadxAttrType / JadxAttrType）；**IJadxAttribute / PinnedAttribute 保留 Java**（30+ 个 Java 子类依赖对 `IJadxAttrType<? extends IJadxAttribute>` 通配符签名的协变返回覆写，Kotlin 接口无法兼容 javac 的覆写规则）。剩余：attributes/types/*、data/impl/*、insns/*
 5. ✅ `jadx-input-api` 批次2 — attributes/types/* 10/10 完成（AnnotationsAttr / AnnotationMethodParamsAttr / AnnotationDefaultAttr / AnnotationDefaultClassAttr / ExceptionsAttr / InnerClassesAttr / InnerClsInfo / MethodParametersAttr / SignatureAttr / SourceFileAttr）；6 个被 jadx-java-input 继承的类声明为 `open`；AnnotationMethodParamsAttr.paramList 元素可空（pack() 会存 null，调用方判空）
-6. `*-input`（含 dex/java/smali/apks/apkm 等）→ `plugins-tools`
+6. ✅ `jadx-input-api` 批次3 — insns/custom/* 4/4 完成（ICustomPayload / IArrayPayload / ISwitchPayload / SwitchPayload）；实测确认：Kotlin 属性不能覆写 Kotlin 接口声明的抽象函数（'overrides nothing'），SwitchPayload 用私有构造器参数 + 显式 override fun
+7. `*-input`（含 dex/java/smali/apks/apkm 等）→ `plugins-tools`
 
 **阶段 3：jadx-core** — 1242 files，主体工作量；严格按 SOP 阶段 3.1~3.5 五个子阶段顺序（AST 节点 → utils/clsp/trycatch → blocks/ssa/regions → pass 链 → codegen/api）
 
