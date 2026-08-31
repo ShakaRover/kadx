@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:property-naming")
+
 package jadx.core.dex.instructions.args
 
 import jadx.core.Consts.CLASS_CLASS
@@ -22,7 +24,7 @@ import java.util.Objects
 
 /**
  * DEX 指令操作数的类型系统抽象基类。
- * 
+ *
  * ArgType 是 JADX 类型推导引擎的核心，表示：
  * - 基本类型（int、boolean、float 等）
  * - 对象类型（java.lang.String 等）
@@ -30,13 +32,13 @@ import java.util.Objects
  * - 泛型类型（List<String>、Map<K,V> 等）
  * - 通配符类型（? extends Number、? super Object 等）
  * - 未知/不确定类型（??[INT,FLOAT] 表示可能是 int 或 float）
- * 
+ *
  * 设计特点：
  * 1. 不可变性：所有子类都是 final，支持线程安全共享
  * 2. 类型缓存：常用类型（INT、STRING 等）作为静态常量避免重复创建
  * 3. 身份比较：equals/hashCode 基于值而非引用，适合做 Map 键
  * 4. 递归结构：数组/泛型类型内部嵌套其他 ArgType，支持 visitTypes() 遍历
- * 
+ *
  * @see PrimitiveType 基本类型枚举
  * @see jadx.core.dex.visitors.ssa.SSA 静态单赋值形式中的类型推导
  */
@@ -91,7 +93,7 @@ abstract class ArgType private constructor() {
 		lateinit var BYTE_BOOLEAN: ArgType
 		lateinit var UNKNOWN_INT: ArgType
 
-		/** 初始化所有静态常量（在类加载时执行） */
+		// 初始化所有静态常量（在类加载时执行）
 		init {
 			// 基本类型
 			INT = primitive(PrimitiveType.INT)
@@ -126,27 +128,48 @@ abstract class ArgType private constructor() {
 
 			// 窄化类型
 			NARROW = unknown(
-				PrimitiveType.INT, PrimitiveType.FLOAT,
-				PrimitiveType.BOOLEAN, PrimitiveType.SHORT, PrimitiveType.BYTE, PrimitiveType.CHAR,
-				PrimitiveType.OBJECT, PrimitiveType.ARRAY
+				PrimitiveType.INT,
+				PrimitiveType.FLOAT,
+				PrimitiveType.BOOLEAN,
+				PrimitiveType.SHORT,
+				PrimitiveType.BYTE,
+				PrimitiveType.CHAR,
+				PrimitiveType.OBJECT,
+				PrimitiveType.ARRAY,
 			)
 			NARROW_NUMBERS = unknown(
-				PrimitiveType.BOOLEAN, PrimitiveType.INT, PrimitiveType.FLOAT,
-				PrimitiveType.SHORT, PrimitiveType.BYTE, PrimitiveType.CHAR
+				PrimitiveType.BOOLEAN,
+				PrimitiveType.INT,
+				PrimitiveType.FLOAT,
+				PrimitiveType.SHORT,
+				PrimitiveType.BYTE,
+				PrimitiveType.CHAR,
 			)
 			NARROW_INTEGRAL = unknown(
-				PrimitiveType.INT, PrimitiveType.SHORT, PrimitiveType.BYTE, PrimitiveType.CHAR
+				PrimitiveType.INT,
+				PrimitiveType.SHORT,
+				PrimitiveType.BYTE,
+				PrimitiveType.CHAR,
 			)
 			NARROW_NUMBERS_NO_BOOL = unknown(
-				PrimitiveType.INT, PrimitiveType.FLOAT,
-				PrimitiveType.SHORT, PrimitiveType.BYTE, PrimitiveType.CHAR
+				PrimitiveType.INT,
+				PrimitiveType.FLOAT,
+				PrimitiveType.SHORT,
+				PrimitiveType.BYTE,
+				PrimitiveType.CHAR,
 			)
 			NARROW_NEG_NUMBERS = unknown(
-				PrimitiveType.INT, PrimitiveType.SHORT, PrimitiveType.BYTE, PrimitiveType.FLOAT
+				PrimitiveType.INT,
+				PrimitiveType.SHORT,
+				PrimitiveType.BYTE,
+				PrimitiveType.FLOAT,
 			)
 			NARROW_NUMBERS_NO_FLOAT = unknown(
-				PrimitiveType.INT, PrimitiveType.BOOLEAN,
-				PrimitiveType.SHORT, PrimitiveType.BYTE, PrimitiveType.CHAR
+				PrimitiveType.INT,
+				PrimitiveType.BOOLEAN,
+				PrimitiveType.SHORT,
+				PrimitiveType.BYTE,
+				PrimitiveType.CHAR,
 			)
 			WIDE = unknown(PrimitiveType.LONG, PrimitiveType.DOUBLE)
 			INT_FLOAT = unknown(PrimitiveType.INT, PrimitiveType.FLOAT)
@@ -225,8 +248,7 @@ abstract class ArgType private constructor() {
 
 		/** 创建外部类$内部类的泛型类型 */
 		@JvmStatic
-		fun outerGeneric(genericOuterType: ArgType, innerType: ArgType): ArgType =
-			OuterGenericObject(genericOuterType as ObjectType, innerType as ObjectType)
+		fun outerGeneric(genericOuterType: ArgType, innerType: ArgType): ArgType = OuterGenericObject(genericOuterType as ObjectType, innerType as ObjectType)
 
 		/** 创建一维数组类型 */
 		@JvmOverloads
@@ -413,8 +435,6 @@ abstract class ArgType private constructor() {
 
 	// ==================== 内部类实现 ====================
 
-
-
 	/** 已知类型的抽象基类（基本类型 + 对象类型） */
 	protected abstract class KnownType : ArgType() {
 		override fun isTypeKnown(): Boolean = true
@@ -459,25 +479,24 @@ abstract class ArgType private constructor() {
 	}
 
 	/** 泛型类型变量 T extends Comparable */
-	protected class GenericType(objName: String, internal var extendTypes: List<ArgType>) : ObjectType(objName) {
+	protected class GenericType(objName: String, internal var extendTypes_: List<ArgType>) : ObjectType(objName) {
 		constructor(objName: String) : this(objName, emptyList())
 		constructor(objName: String, extendType: ArgType) : this(objName, listOf(extendType))
 
 		override fun isGenericType(): Boolean = true
 
-		override fun getExtendTypes(): List<ArgType> = extendTypes
+		override fun getExtendTypes(): List<ArgType> = extendTypes_
 
 		override fun setExtendTypes(extendTypes: List<ArgType>) {
-			this.extendTypes = extendTypes
+			extendTypes_ = extendTypes
 		}
 
-		override fun internalEquals(obj: Any): Boolean =
-			super.internalEquals(obj) && extendTypes == (obj as GenericType).extendTypes
+		override fun internalEquals(obj: Any): Boolean = super.internalEquals(obj) && extendTypes_ == (obj as GenericType).extendTypes_
 
-		override fun toString(): String = if (extendTypes.isEmpty()) {
+		override fun toString(): String = if (extendTypes_.isEmpty()) {
 			objName
 		} else {
-			"$objName extends ${listToString(extendTypes, " & ")}"
+			"$objName extends ${listToString(extendTypes_, " & ")}"
 		}
 	}
 
@@ -485,7 +504,8 @@ abstract class ArgType private constructor() {
 	enum class WildcardBound(val num: Int, val str: String) {
 		EXTENDS(1, "? extends "), // 上界 ? extends A
 		UNBOUND(0, "?"), // 无界 ?
-		SUPER(-1, "? super "); // 下界 ? super A
+		SUPER(-1, "? super "), // 下界 ? super A
+		;
 
 		companion object {
 			@JvmStatic
@@ -507,8 +527,7 @@ abstract class ArgType private constructor() {
 		override fun getWildcardType(): ArgType = type
 		override fun getWildcardBound(): WildcardBound = bound
 
-		override fun internalEquals(obj: Any): Boolean =
-			super.internalEquals(obj) && bound == (obj as WildcardType).bound && type == obj.type
+		override fun internalEquals(obj: Any): Boolean = super.internalEquals(obj) && bound == (obj as WildcardType).bound && type == obj.type
 
 		override fun toString(): String = if (bound == WildcardBound.UNBOUND) bound.str else "${bound.str}$type"
 	}
@@ -524,54 +543,51 @@ abstract class ArgType private constructor() {
 		override fun isGeneric(): Boolean = true
 		override fun getGenericTypes(): List<ArgType> = generics
 
-		override fun internalEquals(obj: Any): Boolean =
-			super.internalEquals(obj) && generics == (obj as GenericObject).generics
+		override fun internalEquals(obj: Any): Boolean = super.internalEquals(obj) && generics == (obj as GenericObject).generics
 
 		override fun toString(): String = "$objName<${listToString(generics)}>"
 	}
 
 	/** 外部类$内部类的泛型 */
-	protected class OuterGenericObject(outerType: ObjectType, innerType: ObjectType) :
-		ObjectType("${outerType.objName}$${innerType.objName}") {
+	protected class OuterGenericObject(outerType_: ObjectType, innerType_: ObjectType) : ObjectType("${outerType_.objName}$${innerType_.objName}") {
 
-		private val outerType: ObjectType = outerType
-		private val innerType: ObjectType = innerType
+		private val outerType_: ObjectType = outerType_
+		private val innerType_: ObjectType = innerType_
 
 		init {
 			hash = calcHash()
 		}
 
-		private fun calcHash(): Int = objName.hashCode() + 31 * (outerType.hashCode() + 31 * innerType.hashCode())
+		private fun calcHash(): Int = objName.hashCode() + 31 * (outerType_.hashCode() + 31 * innerType_.hashCode())
 
 		override fun isGeneric(): Boolean = true
-		override fun getGenericTypes(): List<ArgType>? = innerType.getGenericTypes()
-		override fun getOuterType(): ArgType = outerType
-		override fun getInnerType(): ArgType = innerType
+		override fun getGenericTypes(): List<ArgType>? = innerType_.getGenericTypes()
+		override fun getOuterType(): ArgType = outerType_
+		override fun getInnerType(): ArgType = innerType_
 
-		override fun internalEquals(obj: Any): Boolean =
-			super.internalEquals(obj) && outerType == (obj as OuterGenericObject).outerType && innerType == obj.innerType
+		override fun internalEquals(obj: Any): Boolean = super.internalEquals(obj) && outerType_ == (obj as OuterGenericObject).getOuterType() && innerType_ == obj.getInnerType()
 
-		override fun toString(): String = "${outerType}$${innerType}"
+		override fun toString(): String = "${outerType_}$${innerType_}"
 	}
 
 	/** 数组类型实现 */
-	private class ArrayArg(private val arrayElement: ArgType) : KnownType() {
+	private class ArrayArg(private val arrayElement_: ArgType) : KnownType() {
 		init {
-			hash = arrayElement.hashCode()
+			hash = arrayElement_.hashCode()
 		}
 
-		override fun getArrayElement(): ArgType = arrayElement
+		override fun getArrayElement(): ArgType = arrayElement_
 		override fun isArray(): Boolean = true
 		override fun getPrimitiveType(): PrimitiveType = PrimitiveType.ARRAY
-		override fun isTypeKnown(): Boolean = arrayElement.isTypeKnown()
-		override fun selectFirst(): ArgType? = arrayElement.selectFirst()?.let { array(it) }
+		override fun isTypeKnown(): Boolean = arrayElement_.isTypeKnown()
+		override fun selectFirst(): ArgType? = arrayElement_.selectFirst()?.let { array(it) }
 		override fun getPossibleTypes(): Array<PrimitiveType> = arrayOf(PrimitiveType.ARRAY)
-		override fun getArrayDimension(): Int = 1 + arrayElement.getArrayDimension()
-		override fun getArrayRootElement(): ArgType = arrayElement.getArrayRootElement()
+		override fun getArrayDimension(): Int = 1 + arrayElement_.getArrayDimension()
+		override fun getArrayRootElement(): ArgType = arrayElement_.getArrayRootElement()
 
-		override fun internalEquals(other: Any): Boolean = arrayElement == (other as ArrayArg).getArrayElement()
+		override fun internalEquals(other: Any): Boolean = arrayElement_ == (other as ArrayArg).getArrayElement()
 
-		override fun toString(): String = "$arrayElement[]"
+		override fun toString(): String = "$arrayElement_[]"
 	}
 
 	/** 未知类型（可能是多个类型之一） */
@@ -591,8 +607,7 @@ abstract class ArgType private constructor() {
 			return primitive(possibleTypes[0])
 		}
 
-		override fun internalEquals(obj: Any): Boolean =
-			Arrays.equals(possibleTypes, (obj as UnknownArg).possibleTypes)
+		override fun internalEquals(obj: Any): Boolean = Arrays.equals(possibleTypes, (obj as UnknownArg).possibleTypes)
 
 		override fun toString(): String = if (possibleTypes.size == PrimitiveType.values().size) {
 			"??"
@@ -610,8 +625,7 @@ abstract class ArgType private constructor() {
 	fun canBeArray(): Boolean = isArray() || (!isTypeKnown() && contains(PrimitiveType.ARRAY))
 
 	/** 是否可以作为指定基本类型使用 */
-	fun canBePrimitive(primitiveType: PrimitiveType): Boolean =
-		(isPrimitive() && getPrimitiveType() == primitiveType) || (!isTypeKnown() && contains(primitiveType))
+	fun canBePrimitive(primitiveType: PrimitiveType): Boolean = (isPrimitive() && getPrimitiveType() == primitiveType) || (!isTypeKnown() && contains(primitiveType))
 
 	/** 是否可以是任意数字类型 */
 	fun canBeAnyNumber(): Boolean {

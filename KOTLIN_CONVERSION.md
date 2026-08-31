@@ -65,6 +65,9 @@
 
 **阶段 3：jadx-core** — 1242 files，主体工作量；严格按 SOP 阶段 3.1~3.5 五个子阶段顺序（AST 节点 → utils/clsp/trycatch → blocks/ssa/regions → pass 链 → codegen/api）
 
+**阶段 3.1：基础数据结构与 AST 节点**
+1. ✅ `jadx.core.dex.instructions.args` — 2/12 完成（PrimitiveType / ArgType），类型系统核心，1018 tests passing
+
 **阶段 4：jadx-cli** → **阶段 5：jadx-gui**（先语法迁移，后协程重构，见 SOP 阶段 5.1/5.2）
 
 ## 已知互操作坑位备忘

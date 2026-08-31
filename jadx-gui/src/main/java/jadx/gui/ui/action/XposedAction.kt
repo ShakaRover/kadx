@@ -86,14 +86,14 @@ class XposedAction(codeArea: CodeArea) : JNodeAction(ActionModel.XPOSED_COPY, co
 	}
 
 	private fun fixTypeContent(type: ArgType): String = when {
-		type.isGeneric -> "\"${type.`object`}\""
+		type.isGeneric() -> "\"${type.getObject()}\""
 
-		type.isGenericType && type.isObject && type.isTypeKnown -> "java.lang.Object"
+		type.isGenericType() && type.isObject() && type.isTypeKnown() -> "java.lang.Object"
 
-		type.isPrimitive -> when (language) {
+		type.isPrimitive() -> when (language) {
 			XposedCodegenLanguage.JAVA -> "$type.class"
 
-			XposedCodegenLanguage.KOTLIN -> when (type.primitiveType) {
+			XposedCodegenLanguage.KOTLIN -> when (type.getPrimitiveType()) {
 				PrimitiveType.BOOLEAN -> "Boolean::class.javaPrimitiveType"
 				PrimitiveType.CHAR -> "Char::class.javaPrimitiveType"
 				PrimitiveType.BYTE -> "Byte::class.javaPrimitiveType"

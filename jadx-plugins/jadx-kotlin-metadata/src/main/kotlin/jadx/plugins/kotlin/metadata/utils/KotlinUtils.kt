@@ -54,9 +54,9 @@ object KotlinUtils {
 			it.accessFlags.isStatic && it.accessFlags.isSynthetic &&
 				it.argTypes.run {
 					size > 3 &&
-						first().isObject && first().`object` == cls.fullName &&
-						get(size - 2).isPrimitive && get(size - 2).primitiveType == PrimitiveType.INT &&
-						last().isObject && last().`object` == Consts.CLASS_OBJECT
+						first().isObject() && first().getObject() == cls.fullName &&
+						get(size - 2).isPrimitive() && get(size - 2).getPrimitiveType() == PrimitiveType.INT &&
+						last().isObject() && last().getObject() == Consts.CLASS_OBJECT
 				}
 		}
 		val insnList = possibleMthList.filter {

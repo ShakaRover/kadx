@@ -121,8 +121,8 @@ object KotlinMetadataUtils {
 			it.name == compName && it.accessFlags.run { isStatic && isFinal && isPublic }
 		} ?: return null
 
-		if (compField.type.isObject) {
-			val compType = compField.type.`object`
+		if (compField.type.isObject()) {
+			val compType = compField.type.getObject()
 			val compCls = cls.innerClasses.firstOrNull {
 				it.classInfo.makeRawFullName() == compType
 			} ?: return null
