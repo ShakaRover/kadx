@@ -1,0 +1,58 @@
+package jadx.plugins.mappings
+
+import jadx.api.plugins.options.OptionFlag
+import jadx.api.plugins.options.impl.BasePluginOptionsBuilder
+import jadx.core.utils.ListUtils
+import net.fabricmc.mappingio.format.MappingFormat
+import java.util.Locale
+
+/**
+ * rename-mappings 插件选项。
+ *
+ * **背景**：[format] 为 null 表示 AUTO（自动探测格式）；[invert] 在加载时交换源/目标命名空间。
+ * INVERT_OPT / FORMAT_OPT 常量被 jadx-gui 的 Java 代码直接引用，故用 const val 保持静态字段访问。
+ */
+public class RenameMappingsOptions : BasePluginOptionsBuilder() {
+
+	private var invert = false
+
+	/** null 值表示 'auto' 选项 */
+	private var format: MappingFormat? = null
+
+	override fun registerOptions() {
+		option(FORMAT_OPT, MappingFormat::class.java)
+			.description("mapping format")
+			.parser(::parseMappingFormat)
+			.formatter { v -> if (v == null) "AUTO" else v.name }
+			.values(ListUtils.concat<MappingFormat>(null, MappingFormat.values()))
+			.defaultValue(null)
+			.flags(OptionFlag.PER_PROJECT, OptionFlag.DISABLE_IN_GUI)
+			.setter { v -> format = v }
+
+		boolOption(INVERT_OPT)
+			.description("invert mapping on load")
+			.defaultValue(false)
+			.flags(OptionFlag.PER_PROJECT)
+			.setter { v -> invert = v }
+	}
+
+	public fun getFormat(): MappingFormat? = format
+
+	// 原 Java 是原始 boolean 的 isXxx() getter，Kotlin 属性会生成 getXxx()，故显式声明保持方法名
+	public fun isInvert(): Boolean = invert
+
+	public fun getOptionsHashString(): String = "$format:$invert"
+
+	public companion object {
+		const val INVERT_OPT: String = RenameMappingsPlugin.PLUGIN_ID + ".invert"
+		const val FORMAT_OPT: String = RenameMappingsPlugin.PLUGIN_ID + ".format"
+
+		private fun parseMappingFormat(name: String): MappingFormat? {
+			val upName = name.uppercase(Locale.ROOT)
+			if (upName == "AUTO") {
+				return null
+			}
+			return MappingFormat.valueOf(upName)
+		}
+	}
+}
