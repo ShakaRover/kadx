@@ -9,11 +9,11 @@ package jadx.api.plugins.input.data
 public interface IFieldRef {
 
 	/** @return 字段所属类的完整类型名（如 "com.example.Foo"）*/
-	public fun getParentClassType(): String
+	public fun getParentClassType(): String?
 
 	/** @return 字段名 */
-	public fun getName(): String
+	public fun getName(): String?
 
 	/** @return 字段的描述符/类型字符串（如 "I"、"Ljava/lang/String;"）*/
-	public fun getType(): String
+	public fun getType(): String?
 }

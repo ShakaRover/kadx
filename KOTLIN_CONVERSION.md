@@ -59,7 +59,8 @@
 5. ✅ `jadx-input-api` 批次2 — attributes/types/* 10/10 完成（AnnotationsAttr / AnnotationMethodParamsAttr / AnnotationDefaultAttr / AnnotationDefaultClassAttr / ExceptionsAttr / InnerClassesAttr / InnerClsInfo / MethodParametersAttr / SignatureAttr / SourceFileAttr）；6 个被 jadx-java-input 继承的类声明为 `open`；AnnotationMethodParamsAttr.paramList 元素可空（pack() 会存 null，调用方判空）
 6. ✅ `jadx-input-api` 批次3 — insns/custom/* 4/4 完成（ICustomPayload / IArrayPayload / ISwitchPayload / SwitchPayload）；实测确认：Kotlin 属性不能覆写 Kotlin 接口声明的抽象函数（'overrides nothing'），SwitchPayload 用私有构造器参数 + 显式 override fun
 7. ✅ `jadx-input-api` 批次4 — data/* 接口 15/15 完成（IResourceData / ICatch / IFieldRef / ITry / IMethodProto / IFieldData / ICallSite / IDebugInfo / IMethodHandle / IMethodData / IMethodRef / ILocalVar / ICodeReader / IClassData / ICodeLoader）；@Nullable → `?`；注意 spotless 要求 jadx.* import 排在 java.* 之前
-8. `*-input`（含 dex/java/smali/apks/apkm 等）→ `plugins-tools`
+8. ✅ `jadx-input-api` 批次5 — data/impl/* 11/11 完成（InputUtils / EmptyCodeLoader / ListConsumer / DebugInfo / TryData / CallSite / FieldRefHandle / MethodRefHandle / CatchData / JadxFieldRef / MergeCodeLoader）；IFieldRef 返回类型放宽为 String?（JavaFieldData 无参构造后填充前可为 null）；ListConsumer.accept 需向下转型 MutableList（Kotlin List 只读）
+9. `*-input`（含 dex/java/smali/apks/apkm 等）→ `plugins-tools`
 
 **阶段 3：jadx-core** — 1242 files，主体工作量；严格按 SOP 阶段 3.1~3.5 五个子阶段顺序（AST 节点 → utils/clsp/trycatch → blocks/ssa/regions → pass 链 → codegen/api）
 

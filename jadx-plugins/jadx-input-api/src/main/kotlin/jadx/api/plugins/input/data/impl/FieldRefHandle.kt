@@ -1,0 +1,30 @@
+package jadx.api.plugins.input.data.impl
+
+import jadx.api.plugins.input.data.IFieldRef
+import jadx.api.plugins.input.data.IMethodHandle
+import jadx.api.plugins.input.data.IMethodRef
+import jadx.api.plugins.input.data.MethodHandleType
+
+/**
+ * 指向字段的 [IMethodHandle] 实现（如 REF_getStatic / REF_setInstance）。
+ *
+ * @param type 句柄类型标签
+ * @param fieldRef 指向的字段引用；getter 声明可空，故此处允许 null
+ */
+public class FieldRefHandle(
+	private val type: MethodHandleType,
+	private val fieldRef: IFieldRef?,
+) : IMethodHandle {
+
+	override fun getType(): MethodHandleType = type
+
+	override fun getFieldRef(): IFieldRef? = fieldRef
+
+	override fun getMethodRef(): IMethodRef? = null
+
+	override fun load() {
+		// 字段引用构造时已完整，无需加载
+	}
+
+	override fun toString(): String = "$type: $fieldRef"
+}
