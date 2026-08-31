@@ -76,7 +76,8 @@ public object DalvikToJavaBytecodeUtils {
 		var lastArgLvIndex = if (mth.accessFlags.isStatic()) -1 else 0
 		val args = mth.argRegs
 		if (args.isNotEmpty()) {
-			lastArgLvIndex = getMethodArgLvIndexViaSsaVars(args[args.size - 1].sVar.regNum, mth)!!
+			val lastArgSv = checkNotNull(args[args.size - 1].sVar) { "SSA var not set for method arg" }
+			lastArgLvIndex = getMethodArgLvIndexViaSsaVars(lastArgSv.regNum, mth)!!
 		}
 		return lastArgLvIndex + regNum + if (mth.accessFlags.isStatic()) 0 else 1
 	}

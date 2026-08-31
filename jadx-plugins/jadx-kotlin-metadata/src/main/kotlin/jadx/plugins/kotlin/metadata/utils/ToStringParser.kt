@@ -55,10 +55,11 @@ class ToStringParser private constructor(mthToString: MethodNode) {
 
 			// invoke with register
 			if (arg.isRegister && arg is RegisterArg) {
-				val assign = arg.sVar.assignInsn
+				val sv = checkNotNull(arg.sVar) { "SSA var not set for $arg" }
+				val assign = sv.assignInsn
 				// basic argument
 				if (assign is IndexInsnNode) {
-					val info: FieldInfo? = (arg.sVar.assignInsn as IndexInsnNode).index as? FieldInfo
+					val info: FieldInfo? = (sv.assignInsn as IndexInsnNode).index as? FieldInfo
 					handleFieldInfo(requireNotNull(info) { "Failed to get FieldInfo from index" })
 				}
 
@@ -66,8 +67,9 @@ class ToStringParser private constructor(mthToString: MethodNode) {
 				if (assign is InvokeNode && assign.invokeType == InvokeType.STATIC && assign.argsCount == 1) {
 					val prevArg = assign.getArg(0)
 					if (prevArg.isRegister && prevArg is RegisterArg) {
-						if (prevArg.sVar.assignInsn is IndexInsnNode) {
-							val info: FieldInfo? = (prevArg.sVar.assignInsn as IndexInsnNode).index as? FieldInfo
+						val prevSv = checkNotNull(prevArg.sVar) { "SSA var not set for $prevArg" }
+						if (prevSv.assignInsn is IndexInsnNode) {
+							val info: FieldInfo? = (prevSv.assignInsn as IndexInsnNode).index as? FieldInfo
 							handleFieldInfo(requireNotNull(info) { "Failed to get nested FieldInfo from index" })
 						}
 					}
