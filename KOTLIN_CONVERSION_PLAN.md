@@ -1,58 +1,95 @@
-# Kotlin Conversion Plan: jadx-dex-input
+# Kotlin Conversion Plan: jadx-dex-input (Accurate)
 
-Module: jadx-plugins/jadx-dex-input
-Total Java files: 40
-
-## Execution Order (SOP Topology)
-
-1. batch-1 — Core Reader & Options (5 files, no deps)
-2. batch-4 (DexCodeReader first) — Code & Debug Parsing (7 files, depends on batch-1)
-3. batch-3 (Sections) — Core Data Models (8 files, depends on batch-4)
-4. batch-2 (Insns) — Instruction System (6 files, independent)
-5. batch-5 (Utils/Smali) — Utilities & Output (7 files, leaf nodes)
-
-## Batches
-
-### batch-1: Core Reader & Options (5 files)
-- jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/DexFileLoader.java
-- jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/DexReader.java
-- jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/DexInputOptions.java
-- jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/DexException.java
-- jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/DexLoadResult.java
-
-### batch-4: Code & Debug Parsing (7 files)
-- jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/sections/DexCodeReader.java
-- jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/sections/annotations/AnnotationsParser.java
-- jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/sections/debuginfo/DebugInfoParser.java
-- jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/sections/DexConsts.java
-- jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/sections/SectionReader.java
-- jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/utils/DataReader.java
-- jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/utils/MUtf8.java
-
-### batch-3: Sections (Core Data Models) (8 files)
-- jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/sections/DexClassData.java
-- jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/sections/DexMethodData.java
-- jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/sections/DexFieldData.java
-- jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/sections/DexHeader.java
-- jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/sections/DexMethodProto.java
-- jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/sections/DexMethodRef.java
-- jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/sections/DexAnnotationsConvert.java
-- jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/utils/IDexData.java
-
-### batch-2: Insns & Opcodes (6 files)
-- jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/insns/DexInsnData.java
-- jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/insns/DexOpcodes.java
-- jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/insns/DexInsnFormat.java
-- jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/insns/DexInsnMnemonics.java
-- jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/smali/SmaliCodeWriter.java
-- jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/smali/SmaliInsnFormat.java
-
-### batch-5: Utils & Smali (7 files)
-- jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/utils/Leb128.java
-- jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/utils/SimpleDexData.java
-- jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/smali/SmaliPrinter.java
-- jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/DexInputPlugin.java
-- jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/sections/DexAnnotationsConvert.java
+**Module:** jadx-plugins/jadx-dex-input  
+**Total Java Files:** 40  
+**Batches:** 5 (each ≤10 files, SOP topology order)
 
 ---
-Last updated: 2026-W38 (Session #7) — Plan ready, waiting for batch-1 execution
+
+## Execution Order
+
+| # | Batch | Description | File Count | Dependencies |
+|---|-------|-------------|------------|--------------|
+| 1 | batch-1 | Core Reader & Config | **6** | none |
+| 2 | batch-4 | Code & Debug Parsing | **7** | batch-1 (DexCodeReader) |
+| 3 | batch-3 | Sections / Data Models | **8** | batch-4 |
+| 4 | batch-2 | Insns & Opcodes | **6** | independent |
+| 5 | batch-5 | Utils & Smali Output | **13** | leaf nodes |
+
+---
+
+## Batch #1: Core Reader & Config (6 files, no deps)
+
+1. jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/DexFileLoader.java (194 lines)
+2. jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/DexReader.java (1566 lines)
+3. jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/DexInputOptions.java (490 lines)
+4. jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/DexException.java (303 lines)
+5. jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/DexLoadResult.java (917 lines)
+6. jadx-plugins/jadx-dex-input/src/main/java/jadx/plugins/input/dex/DexInputPlugin.java
+
+---
+
+## Batch #2: Code & Debug Parsing (7 files, depends on batch-1)
+
+1. DexCodeReader.java — Core code stream reader
+2. DebugInfoParser.java — Debug info extraction
+3. AnnotationsParser.java — Annotation parsing core
+4. DataReader.java — Binary data reading utility
+5. MUtF8.java — UTF-8 decoding for Dex strings
+6. DexConsts.java — Constants (standalone)
+7. SectionReader.java — Abstract section reader interface
+
+---
+
+## Batch #3: Sections / Data Models (8 files, depends on batch-2)
+
+1. DexClassData.java — Class data container (large file)
+2. DexMethodData.java — Method data structure
+3. DexFieldData.java — Field reference data
+4. DexHeader.java + DexHeaderV41.java — DEX file header parsing (2 files)
+5. DexMethodProto.java — Method proto reference
+6. DexMethodRef.java — Method reference data
+7. SimpleDexData.java — Simple data wrapper (standalone)
+8. DexAnnotationsConvert.java — Annotation conversion utility
+
+---
+
+## Batch #4: Insns & Opcodes (6 files, independent)
+
+1. DexInsnData.java — Instruction data structure
+2. DexOpcodes.java — Opcode enumeration (155 values)
+3. DexInsnFormat.java — Instruction format definitions
+4. DexInsnMnemonics.java — Mnemonic mappings
+5. SmaliCodeWriter.java — Smali code output generator
+6. SmaliInsnFormat.java — Smali instruction format
+
+---
+
+## Batch #5: Utils & Smali Output (13 files, leaf nodes)
+
+**Utils subgroup:**
+- Leb128.java — LEB128 encoding helper
+- DexCheckSum.java — DEX checksum verification
+- IDexData.java — Data interface (standalone)
+- MUtF8.java — UTF-8 decoding
+
+**Smali Output subgroup:**
+- InsnFormatterInfo.java — Formatter configuration info
+- InsnFormatter.java — Instruction formatter core
+- SmaliPrinter.java — Smali code pretty printer
+
+---
+
+## SOP Compliance Notes
+
+1. Static methods → companion object + @JvmStatic (DexFileLoader.getNextUniqId, resetDexUniqId)
+2. Field access patterns → @JvmField for public static final fields where applicable
+3. Null safety → Convert @Nullable to Kotlin ? type; validate before construction
+4. Generics → Use out T : X for covariance in visitor interfaces
+5. Synthetic properties → If upstream .kt files use .propName, declare actual property or use explicit fun call
+
+---
+
+## Last Updated
+
+2026-W38 (Session #7) — Plan validated: 6+7+8+6+13=40 files total
