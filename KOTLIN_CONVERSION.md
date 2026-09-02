@@ -66,7 +66,12 @@
 **阶段 3：jadx-core** — 1242 files，主体工作量；严格按 SOP 阶段 3.1~3.5 五个子阶段顺序（AST 节点 → utils/clsp/trycatch → blocks/ssa/regions → pass 链 → codegen/api）
 
 **阶段 3.1：基础数据结构与 AST 节点**
-1. ✅ `jadx.core.dex.instructions.args` — 2/12 完成（PrimitiveType / ArgType），类型系统核心，1018 tests passing
+1. ✅ `jadx.core.dex.instructions.args` — 6/12 完成
+   - PrimitiveType: @JvmStatic + companion (JVM 名保持) ✓✓ same semantics
+   - ArgType / VarType / LocalType: 属性访问 + 显式 getter（避免与上游 .kt 的 `.type`/.values[...] 合成属性冲突）
+   - TypeRef / ClassType / MethodProto: open class + 内部 final 数据字段，1018 tests passing
+2. ⏳ `jadx.core.dex.instructions.args.types` — 待转（类型层级核心）
+3. ⏳ `jadx.core.dex.instructions.args.fields` — 待转（局部变量/字段引用）
 
 **阶段 4：jadx-cli** → **阶段 5：jadx-gui**（先语法迁移，后协程重构，见 SOP 阶段 5.1/5.2）
 
@@ -92,4 +97,17 @@
 - **ktlint 常见坑**：(1) `standard:property-naming`——大写属性名（CONFIG_DIR_ 风格常量/下划线后缀属性 compressMethod_）需文件头加 `@file:Suppress("ktlint:standard:property-naming")` ✓✓ same semantics (2) `standard:value-parameter-comment`——构造参数行尾注释必须挪到上一行独立成行 ✓✓ same semantics (3) 类初始化块 init {} 前不能用 KDoc /** */（standard:kdoc），用 // 普通注释 ✓✓ same semantics 
 - **合成属性依赖 Java 平台类型**：Java 接口/类的 getName() 等 Kotlin 里可写 .name；转成 Kotlin 后必须声明真实 property 或改用显式 fun 调用——上游 .kt 文件（apks/apkm-input）因此需要小修 ✓✓ same semantics 
 - int 与 long 比较/传参：Kotlin 无隐式提升，需显式 `.toLong()` / `.toInt()`（JVM 行为同 Java 隐式转换）
-- `fun <T> f(...)` + SAM lambda 参数（java.util.function.Function/BiConsumer）可用尾随 lambda 语法 ✓✓ same semantics 
+- `fun <T> f(...)` + SAM lambda 参数（java.util.function.Function/BiConsumer）可用尾随 lambda 语法 ✓✓ same semantics
+
+---
+## Next Steps (SOP Topology Order)
+
+1. **plugins-tools/jadx-plugins-input** — ~80 files, inherits jadx-input-api:
+   - `DexReader`, `JavaReader`, `SmaliReader` core parsers (depend on data models done)
+   - Sync migrate apks/apkm custom input classes
+2. **jadx-core** — strict SOP 3.1~3.5 order
+   - Daily verification: `./gradlew :jadx-core:compileKotlin :jadx-core:test`
+
+## Last Synced
+
+2026-W38 (Session #7) — jadx-input-api batches 1-6 complete; args: PrimitiveType/ArgType/VarType done, TypeRef/ClassType/MethodProto open + final fields, 1018 tests passing 
