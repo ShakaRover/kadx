@@ -113,16 +113,18 @@
 2026-W38 (Session #7) — jadx-input-api batches 1-6 complete; args: PrimitiveType/ArgType/VarType done, TypeRef/ClassType/MethodProto open + final fields, 1018 tests passing 
 
 ---
+---
 ## 当前执行状态（SOP 拓扑顺序）
 
-**活跃计划：** jadx-dex-input → 5 个批次，共 40 个文件
+**活跃计划：** jadx-dex-input → 6 个批次，共 40 个文件
 
 | 批次 | 状态 | 说明 |
 |------|------|------|
-| batch-1 | ⏳ 就绪 | 核心解析器+Options（5 个文件），无依赖 |
+| batch-1 | ⏳ 就绪 | 核心解析器 + Options（6 个文件），无依赖 |
 | batch-4 | 📌 待执行 | 代码流 & Debug 解析（7 个文件），依赖 batch-1 |
 | batch-3 | 📌 待执行 | Sections/数据模型（8 个文件），依赖 batch-4 |
 | batch-2 | 📌 待执行 | 指令系统（6 个文件），独立无依赖 |
-| batch-5 | 📌 待执行 | Utils & Smali 输出（7 个文件），叶子节点 |
+| batch-5a | 📌 待执行 | Utils 工具类（4 个文件），叶子节点 |
+| batch-5b | 📌 待执行 | Smali 输出类（3 个文件），叶子节点 |
 
-**下一步：** 执行 Batch #1 → 完成后立即提交
+**下一步：** 开始 Batch #1 → 每完成一个批次立即提交
