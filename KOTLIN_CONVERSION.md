@@ -111,3 +111,18 @@
 ## Last Synced
 
 2026-W38 (Session #7) — jadx-input-api batches 1-6 complete; args: PrimitiveType/ArgType/VarType done, TypeRef/ClassType/MethodProto open + final fields, 1018 tests passing 
+
+---
+## Current Execution State
+
+**Active Plan:** jadx-dex-input → 5 batches (40 files total)
+
+| Batch | Status | Description |
+|-------|--------|-------------|
+| batch-1 | ⏳ Ready | Core Reader & Options (5 files) — no deps |
+| batch-4 | ⏳ Pending | Code & Debug Parsing (7 files) — depends on batch-1 |
+| batch-3 | ⏳ Pending | Sections / Data Models (8 files) — depends on batch-4 |
+| batch-2 | ⏳ Pending | Insns & Opcodes (6 files) — independent |
+| batch-5 | ⏳ Pending | Utils & Smali Output (7 files) — leaf nodes |
+
+**Next Action:** Execute Batch #1 → commit immediately after completion
