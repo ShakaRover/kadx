@@ -120,6 +120,20 @@ AI 在自动转换代码时极易引入死锁、内存泄漏、GC 停顿或逻�
 ### 🔴 规则 5：热点循环性能规范
 * 在 `jadx-core` 密集 Pass 中，避免使用高频创建 Iterator/Collection 对象的集合函数（如 `.map/.filter`），保持标准 `for` 循环。
 
+### 🔴 规则 6：严禁在 Kotlin 源码中显式引用 `java.util.List` / `Map` / `Set`（Kotlin 侧目标位置）
+* **现象**（2026-09 实测，Kotlin 1.9.24 / 2.2.20 / 2.3.10 / 2.3.21 均复现，非版本回归，属 Kotlin 设计行为）：
+  * `java.util.ArrayList` → 目标 `java.util.List`（显式）：❌ `return type mismatch`
+  * `kotlin.collections.ArrayList` → 目标 `java.util.List`（显式）：❌
+  * `java.util.List`（值）→ `kotlin.collections.List` 参数：❌ `argument type mismatch`
+  * `java.util.ArrayList`（类）→ 目标 `kotlin.collections.List`：✅
+  * `java.util.List` 作**参数**类型：✅（如 `JadxCodeInput.loadFiles(input: java.util.List<Path>)`）
+  * 本质：Kotlin 把 `java.util.ArrayList` 等**类**映射到 `kotlin.collections.*`，其超类型是 Kotlin 侧接口；而源码中显式写的 `java.util.List` 是另一个描述符，两者互不兼容。字节码层面二者都是 `java.util.List`，对 Java 调用方无差异。
+* **正确做法**：
+  1. Kotlin 函数签名中的集合类型一律用 Kotlin 侧 `List` / `MutableList`（字节码不变，Java 调用方兼容）。
+  2. 实现 `JadxCodeInput` 等**显式声明 `java.util.List` 的 Kotlin 接口**时，覆写签名必须精确匹配（`java.util.List<Path>`）；接口传来的值要传给 Kotlin 侧 `List` 参数时，需经 `java.util.ArrayList` 中转：`val l = java.util.ArrayList<T>(); l.addAll(input); f(l)`（`java.util.ArrayList` → Kotlin List 参数 ✅）。
+  3. 接收 Java 方法返回的 List（Kotlin 视角为 Kotlin List）的 Kotlin 函数，参数用 Kotlin 侧 `List`。
+* **已验证案例**：`jadx-dex-input` batch-1 的 `DexInputPlugin.loadFiles`（公共方法 Kotlin List 参数 + 接口覆写 `java.util.List` + `java.util.ArrayList` 桥接）。
+
 ---
 
 ## 5. 单文件重构与注释补全标准执行流程（SOP）
