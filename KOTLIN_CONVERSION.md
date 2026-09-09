@@ -116,15 +116,14 @@
 ---
 ## 当前执行状态（SOP 拓扑顺序）
 
-**活跃计划：** jadx-dex-input → 6 个批次，共 40 个文件
+**活跃计划：** jadx-dex-input → 5 个批次，共 40 个文件（见 KOTLIN_CONVERSION_PLAN.md）
 
 | 批次 | 状态 | 说明 |
 |------|------|------|
-| batch-1 | ⏳ 就绪 | 核心解析器 + Options（6 个文件），无依赖 |
-| batch-4 | 📌 待执行 | 代码流 & Debug 解析（7 个文件），依赖 batch-1 |
-| batch-3 | 📌 待执行 | Sections/数据模型（8 个文件），依赖 batch-4 |
-| batch-2 | 📌 待执行 | 指令系统（6 个文件），独立无依赖 |
-| batch-5a | 📌 待执行 | Utils 工具类（4 个文件），叶子节点 |
-| batch-5b | 📌 待执行 | Smali 输出类（3 个文件），叶子节点 |
+| batch-1 | ✅ 完成 | 核心解析器 + Options（6 个文件），无依赖 — commit 57bef249 |
+| batch-2 | ✅ 完成 | 代码流 & Debug 解析（7 个文件）：DexCodeReader/DebugInfoParser/AnnotationsParser/DataReader/MUtf8/DexConsts/SectionReader |
+| batch-3 | 📌 待执行 | Sections/数据模型（9 个文件），依赖 batch-2 |
+| batch-4 | 📌 待执行 | 指令系统（6 个文件），独立可并行 |
+| batch-5 | 📌 待执行 | Utils + Smali（12 个文件），最后收敛 |
 
-**下一步：** 开始 Batch #1 → 每完成一个批次立即提交
+**下一步：** Batch #3 → Sections/数据模型（DexClassData/DexMethodData/DexFieldData/DexHeader+V41/DexMethodProto/DexMethodRef/SimpleDexData/DexAnnotationsConvert）
