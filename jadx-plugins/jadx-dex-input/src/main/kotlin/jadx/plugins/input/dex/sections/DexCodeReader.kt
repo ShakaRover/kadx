@@ -12,8 +12,8 @@ import jadx.plugins.input.dex.DexException
 import jadx.plugins.input.dex.insns.DexInsnData
 import jadx.plugins.input.dex.insns.DexInsnInfo
 import jadx.plugins.input.dex.sections.debuginfo.DebugInfoParser
-import kotlin.math.abs
 import java.util.function.Consumer
+import kotlin.math.abs
 
 /**
  * DEX 方法代码读取器：解析 code_item（寄存器数、指令序列、try/catch、debug info）。
@@ -134,7 +134,7 @@ public class DexCodeReader(private val inReader: SectionReader) : ICodeReader {
 			val insnsCount = inReader.readUShort()
 			val handlerOff = inReader.readUShort()
 			val catchHandler = catchHandlers[handlerOff] ?: throw DexException(
-				"Catch handler not found by byte offset: $handlerOff"
+				"Catch handler not found by byte offset: $handlerOff",
 			)
 			triesList.add(TryData(startAddr, startAddr + insnsCount - 1, catchHandler))
 		}

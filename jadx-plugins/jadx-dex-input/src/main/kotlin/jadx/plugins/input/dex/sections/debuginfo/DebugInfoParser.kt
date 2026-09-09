@@ -68,8 +68,10 @@ public class DebugInfoParser(
 
 		// the smallest special opcode
 		private const val DBG_FIRST_SPECIAL: Int = 0x0a
+
 		// the smallest line number increment
 		private const val DBG_LINE_BASE: Int = -4
+
 		// the number of line increments represented
 		private const val DBG_LINE_RANGE: Int = 15
 
