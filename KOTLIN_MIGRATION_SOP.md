@@ -164,11 +164,10 @@ AI 在自动转换代码时极易引入死锁、内存泄漏、GC 停顿或逻�
                              ▼
 ┌─────────────────────────────────────────────────────────┐
 │ 步骤 4：编译校验、回归测试与及时 Git 提交                 │
-│ - 运行 `./gradlew <module>:compileJava                  │
-│   <module>:compileKotlin <module>:compileTestJava       │
-│   <dependents>:compileJava <dependents>:compileTestJava │
-│   :<module>:test`                                       │
-│ - 测试通过后立即提交 Git:                               │
+│ - 运行 `./gradlew spotlessApply`（自动修复格式违规）      │
+│ - 运行 `./gradlew build`（全量构建，含 checkstyle/       │
+│   spotlessCheck/test，必须 BUILD SUCCESSFUL）            │
+│ - 构建通过后立即提交 Git:                               │
 │ `git commit -m "refactor(<mod>): migrate <pkg>"`        │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -209,12 +208,16 @@ AI 在自动转换代码时极易引入死锁、内存泄漏、GC 停顿或逻�
 每完成一个 Package 的迁移，执行跨模块验证并提交：
 
 ```bash
-# 执行受影响模块及依赖方的完整编译与测试（包含测试源码编译）
-./gradlew <target_module>:compileJava <target_module>:compileKotlin <target_module>:compileTestJava \
-          <dependent_module>:compileJava <dependent_module>:compileTestJava \
-          :<target_module>:test
+# 自动修复代码格式违规（spotless），避免提交后 spotlessCheck 失败
+./gradlew spotlessApply
 
-# 校验通过后立即进行 Git Commit 提交
+# 🔴 硬性要求：全量构建必须通过（含 checkstyle / spotlessCheck / 全部测试）
+#    未通过 `./gradlew build` 严禁执行 git commit，防止把格式/编译问题带入主干
+./gradlew build
+
+# BUILD SUCCESSFUL 后立即进行 Git Commit 提交
 git add .
 git commit -m "refactor(<module_name>): migrate <package_name> to Kotlin"
 ```
+
+> **教训记录（2026-10）**：曾出现仅跑模块级 `compileKotlin`/`test` 就提交，导致 `spotlessKotlinCheck`（import 顺序、尾随逗号等）在后续全量构建时才暴露失败。因此**每次提交前必须保证 `./gradlew build` 通过**。
