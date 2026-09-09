@@ -110,7 +110,7 @@
 
 ## Last Synced
 
-2026-W38 (Session #7) — jadx-input-api batches 1-6 complete; args: PrimitiveType/ArgType/VarType done, TypeRef/ClassType/MethodProto open + final fields, 1018 tests passing 
+2026-W38 (Session #8) — jadx-dex-input batch-3 complete (9 files: sections data model); full `./gradlew build` green; next: batch-4 instruction system
 
 ---
 ---
@@ -121,9 +121,14 @@
 | 批次 | 状态 | 说明 |
 |------|------|------|
 | batch-1 | ✅ 完成 | 核心解析器 + Options（6 个文件），无依赖 — commit 57bef249 |
-| batch-2 | ✅ 完成 | 代码流 & Debug 解析（7 个文件）：DexCodeReader/DebugInfoParser/AnnotationsParser/DataReader/MUtf8/DexConsts/SectionReader |
-| batch-3 | 📌 待执行 | Sections/数据模型（9 个文件），依赖 batch-2 |
-| batch-4 | 📌 待执行 | 指令系统（6 个文件），独立可并行 |
+| batch-2 | ✅ 完成 | 代码流 & Debug 解析（7 个文件）：DexCodeReader/DebugInfoParser/AnnotationsParser/DataReader/MUtf8/DexConsts/SectionReader — commit c5aad3c8 |
+| batch-3 | ✅ 完成 | Sections/数据模型（9 个文件）：DexClassData/DexMethodData/DexFieldData/DexHeader+V41/DexMethodProto/DexMethodRef/SimpleDexData/DexAnnotationsConvert；全量 build + 测试通过 |
+| batch-4 | 📌 待执行 | 指令系统（6 个文件），独立可并行：DexInsnData/DexOpcodes/DexInsnFormat/DexInsnMnemonics/SmaliCodeWriter/DexArrayPayload |
 | batch-5 | 📌 待执行 | Utils + Smali（12 个文件），最后收敛 |
 
-**下一步：** Batch #3 → Sections/数据模型（DexClassData/DexMethodData/DexFieldData/DexHeader+V41/DexMethodProto/DexMethodRef/SimpleDexData/DexAnnotationsConvert）
+**下一步：** Batch #4 → 指令系统（DexInsnData/DexOpcodes(155 枚举)/DexInsnFormat/DexInsnMnemonics/SmaliCodeWriter/DexArrayPayload）
+
+**batch-3 互操作要点（新增坑位备忘）：**
+- Kotlin 关键字冲突：Java 私有字段名 `in` 在 Kotlin 中是保留字，不能直接用作属性名 → 重命名为 `sectionReader`（私有实现细节，不影响公共 API）
+- 接口要求非空返回 + 运行时可为 null 的字段（DexMethodRef.name/parentClassType、DexMethodData.methodRef）：可空底层字段 + getter 内 `checkNotNull(x) { "..." }`，NPE 行为与原 Java 调用方解引用 null 等价
+- DexHeader 转 Kotlin property 后，Kotlin 调用方的函数式访问（header.getClassDefsSize()）失效 → 必须改为属性语法（.classDefsSize）；Java 调用方不受影响

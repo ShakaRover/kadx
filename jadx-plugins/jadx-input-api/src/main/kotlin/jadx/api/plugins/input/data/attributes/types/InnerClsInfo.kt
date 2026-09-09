@@ -9,17 +9,19 @@ import jadx.api.plugins.input.data.AccessFlagsScope
  * **背景**：class file / Dex 的 InnerClasses 属性列出所有内部/匿名/局部类，
  * 每条记录包含内部类名、外部类名、简单名和访问标志。
  *
- * @param innerCls 内部类的完整类名（内部形式），如 "com.example.Outer$Inner"
+ * @param innerCls 内部类的完整类名（内部形式），如 "com.example.Outer$Inner"；
+ *        method/field 层级注解转换时可能为 null（见 [DexAnnotationsConvert]）
  * @param outerCls 外部类的完整类名；顶层类或无外部类时为 null
  * @param name 简单名（源码中写的名字）；匿名类为 null
  * @param accessFlags 访问标志位（public/final/abstract 等，见 [AccessFlags]）
  *
  * **Kotlin 转换说明**：原 Java 用私有 final 字段 + getter，这里改用主构造器属性。
- * `outerCls` / `name` 在原 Java 中标注 @Nullable，这里如实声明为可空类型。
+ * `outerCls` / `name` 在原 Java 中标注 @Nullable；`innerCls` 虽未标注，但
+ * DexAnnotationsConvert 在 method/field 注解场景会传入 null（运行时确实可为空），如实声明为可空。
  */
 public class InnerClsInfo(
-	/** 内部类的完整类名（内部形式）*/
-	public val innerCls: String,
+	/** 内部类的完整类名（内部形式）；method/field 层级注解转换时可能为 null */
+	public val innerCls: String?,
 	/** 外部类的完整类名，可为 null */
 	public val outerCls: String?,
 	/** 简单名；匿名类为 null */

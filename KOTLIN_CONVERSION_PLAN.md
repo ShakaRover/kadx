@@ -8,13 +8,13 @@
 
 ## 执行顺序
 
-| # | 批次 | 说明 | 数量 | 依赖关系 |
-|---|------|------|------|----------|
-| 1 | batch-1 | 核心解析器 + 配置类 | **6** | 无依赖 |
-| 2 | batch-4 | 指令系统（可并行） | **6** | 独立，可任意顺序执行 |
-| 3 | batch-2 | 代码流 & Debug 解析 | **7** | 依赖 batch-1 (DexCodeReader) |
-| 4 | batch-3 | Sections/数据模型 | **9** | 依赖 batch-2 |
-| 5 | batch-5 | Utils + Smali（最后收敛） | **12** | 叶子节点，剩余文件全部归入 |
+| # | 批次 | 说明 | 数量 | 依赖关系 | 状态 |
+|---|------|------|------|----------|------|
+| 1 | batch-1 | 核心解析器 + 配置类 | **6** | 无依赖 | ✅ 完成 (57bef249) |
+| 2 | batch-4 | 指令系统（可并行） | **6** | 独立，可任意顺序执行 | 📌 待执行 |
+| 3 | batch-2 | 代码流 & Debug 解析 | **7** | 依赖 batch-1 (DexCodeReader) | ✅ 完成 (c5aad3c8) |
+| 4 | batch-3 | Sections/数据模型 | **9** | 依赖 batch-2 | ✅ 完成 |
+| 5 | batch-5 | Utils + Smali（最后收敛） | **12** | 叶子节点，剩余文件全部归入 | 📌 待执行 |
 
 *注：batch-4 独立可提前执行；batch-5 包含所有剩余 utils/smali/debuginfo subdirs。*
 
@@ -122,4 +122,11 @@
 
 ---
 
-**最后更新：** 2026-W38 (Session #7) — 计划精校完成，40 文件精确分配（6+6+7+9+12=40）✓
+**最后更新：** batch-3 完成（9 文件：DexClassData/DexMethodData/DexFieldData/DexHeader+V41/DexMethodProto/DexMethodRef/SimpleDexData/DexAnnotationsConvert），全量 build + 测试通过 ✓
+
+**batch-3 互操作要点记录：**
+- DexHeader 全部字段转 public property（SectionReader.kt 用 `.typeIdsOff` 等属性语法访问）；DexReader.kt 同步改为属性调用
+- DexMethodRef/DexMethodData：接口要求非空返回但运行时可为 null → 可空底层字段 + getter `checkNotNull`
+- DexMethodProto.returnType 构造参数改 `String?`（SectionReader.getType 可能传 NO_INDEX→null）
+- InnerClsInfo.innerCls 放宽为 `String?`（DexAnnotationsConvert method/field 场景实际传 null，原 Java 未标注但运行时可为空）
+- DexClassData 私有字段 `in` 是 Kotlin 关键字 → 重命名为 `sectionReader`

@@ -1,0 +1,211 @@
+package jadx.plugins.input.dex.sections
+
+import jadx.api.plugins.input.data.IClassData
+import jadx.api.plugins.input.data.IFieldData
+import jadx.api.plugins.input.data.IMethodData
+import jadx.api.plugins.input.data.ISeqConsumer
+import jadx.api.plugins.input.data.annotations.EncodedValue
+import jadx.api.plugins.input.data.annotations.IAnnotation
+import jadx.api.plugins.input.data.attributes.IJadxAttribute
+import jadx.api.plugins.input.data.attributes.types.SourceFileAttr
+import jadx.plugins.input.dex.sections.annotations.AnnotationsParser
+import jadx.plugins.input.dex.utils.SmaliUtils
+import org.slf4j.LoggerFactory
+import java.util.function.Consumer
+
+/**
+ * DEX 类数据：class_defs section 中一个 class_def_item 的完整视图。
+ *
+ * **背景**：
+ * 1. [DexReader.visitClasses] 为所有 class 共享同一个实例——每次访问前 reader 游标推进 [SIZE] 字节，
+ *    各 getter 按相对偏移（`sectionReader.pos(n * 4)`）惰性读取当前 class_def_item 的字段；
+ * 2. [visitFieldsAndMethods] 解析 class_data：先读 4 个 ULEB128 计数，再依次遍历静态/实例字段与直接/虚方法，
+ *    复用同一个 [DexFieldData]/[DexMethodData] 实例逐个填充后回调消费者；
+ * 3. 注解偏移通过 [AnnotationsParser] 预读的 offset map 按 field/method idx 查询。
+ */
+public class DexClassData(
+	private val sectionReader: SectionReader,
+	private val annotationsParser: AnnotationsParser,
+) : IClassData {
+
+	public companion object {
+		private val LOG = LoggerFactory.getLogger(DexClassData::class.java)
+
+		/** class_def_item 大小：8 个 u4 字段 */
+		public const val SIZE: Int = 8 * 4
+
+		private fun getOffsetFromMap(idx: Int, annOffsetMap: Map<Int, Int>): Int {
+			val offset = annOffsetMap[idx]
+			return if (offset != null) offset else 0
+		}
+	}
+
+	private val inputFileOffset: Int
+
+	init {
+		inputFileOffset = sectionReader.offset
+	}
+
+	override fun getInputFileOffset(): Int = inputFileOffset
+
+	override fun copy(): IClassData = DexClassData(sectionReader.copy(), annotationsParser.copy())
+
+	override fun getType(): String {
+		val typeIdx = sectionReader.pos(0).readInt()
+		return checkNotNull(sectionReader.getType(typeIdx)) { "Unknown class type" }
+	}
+
+	override fun getAccessFlags(): Int = sectionReader.pos(4).readInt()
+
+	override fun getSuperType(): String? {
+		val typeIdx = sectionReader.pos(2 * 4).readInt()
+		return sectionReader.getType(typeIdx)
+	}
+
+	override fun getInterfacesTypes(): List<String> {
+		val offset = sectionReader.pos(3 * 4).readInt()
+		if (offset == 0) {
+			return emptyList()
+		}
+		return sectionReader.absPos(offset).readTypeList()
+	}
+
+	private fun getSourceFile(): String? {
+		val strIdx = sectionReader.pos(4 * 4).readInt()
+		return sectionReader.getString(strIdx)
+	}
+
+	override fun getInputFileName(): String = sectionReader.getDexReader().inputFileName
+
+	public fun getAnnotationsOff(): Int = sectionReader.pos(5 * 4).readInt()
+
+	public fun getClassDataOff(): Int = sectionReader.pos(6 * 4).readInt()
+
+	public fun getStaticValuesOff(): Int = sectionReader.pos(7 * 4).readInt()
+
+	override fun visitFieldsAndMethods(fieldConsumer: ISeqConsumer<IFieldData>, mthConsumer: ISeqConsumer<IMethodData>) {
+		val classDataOff = getClassDataOff()
+		if (classDataOff == 0) {
+			return
+		}
+		val data = sectionReader.copy(classDataOff)
+		val staticFieldsCount = data.readUleb128()
+		val instanceFieldsCount = data.readUleb128()
+		val directMthCount = data.readUleb128()
+		val virtualMthCount = data.readUleb128()
+
+		fieldConsumer.init(staticFieldsCount + instanceFieldsCount)
+		mthConsumer.init(directMthCount + virtualMthCount)
+
+		annotationsParser.setOffset(getAnnotationsOff())
+		visitFields(fieldConsumer, data, staticFieldsCount, instanceFieldsCount)
+		visitMethods(mthConsumer, data, directMthCount, virtualMthCount)
+	}
+
+	private fun visitFields(fieldConsumer: Consumer<IFieldData>, data: SectionReader, staticFieldsCount: Int, instanceFieldsCount: Int) {
+		val annotationOffsetMap = annotationsParser.readFieldsAnnotationOffsetMap()
+		val fieldData = DexFieldData(annotationsParser)
+		fieldData.setParentClassType(getType())
+		readFields(fieldConsumer, data, fieldData, staticFieldsCount, annotationOffsetMap, true)
+		readFields(fieldConsumer, data, fieldData, instanceFieldsCount, annotationOffsetMap, false)
+	}
+
+	private fun readFields(
+		fieldConsumer: Consumer<IFieldData>,
+		data: SectionReader,
+		fieldData: DexFieldData,
+		count: Int,
+		annOffsetMap: Map<Int, Int>,
+		staticFields: Boolean,
+	) {
+		val constValues = if (staticFields) getStaticFieldInitValues(data.copy()) else null
+		var fieldId = 0
+		for (i in 0 until count) {
+			fieldId += data.readUleb128()
+			val accFlags = data.readUleb128()
+			sectionReader.fillFieldData(fieldData, fieldId)
+			fieldData.setAccessFlags(accFlags)
+			fieldData.setAnnotationsOffset(getOffsetFromMap(fieldId, annOffsetMap))
+			// 静态字段才有初始常量值（encoded_array），且数量可能少于字段数
+			val cv = constValues
+			fieldData.setConstValue(if (cv != null && staticFields && i < cv.size) cv[i] else null)
+			fieldConsumer.accept(fieldData)
+		}
+	}
+
+	private fun visitMethods(mthConsumer: Consumer<IMethodData>, data: SectionReader, directMthCount: Int, virtualMthCount: Int) {
+		val methodData = DexMethodData(annotationsParser)
+		methodData.setMethodRef(DexMethodRef())
+		val annotationOffsetMap = annotationsParser.readMethodsAnnotationOffsetMap()
+		val paramsAnnOffsetMap = annotationsParser.readMethodParamsAnnRefOffsetMap()
+
+		readMethods(mthConsumer, data, methodData, directMthCount, annotationOffsetMap, paramsAnnOffsetMap)
+		readMethods(mthConsumer, data, methodData, virtualMthCount, annotationOffsetMap, paramsAnnOffsetMap)
+	}
+
+	private fun readMethods(
+		mthConsumer: Consumer<IMethodData>,
+		data: SectionReader,
+		methodData: DexMethodData,
+		count: Int,
+		annotationOffsetMap: Map<Int, Int>,
+		paramsAnnOffsetMap: Map<Int, Int>,
+	) {
+		val dexCodeReader = DexCodeReader(sectionReader.copy())
+		var mthIdx = 0
+		for (i in 0 until count) {
+			mthIdx += data.readUleb128()
+			val accFlags = data.readUleb128()
+			val codeOff = data.readUleb128()
+
+			val methodRef = methodData.getMethodRef()
+			methodRef.reset()
+			sectionReader.initMethodRef(mthIdx, methodRef)
+			methodData.setAccessFlags(accFlags)
+			if (codeOff == 0) {
+				// 无代码（abstract/native/interface default 等）
+				methodData.setCodeReader(null)
+			} else {
+				dexCodeReader.mthId = mthIdx
+				dexCodeReader.setOffset(codeOff)
+				methodData.setCodeReader(dexCodeReader)
+			}
+			methodData.setAnnotationsOffset(getOffsetFromMap(mthIdx, annotationOffsetMap))
+			methodData.setParamAnnotationsOffset(getOffsetFromMap(mthIdx, paramsAnnOffsetMap))
+			mthConsumer.accept(methodData)
+		}
+	}
+
+	private fun getStaticFieldInitValues(reader: SectionReader): List<EncodedValue> {
+		val staticValuesOff = getStaticValuesOff()
+		if (staticValuesOff == 0) {
+			return emptyList()
+		}
+		reader.absPos(staticValuesOff)
+		return annotationsParser.parseEncodedArray(reader)
+	}
+
+	private fun getAnnotations(): List<IAnnotation> {
+		annotationsParser.setOffset(getAnnotationsOff())
+		return annotationsParser.readClassAnnotations()
+	}
+
+	override fun getAttributes(): List<IJadxAttribute> {
+		val list = ArrayList<IJadxAttribute>()
+		val sourceFile = getSourceFile()
+		if (sourceFile != null && !sourceFile.isEmpty()) {
+			list.add(SourceFileAttr(sourceFile))
+		}
+		DexAnnotationsConvert.forClass(getType(), list, getAnnotations())
+		return list
+	}
+
+	public fun getClassDefOffset(): Int = sectionReader.pos(0).getAbsPos()
+
+	override fun getDisassembledCode(): String {
+		val dexBuf = sectionReader.getDexReader().buf.array()
+		return SmaliUtils.getSmaliCode(dexBuf, getClassDefOffset())
+	}
+
+	override fun toString(): String = getType()
+}

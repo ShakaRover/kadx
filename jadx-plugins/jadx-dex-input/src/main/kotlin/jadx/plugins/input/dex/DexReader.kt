@@ -35,11 +35,11 @@ public class DexReader(
 	 * 遍历本 DEX 文件中的全部 class，逐个回调 [consumer]。
 	 */
 	public fun visitClasses(consumer: Consumer<IClassData>) {
-		val count = header.getClassDefsSize()
+		val count = header.classDefsSize
 		if (count == 0) {
 			return
 		}
-		val classDefsOff = header.getClassDefsOff()
+		val classDefsOff = header.classDefsOff
 		val inReader = SectionReader(this, classDefsOff)
 		val annotationsParser = AnnotationsParser(inReader.copy(), inReader.copy())
 		val classData = DexClassData(inReader, annotationsParser)
