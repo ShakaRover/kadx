@@ -1,6 +1,5 @@
 package jadx.api.plugins.input.data.annotations
 
-import jadx.api.plugins.input.data.attributes.IJadxAttrType
 import jadx.api.plugins.input.data.attributes.JadxAttrType
 import jadx.api.plugins.input.data.attributes.PinnedAttribute
 import java.util.Objects
@@ -71,7 +70,8 @@ public class EncodedValue(
 	 * EncodedValue 用作 Java constant_value attribute 的数据载体，
 	 * 存储字段的编译时常量值（如 `public static final int MAX = 100`）。
 	 */
-	override fun getAttrType(): IJadxAttrType<*> = JadxAttrType.CONSTANT_VALUE
+	// 接口已转 Kotlin：星投影 IJadxAttrType<*> 不再是 IJadxAttrType<out IJadxAttribute> 的子类型，改用精确类型
+	override fun getAttrType(): JadxAttrType<EncodedValue> = JadxAttrType.CONSTANT_VALUE
 
 	/**
 	 * 与原 Java 的 `Objects.hash(getType(), getValue())` 完全一致。
