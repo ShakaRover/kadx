@@ -122,7 +122,12 @@
 
 ---
 
-**最后更新：** batch-5 完成（12 文件：DexInsnInfo/AnnotationsUtils/EncodedValueParser/DexLocalVar/InsnFormatter(Info)/SmaliInsnFormat/SmaliPrinter/DexCheckSum/IDexData/Leb128/SmaliUtils），**jadx-dex-input main 目录 Java 清零（40/40）**，全量 build + 测试通过 ✓
+**最后更新：** ✅ **模块转换全部完成** — batch-5 后追加测试源转换（DexInputPluginTest/SmaliTestUtils → src/test/kotlin），**jadx-dex-input 整个模块 Java 清零（main 40 + test 2）**，全量 build + 3/3 测试通过 ✓ (d6c8d600)
+
+**测试源转换要点：**
+- ISeqConsumer 是 Kotlin 接口（init 有默认实现但非 fun interface）→ 无 SAM 转换，需显式 `object : ISeqConsumer<T>`
+- Java try-with-resources → `.use {}`（ICodeLoader : Closeable）
+- batch-5 完成记录（12 文件：DexInsnInfo/AnnotationsUtils/EncodedValueParser/DexLocalVar/InsnFormatter(Info)/SmaliInsnFormat/SmaliPrinter/DexCheckSum/IDexData/Leb128/SmaliUtils），main 目录 Java 清零（40/40）✓
 
 **batch-5 互操作要点记录：**
 - DexInsnInfo：静态注册表 → companion init 块（脚本从 Java 逐行转换 228 条 register 调用）；四字段转 public val，DexCodeReader 的 `insnInfo.format` 属性语法天然兼容
