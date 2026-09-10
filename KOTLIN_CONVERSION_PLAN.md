@@ -14,7 +14,7 @@
 | 2 | batch-4 | 指令系统（可并行） | **6** | 独立，可任意顺序执行 | ✅ 完成 (见下方记录) |
 | 3 | batch-2 | 代码流 & Debug 解析 | **7** | 依赖 batch-1 (DexCodeReader) | ✅ 完成 (c5aad3c8) |
 | 4 | batch-3 | Sections/数据模型 | **9** | 依赖 batch-2 | ✅ 完成 |
-| 5 | batch-5 | Utils + Smali（最后收敛） | **12** | 叶子节点，剩余文件全部归入 | 📌 待执行 |
+| 5 | batch-5 | Utils + Smali（最后收敛） | **12** | 叶子节点，剩余文件全部归入 | ✅ 完成 (见下方记录) |
 
 *注：batch-4 独立可提前执行；batch-5 包含所有剩余 utils/smali/debuginfo subdirs。*
 
@@ -122,7 +122,15 @@
 
 ---
 
-**最后更新：** batch-4 完成（6 文件：DexInsnData/DexOpcodes/DexInsnFormat/DexInsnMnemonics/SmaliCodeWriter/DexArrayPayload），全量 build + 测试通过 ✓
+**最后更新：** batch-5 完成（12 文件：DexInsnInfo/AnnotationsUtils/EncodedValueParser/DexLocalVar/InsnFormatter(Info)/SmaliInsnFormat/SmaliPrinter/DexCheckSum/IDexData/Leb128/SmaliUtils），**jadx-dex-input main 目录 Java 清零（40/40）**，全量 build + 测试通过 ✓
+
+**batch-5 互操作要点记录：**
+- DexInsnInfo：静态注册表 → companion init 块（脚本从 Java 逐行转换 228 条 register 调用）；四字段转 public val，DexCodeReader 的 `insnInfo.format` 属性语法天然兼容
+- **坑**：Kotlin 接口声明抽象函数后，原 Java 接口的合成属性消失 → jadx-smali-input 的 `sortBy { it.fileName }` 编译失败，改显式 `it.getFileName()`（跨模块调用点必须全仓 grep）
+- **坑**：map 索引赋值 `map[k] = { lambda }` 不传播期望类型，fun interface SAM 转换失效 → 需显式 `InsnFormatter { ... }`
+- SmaliInsnFormat/SmaliPrinter：synchronized 懒加载单例 → Kotlin object
+- DexLocalVar：name/type 在 NO_INDEX 时运行时可空（同 DexMethodRef 模式：可空字段 + getter checkNotNull）
+- EncodedValueParser：参数名 `in`（关键字）→ `reader`；switch → when，`(short)/(char)` → toShort()/toChar()
 
 **batch-4 互操作要点记录：**
 - DexOpcodes/DexInsnMnemonics：`public static final int` → companion `const val`（自动静态字段，Java `DexOpcodes.XXX` 零改动）；`get()` → `@JvmStatic`

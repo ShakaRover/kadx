@@ -64,7 +64,7 @@ public class DexInsnData(
 		if (info == null) {
 			return Opcode.UNKNOWN
 		}
-		return info.getApiOpcode()
+		return info.apiOpcode
 	}
 
 	override fun getOpcodeMnemonic(): String = DexInsnMnemonics.get(opcodeUnit)
@@ -88,7 +88,7 @@ public class DexInsnData(
 	override fun getIndexType(): InsnIndexType {
 		// 与原 Java 一致：insnInfo 未设置时抛 NPE（正常流程 decode 前必已设置）
 		val info = checkNotNull(insnInfo) { "insn info is not set" }
-		return info.getIndexType()
+		return info.indexType
 	}
 
 	override fun getIndexAsString(): String? = externalReader.getString(index)
