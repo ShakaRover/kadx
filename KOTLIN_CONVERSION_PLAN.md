@@ -11,7 +11,7 @@
 | # | 批次 | 说明 | 数量 | 依赖关系 | 状态 |
 |---|------|------|------|----------|------|
 | 1 | batch-1 | 核心解析器 + 配置类 | **6** | 无依赖 | ✅ 完成 (57bef249) |
-| 2 | batch-4 | 指令系统（可并行） | **6** | 独立，可任意顺序执行 | 📌 待执行 |
+| 2 | batch-4 | 指令系统（可并行） | **6** | 独立，可任意顺序执行 | ✅ 完成 (见下方记录) |
 | 3 | batch-2 | 代码流 & Debug 解析 | **7** | 依赖 batch-1 (DexCodeReader) | ✅ 完成 (c5aad3c8) |
 | 4 | batch-3 | Sections/数据模型 | **9** | 依赖 batch-2 | ✅ 完成 |
 | 5 | batch-5 | Utils + Smali（最后收敛） | **12** | 叶子节点，剩余文件全部归入 | 📌 待执行 |
@@ -122,7 +122,16 @@
 
 ---
 
-**最后更新：** batch-3 完成（9 文件：DexClassData/DexMethodData/DexFieldData/DexHeader+V41/DexMethodProto/DexMethodRef/SimpleDexData/DexAnnotationsConvert），全量 build + 测试通过 ✓
+**最后更新：** batch-4 完成（6 文件：DexInsnData/DexOpcodes/DexInsnFormat/DexInsnMnemonics/SmaliCodeWriter/DexArrayPayload），全量 build + 测试通过 ✓
+
+**batch-4 互操作要点记录：**
+- DexOpcodes/DexInsnMnemonics：`public static final int` → companion `const val`（自动静态字段，Java `DexOpcodes.XXX` 零改动）；`get()` → `@JvmStatic`
+- DexInsnFormat：FORMAT_* 常量 → companion `@JvmField val`（匿名 object 子类）；参数名 `in` 是 Kotlin 关键字 → 重命名 `reader`（位置传参无影响）
+- DexInsnData：InsnData 是 Kotlin 接口（抽象函数声明）→ 全部显式 `override fun`，非接口成员保持原 getter/setter 命名
+- **坑**：Kotlin 类属性不能从 Kotlin 侧用 `.setXxx()` 调用（实测 Unresolved reference），必须改属性语法 → DexInsnData.length 转 public var，DexCodeReader.kt/DexInsnFormat.kt 同步改 `insn.length = ...`
+- **坑**：KDoc 内写 `invoke-*/range` 会因 `*/` 提前终止注释（ktlint: Expecting member declaration）
+- **坑**：when 分支表达式以无 else 的 if 结尾 → 需先赋值 val 再在末尾返回
+- DexArrayPayload：IArrayPayload 是 Kotlin 接口 → 显式 override fun（同 SwitchPayload 教训）
 
 **batch-3 互操作要点记录：**
 - DexHeader 全部字段转 public property（SectionReader.kt 用 `.typeIdsOff` 等属性语法访问）；DexReader.kt 同步改为属性调用

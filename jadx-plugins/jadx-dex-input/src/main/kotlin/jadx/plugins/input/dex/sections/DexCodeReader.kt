@@ -64,10 +64,10 @@ public class DexCodeReader(private val inReader: SectionReader) : ICodeReader {
 			if (insnInfo != null) {
 				val format = insnInfo.format
 				insnData.setRegsCount(format.regsCount)
-				insnData.setLength(format.length)
+				insnData.length = format.length
 			} else {
 				insnData.setRegsCount(0)
-				insnData.setLength(1)
+				insnData.length = 1
 			}
 
 			insnConsumer.accept(insnData)
