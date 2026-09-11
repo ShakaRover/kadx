@@ -14,7 +14,7 @@ import org.jetbrains.annotations.Nullable
  */
 class JavaLocalVar(
 	regNum: Int,
-	private val name: String,
+	nameValue: String?,
 	typeValue: String?,
 	sign: String?,
 	private val startOffset: Int,
@@ -23,6 +23,7 @@ class JavaLocalVar(
 
 	// 寄存器号会被 shiftRegNum 修改，故为 var；其余字段解析后不变
 	private var regNum: Int = regNum
+	private val name: String? = nameValue
 	private val type: String? = typeValue
 	private var sign: String? = sign
 
@@ -30,7 +31,8 @@ class JavaLocalVar(
 		regNum += maxStack // convert local var to register
 	}
 
-	override fun getName(): String = name
+	// 接口声明非空；损坏 class 时名字为 null，调用方解引用与原 Java 一样 NPE
+	override fun getName(): String = name!!
 
 	override fun getRegNum(): Int = regNum
 

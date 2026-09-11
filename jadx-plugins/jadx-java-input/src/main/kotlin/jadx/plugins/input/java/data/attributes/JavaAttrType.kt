@@ -147,10 +147,12 @@ class JavaAttrType<T : IJavaAttribute> private constructor(
 			return attrType
 		}
 
+		// 参数可空：getUtf8(0) 返回 null，原 Java HashMap.get(null) 同样安全返回 null
+
 		/** 按 .class 中的属性名查类型；未知名字返回 null */
 		@Nullable
 		@JvmStatic
-		fun byName(name: String): JavaAttrType<*>? = NAME_TO_TYPE_MAP[name]
+		fun byName(name: String?): JavaAttrType<*>? = NAME_TO_TYPE_MAP[name]
 
 		/** @return 已注册属性类型的总数（storage 数组大小） */
 		@JvmStatic

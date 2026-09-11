@@ -55,15 +55,19 @@ class JavaAnnotationsAttr(
 		@JvmStatic
 		fun readAnnotation(visibility: AnnotationVisibility, clsData: JavaClassData, reader: DataReader): JadxAnnotation {
 			val constPool: ConstPoolReader = clsData.getConstPoolReader()
-			val type = constPool.getUtf8(reader.readU2())
+			// getUtf8 可返回 null（损坏 class）；JadxAnnotation.type 声明非空，提前调用时原 Java 同样 NPE
+			val type = constPool.getUtf8(reader.readU2())!!
 			val pairsCount = reader.readU2()
-			val pairs = LinkedHashMap<String, EncodedValue>(pairsCount)
+			val pairs = LinkedHashMap<String?, EncodedValue>(pairsCount)
 			for (j in 0 until pairsCount) {
 				val name = constPool.getUtf8(reader.readU2())
 				val value = EncodedValueReader.read(clsData, reader)
-				pairs[name] = value
+				// 原 Java HashMap 允许 null 键；Kotlin map 索引操作符不接受可空键，用显式 put
+				pairs.put(name, value)
 			}
-			return JadxAnnotation(visibility, type, pairs)
+			// JadxAnnotation 声明 Map<String, _>，但键运行时可为 null（原 Java HashMap 同样允许）
+			@Suppress("UNCHECKED_CAST")
+			return JadxAnnotation(visibility, type, pairs as Map<String, EncodedValue>)
 		}
 
 		/**

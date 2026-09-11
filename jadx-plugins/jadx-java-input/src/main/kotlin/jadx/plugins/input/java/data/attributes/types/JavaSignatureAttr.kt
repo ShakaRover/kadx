@@ -20,7 +20,7 @@ class JavaSignatureAttr(signature: String) :
 		/** @return 读取器：读一个 u2 索引取签名字符串 */
 		@JvmStatic
 		fun reader(): IJavaAttributeReader = object : IJavaAttributeReader {
-			override fun read(clsData: JavaClassData, reader: DataReader): IJavaAttribute = JavaSignatureAttr(clsData.getConstPoolReader().getUtf8(reader.readU2()))
+			override fun read(clsData: JavaClassData, reader: DataReader): IJavaAttribute = JavaSignatureAttr(clsData.getConstPoolReader().getUtf8(reader.readU2())!!)
 		}
 	}
 }
