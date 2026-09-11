@@ -55,7 +55,7 @@
 3. ✅ `jadx-analysis` — 12/12 完成（API + impl，test 仍为 Java）
 
 **阶段 2：jadx-plugins**
-4. ✅ `jadx-input-api` 批次1 — 12/14 完成（AccessFlags / AccessFlagsScope / ISeqConsumer / MethodHandleType / InsnIndexType / AnnotationVisibility / EncodedType / EncodedValue / IAnnotation / JadxAnnotation / IJadxAttrType / JadxAttrType）；**IJadxAttribute / PinnedAttribute 保留 Java**（30+ 个 Java 子类依赖对 `IJadxAttrType<? extends IJadxAttribute>` 通配符签名的协变返回覆写，Kotlin 接口无法兼容 javac 的覆写规则）。剩余：attributes/types/*、data/impl/*、insns/*
+4. ✅ `jadx-input-api` 批次1 — 12/14 完成（AccessFlags / AccessFlagsScope / ISeqConsumer / MethodHandleType / InsnIndexType / AnnotationVisibility / EncodedType / EncodedValue / IAnnotation / JadxAnnotation / IJadxAttrType / JadxAttrType）；**IJadxAttribute / PinnedAttribute 已于 9c04682e 迁移完毕**——通配符签名 `IJadxAttrType<? extends IJadxAttribute>` 用**星投影** `IJadxAttrType<*>` 解决（声明式协变 `out T` 不写入字节码，javac 拒绝窄化覆写；星投影两侧语言都接受）。剩余：attributes/types/*、data/impl/*、insns/*
 5. ✅ `jadx-input-api` 批次2 — attributes/types/* 10/10 完成（AnnotationsAttr / AnnotationMethodParamsAttr / AnnotationDefaultAttr / AnnotationDefaultClassAttr / ExceptionsAttr / InnerClassesAttr / InnerClsInfo / MethodParametersAttr / SignatureAttr / SourceFileAttr）；6 个被 jadx-java-input 继承的类声明为 `open`；AnnotationMethodParamsAttr.paramList 元素可空（pack() 会存 null，调用方判空）
 6. ✅ `jadx-input-api` 批次3 — insns/custom/* 4/4 完成（ICustomPayload / IArrayPayload / ISwitchPayload / SwitchPayload）；实测确认：Kotlin 属性不能覆写 Kotlin 接口声明的抽象函数（'overrides nothing'），SwitchPayload 用私有构造器参数 + 显式 override fun
 7. ✅ `jadx-input-api` 批次4 — data/* 接口 15/15 完成（IResourceData / ICatch / IFieldRef / ITry / IMethodProto / IFieldData / ICallSite / IDebugInfo / IMethodHandle / IMethodData / IMethodRef / ILocalVar / ICodeReader / IClassData / ICodeLoader）；@Nullable → `?`；注意 spotless 要求 jadx.* import 排在 java.* 之前
@@ -89,7 +89,7 @@
 - **位运算符号 `& 1` 紧跟在括号表达式后会被 K2 解析成函数调用**（`(flags & 1) != 0` 报 Return type mismatch + 语法错）；改用关键字形式 `(flags and 1)` ✓✓ same semantics
 - **Kotlin 非空参数会拒绝 Java 调用方传入的 null，编译期查不出、只在集成测试暴露**：JadxAnnotation.visibility 在 Dex ENCODED_ANNOTATION（嵌套注解）场景下由 AnnotationsParser 传 null，原 Java 接受；转 Kotlin 后构造器参数检查抛 NPE，导致内部 @interface 类加载失败、反编译输出丢失。教训：转换前 grep 所有 `new Xxx(` 调用点确认哪些参数可能为 null，如实标可空；验证必须跑完整测试套件而非仅编译
 - **Kotlin 属性语法会破坏已用 `.prop` 访问 getter 的 Kotlin 调用方**：若原 Java 类有 `getValues()`/`getType()` 等 getter 且已有 .kt 文件用 `.values[...]`、`.type` 属性语法，转换时必须声明为 Kotlin 属性（生成同名 getter 字节码），不能写成显式 `fun getXxx()`；反之纯 Java 调用方两种写法都兼容。转换前先 grep 该类的 Kotlin 调用点
-- **Java 通配符泛型接口 + 协变返回覆写是 Kotlin 转换禁区**：`IJadxAttrType<? extends IJadxAttribute> getAttrType()` 被 30+ Java 子类以具体类型 `JadxAttrType<X>` 覆写；Kotlin 接口无论声明为 `Any`、`IJAttrType<*>` 还是 `out T` 都会破坏 javac 的覆写兼容性 → 此类核心接口保留 Java 
+- **Java 通配符泛型接口 + 协变返回覆写的解法 = 星投影**：`IJadxAttrType<? extends IJadxAttribute> getAttrType()` 被 30+ Java 子类以具体类型 `JadxAttrType<X>` 覆写；Kotlin 侧声明为 `out T` 会破坏 javac 覆写兼容性（声明式协变不写入字节码），但**星投影 `IJadxAttrType<*>` 可行**——两侧语言都接受任意实参（9c04682e 实测通过全仓编译）。jadx-java-input 的 IJavaAttribute/JavaAttrType 同模式，直接复用此方案
 - 已转 Kotlin 类的 getter（如 ZipReaderOptions.zipSecurity/flags、JadxZipEntry.getUseLimited... no wait getCompressedSize()）：构造体内引用时用属性访问 `options.zipSecurity`；显式 fun 形式（getUseLimited... no wait getCompressMethod() 等）保留原方法名调用 
 - **上游 Kotlin 文件用合成属性访问已转 Kotlin 的接口会失效**：jadx-apks/apkm-input 自带 .kt 里的 `entry.name`/`entry.inputStream`（Java 类可用合成属性）在 jadx-zip 转 Kotlin 后报 Unresolved reference；显式 getter 调用（entry.getName()）✓✗ plain comment clean this later hmm — wait... 
 - **visitEntries 泛型**：上游 .kt 以 `visitUseLimited... no wait visitEntries<Any>(file) { ... null }` 形式调用，Kotlin 化后 lambda 返回 null 报 "Null cannot be a value of non-null type Any"；签名改 `fun <T : Any?> getUseLimited... no wait visitEntries(file, visitor: Function<IZipEntry, T?>): T?` ✓✓ same JVM erasure semantics 
@@ -110,23 +110,23 @@
 
 ## Last Synced
 
-2026-W38 (Session #8) — jadx-dex-input batch-3 complete (9 files: sections data model); full `./gradlew build` green; next: batch-4 instruction system
+2026-W38 (Session #9) — 进度文档校正：jadx-dex-input 全部完成（d6c8d600）、input-api 最后 2 文件迁移（9c04682e，星投影方案）；新计划已制定：jadx-java-input 10 批次（KOTLIN_CONVERSION_PLAN.md），待执行 batch-1
 
 ---
 ---
 ## 当前执行状态（SOP 拓扑顺序）
 
-**活跃计划：** jadx-dex-input → 5 个批次，共 40 个文件（见 KOTLIN_CONVERSION_PLAN.md）
+**活跃计划：** jadx-java-input → 10 个批次，共 main 61 + test 3 = 64 个文件（见 KOTLIN_CONVERSION_PLAN.md）
 
 | 批次 | 状态 | 说明 |
 |------|------|------|
-| batch-1 | ✅ 完成 | 核心解析器 + Options（6 个文件），无依赖 — commit 57bef249 |
-| batch-2 | ✅ 完成 | 代码流 & Debug 解析（7 个文件）：DexCodeReader/DebugInfoParser/AnnotationsParser/DataReader/MUtf8/DexConsts/SectionReader — commit c5aad3c8 |
-| batch-3 | ✅ 完成 | Sections/数据模型（9 个文件）：DexClassData/DexMethodData/DexFieldData/DexHeader+V41/DexMethodProto/DexMethodRef/SimpleDexData/DexAnnotationsConvert；全量 build + 测试通过 |
-| batch-4 | 📌 待执行 | 指令系统（6 个文件），独立可并行：DexInsnData/DexOpcodes/DexInsnFormat/DexInsnMnemonics/SmaliCodeWriter/DexArrayPayload |
-| batch-5 | 📌 待执行 | Utils + Smali（12 个文件），最后收敛 |
+| batch-1 | 📌 待执行 | utils + 基础数据类型（7 个文件），无内部依赖 |
+| batch-2~9 | ⏳ 未开始 | attributes → types → stack/debuginfo → code/decoders → data model → 顶层入口 |
+| batch-10 | ⏳ 未开始 | test 源码迁移（3 个文件） |
 
-**下一步：** Batch #4 → 指令系统（DexInsnData/DexOpcodes(155 枚举)/DexInsnFormat/DexInsnMnemonics/SmaliCodeWriter/DexArrayPayload）
+**下一步：** Batch #1 → utils + 基础数据类型（DescriptorParser / DisasmUtils / JavaClassParseException / ModifiedUTF8Decoder / ConstantType / ClassOffsets / DataReader）
+
+**jadx-dex-input：✅ 全部完成** — batch-4（指令系统 6 文件，d352a114）、batch-5（utils+smali 12 文件，8b996565）、test 源码迁移（d6c8d600）；模块 main 40 + test 2 Java 清零，全量 build 绿
 
 **batch-3 互操作要点（新增坑位备忘）：**
 - Kotlin 关键字冲突：Java 私有字段名 `in` 在 Kotlin 中是保留字，不能直接用作属性名 → 重命名为 `sectionReader`（私有实现细节，不影响公共 API）

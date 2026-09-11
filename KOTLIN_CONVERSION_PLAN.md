@@ -1,154 +1,137 @@
-# jadx-dex-input Kotlin 转换计划（最终精校版）
+# jadx-java-input Kotlin 转换计划（当前活跃模块）
 
-**模块：** jadx-plugins/jadx-dex-input  
-**文件总数：** 40 个 Java 文件  
-**批次划分：** 5 个批次，每个 ≤10 文件，严格按 SOP 拓扑顺序
+**模块：** `jadx-plugins/jadx-java-input`
+**文件总数：** main 61 + test 3 = 64 个 Java 文件（main 约 4700 行）
+**批次划分：** 10 个批次，每个 ≤10 文件，严格按 SOP 拓扑顺序（自底向上：utils → attributes → code → data model → 顶层入口 → test）
 
----
-
-## 执行顺序
-
-| # | 批次 | 说明 | 数量 | 依赖关系 | 状态 |
-|---|------|------|------|----------|------|
-| 1 | batch-1 | 核心解析器 + 配置类 | **6** | 无依赖 | ✅ 完成 (57bef249) |
-| 2 | batch-4 | 指令系统（可并行） | **6** | 独立，可任意顺序执行 | ✅ 完成 (见下方记录) |
-| 3 | batch-2 | 代码流 & Debug 解析 | **7** | 依赖 batch-1 (DexCodeReader) | ✅ 完成 (c5aad3c8) |
-| 4 | batch-3 | Sections/数据模型 | **9** | 依赖 batch-2 | ✅ 完成 |
-| 5 | batch-5 | Utils + Smali（最后收敛） | **12** | 叶子节点，剩余文件全部归入 | ✅ 完成 (见下方记录) |
-
-*注：batch-4 独立可提前执行；batch-5 包含所有剩余 utils/smali/debuginfo subdirs。*
+> 前置模块已全部完成：jadx-commons ✅、jadx-input-api ✅（含 IJadxAttribute/PinnedAttribute，9c04682e）、jadx-dex-input ✅。
+> 本模块是阶段 2 的最后一个大输入插件；完成后仅剩 `jadx-plugins-tools`（18+1），随后进入阶段 3 jadx-core。
 
 ---
 
-## Batch #1: 核心解析器 + 配置（6 文件，无依赖）
+## 执行顺序总览
 
-| 序号 | 文件 | 行数 |
+| # | 批次 | 包/范围 | 数量 | 依赖关系 |
+|---|------|---------|------|----------|
+| 1 | batch-1 | utils + 基础数据类型 | **7** | 无内部依赖（叶子） |
+| 2 | batch-2 | attributes 核心接口与读取器 | **6** | 依赖 batch-1 (DataReader) |
+| 3 | batch-3 | attributes/types 上半 | **7** | 依赖 batch-2 |
+| 4 | batch-4 | attributes/types 下半 | **7** | 依赖 batch-2/3 |
+| 5 | batch-5 | stack + debuginfo | **9** | 依赖 batch-4 (StackMapTableAttr) |
+| 6 | batch-6 | code 核心（指令/栈状态） | **8** | 依赖 batch-1/2 |
+| 7 | batch-7 | decoders + JavaCodeReader | **7** | 依赖 batch-6 |
+| 8 | batch-8 | data model（类/方法/字段数据） | **6** | 依赖 batch-2/5/6 |
+| 9 | batch-9 | 顶层入口（Loader/Plugin/Result） | **4** | 依赖全部 |
+| 10 | batch-10 | test 源码迁移 | **3** | 最后收敛 |
+
+---
+
+## Batch #1: utils + 基础数据类型（7 文件，无内部依赖）
+
+| 文件 | 说明 |
+|------|------|
+| `utils/DescriptorParser.java` (111) | JVM 描述符解析器，纯函数式工具 |
+| `utils/DisasmUtils.java` | 反汇编辅助工具 |
+| `utils/JavaClassParseException.java` | 异常定义 |
+| `utils/ModifiedUTF8Decoder.java` | Modified UTF-8 解码（有独立测试） |
+| `data/ConstantType.java` | 常量池类型枚举 |
+| `data/ClassOffsets.java` (99) | class 文件各 section 偏移表 |
+| `data/DataReader.java` (125) | 字节读取辅助器 |
+
+## Batch #2: attributes 核心接口与读取器（6 文件）
+
+| 文件 | 说明 |
+|------|------|
+| `attributes/IJavaAttribute.java` | 属性接口 — **通配符签名，见风险点 R1** |
+| `attributes/IJavaAttributeReader.java` | 属性读取器接口 |
+| `attributes/JavaAttrStorage.java` | 节点属性存储容器 |
+| `attributes/JavaAttrType.java` (158) | 泛型类型常量类 — **见风险点 R1** |
+| `attributes/AttributesReader.java` (106) | attribute 分发读取器（switch 大表） |
+| `attributes/EncodedValueReader.java` | 编码值读取器 |
+
+## Batch #3: attributes/types 上半（7 文件）
+
+CodeAttr / ConstValueAttr / RawBootstrapMethod / IgnoredAttr / JavaAnnotationDefaultAttr / JavaAnnotationsAttr / JavaExceptionsAttr
+
+## Batch #4: attributes/types 下半（7 文件）
+
+JavaBootstrapMethodsAttr / JavaInnerClsAttr / JavaMethodParametersAttr / JavaParamAnnsAttr / JavaSignatureAttr / JavaSourceFileAttr / StackMapTableAttr
+
+*注：types/* 共 14 文件拆两批；全部继承 IJavaAttribute，需按 R1 处理覆写兼容性。*
+
+## Batch #5: stack + debuginfo（9 文件）
+
+- `stack/`：StackFrame / StackFrameType / StackMapTableReader (176) / StackValueType / TypeInfoReader
+- `debuginfo/`：JavaLocalVar (103) / LineNumberTableAttr / LocalVarsAttr / LocalVarTypesAttr
+
+## Batch #6: code 核心（8 文件）
+
+ArrayType / CodeDecodeState (211) / JavaInsnData (270) / JavaInsnInfo / JavaInsnsRegister (417，最大文件) / StackState / `trycatch/JavaSingleCatch` / `trycatch/JavaTryData`
+
+## Batch #7: decoders + JavaCodeReader（7 文件）
+
+- `decoders/`：IJavaInsnDecoder / InvokeDecoder / LoadConstDecoder / LookupSwitchDecoder / TableSwitchDecoder / WideDecoder
+- `code/JavaCodeReader.java` (245) — 字节码解码主循环，依赖全部 decoder
+
+## Batch #8: data model（6 文件）
+
+ConstPoolReader (263) / JavaClassData (191) / JavaFieldData / JavaMethodData / JavaMethodProto / JavaMethodRef
+
+## Batch #9: 顶层入口（4 文件）
+
+JavaClassReader / JavaInputLoader (172) / JavaLoadResult / JavaInputPlugin — 插件注册与加载编排，最后转
+
+## Batch #10: test 源码迁移（3 文件）
+
+ModifiedUTF8DecoderTest / DescriptorParserTest / CustomLoadTest → `src/test/kotlin/`
+
+---
+
+## 风险点与转换要点（执行前必读）
+
+### R1 — IJavaAttribute / JavaAttrType 通配符覆写问题（本模块最大坑位）
+- input-api 的同类接口曾判定为"Kotlin 转换禁区"，后在 **9c04682e** 用**星投影**解决：`fun getAttrType(): IJadxAttrType<*>`（而非 `out T`——声明式协变不写入字节码，javac 看到不变型会拒绝窄化覆写；星投影两侧语言都接受）。
+- java-input 的 `IJavaAttribute.getAttrType()` / `JavaAttrType<T extends IJavaAttribute>` 是同一模式 → **直接复用星投影方案**，转完必须全仓编译验证 jadx-core（大量 Java 子类以具体类型覆写）。
+
+### R2 — Kotlin 关键字冲突
+- 参数/字段名 `in`、`object`、`val` 等保留字：私有实现细节重命名（如 dex-input 的 `sectionReader`），公共 API 名称不变。
+
+### R3 — 运行时可空但接口声明非空
+- 沿用已验证模式：可空底层字段 + getter 内 `checkNotNull(x) { "..." }`，NPE 行为与原 Java 解引用等价（DexMethodRef/DexLocalVar 先例）。转换前 grep 所有构造调用点确认哪些参数可能为 null。
+
+### R4 — Kotlin 属性 vs 显式 getter
+- 已转 Kotlin 的上游模块（dex-input/smali-input/apks/apkm）若用 `.prop` 合成属性访问本模块类 → 必须声明真实 property；纯 Java 调用方两种写法都兼容。每批转换前 grep 该类的 .kt 调用点。
+
+### R5 — K2/ktlint 已知红线（见 KOTLIN_CONVERSION.md 坑位备忘）
+- `synchronized fun` 不被 K2 接受 → 普通 fun + kotlin.Synchronized；`(x & 1)` → `(x and 1)`；属性不自动实现接口抽象方法 → 显式 override fun；大写常量属性需 `@file:Suppress("ktlint:standard:property-naming")`。
+
+---
+
+## 提交节奏与验证（每批次）
+
+```bash
+# 1. 模块编译 + 测试
+./gradlew :jadx-plugins:jadx-java-input:test
+# 2. SOP 要求：commit 前全量 build 必须绿（含 spotlessCheck，先跑 ./gradlew spotlessApply）
+./gradlew build
+```
+
+- **每批次完成后立即 git commit**：`refactor(java-input): migrate batch-N (X files)`
+- 跨模块调用点检查重点：jadx-core / plugins-tools / cli / gui（Java 侧静态访问、字段改方法等）
+- 全量完成标志：main 61/61 + test 3/3 Kotlin，`./gradlew build` 绿
+
+---
+
+## 后续路线图（本模块完成后）
+
+| 顺序 | 目标 | 规模 |
 |------|------|------|
-| 1 | DexFileLoader.java | 194 | DEX 加载入口点，含静态工厂方法 |
-| 2 | DexReader.java | 1566 | 核心解析器接口 & 实现（大文件）|
-| 3 | DexInputOptions.java | 490 | 输入配置选项类 |
-| 4 | DexException.java | 303 | 异常定义集合 |
-| 5 | DexLoadResult.java | 917 | 加载结果容器 |
-| 6 | DexInputPlugin.java | 2242 | 插件注册（独立模块）|
+| 阶段 2 收尾 | `jadx-plugins-tools` | main 18 + test 1 |
+| 阶段 3.1~3.5 | `jadx-core`（严格按 SOP 子阶段：AST → utils/clsp/trycatch → blocks/ssa/regions → pass 链 → codegen/api） | main 556 + test 674，主体工作量 |
+| 阶段 4 | `jadx-cli` | main 15 + test 6 |
+| 阶段 5.1/5.2 | `jadx-gui`（先语法迁移，后协程重构） | main 405 + test 8 |
+| 遗留清理 | `jadx-analysis` 剩余 1 个测试文件 JadxCallGraphTest.java | 1 |
 
 ---
 
-## Batch #2: 代码流 & Debug 解析（7 文件，依赖 batch-1）
-
-| 序号 | 文件 | 说明 |
-|------|------|------|
-| 1 | DexCodeReader.java | 核心代码流读取器（依赖 DexFileLoader 初始化）|
-| 2 | DebugInfoParser.java | Debug 信息提取解析器 |
-| 3 | AnnotationsParser.java | 注解解析核心逻辑 |
-| 4 | DataReader.java | 二进制数据读辅助工具 |
-| 5 | MUtF8.java | DEX 字符串的 UTF-8 解码 |
-| 6 | DexConsts.java | 常量定义（standalone）|
-| 7 | SectionReader.java | 抽象 section 读取器接口 |
-
----
-
-## Batch #3: Sections/数据模型（9 文件，依赖 batch-2）
-
-| 序号 | 文件 | 说明 |
-|------|------|------|
-| 1 | DexClassData.java | 类数据容器（最大文件之一）|
-| 2 | DexMethodData.java | 方法数据结构 |
-| 3 | DexFieldData.java | 字段引用数据 |
-| 4 | DexHeader.java + DexHeaderV41.java | DEX 文件头解析（2 个文件，算 1 组）|
-| 5 | DexMethodProto.java | 方法原型引用数据 |
-| 6 | DexMethodRef.java | 方法引用数据结构 |
-| 7 | SimpleDexData.java | 简单数据包装器（standalone）|
-| 8 | DexAnnotationsConvert.java | 注解转换辅助工具 |
-
-*注：实际 9 个文件，含 DexHeader+V41。*
-
----
-
-## Batch #4: 指令系统（6 文件，独立可并行）
-
-| 序号 | 文件 | 说明 |
-|------|------|------|
-| 1 | DexInsnData.java | 指令数据结构定义 |
-| 2 | DexOpcodes.java | Opcode 枚举表（155 个值）|
-| 3 | DexInsnFormat.java | 指令格式定义 |
-| 4 | DexInsnMnemonics.java | Mnemonic 映射表 |
-| 5 | SmaliCodeWriter.java | Smali 代码输出生成器 |
-| 6 | DexArrayPayload.java | 数组 payload（insns/payloads）|
-
----
-
-## Batch #5: Utils + Smali（12 文件，最后收敛）
-
-包含所有剩余 utils、annotations subdirs、debuginfo subdirs、smali 输出类。
-
-**Utils group:**
-- Leb128.java — LEB128 编码辅助器
-- DexCheckSum.java — DEX 校验和验证逻辑  
-- IDexData.java — 数据接口（独立无实现）
-- SmaliUtils.java — Smali 工具辅助
-
-**Annotations/Debuginfo subdirs:**
-- AnnotationsUtils.java — 注解处理辅助
-- EncodedValueParser.java — 编码值解析器
-- DexLocalVar.java — Debug info 局部变量结构
-
-**Smali output group:**
-- InsnFormatterInfo.java — 格式化配置信息类
-- InsnFormatter.java — 指令格式化核心逻辑
-- SmaliPrinter.java — Smali 代码美化打印器
-- MuTf8.java（如未在 batch-2）— UTF-8 解码
-
-*注：此批包含所有未在上述批次中明确的文件，总数确保 = 40。*
-
----
-
-## SOP 合规要点（转换时必须遵守）
-
-1. **静态方法** → companion object + @JvmStatic  
-   - DexFileLoader.getNextUniqId() / resetDexUniqId() 需显式声明
-2. **字段访问模式** → public static final 常量转 companion val + @JvmField
-3. **空安全** → @Nullable 转为 Kotlin `?`，构造前验证参数
-4. **泛型** → visitor 接口用 out T : X 表达协变返回类型
-5. **合成属性冲突** → 若上游 .kt 文件已用 `.propName`访问，必须声明真实 property
-
----
-
-## 提交节奏与验证
-
-- **每个 Batch 完成后立即 git commit**
-- Commit message: `refactor(dex-input): migrate batch-N (X files)`
-- 验证命令：`./gradlew :jadx-plugins:jadx-dex-input:compileKotlin`
-- 跨模块编译检查：`./gradlew :jadx-plugins-tools:test`
-
----
-
-**最后更新：** ✅ **模块转换全部完成** — batch-5 后追加测试源转换（DexInputPluginTest/SmaliTestUtils → src/test/kotlin），**jadx-dex-input 整个模块 Java 清零（main 40 + test 2）**，全量 build + 3/3 测试通过 ✓ (d6c8d600)
-
-**测试源转换要点：**
-- ISeqConsumer 是 Kotlin 接口（init 有默认实现但非 fun interface）→ 无 SAM 转换，需显式 `object : ISeqConsumer<T>`
-- Java try-with-resources → `.use {}`（ICodeLoader : Closeable）
-- batch-5 完成记录（12 文件：DexInsnInfo/AnnotationsUtils/EncodedValueParser/DexLocalVar/InsnFormatter(Info)/SmaliInsnFormat/SmaliPrinter/DexCheckSum/IDexData/Leb128/SmaliUtils），main 目录 Java 清零（40/40）✓
-
-**batch-5 互操作要点记录：**
-- DexInsnInfo：静态注册表 → companion init 块（脚本从 Java 逐行转换 228 条 register 调用）；四字段转 public val，DexCodeReader 的 `insnInfo.format` 属性语法天然兼容
-- **坑**：Kotlin 接口声明抽象函数后，原 Java 接口的合成属性消失 → jadx-smali-input 的 `sortBy { it.fileName }` 编译失败，改显式 `it.getFileName()`（跨模块调用点必须全仓 grep）
-- **坑**：map 索引赋值 `map[k] = { lambda }` 不传播期望类型，fun interface SAM 转换失效 → 需显式 `InsnFormatter { ... }`
-- SmaliInsnFormat/SmaliPrinter：synchronized 懒加载单例 → Kotlin object
-- DexLocalVar：name/type 在 NO_INDEX 时运行时可空（同 DexMethodRef 模式：可空字段 + getter checkNotNull）
-- EncodedValueParser：参数名 `in`（关键字）→ `reader`；switch → when，`(short)/(char)` → toShort()/toChar()
-
-**batch-4 互操作要点记录：**
-- DexOpcodes/DexInsnMnemonics：`public static final int` → companion `const val`（自动静态字段，Java `DexOpcodes.XXX` 零改动）；`get()` → `@JvmStatic`
-- DexInsnFormat：FORMAT_* 常量 → companion `@JvmField val`（匿名 object 子类）；参数名 `in` 是 Kotlin 关键字 → 重命名 `reader`（位置传参无影响）
-- DexInsnData：InsnData 是 Kotlin 接口（抽象函数声明）→ 全部显式 `override fun`，非接口成员保持原 getter/setter 命名
-- **坑**：Kotlin 类属性不能从 Kotlin 侧用 `.setXxx()` 调用（实测 Unresolved reference），必须改属性语法 → DexInsnData.length 转 public var，DexCodeReader.kt/DexInsnFormat.kt 同步改 `insn.length = ...`
-- **坑**：KDoc 内写 `invoke-*/range` 会因 `*/` 提前终止注释（ktlint: Expecting member declaration）
-- **坑**：when 分支表达式以无 else 的 if 结尾 → 需先赋值 val 再在末尾返回
-- DexArrayPayload：IArrayPayload 是 Kotlin 接口 → 显式 override fun（同 SwitchPayload 教训）
-
-**batch-3 互操作要点记录：**
-- DexHeader 全部字段转 public property（SectionReader.kt 用 `.typeIdsOff` 等属性语法访问）；DexReader.kt 同步改为属性调用
-- DexMethodRef/DexMethodData：接口要求非空返回但运行时可为 null → 可空底层字段 + getter `checkNotNull`
-- DexMethodProto.returnType 构造参数改 `String?`（SectionReader.getType 可能传 NO_INDEX→null）
-- InnerClsInfo.innerCls 放宽为 `String?`（DexAnnotationsConvert method/field 场景实际传 null，原 Java 未标注但运行时可为空）
-- DexClassData 私有字段 `in` 是 Kotlin 关键字 → 重命名为 `sectionReader`
+**最后更新：** 计划制定完成，待执行 batch-1。上一模块 jadx-dex-input 已全部完成（40 main + 2 test，d6c8d600）。
