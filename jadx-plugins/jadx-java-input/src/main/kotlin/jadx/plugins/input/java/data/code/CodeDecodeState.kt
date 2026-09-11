@@ -8,9 +8,6 @@ import jadx.plugins.input.java.data.attributes.stack.StackFrame
 import jadx.plugins.input.java.data.attributes.stack.StackValueType
 import jadx.plugins.input.java.data.attributes.types.StackMapTableAttr
 import org.jetbrains.annotations.Nullable
-import java.util.HashMap
-import java.util.Map
-import java.util.Set
 
 /**
  * 字节码解码主循环的状态机。
