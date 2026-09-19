@@ -590,7 +590,7 @@ class ClassNode(
 		inlinedClasses.add(cls)
 	}
 
-	fun isEnum(): Boolean = accessFlags.isEnum() && superClass != null && superClass!!.`object` == ArgType.ENUM.`object`
+	fun isEnum(): Boolean = accessFlags.isEnum() && superClass != null && superClass!!.getObject() == ArgType.ENUM.getObject()
 
 	fun isAnonymous(): Boolean = contains(AType.ANONYMOUS_CLASS)
 
