@@ -134,4 +134,4 @@ ModifiedUTF8DecoderTest / DescriptorParserTest / CustomLoadTest → `src/test/ko
 
 ---
 
-**最后更新：** 计划制定完成，待执行 batch-1。上一模块 jadx-dex-input 已全部完成（40 main + 2 test，d6c8d600）。
+**最后更新：** jadx-java-input ✅（61+3）、jadx-plugins-tools ✅（18+1）已完成。下一阶段：jadx-core（556 main + 674 test）。
