@@ -24,6 +24,7 @@ import jadx.core.dex.attributes.AType
 import jadx.core.dex.attributes.nodes.InlinedAttr
 import jadx.core.dex.attributes.nodes.NotificationAttrNode
 import jadx.core.dex.info.AccessInfo
+import jadx.core.dex.info.FieldInfo
 import jadx.core.dex.info.ClassInfo
 import jadx.core.dex.info.MethodInfo
 import jadx.core.dex.instructions.args.ArgType
@@ -93,7 +94,7 @@ class ClassNode(
 		private fun processDefinitionAnnotations(codeInfo: ICodeInfo) {
 			val annotations = codeInfo.codeMetadata.getAsMap()
 			if (annotations.isEmpty()) return
-			for (entry in annotations.entrySet()) {
+			for (entry in annotations.entrySet) {
 				val pos = entry.key
 				val ann = entry.value
 				if (ann.getAnnType() == ICodeAnnotation.AnnType.DECLARATION) {
@@ -102,7 +103,7 @@ class ClassNode(
 					declareRef.node.setDefPosition(pos)
 				}
 			}
-			val values: MutableList<ICodeAnnotation> = ArrayList(annotations.values())
+			val values: MutableList<ICodeAnnotation> = ArrayList(annotations.values)
 			values.removeIf { v ->
 				if (v.getAnnType() == ICodeAnnotation.AnnType.VAR_REF) {
 					val varRef = v as VarRef
