@@ -56,6 +56,10 @@ class MethodNode(
 	val mthInfo: MethodInfo = MethodInfo.fromRef(parentClass.root(), mthData.getMethodRef())
 	var accFlags: AccessInfo = AccessInfo(mthData.getAccessFlags(), AccessInfo.AFType.METHOD)
 
+	lateinit var retType: ArgType
+	lateinit var argTypes: List<ArgType>
+	lateinit var typeParameters: List<ArgType>
+
 	private val codeReader: ICodeReader?
 	val insnsCount: Int
 	private var noCode: Boolean
@@ -80,10 +84,6 @@ class MethodNode(
 	private var regsCount: Int = 0
 	private var argsStartReg: Int = 0
 	private var loaded: Boolean = false
-
-	var retType: ArgType
-	var argTypes: List<ArgType>
-	var typeParameters: List<ArgType>
 
 	private var thisArg: RegisterArg? = null
 	private var argsList: List<RegisterArg>? = null
@@ -167,7 +167,7 @@ class MethodNode(
 	}
 
 	private fun initArguments(args: List<ArgType>) {
-		val pos = getArgsStartPos(args)
+		var pos = getArgsStartPos(args)
 		val typeUtils = root().typeUtils
 		if (accFlags.isStatic()) {
 			thisArg = null
@@ -232,7 +232,7 @@ class MethodNode(
 	fun isVoidReturn(): Boolean = mthInfo.returnType == ArgType.VOID
 
 	fun collectArgNodes(): List<VarNode> {
-		val codeInfo: ICodeInfo = getTopParentClass().code!!
+		val codeInfo: ICodeInfo = getTopParentClass().getCode()
 		val mthDefPos = getDefPosition()
 		val lineEndPos = getLineEndForPos(codeInfo.codeStr, mthDefPos)
 		val argsCount = mthInfo.argsCount
@@ -412,7 +412,7 @@ class MethodNode(
 		var defaultArgCount = 0
 		if (parentClass.classInfo.isInner && !parentClass.accessFlags.isStatic()) {
 			val outerCls = parentClass.parentClass
-			if (argsList != null && argsList!!.isNotEmpty() && argsList!![0].initType == outerCls.classInfo.getType()) {
+			if (argsList != null && argsList!!.isNotEmpty() && argsList!![0].getInitType() == outerCls.classInfo.getType()) {
 				defaultArgCount = 1
 			}
 		}
@@ -484,7 +484,7 @@ class MethodNode(
 
 	override fun getMethodInfo(): MethodInfo = mthInfo
 
-	fun getMethodCodeOffset(): Long = if (noCode) 0 else codeReader!!.getCodeOffset()
+	fun getMethodCodeOffset(): Long = if (noCode) 0 else codeReader!!.getCodeOffset().toLong()
 
 	fun getDebugInfo(): IDebugInfo? = if (noCode) null else codeReader!!.getDebugInfo()
 
@@ -520,7 +520,7 @@ class MethodNode(
 
 	fun getInsnsCount(): Int = insnsCount
 
-	fun getCodeStr(): String = jadx.api.utils.CodeUtils.extractMethodCode(this, getTopParentClass().code!!)
+	fun getCodeStr(): String = jadx.api.utils.CodeUtils.extractMethodCode(this, getTopParentClass().getCode())
 
 	override fun isVarArg(): Boolean = accFlags.isVarArgs()
 
