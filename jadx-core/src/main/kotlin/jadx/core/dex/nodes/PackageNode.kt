@@ -1,8 +1,10 @@
 package jadx.core.dex.nodes
 
 import jadx.api.JavaPackage
+import jadx.api.metadata.ICodeAnnotation
 import jadx.api.metadata.ICodeNodeRef
 import jadx.core.dex.attributes.nodes.LineAttrNode
+import jadx.core.dex.info.ClassInfo
 import jadx.core.dex.info.PackageInfo
 import jadx.core.utils.StringUtils.containsChar
 
@@ -151,7 +153,7 @@ class PackageNode(
 		for (cls in classes) {
 			set.add(cls.classInfo)
 		}
-		return set.mapNotNull { root.resolveClass(it) }
+		return set.mapNotNull { ci -> root.resolveClass(ci as ClassInfo) }
 	}
 
 	override fun typeName(): String = "package"
