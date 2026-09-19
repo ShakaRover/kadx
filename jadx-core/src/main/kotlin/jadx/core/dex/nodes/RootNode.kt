@@ -155,7 +155,7 @@ class RootNode(decompiler: JadxDecompiler?) {
 			val clsNode = ClassNode.addSyntheticClass(this, name, classData.getAccessFlags())
 			jadx.core.utils.ErrorsCounter.error(clsNode, "Load error", exc)
 		} catch (innerExc: Exception) {
-			LOG.error("Failed to load class from file: {}", classData.inputFileName, exc)
+			LOG.error("Failed to load class from file: {}", classData.getInputFileName(), exc)
 		}
 	}
 

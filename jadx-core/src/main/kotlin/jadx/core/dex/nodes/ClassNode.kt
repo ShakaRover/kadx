@@ -94,9 +94,7 @@ class ClassNode(
 		private fun processDefinitionAnnotations(codeInfo: ICodeInfo) {
 			val annotations = codeInfo.codeMetadata.getAsMap()
 			if (annotations.isEmpty()) return
-			for (entry in annotations.entrySet) {
-				val pos = entry.key
-				val ann = entry.value
+			for ((pos, ann) in annotations as Map<Int, ICodeAnnotation>) {
 				if (ann.getAnnType() == ICodeAnnotation.AnnType.DECLARATION) {
 					val declareRef = ann as NodeDeclareRef
 					declareRef.setDefPos(pos)
@@ -143,7 +141,9 @@ class ClassNode(
 	var useIn: List<ClassNode> = emptyList()
 	var useInMth: List<MethodNode> = emptyList()
 
-	private var mthInfoMap: Map<MethodInfo, MethodNode> = emptyMap()
+	override fun getUseIn(): List<out ICodeNode> = useIn
+
+	private var mthInfoMap: MutableMap<MethodInfo, MethodNode> = HashMap()
 	var javaNode: JavaClass? = null
 
 	init {
@@ -312,7 +312,7 @@ class ClassNode(
 	fun unloadFromCache() {
 		if (isInner()) return
 		val codeCache = root.getCodeCache()
-		codeCache.remove(rawName)
+		codeCache.remove(rawName as String)
 	}
 
 	private fun decompile(searchInCache: Boolean): ICodeInfo {
@@ -320,7 +320,7 @@ class ClassNode(
 		val codeCache = root.getCodeCache()
 		val clsRawName = rawName
 		if (searchInCache) {
-			val code = codeCache.get(clsRawName)
+			val code = codeCache.get(clsRawName as String)
 			if (code != ICodeInfo.EMPTY) return code
 		}
 		val codeInfo = generateClassCode()
@@ -350,7 +350,7 @@ class ClassNode(
 	fun getCodeFromCache(): ICodeInfo? {
 		val codeCache = root.getCodeCache()
 		val clsRawName = rawName
-		val codeInfo = codeCache.get(clsRawName)
+		val codeInfo = codeCache.get(clsRawName as String)
 		if (codeInfo == ICodeInfo.EMPTY) return null
 		return codeInfo
 	}
@@ -432,7 +432,7 @@ class ClassNode(
 
 	fun searchFieldByName(name: String): FieldNode? {
 		for (f in fields) {
-			if (f.name == name) return f
+			if (f.getName() == name) return f
 		}
 		return null
 	}
@@ -616,7 +616,6 @@ class ClassNode(
 	val rawName: String get() = classInfo.rawName
 
 	fun getClassInfo(): ClassInfo = classInfo
-	val rawName: String get() = classInfo.rawName
 
 	val name: String get() = classInfo.shortName
 
@@ -650,7 +649,7 @@ class ClassNode(
 		}
 		code.startLine("###### Class $fullName ($rawName)")
 		try {
-			code.startLine(clsData!!.disassembledCode)
+			code.startLine(clsData!!.getDisassembledCode())
 		} catch (e: Exception) {
 			code.startLine("Failed to disassemble class:")
 			code.startLine(getStackTrace(e))

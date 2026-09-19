@@ -142,6 +142,8 @@ class PackageNode(
 
 	fun getSubPackages(): List<PackageNode> = subPackages
 
+	fun isEmpty(): Boolean = classes.isEmpty() && subPackages.isEmpty()
+
 	fun getClasses(): List<ClassNode> = classes
 
 	fun getClassesNoDup(): List<ClassNode> {
