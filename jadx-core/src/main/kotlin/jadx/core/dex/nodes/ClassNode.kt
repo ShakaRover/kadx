@@ -122,6 +122,7 @@ class ClassNode(
 	var superClass: ArgType? = null
 	lateinit var interfaces: List<ArgType>
 	private var generics: List<ArgType> = emptyList()
+	@get:JvmName("inputFileNameValue")
 	var inputFileName: String? = null
 
 	lateinit var methods: List<MethodNode>
@@ -138,10 +139,10 @@ class ClassNode(
 
 	var dependencies: List<ClassNode> = emptyList()
 	var codegenDeps: List<ClassNode> = emptyList()
+	@get:JvmName("useInValue")
 	var useIn: List<ClassNode> = emptyList()
 	var useInMth: List<MethodNode> = emptyList()
 
-	override fun getUseIn(): List<out ICodeNode> = useIn
 
 	private var mthInfoMap: MutableMap<MethodInfo, MethodNode> = HashMap()
 	var javaNode: JavaClass? = null
@@ -389,9 +390,7 @@ class ClassNode(
 		}
 	}
 
-	fun getSuperClass(): ArgType? = superClass
 
-	fun getInterfaces(): List<ArgType> = interfaces
 
 	fun getGenericTypeParameters(): List<ArgType> = generics
 
@@ -462,7 +461,6 @@ class ClassNode(
 
 	override fun getDeclaringClass(): ClassNode? = if (isInner()) parentClass else null
 
-	fun getParentClass(): ClassNode = parentClass
 
 	fun notInner() {
 		classInfo.notInner(root)
@@ -549,7 +547,6 @@ class ClassNode(
 		return if (parent == this) false else parent.hasNotGeneratedParent()
 	}
 
-	fun getInnerClasses(): List<ClassNode> = innerClasses
 
 	fun getInlinedClasses(): List<ClassNode> = inlinedClasses
 
@@ -615,7 +612,6 @@ class ClassNode(
 
 	val rawName: String get() = classInfo.rawName
 
-	fun getClassInfo(): ClassInfo = classInfo
 
 	val name: String get() = classInfo.shortName
 
@@ -678,7 +674,13 @@ class ClassNode(
 
 	fun getTotalDepsCount(): Int = dependencies.size + codegenDeps.size
 
+
+
+
+
 	override fun getInputFileName(): String? = inputFileName
+
+	override fun getUseIn(): List<out ICodeNode> = useIn
 
 	override fun getAnnType() = ICodeAnnotation.AnnType.CLASS
 
