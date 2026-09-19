@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory
 
 class ClassNode(
 	val root: RootNode,
-	private val cls: IClassData,
+	private val cls: IClassData?,
 ) : NotificationAttrNode(),
 	ILoadable,
 	ICodeNode,
@@ -91,16 +91,18 @@ class ClassNode(
 		}
 
 		private fun processDefinitionAnnotations(codeInfo: ICodeInfo) {
-			val annotations = codeInfo.codeMetadata.asMap()
+			val annotations = codeInfo.codeMetadata.getAsMap()
 			if (annotations.isEmpty()) return
-			for ((pos, ann) in annotations.entries) {
+			for (entry in annotations.entrySet()) {
+				val pos = entry.key
+				val ann = entry.value
 				if (ann.getAnnType() == ICodeAnnotation.AnnType.DECLARATION) {
 					val declareRef = ann as NodeDeclareRef
 					declareRef.setDefPos(pos)
 					declareRef.node.setDefPosition(pos)
 				}
 			}
-			val values: MutableList<ICodeAnnotation> = ArrayList(annotations.values)
+			val values: MutableList<ICodeAnnotation> = ArrayList(annotations.values())
 			values.removeIf { v ->
 				if (v.getAnnType() == ICodeAnnotation.AnnType.VAR_REF) {
 					val varRef = v as VarRef
@@ -153,7 +155,7 @@ class ClassNode(
 
 	private constructor(root: RootNode, classInfo: ClassInfo, accessFlags: Int) : this(root, null as IClassData?) {
 		this.classInfo = classInfo
-		accessFlags = AccessInfo(accessFlags, AccessInfo.AFType.CLASS)
+		this.accessFlags = AccessInfo(accessFlags, AccessInfo.AFType.CLASS)
 		this.superClass = null
 		this.interfaces = ArrayList()
 		this.methods = ArrayList()
