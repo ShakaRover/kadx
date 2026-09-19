@@ -21,8 +21,12 @@ open class InsnNode(
 	val insnType: InsnType,
 	argsCount: Int = 0,
 ) : LineAttrNode() {
+	@get:JvmName("resultValue")
+	@set:JvmName("setResultValue")
 	var result: RegisterArg? = null
 	val arguments: MutableList<InsnArg> = if (argsCount == 0) ArrayList() else ArrayList(argsCount)
+	@get:JvmName("offsetValue")
+	@set:JvmName("setOffsetValue")
 	var offset: Int = -1
 
 	constructor(type: InsnType, args: List<InsnArg>) : this(type, 0) {
