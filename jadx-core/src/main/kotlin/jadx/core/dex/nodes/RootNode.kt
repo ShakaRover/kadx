@@ -167,7 +167,7 @@ class RootNode(decompiler: JadxDecompiler?) {
 			clsMap[clsInfo] = selectedCls
 			rawClsMap[selectedCls.rawName] = selectedCls
 
-			val sourceList = ArrayList<String?>(); for (cn in dupClsList) { sourceList.add(cn.getInputFileName()) }; sourceList.sort(); val sources = sourceList.joinToString("\n  ")
+			val sourceList = ArrayList<String?>(); for (cn in dupClsList) { sourceList.add(cn.getInputFileName()) }; java.util.Collections.sort(sourceList, null as java.util.Comparator<String?>?); val sources = sourceList.joinToString("\n  ")
 			LOG.warn(
 				"Found duplicated class: {}, count: {}, sources:\n  {}\n Keep class with source: {}, others will be removed.",
 				clsInfo,
