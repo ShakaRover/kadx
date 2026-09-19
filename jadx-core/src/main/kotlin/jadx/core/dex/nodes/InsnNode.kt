@@ -3,6 +3,7 @@ package jadx.core.dex.nodes
 import jadx.api.plugins.input.insns.InsnData
 import jadx.core.dex.attributes.AFlag
 import jadx.core.dex.attributes.AType
+import jadx.core.dex.attributes.AttrNode
 import jadx.core.dex.attributes.nodes.LineAttrNode
 import jadx.core.dex.instructions.InsnType
 import jadx.core.dex.instructions.args.ArgType
@@ -283,7 +284,7 @@ open class InsnNode(
 				copy.addArg(arg.duplicate())
 			}
 		}
-		copy.copyAttributesFrom(this)
+		copy.copyAttributesFrom(this as AttrNode)
 		copy.copyLines(this)
 		copy.setOffset(offset)
 		return copy
