@@ -21,7 +21,7 @@ open class InsnNode(
 	argsCount: Int = 0,
 ) : LineAttrNode() {
 	var result: RegisterArg? = null
-	protected val arguments: MutableList<InsnArg> = if (argsCount == 0) ArrayList() else ArrayList(argsCount)
+	val arguments: MutableList<InsnArg> = if (argsCount == 0) ArrayList() else ArrayList(argsCount)
 	var offset: Int = -1
 
 	constructor(type: InsnType, args: List<InsnArg>) : this(type, 0) {
@@ -220,7 +220,7 @@ open class InsnNode(
 		}
 	}
 
-	inline fun <R> visitInsns(visitor: (InsnNode) -> R?): R? {
+	fun <R> visitInsns(visitor: (InsnNode) -> R?): R? {
 		val result = visitor(this)
 		if (result != null) return result
 		for (arg in arguments) {
@@ -243,7 +243,7 @@ open class InsnNode(
 		}
 	}
 
-	inline fun <R> visitArgs(visitor: (InsnArg) -> R?): R? {
+	fun <R> visitArgs(visitor: (InsnArg) -> R?): R? {
 		for (arg in arguments) {
 			val result = if (arg.isInsnWrap) {
 				(arg as InsnWrapArg).wrapInsn.visitArgs(visitor)
@@ -289,7 +289,7 @@ open class InsnNode(
 		return copy
 	}
 
-	override fun copyAttributesFrom(attrNode: LineAttrNode) {
+	override fun copyAttributesFrom(attrNode: AttrNode) {
 		super.copyAttributesFrom(attrNode as InsnNode)
 		addSourceLineFrom(attrNode as InsnNode)
 	}
