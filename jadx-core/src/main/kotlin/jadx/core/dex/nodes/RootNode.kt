@@ -54,14 +54,18 @@ class RootNode(decompiler: JadxDecompiler?) {
 		private val LOG = LoggerFactory.getLogger(RootNode::class.java)
 	}
 
+	@get:JvmName("argsValue")
 	val args: JadxArgs
 	private val errorsCounter = ErrorsCounter()
 	private val stringUtils: StringUtils
+	@get:JvmName("constValuesValue")
 	val constValues: ConstStorage
 	private val infoStorage = InfoStorage()
 	private val cacheStorage = CacheStorage()
 	private val typeUpdate: TypeUpdate
+	@get:JvmName("methodUtilsValue")
 	val methodUtils: MethodUtils
+	@get:JvmName("typeUtilsValue")
 	val typeUtils: TypeUtils
 	private val attributes = AttributeStorage()
 
@@ -70,16 +74,20 @@ class RootNode(decompiler: JadxDecompiler?) {
 
 	private val clsMap = HashMap<ClassInfo, ClassNode>()
 	private val rawClsMap = HashMap<String, ClassNode>()
+	@get:JvmName("classesValue")
 	var classes: List<ClassNode> = ArrayList()
 
 	private val pkgMap = HashMap<String, PackageNode>()
 	val packages = ArrayList<PackageNode>()
 
 	private var preDecompilePasses: MutableList<IDexTreeVisitor>
+	@get:JvmName("processClassesValue")
 	var processClasses: ProcessClass
 
 	private var clsp: ClspGraph? = null
+	@get:JvmName("appPackageValue")
 	var appPackage: String? = null
+	@get:JvmName("appResClassValue")
 	var appResClass: ClassNode? = null
 
 	private val decompiler: JadxDecompiler?
