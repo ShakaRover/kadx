@@ -160,14 +160,14 @@ class RootNode(decompiler: JadxDecompiler?) {
 	}
 
 	private fun fixDuplicatedClasses() {
-		val grouped = classes.groupBy { it.classInfo }
+		val grouped = classes.groupBy({ cn -> cn.classInfo })
 		for ((clsInfo, dupClsList) in grouped) {
 			if (dupClsList.size <= 1) continue
 			val selectedCls = processDuplicates(dupClsList)
 			clsMap[clsInfo] = selectedCls
 			rawClsMap[selectedCls.rawName] = selectedCls
 
-			val sources = dupClsList.map { it.getInputFileName() }.sorted().joinToString("\n  ")
+			val sourceList = ArrayList<String?>(); for (cn in dupClsList) { sourceList.add(cn.getInputFileName()) }; sourceList.sort(); val sources = sourceList.joinToString("\n  ")
 			LOG.warn(
 				"Found duplicated class: {}, count: {}, sources:\n  {}\n Keep class with source: {}, others will be removed.",
 				clsInfo,
