@@ -129,7 +129,7 @@ class RootNode(decompiler: JadxDecompiler?) {
 		val insnsCount = classes.flatMap { it.methods }.sumOf { it.insnsCount }
 		LOG.info("Loaded classes: {}, methods: {}, instructions: {}", classes.size, mthCount, insnsCount)
 
-		classes.sortBy({ (cn: ClassNode) -> cn.rawName })
+		classes.sortBy { it.rawName }
 
 		if (args.isMoveInnerClasses) {
 			initInnerClasses()
