@@ -26,7 +26,7 @@ class FieldNode(
 		fun build(cls: ClassNode, fieldData: IFieldData): FieldNode {
 			val fieldInfo = FieldInfo.fromRef(cls.root(), fieldData)
 			val fieldNode = FieldNode(cls, fieldInfo, fieldData.getAccessFlags())
-			fieldNode.addAttrs(fieldData.attributes)
+			fieldNode.addAttrs(fieldData.getAttributes())
 			return fieldNode
 		}
 	}
@@ -63,7 +63,7 @@ class FieldNode(
 
 	fun getTopParentClass(): ClassNode = parentClass.getTopParentClass()
 
-	fun getUseIn(): List<MethodNode> = useIn
+	override fun getUseIn(): List<out ICodeNode> = useIn
 
 	fun setUseIn(useIn: List<MethodNode>) {
 		this.useIn = useIn
