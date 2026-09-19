@@ -428,7 +428,7 @@ class MethodNode(
 		arg.add(AFlag.SYNTHETIC)
 		val ssaVar = makeNewSVar(arg)
 		initCodeVar(ssaVar)
-		ssaVar.type = type
+		ssaVar.setType(type)
 		return arg
 	}
 
