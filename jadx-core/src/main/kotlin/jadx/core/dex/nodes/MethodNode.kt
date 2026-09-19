@@ -48,12 +48,12 @@ class MethodNode(
 
 		fun build(classNode: ClassNode, methodData: IMethodData): MethodNode {
 			val methodNode = MethodNode(classNode, methodData)
-			methodNode.addAttrs(methodData.attributes)
+			methodNode.addAttrs(methodData.getAttributes())
 			return methodNode
 		}
 	}
 
-	val mthInfo: MethodInfo = MethodInfo.fromRef(parentClass.root(), mthData.methodRef)
+	val mthInfo: MethodInfo = MethodInfo.fromRef(parentClass.root(), mthData.getMethodRef())
 	var accFlags: AccessInfo = AccessInfo(mthData.getAccessFlags(), AccessInfo.AFType.METHOD)
 
 	private val codeReader: ICodeReader?
@@ -61,7 +61,7 @@ class MethodNode(
 	private var noCode: Boolean
 
 	init {
-		val reader = mthData.codeReader
+		val reader = mthData.getCodeReader()
 		if (reader == null) {
 			noCode = true
 			codeReader = null
@@ -69,7 +69,7 @@ class MethodNode(
 		} else {
 			noCode = false
 			codeReader = reader.copy()
-			insnsCount = reader.unitsCount
+			insnsCount = reader.getUnitsCount()
 		}
 		retType = mthInfo.returnType
 		argTypes = mthInfo.argumentsTypes
@@ -137,8 +137,8 @@ class MethodNode(
 				initArguments(argTypes)
 				return
 			}
-			regsCount = codeReader!!.registersCount
-			argsStartReg = codeReader!!.argsStartReg
+			regsCount = codeReader!!.getRegistersCount()
+			argsStartReg = codeReader!!.getArgsStartReg()
 			initArguments(argTypes)
 			if (contains(AType.JADX_ERROR)) {
 				instructions = EMPTY_INSN_ARRAY
@@ -412,7 +412,7 @@ class MethodNode(
 		var defaultArgCount = 0
 		if (parentClass.classInfo.isInner && !parentClass.accessFlags.isStatic()) {
 			val outerCls = parentClass.parentClass
-			if (argsList != null && argsList!!.isNotEmpty() && argsList!![0].initType == outerCls.classInfo.type) {
+			if (argsList != null && argsList!!.isNotEmpty() && argsList!![0].initType == outerCls.classInfo.getType()) {
 				defaultArgCount = 1
 			}
 		}
@@ -484,9 +484,9 @@ class MethodNode(
 
 	override fun getMethodInfo(): MethodInfo = mthInfo
 
-	fun getMethodCodeOffset(): Long = if (noCode) 0 else codeReader!!.codeOffset
+	fun getMethodCodeOffset(): Long = if (noCode) 0 else codeReader!!.getCodeOffset()
 
-	fun getDebugInfo(): IDebugInfo? = if (noCode) null else codeReader!!.debugInfo
+	fun getDebugInfo(): IDebugInfo? = if (noCode) null else codeReader!!.getDebugInfo()
 
 	fun ignoreMethod() {
 		add(AFlag.DONT_GENERATE)
@@ -580,7 +580,7 @@ class MethodNode(
 
 	override fun compareTo(o: MethodNode): Int = mthInfo.compareTo(o.mthInfo)
 
-	override fun toAttrString(): String = IMethodDetails.toAttrString(this) + " (m)"
+	override fun toAttrString(): String = toAttrString() + " (m)"
 
 	override fun toString(): String = "$parentClass.${mthInfo.name}(${listToString(argTypes)}):$retType"
 }
