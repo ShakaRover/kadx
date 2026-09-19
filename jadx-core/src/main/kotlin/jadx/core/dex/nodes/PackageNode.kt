@@ -10,7 +10,9 @@ import jadx.core.utils.StringUtils.containsChar
 
 class PackageNode(
 	val root: RootNode,
+	@get:JvmName("parentPkgValue")
 	val parentPkg: PackageNode?,
+	@get:JvmName("pkgInfoValue")
 	val pkgInfo: PackageInfo,
 ) : LineAttrNode(),
 	IPackageUpdate,
@@ -43,6 +45,7 @@ class PackageNode(
 		}
 	}
 
+	@get:JvmName("aliasPkgInfoValue")
 	var aliasPkgInfo: PackageInfo = pkgInfo
 	val subPackages = ArrayList<PackageNode>()
 	val classes = ArrayList<ClassNode>()
