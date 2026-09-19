@@ -11,6 +11,7 @@ import jadx.core.utils.ListUtils.safeAdd
 
 class FieldNode(
 	val parentClass: ClassNode,
+	@get:JvmName("fieldInfoValue")
 	val fieldInfo: FieldInfo,
 	accessFlags: Int,
 ) : NotificationAttrNode(),

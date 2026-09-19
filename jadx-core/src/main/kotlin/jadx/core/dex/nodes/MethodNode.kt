@@ -57,10 +57,13 @@ class MethodNode(
 	var accFlags: AccessInfo = AccessInfo(mthData.getAccessFlags(), AccessInfo.AFType.METHOD)
 
 	lateinit var retType: ArgType
+	@get:JvmName("argTypesValue")
 	lateinit var argTypes: List<ArgType>
+	@get:JvmName("typeParametersValue")
 	lateinit var typeParameters: List<ArgType>
 
 	private val codeReader: ICodeReader?
+	@get:JvmName("insnsCountValue")
 	val insnsCount: Int
 	private var noCode: Boolean
 
