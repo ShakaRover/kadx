@@ -129,7 +129,7 @@ class RootNode(decompiler: JadxDecompiler?) {
 		val insnsCount = classes.flatMap { it.methods }.sumOf { it.insnsCount }
 		LOG.info("Loaded classes: {}, methods: {}, instructions: {}", classes.size, mthCount, insnsCount)
 
-		classes.sortBy { it.rawName }
+		classes.sortBy { cn -> cn.rawName }
 
 		if (args.isMoveInnerClasses) {
 			initInnerClasses()
@@ -167,7 +167,7 @@ class RootNode(decompiler: JadxDecompiler?) {
 			clsMap[clsInfo] = selectedCls
 			rawClsMap[selectedCls.rawName] = selectedCls
 
-			val sources = dupClsList.map { it.inputFileName }.sorted().joinToString("\n  ")
+			val sources = dupClsList.map { it.getInputFileName() }.sorted().joinToString("\n  ")
 			LOG.warn(
 				"Found duplicated class: {}, count: {}, sources:\n  {}\n Keep class with source: {}, others will be removed.",
 				clsInfo,
@@ -568,7 +568,7 @@ class RootNode(decompiler: JadxDecompiler?) {
 		processClasses.initPasses(this)
 	}
 
-	fun makeCodeWriter(): ICodeWriter = args.codeWriterProvider(args)
+	fun makeCodeWriter(): ICodeWriter = args.getCodeWriterProvider().apply(args)
 
 	fun registerCodeDataUpdateListener(listener: ICodeDataUpdateListener) {
 		codeDataUpdateListeners.add(listener)
