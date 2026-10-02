@@ -1,0 +1,87 @@
+package jadx.core.dex.visitors.fixaccessmodifiers
+
+import jadx.api.plugins.input.data.AccessFlags
+import jadx.core.dex.info.AccessInfo
+import jadx.core.dex.nodes.ClassNode
+import jadx.core.dex.nodes.ICodeNode
+import jadx.core.dex.nodes.RootNode
+import jadx.core.utils.exceptions.JadxRuntimeException
+import java.util.function.Consumer
+
+/**
+ * 可见性检查工具：判断某个节点（类/方法/字段）被另一个类使用时，
+ * 其访问修饰符是否足够“宽”（否则调用方无法访问，需要提升可见性）。
+ *
+ * **规则概述**：
+ * - 同一顶层类内部：无需处理；
+ * - 同一包内：private 成员需要提升为 package-private；
+ * - 跨包：private/package-private 需要提升为 public（若调用方是其子类则 protected）；
+ *   protected 成员若调用方不是子类也需要提升为 public。
+ *
+ * **Kotlin 转换说明**：原 Java 为 package-private，Kotlin 用 `internal`；
+ * 回调接口 [OnBadVisibilityCallback] 转为 `fun interface` 以便 lambda 调用；
+ * `do-while` 遍历用 `while` 等价改写，避免 `!!`。
+ */
+internal class VisibilityUtils(private val root: RootNode) {
+
+	fun checkVisibility(targetNode: ICodeNode, callerNode: ICodeNode, callback: OnBadVisibilityCallback) {
+		val targetCls = if (targetNode is ClassNode) targetNode else checkNotNull(targetNode.getDeclaringClass())
+		val callerCls = if (callerNode is ClassNode) callerNode else checkNotNull(callerNode.getDeclaringClass())
+
+		if (targetCls == callerCls || inSameTopClass(targetCls, callerCls)) {
+			return
+		}
+
+		if (inSamePkg(targetCls, callerCls)) {
+			visitDeclaringNodes(targetNode) { node ->
+				if (node.accessFlags.isPrivate()) {
+					callback.onBadVisibility(node, 0) // PACKAGE_PRIVATE
+				}
+			}
+		} else {
+			visitDeclaringNodes(targetNode) { node ->
+				val nodeVisFlags = node.accessFlags.getVisibility()
+				if (nodeVisFlags.isPublic()) {
+					return@visitDeclaringNodes
+				}
+
+				if (nodeVisFlags.isPrivate() || nodeVisFlags.isPackagePrivate()) {
+					val nodeDeclaringCls = node.getDeclaringClass()
+					val expectedVisFlag = if (nodeDeclaringCls != null && isSuperType(callerCls, nodeDeclaringCls)) {
+						AccessFlags.PROTECTED
+					} else {
+						AccessFlags.PUBLIC
+					}
+					callback.onBadVisibility(node, expectedVisFlag)
+				} else if (nodeVisFlags.isProtected()) {
+					val nodeDeclaringCls = node.getDeclaringClass()
+					if (nodeDeclaringCls == null || !isSuperType(callerCls, nodeDeclaringCls)) {
+						callback.onBadVisibility(node, AccessFlags.PUBLIC)
+					}
+				} else {
+					throw JadxRuntimeException("$nodeVisFlags is not supported")
+				}
+			}
+		}
+	}
+
+	/** 从目标节点开始，沿声明类链逐层应用 [action]。 */
+	private fun visitDeclaringNodes(targetNode: ICodeNode, action: Consumer<ICodeNode>) {
+		var currentNode: ICodeNode? = targetNode
+		while (currentNode != null) {
+			action.accept(currentNode)
+			currentNode = currentNode.getDeclaringClass()
+		}
+	}
+
+	private fun inSamePkg(cls1: ClassNode, cls2: ClassNode): Boolean = cls1.packageNode == cls2.packageNode
+
+	private fun inSameTopClass(cls1: ClassNode, cls2: ClassNode): Boolean = cls1.getTopParentClass() == cls2.getTopParentClass()
+
+	private fun isSuperType(cls: ClassNode, superCls: ClassNode): Boolean = checkNotNull(root.getClsp()).getSuperTypes(cls.rawName).any { it == superCls.rawName }
+
+	/** 可见性不足时的回调。 */
+	internal fun interface OnBadVisibilityCallback {
+		fun onBadVisibility(node: ICodeNode, expectedVisFlag: Int)
+	}
+}
