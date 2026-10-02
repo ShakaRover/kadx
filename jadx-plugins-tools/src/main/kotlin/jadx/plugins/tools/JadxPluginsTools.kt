@@ -158,7 +158,7 @@ class JadxPluginsTools private constructor() {
 	fun getAllPluginsInfo(): List<jadx.api.plugins.JadxPluginInfo> {
 		val pluginsLoader = JadxExternalPluginsLoader()
 		try {
-			return pluginsLoader.load().map { it.pluginInfo }
+			return pluginsLoader.load().map { it.getPluginInfo() }
 		} finally {
 			pluginsLoader.close()
 		}
@@ -269,12 +269,12 @@ class JadxPluginsTools private constructor() {
 		val loader = JadxExternalPluginsLoader()
 		try {
 			val jadxPlugin = loader.loadFromPath(pluginPath)
-			val pluginInfo = jadxPlugin.pluginInfo
-			metadata.pluginId = pluginInfo.pluginId
-			metadata.name = pluginInfo.name
-			metadata.description = pluginInfo.description
-			metadata.homepage = pluginInfo.homepage
-			metadata.requiredJadxVersion = pluginInfo.requiredJadxVersion
+			val pluginInfo = jadxPlugin.getPluginInfo()
+			metadata.pluginId = pluginInfo.getPluginId()
+			metadata.name = pluginInfo.getName()
+			metadata.description = pluginInfo.getDescription()
+			metadata.homepage = pluginInfo.getHomepage()
+			metadata.requiredJadxVersion = pluginInfo.getRequiredJadxVersion()
 		} catch (e: NoSuchMethodError) {
 			throw RuntimeException("Looks like plugin uses unknown API, try to update jadx version", e)
 		} finally {

@@ -22,14 +22,14 @@ import java.nio.file.Path
  */
 public class XApkCustomInput(
 	private val context: JadxPluginContext,
-	private val loader: XApkLoader,
+	private val xApkLoader: XApkLoader,
 ) : JadxCodeInput,
 	CustomResourcesLoader {
 
 	override fun loadFiles(input: java.util.List<Path>): ICodeLoader {
 		val apks = mutableListOf<Path>()
 		for (inputPath in input) {
-			val data = loader.checkAndLoad(inputPath)
+			val data = xApkLoader.checkAndLoad(inputPath)
 			if (data != null) {
 				apks.addAll(data.apks)
 			}
@@ -42,17 +42,17 @@ public class XApkCustomInput(
 	}
 
 	// 覆写 Java 接口：参数用 Kotlin MutableList（柔性类型匹配，且需要 add()）
-	override fun load(resLoader: ResourcesLoader, list: MutableList<ResourceFile>, file: File): Boolean {
-		val xApkData = loader.checkAndLoad(file.toPath()) ?: return false
+	override fun load(loader: ResourcesLoader, list: MutableList<ResourceFile>, file: File): Boolean {
+		val xApkData = xApkLoader.checkAndLoad(file.toPath()) ?: return false
 		for (apkPath in xApkData.apks) {
-			resLoader.defaultLoadFile(list, apkPath.toFile(), apkPath.fileName.toString() + "/")
+			loader.defaultLoadFile(list, apkPath.toFile(), apkPath.fileName.toString() + "/")
 		}
 		for (filePath in xApkData.files) {
 			val innerFile = filePath.toFile()
 			val relativePath = xApkData.tmpDir.relativize(filePath).toString()
 			if (FileUtils.isZipFile(innerFile)) {
 				// zip 文件由默认加载器解压
-				resLoader.defaultLoadFile(list, innerFile, relativePath + "/")
+				loader.defaultLoadFile(list, innerFile, relativePath + "/")
 			} else {
 				// 在临时目录中创建资源，但名称使用相对 xapk 根目录的路径
 				val type = ResourceType.getFileType(relativePath)

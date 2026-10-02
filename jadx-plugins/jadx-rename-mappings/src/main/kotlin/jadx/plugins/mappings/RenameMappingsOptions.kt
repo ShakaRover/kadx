@@ -20,7 +20,8 @@ public class RenameMappingsOptions : BasePluginOptionsBuilder() {
 	private var format: MappingFormat? = null
 
 	override fun registerOptions() {
-		option(FORMAT_OPT, MappingFormat::class.java)
+		// 显式指定可空类型参数：format 允许 null（表示 AUTO）
+		option<MappingFormat?>(FORMAT_OPT)
 			.description("mapping format")
 			.parser(::parseMappingFormat)
 			.formatter { v -> if (v == null) "AUTO" else v.name }

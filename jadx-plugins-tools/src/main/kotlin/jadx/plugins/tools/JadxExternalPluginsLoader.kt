@@ -56,7 +56,7 @@ class JadxExternalPluginsLoader : JadxPluginLoader {
 			throw JadxRuntimeException("No plugin found in jar: $pluginPath")
 		}
 		if (loaded > 1) {
-			val plugins = map.values.joinToString(", ") { it.pluginInfo.pluginId }
+			val plugins = map.values.joinToString(", ") { it.getPluginInfo().getPluginId() }
 			throw JadxRuntimeException("Expect only one plugin per jar: $pluginPath, but found: $loaded - $plugins")
 		}
 		return first(map.values)!!

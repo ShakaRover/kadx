@@ -43,7 +43,7 @@ public class XApkLoader(private val context: JadxPluginContext) {
 			if (!FileUtils.isZipFile(xapkFile)) {
 				return null
 			}
-			return context.zipReader.open(xapkFile).use { content ->
+			return context.getZipReader().open(xapkFile).use { content ->
 				val manifestEntry = content.searchEntry("manifest.json") ?: return@use null
 				val manifestStr = String(manifestEntry.getBytes(), StandardCharsets.UTF_8)
 				val xApkManifest = GsonUtils.buildGson().fromJson(manifestStr, XApkManifest::class.java)

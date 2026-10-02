@@ -41,7 +41,7 @@ class KotlinMetadataDecompilePass(
 		return false
 	}
 
-	override fun visit(mth: MethodNode?) {
+	override fun visit(mth: MethodNode) {
 		/* no op */
 	}
 

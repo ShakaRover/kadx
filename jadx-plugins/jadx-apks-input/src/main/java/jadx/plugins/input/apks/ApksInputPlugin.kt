@@ -14,7 +14,7 @@ class ApksInputPlugin : JadxPlugin {
 
 	override fun init(context: JadxPluginContext) {
 		val dexInputPlugin = context.plugins().getInstance(DexInputPlugin::class.java)
-		context.addCodeInput(ApksCustomCodeInput(dexInputPlugin, context.zipReader))
-		context.decompiler.addCustomResourcesLoader(ApksCustomResourcesLoader(context.zipReader))
+		context.addCodeInput(ApksCustomCodeInput(dexInputPlugin, context.getZipReader()))
+		context.getDecompiler().addCustomResourcesLoader(ApksCustomResourcesLoader(context.getZipReader()))
 	}
 }
