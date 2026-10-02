@@ -49,7 +49,7 @@ class ToStringParser private constructor(mthToString: MethodNode) {
 
 			// invoke with const string
 			if (arg.isInsnWrap && arg is InsnWrapArg && arg.wrapInsn.getType() == InsnType.CONST_STR) {
-				val constStr: String? = (arg.wrapInsn as ConstStringNode).string
+				val constStr: String? = (arg.wrapInsn as ConstStringNode).getString()
 				handleString(requireNotNull(constStr) { "Failed to get const String" })
 			}
 
