@@ -419,7 +419,7 @@ class MethodNode(
 		var defaultArgCount = 0
 		if (parentClass.classInfo.isInner && !parentClass.accessFlags.isStatic()) {
 			val outerCls = parentClass.parentClass
-			if (argsList != null && argsList!!.isNotEmpty() && argsList!![0].getInitType() == outerCls.classInfo.getType()) {
+			if (argsList != null && argsList!!.isNotEmpty() && argsList!![0].getInitType() == outerCls.classInfo.type) {
 				defaultArgCount = 1
 			}
 		}
@@ -504,10 +504,10 @@ class MethodNode(
 		val overrideAttr = get(AType.METHOD_OVERRIDE)
 		if (overrideAttr != null) {
 			for (relatedMth in overrideAttr.relatedMthNodes) {
-				relatedMth.mthInfo.setAlias(newName)
+				relatedMth.mthInfo.alias = newName
 			}
 		} else {
-			mthInfo.setAlias(newName)
+			mthInfo.alias = newName
 		}
 	}
 

@@ -28,6 +28,7 @@ import jadx.core.dex.info.MethodInfo
 import jadx.core.dex.info.PackageInfo
 import jadx.core.dex.instructions.args.ArgType
 import jadx.core.dex.nodes.utils.MethodUtils
+import jadx.core.dex.nodes.utils.SelectFromDuplicates
 import jadx.core.dex.nodes.utils.TypeUtils
 import jadx.core.dex.visitors.IDexTreeVisitor
 import jadx.core.dex.visitors.typeinference.TypeCompare
@@ -45,7 +46,6 @@ import jadx.core.xmlgen.ManifestAttributes
 import jadx.core.xmlgen.ResourceStorage
 import jadx.core.xmlgen.entry.ValuesParser
 import org.slf4j.LoggerFactory
-import jadx.core.dex.nodes.utils.SelectFromDuplicates.process as processDuplicates
 import jadx.core.dex.visitors.DepthTraversal.visit as depthVisit
 import jadx.core.utils.DebugChecks.insertPasses as insertDebugPasses
 
@@ -193,7 +193,7 @@ class RootNode private constructor(
 		val grouped = classes.groupBy({ cn -> cn.classInfo })
 		for ((clsInfo, dupClsList) in grouped) {
 			if (dupClsList.size <= 1) continue
-			val selectedCls = processDuplicates(dupClsList)
+			val selectedCls = checkNotNull(SelectFromDuplicates.process(dupClsList))
 			clsMap[clsInfo] = selectedCls
 			rawClsMap[selectedCls.rawName] = selectedCls
 

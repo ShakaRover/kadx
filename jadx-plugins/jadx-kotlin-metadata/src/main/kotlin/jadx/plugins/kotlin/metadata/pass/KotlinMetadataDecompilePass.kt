@@ -89,7 +89,7 @@ class KotlinMetadataDecompilePass(
 	private fun fixDataClass(wrapper: KmClassWrapper) {
 		val isData = wrapper.isDataClass()
 		wrapper.cls.run {
-			if (isData != accessFlags.isData) {
+			if (isData != accessFlags.isData()) {
 				accessFlags = accessFlags.run {
 					if (isData) {
 						add(AccessFlags.DATA)

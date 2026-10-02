@@ -57,7 +57,7 @@ class FieldNode(
 	fun getAlias(): String = fieldInfo.alias
 
 	override fun rename(alias: String) {
-		fieldInfo.setAlias(alias)
+		fieldInfo.alias = alias
 	}
 
 	override fun getDeclaringClass(): ClassNode? = parentClass

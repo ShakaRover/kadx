@@ -120,7 +120,7 @@ object KotlinMetadataUtils {
 	fun mapCompanion(cls: ClassNode, kmCls: KmClass): CompanionRename? {
 		val compName = kmCls.companionObject ?: return null
 		val compField = cls.fields.firstOrNull {
-			it.getName() == compName && it.accessFlags.run { isStatic && isFinal && isPublic }
+			it.getName() == compName && it.accessFlags.run { isStatic() && isFinal() && isPublic() }
 		} ?: return null
 
 		if (compField.type.isObject()) {
@@ -129,7 +129,7 @@ object KotlinMetadataUtils {
 				it.classInfo.makeRawFullName() == compType
 			} ?: return null
 
-			val isOnlyInit = compField.getUseIn().size == 1 && compField.getUseIn()[0].getMethodInfo().isClassInit
+			val isOnlyInit = compField.getUseIn().size == 1 && compField.getUseIn()[0].getMethodInfo().isClassInit()
 			val isEmpty = compCls.run { methods.all { it.isConstructor() } && fields.isEmpty() }
 
 			return CompanionRename(

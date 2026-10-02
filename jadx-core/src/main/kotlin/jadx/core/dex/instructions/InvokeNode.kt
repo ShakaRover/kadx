@@ -24,12 +24,12 @@ open class InvokeNode(
 ) : BaseInvokeNode(InsnType.INVOKE, argsCount) {
 
 	constructor(mthInfo: MethodInfo, insn: InsnData, invokeType: InvokeType, isRange: Boolean) :
-		this(mthInfo, invokeType, mthInfo.getArgsCount() + if (invokeType != InvokeType.STATIC) 1 else 0) {
+		this(mthInfo, invokeType, mthInfo.argsCount + if (invokeType != InvokeType.STATIC) 1 else 0) {
 		addInsnArgs(mthInfo, insn, invokeType != InvokeType.STATIC, isRange)
 	}
 
 	constructor(mth: MethodInfo, insn: InsnData, type: InvokeType, instanceCall: Boolean, isRange: Boolean) :
-		this(mth, type, mth.getArgsCount() + if (instanceCall) 1 else 0) {
+		this(mth, type, mth.argsCount + if (instanceCall) 1 else 0) {
 		addInsnArgs(mth, insn, instanceCall, isRange)
 	}
 
@@ -38,16 +38,16 @@ open class InvokeNode(
 		var k = if (isRange) insn.getReg(0) else 0
 		if (instanceCall) {
 			val r = if (isRange) k else insn.getReg(k)
-			addReg(r, mth.getDeclClass().getType())
+			addReg(r, mth.declClass.type)
 			k++
 		}
-		for (arg in mth.getArgumentsTypes()) {
+		for (arg in mth.argumentsTypes) {
 			addReg(if (isRange) k else insn.getReg(k), arg)
 			k += arg.getRegCount()
 		}
 		val resReg = insn.getResultReg()
 		if (resReg != -1) {
-			setResult(InsnArg.reg(resReg, mth.getReturnType()))
+			setResult(InsnArg.reg(resReg, mth.returnType))
 		}
 	}
 
@@ -66,8 +66,8 @@ open class InvokeNode(
 		}
 		// Java 字节码可能用带改写方法信息的 virtual 调用来表示 MethodHandle.invoke
 		if (invokeType == InvokeType.VIRTUAL &&
-			callMth.getDeclClass().getFullName() == "java.lang.invoke.MethodHandle" &&
-			(callMth.getName() == "invoke" || callMth.getName() == "invokeExact")
+			callMth.declClass.fullName == "java.lang.invoke.MethodHandle" &&
+			(callMth.name == "invoke" || callMth.name == "invokeExact")
 		) {
 			return true
 		}

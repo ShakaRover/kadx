@@ -51,7 +51,7 @@ object KotlinUtils {
 	// untested & overly complicated
 	fun parseDefaultMethods(cls: ClassNode): List<MethodRename> {
 		val possibleMthList = cls.methods.filter {
-			it.accessFlags.isStatic && it.accessFlags.isSynthetic &&
+			it.accessFlags.isStatic() && it.accessFlags.isSynthetic() &&
 				it.argTypes.run {
 					size > 3 &&
 						first().isObject() && first().getObject() == cls.fullName &&

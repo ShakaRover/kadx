@@ -127,7 +127,7 @@ class XposedAction(codeArea: CodeArea) : JNodeAction(ActionModel.XPOSED_COPY, co
 
 	private fun generateFieldSnippet(jField: JField): String {
 		val javaField = jField.javaField
-		val static = if (javaField.accessFlags.isStatic) "Static" else ""
+		val static = if (javaField.accessFlags.isStatic()) "Static" else ""
 		val type = PRIMITIVE_TYPE_MAPPING.getOrDefault(javaField.fieldNode.type.toString(), "Object")
 		val xposedMethod = "XposedHelpers.get${static}${type}Field"
 

@@ -64,7 +64,7 @@ class SkipMethodArgsAttr private constructor(mth: MethodNode) : PinnedAttribute(
 	}
 
 	/** 参数跳过位图，长度取方法参数个数 */
-	private val skipArgs: BitSet = BitSet(mth.getMethodInfo().getArgsCount())
+	private val skipArgs: BitSet = BitSet(mth.getMethodInfo().argsCount)
 
 	/** 标记第 [argNum] 个参数为跳过 */
 	fun skip(argNum: Int) {

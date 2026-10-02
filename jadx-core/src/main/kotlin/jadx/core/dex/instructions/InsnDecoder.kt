@@ -351,30 +351,30 @@ open class InsnDecoder(private val method: MethodNode) {
 			}
 
 			Opcode.IGET -> {
-				val igetFld = FieldInfo.fromRef(root, insn.getIndexAsField())
+				val igetFld = FieldInfo.fromRef(root, checkNotNull(insn.getIndexAsField()))
 				val igetInsn = IndexInsnNode(InsnType.IGET, igetFld, 1)
 				igetInsn.setResult(InsnArg.reg(insn, 0, tryResolveFieldType(igetFld)))
-				igetInsn.addArg(InsnArg.reg(insn, 1, igetFld.getDeclClass().getType()))
+				igetInsn.addArg(InsnArg.reg(insn, 1, igetFld.declClass.type))
 				return igetInsn
 			}
 
 			Opcode.IPUT -> {
-				val iputFld = FieldInfo.fromRef(root, insn.getIndexAsField())
+				val iputFld = FieldInfo.fromRef(root, checkNotNull(insn.getIndexAsField()))
 				val iputInsn = IndexInsnNode(InsnType.IPUT, iputFld, 2)
 				iputInsn.addArg(InsnArg.reg(insn, 0, tryResolveFieldType(iputFld)))
-				iputInsn.addArg(InsnArg.reg(insn, 1, iputFld.getDeclClass().getType()))
+				iputInsn.addArg(InsnArg.reg(insn, 1, iputFld.declClass.type))
 				return iputInsn
 			}
 
 			Opcode.SGET -> {
-				val sgetFld = FieldInfo.fromRef(root, insn.getIndexAsField())
+				val sgetFld = FieldInfo.fromRef(root, checkNotNull(insn.getIndexAsField()))
 				val sgetInsn = IndexInsnNode(InsnType.SGET, sgetFld, 0)
 				sgetInsn.setResult(InsnArg.reg(insn, 0, tryResolveFieldType(sgetFld)))
 				return sgetInsn
 			}
 
 			Opcode.SPUT -> {
-				val sputFld = FieldInfo.fromRef(root, insn.getIndexAsField())
+				val sputFld = FieldInfo.fromRef(root, checkNotNull(insn.getIndexAsField()))
 				val sputInsn = IndexInsnNode(InsnType.SPUT, sputFld, 1)
 				sputInsn.addArg(InsnArg.reg(insn, 0, tryResolveFieldType(sputFld)))
 				return sputInsn
@@ -516,7 +516,7 @@ open class InsnDecoder(private val method: MethodNode) {
 		if (fieldNode != null) {
 			return fieldNode.type
 		}
-		return igetFld.getType()
+		return igetFld.type
 	}
 
 	private fun filledNewArray(insn: InsnData, isRange: Boolean): InsnNode {
@@ -571,7 +571,7 @@ open class InsnDecoder(private val method: MethodNode) {
 		// 展开调用参数
 		val args = Utils.collectionMap(proto.getArgTypes()) { ArgType.parse(it) }
 		val returnType = ArgType.parse(proto.getReturnType())
-		val effectiveCallMth = MethodInfo.fromDetails(root, callMth.getDeclClass(), callMth.getName(), args, returnType)
+		val effectiveCallMth = MethodInfo.fromDetails(root, callMth.declClass, callMth.name, args, returnType)
 		return InvokePolymorphicNode(effectiveCallMth, insn, proto, callMth, isRange)
 	}
 
@@ -580,7 +580,7 @@ open class InsnDecoder(private val method: MethodNode) {
 			?: throw JadxRuntimeException("Failed to load method reference for insn: $insn")
 		val mthInfo = MethodInfo.fromRef(root, mthRef)
 		// 与 dx 一致：把 'special' 转换为 'direct/super'
-		val type: InvokeType = if (mthInfo.isConstructor() || mthInfo.getDeclClass() == method.parentClass.classInfo) {
+		val type: InvokeType = if (mthInfo.isConstructor() || mthInfo.declClass == method.parentClass.classInfo) {
 			InvokeType.DIRECT
 		} else {
 			InvokeType.SUPER

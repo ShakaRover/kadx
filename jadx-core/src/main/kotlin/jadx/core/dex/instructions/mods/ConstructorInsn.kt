@@ -40,7 +40,7 @@ class ConstructorInsn : BaseInvokeNode {
 	constructor(mth: MethodNode, invoke: InvokeNode, callMth: MethodInfo) :
 		super(InsnType.CONSTRUCTOR, invoke.getArgsCount() - 1) {
 		this.callMth = callMth
-		this.callType = getCallType(mth, callMth.getDeclClass(), invoke.getArg(0))
+		this.callType = getCallType(mth, callMth.declClass, invoke.getArg(0))
 		val argsCount = invoke.getArgsCount()
 		for (i in 1 until argsCount) {
 			addArg(invoke.getArg(i))
@@ -48,7 +48,7 @@ class ConstructorInsn : BaseInvokeNode {
 	}
 
 	constructor(callMth: MethodInfo, callType: CallType) :
-		super(InsnType.CONSTRUCTOR, callMth.getArgsCount()) {
+		super(InsnType.CONSTRUCTOR, callMth.argsCount) {
 		this.callMth = callMth
 		this.callType = callType
 	}
@@ -60,7 +60,7 @@ class ConstructorInsn : BaseInvokeNode {
 		if (classType != mth.parentClass.classInfo) {
 			return CallType.SUPER
 		}
-		if (callMth.getShortId() == mth.getMethodInfo().getShortId()) {
+		if (callMth.shortId == mth.getMethodInfo().shortId) {
 			// 调用自身构造器
 			return CallType.SELF
 		}
@@ -69,7 +69,7 @@ class ConstructorInsn : BaseInvokeNode {
 
 	override fun getInstanceArg(): RegisterArg? = null
 
-	fun getClassType(): ClassInfo = callMth.getDeclClass()
+	fun getClassType(): ClassInfo = callMth.declClass
 
 	val isNewInstance: Boolean get() = callType == CallType.CONSTRUCTOR
 

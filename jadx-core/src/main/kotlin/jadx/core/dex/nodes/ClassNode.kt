@@ -156,7 +156,7 @@ class ClassNode(
 			this.clsData = cls.copy()
 			this.classInfo = ClassInfo.fromType(root, ArgType.`object`(cls.getType()))!!
 			// 原 Java 在主构造器中先设置 packageNode 再 load，load 过程中可能读取该字段
-			this.packageNode = PackageNode.getForClass(root, classInfo.`package`, this)
+			this.packageNode = PackageNode.getForClass(root, classInfo.getPackage(), this)
 			load(this.clsData, false)
 		}
 	}
@@ -169,7 +169,7 @@ class ClassNode(
 		this.methods = ArrayList()
 		this.fields = ArrayList()
 		this.inputFileName = null
-		this.packageNode = PackageNode.getForClass(root, classInfo.`package`, this)
+		this.packageNode = PackageNode.getForClass(root, classInfo.getPackage(), this)
 	}
 
 	private fun load(cls: IClassData?, reloading: Boolean) {
@@ -213,7 +213,7 @@ class ClassNode(
 	private fun checkSuperType(cls: IClassData): ArgType? {
 		val superType = cls.getSuperType()
 		if (superType == null) {
-			if (classInfo.getType().getObject() == Consts.CLASS_OBJECT) return null
+			if (classInfo.type.getObject() == Consts.CLASS_OBJECT) return null
 			if (accessFlags.isModuleInfo()) return null
 			throw JadxRuntimeException("No super class in ${classInfo.type}")
 		}
@@ -476,10 +476,10 @@ class ClassNode(
 			return
 		}
 		val newClsInfo = ClassInfo.fromNameWithoutCache(root, newName, classInfo.isInner)!!
-		val newPkg = newClsInfo.`package`
+		val newPkg = newClsInfo.getPackage()
 		val newShortName = newClsInfo.shortName
 		if (classInfo.isInner) {
-			if (newPkg != classInfo.`package`) {
+			if (newPkg != classInfo.getPackage()) {
 				addWarn("Can't change package for inner class: $this to $newName")
 			}
 			classInfo.changeShortName(newShortName)
@@ -503,7 +503,7 @@ class ClassNode(
 
 	fun removeAlias() {
 		if (!classInfo.isInner) {
-			changeClassNodePackage(classInfo.`package`)
+			changeClassNodePackage(classInfo.getPackage())
 		}
 		classInfo.removeAlias()
 	}

@@ -25,7 +25,7 @@ open class InvokeCustomRawNode : InvokeNode {
 
 	private val resolve: InvokeNode
 
-	var callSiteValues: MutableList<EncodedValue>? = null
+	var callSiteValues: List<EncodedValue>? = null
 
 	constructor(resolve: InvokeNode, mthInfo: MethodInfo, insn: InsnData, isRange: Boolean) :
 		super(mthInfo, insn, InvokeType.CUSTOM_RAW, false, isRange) {

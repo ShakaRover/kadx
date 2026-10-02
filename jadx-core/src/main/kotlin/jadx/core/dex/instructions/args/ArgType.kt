@@ -327,7 +327,7 @@ abstract class ArgType private constructor() {
 					return WildcardType(tryToResolveClassAlias(root, wildcardType), type.getWildcardBound()!!)
 				}
 				val clsInfo = ClassInfo.fromName(root, type.getObject())
-				val baseType = if (clsInfo.hasAlias()) `object`(clsInfo.getAliasFullName()) else type
+				val baseType = if (clsInfo.hasAlias()) `object`(clsInfo.aliasFullName) else type
 				if (!type.isGeneric()) return baseType
 				type.getGenericTypes()?.let { generics ->
 					return GenericObject(baseType.getObject(), tryToResolveClassAlias(root, generics))
