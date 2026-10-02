@@ -48,7 +48,9 @@ public class JavaConvertPlugin :
 			result.close()
 			return EmptyCodeLoader.INSTANCE
 		}
-		return dexInput!!.loadCodeFiles(result.getConverted(), result)
+		// loadCodeFiles 的参数是显式 java.util.List（为兼容 Java 实现类），Kotlin List 需桥接转换
+		@Suppress("UNCHECKED_CAST")
+		return dexInput!!.loadCodeFiles(result.getConverted() as java.util.List<Path>, result)
 	}
 
 	public companion object {
