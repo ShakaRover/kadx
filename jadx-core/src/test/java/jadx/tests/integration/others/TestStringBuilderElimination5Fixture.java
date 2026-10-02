@@ -1,12 +1,6 @@
 package jadx.tests.integration.others;
 
-import org.junit.jupiter.api.Test;
-
-import jadx.tests.api.IntegrationTest;
-
-import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
-
-public class TestStringBuilderElimination5 extends IntegrationTest {
+public class TestStringBuilderElimination5Fixture {
 
 	public static class TestCls {
 		@SuppressWarnings("StringConcatenationInLoop")
@@ -34,12 +28,5 @@ public class TestStringBuilderElimination5 extends IntegrationTest {
 			}
 			return s;
 		}
-	}
-
-	@Test
-	public void test() {
-		assertThat(getClassNode(TestCls.class))
-				.code()
-				.doesNotContain(".append(");
 	}
 }

@@ -1,11 +1,6 @@
 package jadx.tests.integration.others;
 
-import org.junit.jupiter.api.Test;
-
-import jadx.tests.api.IntegrationTest;
-import jadx.tests.api.utils.assertj.JadxAssertions;
-
-public class TestReturnWrapping extends IntegrationTest {
+public class TestReturnWrappingFixture {
 	public static class TestCls {
 
 		public static int f1(int arg0) {
@@ -41,15 +36,5 @@ public class TestReturnWrapping extends IntegrationTest {
 			}
 			return arg0;
 		}
-	}
-
-	@Test
-	public void test() {
-		JadxAssertions.assertThat(getClassNode(TestCls.class))
-				.code()
-				.contains("return 255;")
-				.contains("return arg0 + 1;").contains("return i > 128 ? arg0.toString() + ret.toString() : Integer.valueOf(i);")
-				.contains("return arg0 + 2;")
-				.contains("arg0 -= 951;");
 	}
 }

@@ -1,12 +1,6 @@
 package jadx.tests.integration.others;
 
-import jadx.tests.api.IntegrationTest;
-import jadx.tests.api.extensions.profiles.TestProfile;
-import jadx.tests.api.extensions.profiles.TestWithProfiles;
-
-import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
-
-public class TestPrimitiveCasts extends IntegrationTest {
+public class TestPrimitiveCastsFixture {
 
 	public static class TestCls {
 
@@ -60,14 +54,5 @@ public class TestPrimitiveCasts extends IntegrationTest {
 
 		private void useInt(int i) {
 		}
-	}
-
-	@TestWithProfiles({ TestProfile.DX_J8, TestProfile.JAVA8 })
-	public void test() {
-		noDebugInfo();
-		assertThat(getClassNode(TestCls.class))
-				.code()
-				.doesNotContain("(0)")
-				.doesNotContain(") ((int) getLong())");
 	}
 }

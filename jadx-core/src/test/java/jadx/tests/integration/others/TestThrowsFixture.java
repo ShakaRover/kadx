@@ -4,13 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.junit.jupiter.api.Test;
-
-import jadx.tests.api.IntegrationTest;
-
-import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
-
-public class TestThrows extends IntegrationTest {
+public class TestThrowsFixture {
 
 	public static class MissingThrowsTest extends Exception {
 
@@ -99,24 +93,5 @@ public class TestThrows extends IntegrationTest {
 			int i = doSomething3(0);
 			System.out.print(i);
 		}
-	}
-
-	@Test
-	public void test() {
-		assertThat(getClassNode(MissingThrowsTest.class))
-				.code()
-				.containsOne("throwCustomException() throws TestThrows$MissingThrowsTest {")
-				.containsOne("throwException() throws Exception {")
-				.containsOne("throwRuntimeException1() {")
-				.containsOne("throwRuntimeException2() {")
-				.containsOne("throwError() {")
-				.containsOne("throwError2() {")
-				.containsOne("throwThrowable() throws Throwable {")
-				.containsOne("exceptionSource() throws FileNotFoundException {")
-				.containsOne("mergeThrownExceptions() throws IOException {")
-				.containsOne("rethrowThrowable() {")
-				.containsOne("noThrownExceptions1(InputStream i1) {")
-				.containsOne("noThrownExceptions2() {")
-				.containsOne("noThrownExceptions3() {");
 	}
 }

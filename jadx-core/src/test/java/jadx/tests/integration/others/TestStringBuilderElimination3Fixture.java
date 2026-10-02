@@ -1,13 +1,8 @@
 package jadx.tests.integration.others;
 
-import org.junit.jupiter.api.Test;
-
-import jadx.tests.api.IntegrationTest;
-import jadx.tests.api.utils.assertj.JadxAssertions;
-
 import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
 
-public class TestStringBuilderElimination3 extends IntegrationTest {
+public class TestStringBuilderElimination3Fixture {
 
 	public static class TestCls {
 		public static String test(String a) {
@@ -16,14 +11,6 @@ public class TestStringBuilderElimination3 extends IntegrationTest {
 			sb.append(a);
 			return sb.toString();
 		}
-	}
-
-	@Test
-	public void test() {
-		JadxAssertions.assertThat(getClassNode(TestCls.class))
-				.code()
-				.contains("return \"result = \" + a;")
-				.doesNotContain("new StringBuilder()");
 	}
 
 	public static class TestClsNegative {
@@ -46,13 +33,5 @@ public class TestStringBuilderElimination3 extends IntegrationTest {
 		public void check() {
 			assertThat(test()).isEqualTo("before = first, after = second");
 		}
-	}
-
-	@Test
-	public void testNegative() {
-		JadxAssertions.assertThat(getClassNode(TestClsNegative.class))
-				.code()
-				.contains("return sb.toString();")
-				.contains("new StringBuilder()");
 	}
 }

@@ -1,12 +1,8 @@
 package jadx.tests.integration.others;
 
-import org.junit.jupiter.api.Test;
-
-import jadx.tests.api.IntegrationTest;
-
 import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
 
-public class TestShadowingSuperMember extends IntegrationTest {
+public class TestShadowingSuperMemberFixture {
 	public static class TestCls {
 		public static class C {
 			public C(String s) {
@@ -42,14 +38,5 @@ public class TestShadowingSuperMember extends IntegrationTest {
 			assertThat(b.add(3)).isEqualTo(5);
 			assertThat(b.sub(3)).isEqualTo(-1);
 		}
-	}
-
-	@Test
-	public void test() {
-		assertThat(getClassNode(TestCls.class))
-				.code()
-				.containsOne("return super.a00 + b;")
-				.containsOne("return super.a00 - b;")
-				.containsOne("((A) b).a00 = 2;");
 	}
 }

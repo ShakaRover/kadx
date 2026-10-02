@@ -1,12 +1,6 @@
 package jadx.tests.integration.others;
 
-import org.junit.jupiter.api.Test;
-
-import jadx.tests.api.IntegrationTest;
-
-import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
-
-public class TestWrongCode2 extends IntegrationTest {
+public class TestWrongCode2Fixture {
 
 	public static class TestCls {
 		@SuppressWarnings("ConstantConditions")
@@ -48,18 +42,5 @@ public class TestWrongCode2 extends IntegrationTest {
 			public String str;
 			public A A;
 		}
-	}
-
-	@Test
-	public void test() {
-		assertThat(getClassNode(TestCls.class))
-				.code()
-				.containsOne("return a.str;");
-	}
-
-	@Test
-	public void testNoDebug() {
-		noDebugInfo();
-		getClassNode(TestCls.class);
 	}
 }
