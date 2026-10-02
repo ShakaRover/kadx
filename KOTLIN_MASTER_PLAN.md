@@ -144,7 +144,7 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 
 | ID | 目录 | 约数 | 备注 |
 |----|------|-----:|------|
-| T01–T04 | `tests/integration/others` | 98 | T01 ✅ c4544e05（25 driver → Kotlin，16 fixture 保留 Java）；T02–T04 待办 |
+| T01–T04 | `tests/integration/others` | 98 | T01 ✅ c4544e05；T02 ✅ 91b56066（fixture 重命名会使断言里的外部类名同步改名，机械修）；T03–T04 待办 |
 | T05–T06 | `tests/integration/conditions` | 60 | |
 | T07–T08 | `tests/integration/trycatch` | 59 | |
 | T09–T10 | `tests/integration/loops` | 56 | |
