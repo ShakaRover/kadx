@@ -67,10 +67,10 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | jadx-plugins/jadx-java-convert | 0 | 7 | 0 | 0 | ✅ |
 | jadx-plugins/jadx-raung-input | 0 | 2 | 0 | 0 | ✅ |
 | jadx-plugins-tools | 0 | 18 | 0 | 1 | ✅ |
-| **jadx-core** | **0** | **568** | **665** | **25** | 🟡 main ✅；test 迁移中（16 fixture 为有意保留的 Java） |
+| **jadx-core** | **0** | **568** | **472** | **668** | 🟢 main+test 均完成（test 剩 466 个有意 Java：fixture/输入/harness） |
 | jadx-cli | 15 | 0 | 6 | 0 | ⏳ |
 | jadx-gui | 405 | 2 | 8 | 1 | ⏳ |
-| **合计剩余 .java** | | | | | **1100**（含 16 个 fixture 不转） |
+| **合计剩余 .java** | | | | | **约 435**（gui 413 + cli 21 + analysis 1，均非 fixture） |
 
 > jadx-core main 的 556 含批次 1 的 **24 个待删重复 .java**，真实待转 **532**。
 
@@ -161,13 +161,13 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | T24 | `synchronize`(7)+`rename`(7)+`deobf`(7)+`annotations`(7)+`android`(7) | 35 | ✅ 52f4fc2a |
 | T25 | debuginfo/export/assertj/usethis/api-utils/profiles + 测试基础设施 | 28 | ✅ a2e9e7f4（`IntegrationTest.java`、`JadxAssertions.java` 有意保留 Java） |
 | T26 | `jadx/core/**` 单元测试 + `NotYetImplemented*` | 26 | ✅ 12f62644 |
-| T27 | integration 零散包（code/jbc/fallback/special/deobf.a）+ `BaseExternalTest` | 9 | ⏳ |
+| T27 | integration 零散包（code/jbc/fallback/special/deobf.a）+ `BaseExternalTest` | 9 | ✅ 070ed590 |
 
 > **有意保留的 Java 测试文件（不计入待转）：** `tests/api/IntegrationTest.java`（harness 基础设施）、
 > `tests/api/utils/assertj/JadxAssertions.java`（548 个测试静态导入其继承的 AssertJ 静态方法，Kotlin 无法继承 Java 静态成员）、
 > `names/pkg/a.java`、`names/pkg/b.java`、`names/pkg2/TestCls.java`、`names/pkg2/System.java`（反编译输入）。
 
-**里程碑 M4：** T01–T26 完成 → 全量 `./gradlew :jadx-core:test` + `./gradlew build`（core 彻底 Kotlin 化）。
+**里程碑 M4：** T01–T26 完成 → 全量 `./gradlew :jadx-core:test` + `./gradlew build`（core 彻底 Kotlin 化）。 ✅ 已达成（070ed590；仅剩 6 个有意保留的 Java：IntegrationTest/JadxAssertions/4 个反编译输入；460+ 个 `*Fixture.java` 为输入保留）
 
 ## 6. 阶段 4：jadx-cli（main 15 + test 6）
 
