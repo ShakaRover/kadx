@@ -87,7 +87,7 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | C02 | `dex/attributes`（9） + `dex/attributes/nodes` 上半 | ~26 | C01 | ✅ 95d112d9 |
 | C03 | `dex/attributes/nodes` 下半 | ~17 | C02 | ✅ 79869792 |
 | C04 | `dex/instructions`（25） + `instructions/mods`（2） + `instructions/java`（1） | ~28 | C01 | ✅ 1d78cfb1 |
-| C05 | `dex/instructions/invokedynamic`（4） + `dex/info`（8） + `nodes/parser`（1） + `nodes/utils`（3） | ~16 | C04 | ⏳ |
+| C05 | `dex/instructions/invokedynamic`（4） + `dex/info`（8） + `nodes/parser`（1） + `nodes/utils`（3） | ~16 | C04 | ✅ c67a4e3a |
 
 ### 3.2 utils / clsp / trycatch / regions
 
@@ -133,7 +133,7 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | C27 | `api/plugins/events`(4)+`events/types`(3)+`plugins/resources`(3)+`plugins/loader`(2)+`plugins/data`(3)+`plugins/utils`(3)+`plugins/gui`(3) | ~21 | C26 | ⏳ |
 | C28 | `core/plugins`(4)+`plugins/files`(4)+`plugins/versions`(2)+`plugins/events`(2)+`core` 顶层(3) | ~15 | C22 | ⏳ |
 
-**里程碑 M1：** C01–C05 完成后 → 全量 `./gradlew build`（AST 子阶段收口）。
+**里程碑 M1：** C01–C05 完成后 → 全量 `./gradlew build`（AST 子阶段收口）。 ✅ 已达成（c67a4e3a，BUILD SUCCESSFUL）
 **里程碑 M2：** C01–C18 完成后 → 全量 build（core main 全部转完）。
 **里程碑 M3：** C01–C28 完成后 → 全量 build（core main + api 收口）。
 
