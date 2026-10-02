@@ -146,8 +146,8 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 |----|------|-----:|------|
 | T01–T04 | `tests/integration/others` | 98 | ✅ T01 c4544e05 / T02 91b56066 / T03 b0ba5ca1 / T04 2c32486e（others 完成） |
 | T05–T06 | `tests/integration/conditions` | 60 | ✅ T05 776e5588 / T06 e6f72eb5（conditions 完成） |
-| T07–T08 | `tests/integration/trycatch` | 59 | 每批 ~30 |
-| T09–T10 | `tests/integration/loops` | 56 | |
+| T07–T08 | `tests/integration/trycatch` | 59 | ✅ T07 7fc25a7c / T08 82336df7（trycatch 完成） |
+| T09–T10 | `tests/integration/loops` | 56 | 每批 ~28 |
 | T11–T12 | `tests/integration/types` | 47 | |
 | T13–T14 | `tests/integration/inner` | 39 | |
 | T15 | `tests/integration/switches` | 33 | |
