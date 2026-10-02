@@ -664,7 +664,7 @@ class ClassNode(
 	}
 
 	fun removeDependency(dep: ClassNode) {
-		dependencies = safeRemoveAndTrim(dependencies, dep)
+		dependencies = safeRemoveAndTrim(dependencies, dep) ?: emptyList()
 	}
 
 	fun addCodegenDep(dep: ClassNode) {

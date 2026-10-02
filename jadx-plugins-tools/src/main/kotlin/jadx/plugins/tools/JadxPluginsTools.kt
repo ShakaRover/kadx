@@ -3,7 +3,7 @@ package jadx.plugins.tools
 import jadx.api.plugins.JadxPlugin
 import jadx.core.Jadx.getVersion
 import jadx.core.plugins.versions.VerifyRequiredVersion
-import jadx.core.utils.StringUtils.notBlank
+import jadx.core.utils.StringUtils.Companion.notBlank
 import jadx.core.utils.Utils.getOrElse
 import jadx.core.utils.exceptions.JadxRuntimeException
 import jadx.core.utils.files.FileUtils.deleteDir

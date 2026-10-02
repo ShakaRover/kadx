@@ -9,7 +9,7 @@ import jadx.core.utils.InsnUtils.formatOffset
 import jadx.core.utils.Utils.lockList
 import jadx.core.utils.exceptions.JadxRuntimeException
 import java.util.BitSet
-import jadx.core.utils.EmptyBitSet.EMPTY as EMPTY_BITSET
+import jadx.core.utils.EmptyBitSet.Companion.EMPTY as EMPTY_BITSET
 
 class BlockNode(
 	// 常量 ID（cid 的 Java getter 原名为 getCId，这里显式指定 JVM 名以保持 Java 调用方兼容）
@@ -49,7 +49,7 @@ class BlockNode(
 	/** Immediate post dominator */
 	var iPostDom: BlockNode? = null
 
-	private var dominatesOn: MutableList<BlockNode> = ArrayList(3)
+	private var dominatesOn: List<BlockNode> = ArrayList(3)
 
 	override fun getInstructions(): List<InsnNode> = instructions
 
@@ -124,8 +124,9 @@ class BlockNode(
 
 	fun getDominatesOn(): List<BlockNode> = dominatesOn
 
+	@Suppress("UNCHECKED_CAST")
 	fun addDominatesOn(block: BlockNode) {
-		dominatesOn.add(block)
+		(dominatesOn as MutableList<BlockNode>).add(block)
 	}
 
 	fun isSynthetic(): Boolean = contains(AFlag.SYNTHETIC)

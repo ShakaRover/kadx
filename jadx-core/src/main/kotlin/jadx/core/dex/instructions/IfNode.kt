@@ -80,7 +80,7 @@ open class IfNode : GotoNode {
 		if (successors.size == 1) {
 			elseBlock = thenBlock
 		} else {
-			elseBlock = selectOther(thenBlock, successors)
+			elseBlock = selectOther(checkNotNull(thenBlock), successors)
 		}
 	}
 

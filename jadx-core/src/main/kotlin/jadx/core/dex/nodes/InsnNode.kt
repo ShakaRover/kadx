@@ -11,7 +11,7 @@ import jadx.core.dex.instructions.args.InsnArg
 import jadx.core.dex.instructions.args.InsnWrapArg
 import jadx.core.dex.instructions.args.RegisterArg
 import jadx.core.dex.instructions.args.SSAVar
-import jadx.core.utils.InsnRemover.unbindArgUsage
+import jadx.core.utils.InsnRemover.Companion.unbindArgUsage
 import jadx.core.utils.InsnUtils.formatOffset
 import jadx.core.utils.Utils.listToString
 import jadx.core.utils.exceptions.JadxRuntimeException

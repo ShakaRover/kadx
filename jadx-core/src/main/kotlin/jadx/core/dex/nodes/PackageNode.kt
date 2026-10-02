@@ -6,7 +6,7 @@ import jadx.api.metadata.ICodeNodeRef
 import jadx.core.dex.attributes.nodes.LineAttrNode
 import jadx.core.dex.info.ClassInfo
 import jadx.core.dex.info.PackageInfo
-import jadx.core.utils.StringUtils.containsChar
+import jadx.core.utils.StringUtils.Companion.containsChar
 
 class PackageNode(
 	val root: RootNode,

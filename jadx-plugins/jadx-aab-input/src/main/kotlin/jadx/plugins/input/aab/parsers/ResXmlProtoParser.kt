@@ -123,7 +123,7 @@ public class ResXmlProtoParser(private val rootNode: RootNode) : CommonProtoPars
 			return
 		}
 		val value = deobfClassName(getAttributeValue(a))
-		writer.add(name).add("=\"").add(StringUtils.escapeXML(value)).add('"')
+		writer.add(name).add("=\"").add(StringUtils.escapeXML(checkNotNull(value))).add('"')
 		memorizePackageName(name, value)
 		if (isLastElement) {
 			return
