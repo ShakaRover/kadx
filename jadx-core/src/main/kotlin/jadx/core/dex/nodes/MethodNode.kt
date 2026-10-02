@@ -26,7 +26,7 @@ import jadx.core.dex.instructions.args.SSAVar
 import jadx.core.dex.nodes.utils.TypeUtils
 import jadx.core.dex.regions.Region
 import jadx.core.dex.trycatch.ExceptionHandler
-import jadx.core.dex.visitors.InitCodeVariables.initCodeVar
+import jadx.core.dex.visitors.InitCodeVariables.Companion.initCodeVar
 import jadx.core.utils.Utils.collectionMap
 import jadx.core.utils.Utils.listToString
 import jadx.core.utils.exceptions.DecodeException
