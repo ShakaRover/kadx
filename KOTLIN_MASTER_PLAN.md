@@ -127,7 +127,7 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | C21 | `export`（5） + `export/gen`（4） | ~9 | C19 | ✅ cf163394 |
 | C22 | `api` 顶层（20） + `api/args`（5） | ~25 | C19 | ✅ 21bd1286 |
 | C23 | `api/data`(8)+`api/data/impl`(5)+`api/impl`(7)+`api/impl/passes`(3) | ~23 | C22 | ✅ 8cd8befb |
-| C24 | `api/deobf`(3)+`deobf/impl`(3)+`api/metadata`(3)+`metadata/impl`(1)+`metadata/annotations`(5) | ~15 | C22 | ⏳ |
+| C24 | `api/deobf`(3)+`deobf/impl`(3)+`api/metadata`(3)+`metadata/impl`(1)+`metadata/annotations`(5) | ~15 | C22 | ✅ a1a8ae99 |
 | C25 | `api/usage`(3)+`usage/impl`(2)+`api/security`(3)+`security/impl`(1)+`api/resources`(1)+`api/gui/tree`(1)+`api/utils`(1)+`api/utils/tasks`(1) | ~13 | C22 | ⏳ |
 | C26 | `api/plugins`(5)+`plugins/pass`(2)+`pass/impl`(3)+`pass/types`(4)+`plugins/options`(4)+`options/impl`(4) | ~22 | C22 | ⏳ |
 | C27 | `api/plugins/events`(4)+`events/types`(3)+`plugins/resources`(3)+`plugins/loader`(2)+`plugins/data`(3)+`plugins/utils`(3)+`plugins/gui`(3) | ~21 | C26 | ⏳ |
