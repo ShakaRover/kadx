@@ -151,8 +151,8 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | T11–T12 | `tests/integration/types` | 47 | ✅ T11 87c06a9f / T12 891d9e86（types 完成） |
 | T13–T14 | `tests/integration/inner` | 39 | ✅ T13 40a11fdb / T14 d7821ec2（inner 完成） |
 | T15 | `tests/integration/switches` | 33 | ✅ 832c7dad |
-| T16 | `tests/integration/enums` | 26 | ⏳ |
-| T17 | `tests/integration/invoke` | 23 | |
+| T16 | `tests/integration/enums` | 26 | ✅ 35b20a62 |
+| T17 | `tests/integration/invoke` | 23 | ⏳ |
 | T18 | `tests/integration/generics` | 21 | |
 | T19 | `tests/integration/names` + `pkg` + `pkg2` | 22 | |
 | T20–T21 | `tests/integration/inline`(18) / `arrays`(17) | 35 | |
