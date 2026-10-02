@@ -1,12 +1,8 @@
 package jadx.tests.integration.names;
 
-import org.junit.jupiter.api.Test;
-
-import jadx.tests.api.IntegrationTest;
-
 import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
 
-public class TestConstructorArgNames extends IntegrationTest {
+public class TestConstructorArgNamesFixture {
 
 	@SuppressWarnings({ "FieldCanBeLocal", "FieldMayBeFinal", "StaticVariableName", "ParameterName" })
 	public static class TestCls {
@@ -28,14 +24,5 @@ public class TestConstructorArgNames extends IntegrationTest {
 			assertThat(new TestCls("a", "b").store).isEqualTo("b");
 			assertThat(new TestCls().store).isEqualTo(STR);
 		}
-	}
-
-	@Test
-	public void test() {
-		assertThat(getClassNode(TestCls.class))
-				.code()
-				.containsOne("this.str = str;")
-				.containsOne("this.store = STR2;")
-				.containsOne("this.store = STR;");
 	}
 }

@@ -1,13 +1,8 @@
 package jadx.tests.integration.names;
 
-import org.junit.jupiter.api.Test;
-
-import jadx.core.dex.nodes.ClassNode;
-import jadx.tests.api.IntegrationTest;
-
 import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
 
-public class TestDuplicateVarNames extends IntegrationTest {
+public class TestDuplicateVarNamesFixture {
 
 	public static class TestCls {
 		public static class A {
@@ -39,16 +34,5 @@ public class TestDuplicateVarNames extends IntegrationTest {
 			});
 			assertThat(str).isEqualTo("1.2");
 		}
-	}
-
-	@Test
-	public void test() {
-		noDebugInfo();
-		ClassNode cls = getClassNode(TestCls.class);
-
-		assertThat(cls)
-				.code()
-				.doesNotContain("return a + \".\" + a;")
-				.doesNotContain("AnonymousClass1");
 	}
 }

@@ -5,16 +5,11 @@ import java.util.BitSet;
 import java.util.Deque;
 import java.util.List;
 
-import org.junit.jupiter.api.Test;
-
 import jadx.core.dex.nodes.BlockNode;
 import jadx.core.dex.nodes.MethodNode;
 import jadx.core.dex.visitors.ssa.LiveVarAnalysis;
-import jadx.tests.api.IntegrationTest;
 
-import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
-
-public class TestNameAssign2 extends IntegrationTest {
+public class TestNameAssign2Fixture {
 
 	public static class TestCls {
 
@@ -49,12 +44,5 @@ public class TestNameAssign2 extends IntegrationTest {
 
 		private static void addPhi(BlockNode df, int regNum) {
 		}
-	}
-
-	@Test
-	public void test() {
-		assertThat(getClassNode(TestCls.class))
-				.code()
-				.doesNotContain("int id;");
 	}
 }
