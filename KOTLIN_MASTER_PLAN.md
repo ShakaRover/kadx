@@ -155,8 +155,8 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | T17 | `tests/integration/invoke` | 23 | ✅ 589e9a6c |
 | T18 | `tests/integration/generics` | 21 | ✅ 461eec21 |
 | T19 | `tests/integration/names` + `pkg` + `pkg2` | 22 | ✅ 9e59bc02（pkg/a、pkg/b、pkg2/TestCls、pkg2/System 作为输入保留 Java） |
-| T20–T21 | `tests/integration/inline`(18) / `arrays`(17) | 35 | 合并一批 |
-| T22 | `tests/integration/variables`(16) + `arith`(14) | 30 | |
+| T20–T21 | `tests/integration/inline`(18) / `arrays`(17) | 35 | ✅ b59bd4bc |
+| T22 | `tests/integration/variables`(16) + `arith`(14) | 30 | ⏳ |
 | T23 | `integration/java8`(11) + `functional`(8) + `api/compiler`(8) | 27 | |
 | T24 | `synchronize`(7)+`rename`(7)+`deobf`(7)+`annotations`(7)+`android`(7) | 35 | |
 | T25 | `core/utils`(6)+`debuginfo`(5)+`export`(5)+`api/utils/assertj`(5)+`usethis`(4)+`api`(4) | 29 | |
