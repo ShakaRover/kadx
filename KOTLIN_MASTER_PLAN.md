@@ -115,7 +115,7 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | C14 | `finaly/traverser/handlers`(8)+`visitors`(4)+`visitors/comparator`(2)+`factory`(2) | ~16 | C13 | ✅ 929c3f23 |
 | C15 | `deobf`（6） + `deobf/conditions`（8） | ~14 | C12b | ✅ ec7c288a |
 | C16 | `dex/visitors` 顶层 39 个 pass 上半 | ~20 | C14 | ✅ 99e78587 |
-| C17 | `dex/visitors` 顶层 39 个 pass 下半 | ~19 | C16 | ⏳ |
+| C17 | `dex/visitors` 顶层 39 个 pass 下半 | ~19 | C16 | ✅ faf2df5e |
 | C18 | `visitors/rename`(4)+`usage`(3)+`shrink`(3)+`prepare`(2)+`fixaccessmodifiers`(2)+`debuginfo`(2)+`methods`(1)+`kotlin`(1)+`gradle`(1) | ~19 | C16 | ⏳ |
 
 ### 3.5 codegen / xmlgen / export / api
@@ -262,6 +262,13 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 - **自定义集合/工具返回 Kotlin `List`** 会让下游 `MutableList` 声明不兼容（`BlockNode.dominatesOn`）。
 - **可空参数要如实标 `?`**：`InsnUtils.replaceInsns` 的 `Function<InsnNode, InsnNode?>`（Java lambda 返回 null）、`ListUtils.concat` 的 `first`、`BlockUtils.containsExitInsn` 等；否则集成测试才 NPE。
 - **`toString` 自递归**、`lateinit` 未初始化、集合别名 `as ArrayList` 强转，都是 C01 已记录但会在新包重现的坑，逐包排查。
+
+### 9.5 批次 C16–C17 追加教训（高危，必读）
+
+- **Kotlin `String.split("...")` 按字面量切分，不是正则**！Java 的 `split("\\.")` 在 Kotlin 里必须写 `split(Regex("\\."))`，否则只按字面 `\.` 切。C17 用此修好 `SignatureProcessor` 3 个测试。
+- **Kotlin lambda 版 `visitInsns { }` / `visitArgs { }` 在 lambda 返回非 null 时提前 return**，与 Java 的完整嵌套遍历语义不同；需要完整遍历时必须显式传 `java.util.function.Consumer`。C17 修好 26 个测试。
+- 类转 Kotlin 后，`RootNode.kt` 的 `p.name` 合成属性失效 → 改 `p.getName()`（C16）。
+- `object` 单例（如 `DepthTraversal`、`SaveCode`）保留 `import Xxx.member` 的静态导入可用；`companion object` 则需 `Xxx.Companion.member`。
 
 ## 10. 下一单（Commander 已派发）
 
