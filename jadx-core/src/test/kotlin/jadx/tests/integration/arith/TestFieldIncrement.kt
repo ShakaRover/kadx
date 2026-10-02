@@ -1,0 +1,20 @@
+package jadx.tests.integration.arith
+
+import jadx.tests.api.IntegrationTest
+import jadx.tests.api.utils.assertj.JadxAssertions.assertThat
+import org.junit.jupiter.api.Test
+
+/**
+ * 字段自增/自减与字符串追加：`instanceField++`、`staticField--`、`result += ...`。
+ */
+class TestFieldIncrement : IntegrationTest() {
+
+	@Test
+	fun test() {
+		assertThat(getClassNode(TestFieldIncrementFixture.TestCls::class.java))
+			.code()
+			.contains("instanceField++;")
+			.contains("staticField--;")
+			.contains("result += s + '_';")
+	}
+}
