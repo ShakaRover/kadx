@@ -94,7 +94,7 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | ID | 范围 | 约数 | 依赖 | 状态 |
 |----|------|-----:|------|------|
 | C06 | `dex/regions`（5） + `regions/conditions`（5） + `regions/loops`（4） | ~14 | C04 | ✅ 7129435c |
-| C07 | `core/utils`（26） | 26 | C05 | ⏳ |
+| C07 | `core/utils`（26） | 26 | C05 | ✅ 25575424 |
 | C08 | `utils/android`(9)+`utils/blocks`(3)+`utils/exceptions`(7)+`utils/files`(1)+`utils/input`(1)+`utils/log`(1)+`utils/tasks`(1) | ~23 | C07 | ⏳ |
 | C09 | `clsp`（6） + `dex/trycatch`（7） | ~13 | C07 | ⏳ |
 
@@ -251,11 +251,17 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 - 只要 `@JvmStatic`/`@JvmField`/`open`/`override` 到位，Java 调用方基本零改动；C02 仅需上述两处 Kotlin 侧修正。
 
 ### 9.3 批次 C03 追加教训
-
 - **原 Java 合成属性转 Kotlin 后需改真 property**：`RegDebugInfoAttr.getName()/getRegType()` 转 Kotlin 后，`SSAVar.kt` 的 `debugInfoAttr.getName()` 失效 → 改 `debugInfoAttr.name`。
 - **Getter 命名差异**：`isVisited()` 若写成属性会变成 `getVisited` → 用「私有字段 + 显式 `isVisited()/setVisited()`」。
 - **K2 下裸 `SortedSet` 无法解析** → 写全限定 `java.util.SortedSet`（JVM 擦除相同）。
 - 哨兵类用私有构造器 + 嵌套 `enum class` 保留。
+
+### 9.4 批次 C04–C07 追加教训
+
+- **`object` / `companion object` 静态成员在 Kotlin 调用点的写法不同**：`companion object` 的成员从其他 Kotlin 文件访问需 `Xxx.Companion.member`（如 `EmptyBitSet.Companion.EMPTY`、`StringUtils.Companion.notBlank`）；`object` 单例则直接 `Xxx.member`。转类时选错会让下游 Kotlin 全红。
+- **自定义集合/工具返回 Kotlin `List`** 会让下游 `MutableList` 声明不兼容（`BlockNode.dominatesOn`）。
+- **可空参数要如实标 `?`**：`InsnUtils.replaceInsns` 的 `Function<InsnNode, InsnNode?>`（Java lambda 返回 null）、`ListUtils.concat` 的 `first`、`BlockUtils.containsExitInsn` 等；否则集成测试才 NPE。
+- **`toString` 自递归**、`lateinit` 未初始化、集合别名 `as ArrayList` 强转，都是 C01 已记录但会在新包重现的坑，逐包排查。
 
 ## 10. 下一单（Commander 已派发）
 
