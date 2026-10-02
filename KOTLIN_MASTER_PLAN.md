@@ -116,7 +116,7 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | C15 | `deobf`（6） + `deobf/conditions`（8） | ~14 | C12b | ✅ ec7c288a |
 | C16 | `dex/visitors` 顶层 39 个 pass 上半 | ~20 | C14 | ✅ 99e78587 |
 | C17 | `dex/visitors` 顶层 39 个 pass 下半 | ~19 | C16 | ✅ faf2df5e |
-| C18 | `visitors/rename`(4)+`usage`(3)+`shrink`(3)+`prepare`(2)+`fixaccessmodifiers`(2)+`debuginfo`(2)+`methods`(1)+`kotlin`(1)+`gradle`(1) | ~19 | C16 | ⏳ |
+| C18 | `visitors/rename`(4)+`usage`(3)+`shrink`(3)+`prepare`(2)+`fixaccessmodifiers`(2)+`debuginfo`(2)+`methods`(1)+`kotlin`(1)+`gradle`(1) | ~19 | C16 | ✅ 1b54a6ac |
 
 ### 3.5 codegen / xmlgen / export / api
 
@@ -134,7 +134,7 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | C28 | `core/plugins`(4)+`plugins/files`(4)+`plugins/versions`(2)+`plugins/events`(2)+`core` 顶层(3) | ~15 | C22 | ⏳ |
 
 **里程碑 M1：** C01–C05 完成后 → 全量 `./gradlew build`（AST 子阶段收口）。 ✅ 已达成（c67a4e3a，BUILD SUCCESSFUL）
-**里程碑 M2：** C01–C18 完成后 → 全量 build（core main 全部转完）。
+**里程碑 M2：** C01–C18 完成后 → 全量 build（`dex/*` 全转完，仅剩 codegen/api/xmlgen/export）。 ✅ 已达成（1b54a6ac）
 **里程碑 M3：** C01–C28 完成后 → 全量 build（core main + api 收口）。
 
 ## 5. 阶段 3 收尾：jadx-core test 迁移（674）
