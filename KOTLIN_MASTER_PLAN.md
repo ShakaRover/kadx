@@ -124,7 +124,7 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 |----|------|-----:|------|------|
 | C19 | `codegen`(10)+`codegen/utils`(2)+`codegen/json`(2)+`json/cls`(5)+`json/mapping`(4) | ~23 | C18 | ✅ e3d77fe8 |
 | C20 | `xmlgen`（19） + `xmlgen/entry`（6） | ~25 | C18 | ✅ 1cdfd66b |
-| C21 | `export`（5） + `export/gen`（4） | ~9 | C19 | ⏳ |
+| C21 | `export`（5） + `export/gen`（4） | ~9 | C19 | ✅ cf163394 |
 | C22 | `api` 顶层（20） + `api/args`（5） | ~25 | C19 | ⏳ |
 | C23 | `api/data`(8)+`api/data/impl`(5)+`api/impl`(7)+`api/impl/passes`(3) | ~23 | C22 | ⏳ |
 | C24 | `api/deobf`(3)+`deobf/impl`(3)+`api/metadata`(3)+`metadata/impl`(1)+`metadata/annotations`(5) | ~15 | C22 | ⏳ |
