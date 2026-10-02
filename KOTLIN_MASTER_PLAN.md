@@ -290,8 +290,10 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 - **`@JvmStatic` 静态成员在 Kotlin 调用点写 `Xxx.member` 即可**（companion 也支持），无需 `.Companion.`。
 - **`ResourceType` 枚举 companion 初始化顺序**：`EXT_MAP` 的填充代码在 `<clinit>` 中位于枚举常量之后，`getFileType` 调用时已就绪，安全。
 
-## 10. 下一单（Commander 已派发）
+## 10. 当前状态与下一单
 
-- **当前在跑：** C01 收尾（子代理 `f305a56b-24e2-448`）。
-- **C01 验收后立即派发：** C02（`dex/attributes` + `dex/attributes/nodes` 上半）。
-- **派单原则：** 每单结尾强制要求 Worker 回报「删了哪些 .java / 新增哪些 .kt / 构建输出 / commit hash / 遗留错误」。
+- **已完成：** C01–C22（AST → utils/clsp → CFG/SSA/regions → pass 链 → codegen/xmlgen/export → api 核心）。
+- **进行中：** C23（`api/data` + `api/impl` + `passes`，23 文件）。
+- **待办（core main）：** C24–C28（api/deobf、metadata、usage/security、plugins 各子包、core/plugins + core 顶层）。
+- **然后：** M3 全量 build → jadx-core test 迁移（T01–T26）→ jadx-cli（CL01–02）→ jadx-gui（G01–G21）→ jadx-analysis 尾测试（A01）。
+- **派单原则：** 每单结尾强制要求 Worker 回报「删了哪些 .java / 新增哪些 .kt / 构建输出 / commit hash / 遗留错误」；Worker 不得自行改本文件（教训记录由 Commander 汇总）。
