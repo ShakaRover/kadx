@@ -21,15 +21,15 @@ public object DalvikToJavaBytecodeUtils {
 
 	@JvmStatic
 	public fun getMethodArgLvIndex(methodArg: VarNode): Int? {
-		val mth = methodArg.mth
-		val lvIndex = getMethodArgLvIndexViaSsaVars(methodArg.reg, mth)
+		val mth = methodArg.getMth()
+		val lvIndex = getMethodArgLvIndexViaSsaVars(methodArg.getReg(), mth)
 		if (lvIndex != null) {
 			return lvIndex
 		}
 		var result: Int? = null
 		val args = mth.collectArgNodes()
 		for (arg in args) {
-			result = arg.reg - args[0].reg + if (mth.accessFlags.isStatic()) 0 else 1
+			result = arg.getReg() - args[0].getReg() + if (mth.accessFlags.isStatic()) 0 else 1
 			if (arg == methodArg) {
 				break
 			}
@@ -52,8 +52,8 @@ public object DalvikToJavaBytecodeUtils {
 
 	@JvmStatic
 	public fun getMethodVarLvIndex(methodVar: VarNode): Int {
-		val mth = methodVar.mth
-		val lvIndex = getMethodVarLvIndexViaSsaVars(methodVar.reg, mth)
+		val mth = methodVar.getMth()
+		val lvIndex = getMethodVarLvIndexViaSsaVars(methodVar.getReg(), mth)
 		if (lvIndex != null) {
 			return lvIndex
 		}
@@ -62,7 +62,7 @@ public object DalvikToJavaBytecodeUtils {
 		if (args.isNotEmpty()) {
 			lastArgLvIndex = getMethodArgLvIndex(args[args.size - 1])!!
 		}
-		return lastArgLvIndex + methodVar.reg + if (mth.accessFlags.isStatic()) 0 else 1
+		return lastArgLvIndex + methodVar.getReg() + if (mth.accessFlags.isStatic()) 0 else 1
 	}
 
 	@JvmStatic
@@ -90,7 +90,7 @@ public object DalvikToJavaBytecodeUtils {
 
 	@JvmStatic
 	public fun getMethodArgLvtIndex(methodArg: VarNode): Int? {
-		val mth = methodArg.mth
+		val mth = methodArg.getMth()
 		var lvtIndex = if (mth.accessFlags.isStatic()) 0 else 1
 		for (arg in mth.collectArgNodes()) {
 			if (arg == methodArg) {

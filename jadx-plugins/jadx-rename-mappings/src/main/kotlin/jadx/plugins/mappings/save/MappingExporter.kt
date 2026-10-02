@@ -166,7 +166,7 @@ public class MappingExporter(private val root: RootNode) {
 							lvIndex = -1
 						}
 						val key = rawClassName + methodInfo.shortId +
-							JadxCodeRef.forVar(arg.reg, arg.ssa)
+							JadxCodeRef.forVar(arg.getReg(), arg.getSsa())
 						if (mappedMethodArgsAndVars.containsKey(key)) {
 							visitMethodArg(mappingTree, classPath, methodName, methodDesc, args.indexOf(arg), lvIndex!!)
 							mappingTree.visitDstName(MappedElementKind.METHOD_ARG, 0, mappedMethodArgsAndVars[key])
@@ -182,7 +182,7 @@ public class MappingExporter(private val root: RootNode) {
 						val endOpIdx = info.endOpIdx
 						val lvIndex = DalvikToJavaBytecodeUtils.getMethodVarLvIndex(varNode)!!
 						val key = rawClassName + methodInfo.shortId +
-							JadxCodeRef.forVar(varNode.reg, varNode.ssa)
+							JadxCodeRef.forVar(varNode.getReg(), varNode.getSsa())
 						if (mappedMethodArgsAndVars.containsKey(key)) {
 							visitMethodVar(mappingTree, classPath, methodName, methodDesc, lvtIndex, lvIndex, startOpIdx, endOpIdx)
 							mappingTree.visitDstName(MappedElementKind.METHOD_VAR, 0, mappedMethodArgsAndVars[key])

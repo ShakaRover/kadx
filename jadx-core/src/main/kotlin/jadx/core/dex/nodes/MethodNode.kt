@@ -246,9 +246,9 @@ class MethodNode(
 		codeInfo.getCodeMetadata().searchDown(mthDefPos) { pos, ann ->
 			if (pos > lineEndPos) return@searchDown true
 			if (ann is NodeDeclareRef) {
-				val declRef = ann.node
+				val declRef = ann.getNode()
 				if (declRef is VarNode) {
-					if (declRef.mth != this) return@searchDown true
+					if (declRef.getMth() !== this) return@searchDown true
 					args.add(declRef)
 				}
 			}

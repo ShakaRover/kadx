@@ -26,7 +26,7 @@ public object VariablesUtils {
 
 	public fun collect(mth: MethodNode): List<VarInfo> {
 		val codeInfo = mth.getTopParentClass().getCode()
-		val mthDefPos = mth.defPosition
+		val mthDefPos = mth.getDefPosition()
 		val mthLineEndPos = CodeUtils.getLineEndForPos(codeInfo.getCodeStr(), mthDefPos)
 		val codeVisitor = CodeVisitor(mth)
 		codeInfo.getCodeMetadata().searchDown(mthLineEndPos) { pos, ann -> codeVisitor.process(pos, ann) }
@@ -39,14 +39,14 @@ public object VariablesUtils {
 
 		fun process(pos: Int?, ann: ICodeAnnotation): Boolean? {
 			if (ann is InsnCodeOffset) {
-				lastOffset = ann.offset
+				lastOffset = ann.getOffset()
 			}
 			if (ann is NodeDeclareRef) {
-				val declRef = ann.node
+				val declRef = ann.getNode()
 				if (declRef is VarNode) {
-					if (declRef.mth != mth) { // 已经越过当前方法、进入其他方法时停止
+					if (declRef.getMth() !== mth) { // 已经越过当前方法、进入其他方法时停止
 						if (vars.isNotEmpty()) {
-							vars[vars.size - 1].endOpIdx = declRef.defPosition - 1
+							vars[vars.size - 1].endOpIdx = declRef.getDefPosition() - 1
 						}
 						return true
 					}
@@ -59,7 +59,7 @@ public object VariablesUtils {
 						LOG.warn(
 							"Local variable not present in bytecode, skipping: {}#{}",
 							mth.getMethodInfo().rawFullId,
-							declRef.name,
+							declRef.getName(),
 						)
 					}
 					lastOffset = -1

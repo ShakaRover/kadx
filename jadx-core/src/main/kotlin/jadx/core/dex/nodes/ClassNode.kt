@@ -100,14 +100,14 @@ class ClassNode(
 				if (ann.getAnnType() == ICodeAnnotation.AnnType.DECLARATION) {
 					val declareRef = ann as NodeDeclareRef
 					declareRef.setDefPos(pos)
-					declareRef.node.setDefPosition(pos)
+					declareRef.getNode().setDefPosition(pos)
 				}
 			}
 			val values: MutableList<ICodeAnnotation> = ArrayList(annotations.values)
 			values.removeIf { v ->
 				if (v.getAnnType() == ICodeAnnotation.AnnType.VAR_REF) {
 					val varRef = v as VarRef
-					if (varRef.refPos == 0) {
+					if (varRef.getRefPos() == 0) {
 						LOG.debug("Var reference '{}' incorrect (ref pos is zero) and was removed from metadata", varRef)
 						return@removeIf true
 					}

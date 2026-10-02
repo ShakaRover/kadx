@@ -82,11 +82,11 @@ class RenameVisitor : AbstractVisitor() {
 				for (pkg in root.getPackages()) {
 					val pkgPath = pkg.getAliasPkgInfo().fullName.lowercase()
 					if (!pkgPaths.add(pkgPath)) {
-						pkg.setLeafAlias(aliasProvider.forPackage(pkg), false)
+						pkg.setLeafAlias(checkNotNull(aliasProvider.forPackage(pkg)), false)
 						pkgUpdated = true
 						// 验证新名字也不再冲突
 						if (!pkgPaths.add(pkg.getAliasPkgInfo().fullName.lowercase())) {
-							pkg.setLeafAlias(aliasProvider.forPackage(pkg), false)
+							pkg.setLeafAlias(checkNotNull(aliasProvider.forPackage(pkg)), false)
 						}
 					}
 				}
@@ -122,7 +122,7 @@ class RenameVisitor : AbstractVisitor() {
 			val newShortName = fixClsShortName(args, clsName)
 			if (newShortName == null) {
 				// 重命名失败，用反混淆器
-				cls.rename(aliasProvider.forClass(cls))
+				cls.rename(checkNotNull(aliasProvider.forClass(cls)))
 				cls.addAttr(RenameReasonAttr(cls).notPrintable())
 				return
 			}
@@ -135,7 +135,7 @@ class RenameVisitor : AbstractVisitor() {
 				var parentClass = classInfo.parentClass
 				while (parentClass != null) {
 					if (parentClass.aliasShortName == newShortName) {
-						cls.rename(aliasProvider.forClass(cls))
+						cls.rename(checkNotNull(aliasProvider.forClass(cls)))
 						cls.addAttr(RenameReasonAttr(cls).append("collision with other inner class name"))
 						break
 					}
@@ -153,7 +153,7 @@ class RenameVisitor : AbstractVisitor() {
 			val notValid = args.isRenameValid && !NameMapper.isValidIdentifier(pkgName)
 			val notPrintable = args.isRenamePrintable && !NameMapper.isAllCharsPrintable(pkgName)
 			if (notValid || notPrintable) {
-				pkg.setLeafAlias(aliasProvider.forPackage(pkg), false)
+				pkg.setLeafAlias(checkNotNull(aliasProvider.forPackage(pkg)), false)
 				return true
 			}
 			return false
@@ -200,7 +200,7 @@ class RenameVisitor : AbstractVisitor() {
 				val notValid = args.isRenameValid && !NameMapper.isValidIdentifier(fieldName)
 				val notPrintable = args.isRenamePrintable && !NameMapper.isAllCharsPrintable(fieldName)
 				if (notUnique || notValid || notPrintable) {
-					field.rename(aliasProvider.forField(field))
+					field.rename(checkNotNull(aliasProvider.forField(field)))
 					field.addAttr(RenameReasonAttr(field, notValid, notPrintable))
 					if (notUnique) {
 						field.addAttr(RenameReasonAttr(field).append("collision with other field name"))
@@ -221,7 +221,7 @@ class RenameVisitor : AbstractVisitor() {
 				val notValid = args.isRenameValid && !NameMapper.isValidIdentifier(alias)
 				val notPrintable = args.isRenamePrintable && !NameMapper.isAllCharsPrintable(alias)
 				if (notValid || notPrintable) {
-					mth.rename(aliasProvider.forMethod(mth))
+					mth.rename(checkNotNull(aliasProvider.forMethod(mth)))
 					mth.addAttr(RenameReasonAttr(mth, notValid, notPrintable))
 				}
 			}
@@ -231,7 +231,7 @@ class RenameVisitor : AbstractVisitor() {
 				for (mth in methods) {
 					val signature = mth.getMethodInfo().makeSignature(true, false)
 					if (!names.add(signature) && canRename(mth)) {
-						mth.rename(aliasProvider.forMethod(mth))
+						mth.rename(checkNotNull(aliasProvider.forMethod(mth)))
 						mth.addAttr(RenameReasonAttr("collision with other method in class"))
 					}
 				}
@@ -263,7 +263,7 @@ class RenameVisitor : AbstractVisitor() {
 				for (cls in classes) {
 					for (field in cls.fields) {
 						if (rootPkgs.contains(field.getAlias())) {
-							field.rename(aliasProvider.forField(field))
+							field.rename(checkNotNull(aliasProvider.forField(field)))
 							field.addAttr(RenameReasonAttr("collision with root package name"))
 						}
 					}
