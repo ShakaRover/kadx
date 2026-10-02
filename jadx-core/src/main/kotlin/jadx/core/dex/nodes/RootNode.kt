@@ -324,11 +324,11 @@ class RootNode private constructor(
 		if (mode == DecompilationMode.FALLBACK || mode == DecompilationMode.SIMPLE) return
 
 		PassMerge(preDecompilePasses).merge(customPasses[JadxPreparePass.TYPE]) { p -> PreparePassWrapper(p as JadxPreparePass) }
-		PassMerge(processClasses.passes).merge(customPasses[JadxDecompilePass.TYPE]) { p -> DecompilePassWrapper(p as JadxDecompilePass) }
+		PassMerge(processClasses.getPasses()).merge(customPasses[JadxDecompilePass.TYPE]) { p -> DecompilePassWrapper(p as JadxDecompilePass) }
 
 		if (args.isRunDebugChecks) {
 			preDecompilePasses = insertDebugPasses(preDecompilePasses)
-			processClasses = ProcessClass(insertDebugPasses(processClasses.passes))
+			processClasses = ProcessClass(insertDebugPasses(processClasses.getPasses()))
 		}
 		val disabledPasses = args.disabledPasses
 		if (disabledPasses.isNotEmpty()) {
@@ -341,7 +341,7 @@ class RootNode private constructor(
 					false
 				}
 			}
-			processClasses.passes.removeIf { p ->
+			processClasses.getPasses().removeIf { p ->
 				if (disabledSet.contains(p.getName())) {
 					LOG.debug("Disable pass: {}", p.getName())
 					true
@@ -381,8 +381,8 @@ class RootNode private constructor(
 	fun resetPasses() {
 		preDecompilePasses.clear()
 		preDecompilePasses.addAll(Jadx.getPreDecompilePassesList())
-		processClasses.passes.clear()
-		processClasses.passes.addAll(Jadx.getPassesList(args))
+		processClasses.getPasses().clear()
+		processClasses.getPasses().addAll(Jadx.getPassesList(args))
 	}
 
 	fun restartVisitors() {
@@ -595,7 +595,7 @@ class RootNode private constructor(
 
 	fun getProcessClasses(): ProcessClass = processClasses
 
-	fun getPasses(): List<IDexTreeVisitor> = processClasses.passes
+	fun getPasses(): List<IDexTreeVisitor> = processClasses.getPasses()
 
 	fun getPreDecompilePasses(): List<IDexTreeVisitor> = preDecompilePasses
 

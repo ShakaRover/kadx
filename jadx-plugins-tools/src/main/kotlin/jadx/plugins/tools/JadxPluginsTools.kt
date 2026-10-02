@@ -78,7 +78,7 @@ class JadxPluginsTools private constructor() {
 		}
 		throw JadxRuntimeException(
 			"Can't find compatible version to install" +
-				", current jadx version: ${verifyRequiredVersion.jadxVersion}" +
+				", current jadx version: ${verifyRequiredVersion.getJadxVersion()}" +
 				"\nrejected plugin versions:\n" +
 				rejectedVersions.joinToString("\n"),
 		)
