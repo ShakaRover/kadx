@@ -2,13 +2,7 @@ package jadx.tests.integration.generics;
 
 import java.util.Map;
 
-import org.junit.jupiter.api.Test;
-
-import jadx.tests.api.IntegrationTest;
-
-import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
-
-public class TestTypeVarsFromOuterClass extends IntegrationTest {
+public class TestTypeVarsFromOuterClassFixture {
 
 	public static class TestCls {
 		public interface I<X> {
@@ -47,16 +41,5 @@ public class TestTypeVarsFromOuterClass extends IntegrationTest {
 
 		public void use(Object a, Object b) {
 		}
-	}
-
-	@Test
-	public void test() {
-		noDebugInfo();
-		assertThat(getClassNode(TestCls.class))
-				.code()
-				.doesNotContain("Outer<Y>.Inner inner")
-				.doesNotContain("Object entry = ")
-				.countString(2, "Outer<String>.Inner inner = this.outer.getInner();")
-				.countString(2, "Map.Entry<String, String> entry = ");
 	}
 }

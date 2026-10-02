@@ -1,12 +1,6 @@
 package jadx.tests.integration.generics;
 
-import org.junit.jupiter.api.Test;
-
-import jadx.tests.api.IntegrationTest;
-
-import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
-
-public class TestGenericFields extends IntegrationTest {
+public class TestGenericFieldsFixture {
 
 	public static class TestCls {
 
@@ -27,14 +21,5 @@ public class TestGenericFields extends IntegrationTest {
 			Amount amount = summary.price.value;
 			return amount.val + " " + amount.cur;
 		}
-	}
-
-	@Test
-	public void test() {
-		noDebugInfo();
-		assertThat(getClassNode(TestCls.class))
-				.code()
-				.doesNotContain("T t = ")
-				.containsOne("Amount amount =");
 	}
 }

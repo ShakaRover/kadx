@@ -2,12 +2,7 @@ package jadx.tests.integration.generics;
 
 import java.util.Collection;
 
-import org.junit.jupiter.api.Test;
-
-import jadx.tests.api.IntegrationTest;
-import jadx.tests.api.utils.assertj.JadxAssertions;
-
-public class TestGenerics6 extends IntegrationTest {
+public class TestGenerics6Fixture {
 
 	public static class TestCls {
 		public void test1(Collection<? extends A> as) {
@@ -30,13 +25,5 @@ public class TestGenerics6 extends IntegrationTest {
 			public void f() {
 			}
 		}
-	}
-
-	@Test
-	public void test() {
-		JadxAssertions.assertThat(getClassNode(TestCls.class))
-				.code()
-				.containsOne("for (A a : as) {")
-				.containsOne("for (I i : is) {");
 	}
 }

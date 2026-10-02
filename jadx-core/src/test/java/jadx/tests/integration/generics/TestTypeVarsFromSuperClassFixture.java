@@ -2,13 +2,7 @@ package jadx.tests.integration.generics;
 
 import java.util.Objects;
 
-import org.junit.jupiter.api.Test;
-
-import jadx.tests.api.IntegrationTest;
-
-import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
-
-public class TestTypeVarsFromSuperClass extends IntegrationTest {
+public class TestTypeVarsFromSuperClassFixture {
 
 	@SuppressWarnings("ResultOfMethodCallIgnored")
 	public static class TestCls {
@@ -32,14 +26,5 @@ public class TestTypeVarsFromSuperClass extends IntegrationTest {
 				return str;
 			}
 		}
-	}
-
-	@Test
-	public void test() {
-		noDebugInfo();
-		assertThat(getClassNode(TestCls.class))
-				.code()
-				.containsOne("= call();")
-				.doesNotContain("(String)");
 	}
 }

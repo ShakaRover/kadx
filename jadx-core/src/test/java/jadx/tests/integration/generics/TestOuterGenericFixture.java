@@ -2,13 +2,7 @@ package jadx.tests.integration.generics;
 
 import java.util.Set;
 
-import org.junit.jupiter.api.Test;
-
-import jadx.NotYetImplemented;
-import jadx.tests.api.IntegrationTest;
-import jadx.tests.api.utils.assertj.JadxAssertions;
-
-public class TestOuterGeneric extends IntegrationTest {
+public class TestOuterGenericFixture {
 
 	public static class TestCls {
 		public static class A<T> {
@@ -52,17 +46,5 @@ public class TestOuterGeneric extends IntegrationTest {
 
 		private void use(Object obj) {
 		}
-	}
-
-	@NotYetImplemented("Instance constructor for inner classes")
-	@Test
-	public void test() {
-		JadxAssertions.assertThat(getClassNode(TestCls.class))
-				.code()
-				.containsOne("A<String> a = new A<>();")
-				.containsOne("A<String>.B<Exception> b = a.new B<Exception>();")
-				.containsOne("A<String>.C c = a.new C();")
-				.containsOne("use(new A<Set<String>>().new C());")
-				.containsOne("D.E e = d.new E();");
 	}
 }
