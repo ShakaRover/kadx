@@ -130,7 +130,7 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | C24 | `api/deobf`(3)+`deobf/impl`(3)+`api/metadata`(3)+`metadata/impl`(1)+`metadata/annotations`(5) | ~15 | C22 | ✅ a1a8ae99 |
 | C25 | `api/usage`(3)+`usage/impl`(2)+`api/security`(3)+`security/impl`(1)+`api/resources`(1)+`api/gui/tree`(1)+`api/utils`(1)+`api/utils/tasks`(1) | ~13 | C22 | ✅ 38a82fed |
 | C26 | `api/plugins`(5)+`plugins/pass`(2)+`pass/impl`(3)+`pass/types`(4)+`plugins/options`(4)+`options/impl`(4) | ~22 | C22 | ✅ 9c593edc |
-| C27 | `api/plugins/events`(4)+`events/types`(3)+`plugins/resources`(3)+`plugins/loader`(2)+`plugins/data`(3)+`plugins/utils`(3)+`plugins/gui`(3) | ~21 | C26 | ⏳ |
+| C27 | `api/plugins/events`(4)+`events/types`(3)+`plugins/resources`(3)+`plugins/loader`(2)+`plugins/data`(3)+`plugins/utils`(3)+`plugins/gui`(3) | ~21 | C26 | ✅ b9795e7b |
 | C28 | `core/plugins`(4)+`plugins/files`(4)+`plugins/versions`(2)+`plugins/events`(2)+`core` 顶层(3) | ~15 | C22 | ⏳ |
 
 **里程碑 M1：** C01–C05 完成后 → 全量 `./gradlew build`（AST 子阶段收口）。 ✅ 已达成（c67a4e3a，BUILD SUCCESSFUL）
