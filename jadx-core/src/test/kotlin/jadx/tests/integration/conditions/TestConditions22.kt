@@ -3,7 +3,7 @@ package jadx.tests.integration.conditions
 import jadx.tests.api.SmaliTest
 import jadx.tests.api.extensions.profiles.TestProfile
 import jadx.tests.api.extensions.profiles.TestWithProfiles
-import jadx.tests.api.utils.TestUtils.indent
+import jadx.tests.api.utils.TestUtils.Companion.indent
 import jadx.tests.api.utils.assertj.JadxAssertions.assertThat
 import org.junit.jupiter.api.Test
 

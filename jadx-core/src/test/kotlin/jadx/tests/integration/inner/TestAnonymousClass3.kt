@@ -2,7 +2,7 @@ package jadx.tests.integration.inner
 
 import jadx.NotYetImplemented
 import jadx.tests.api.IntegrationTest
-import jadx.tests.api.utils.TestUtils.indent
+import jadx.tests.api.utils.TestUtils.Companion.indent
 import jadx.tests.api.utils.assertj.JadxAssertions
 import jadx.tests.api.utils.assertj.JadxAssertions.assertThat
 import org.junit.jupiter.api.Test
