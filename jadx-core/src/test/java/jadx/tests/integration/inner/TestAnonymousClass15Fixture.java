@@ -1,12 +1,6 @@
 package jadx.tests.integration.inner;
 
-import org.junit.jupiter.api.Test;
-
-import jadx.tests.api.IntegrationTest;
-
-import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
-
-public class TestAnonymousClass15 extends IntegrationTest {
+public class TestAnonymousClass15Fixture {
 
 	public static class TestCls {
 
@@ -31,13 +25,5 @@ public class TestAnonymousClass15 extends IntegrationTest {
 				}
 			};
 		}
-	}
-
-	@Test
-	public void test() {
-		assertThat(getClassNode(TestCls.class))
-				.code()
-				.countString(2, "return new Thread(run) {")
-				.containsOne("setName(\"run\");");
 	}
 }

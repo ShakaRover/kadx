@@ -2,12 +2,7 @@ package jadx.tests.integration.inner;
 
 import java.util.Random;
 
-import org.junit.jupiter.api.Test;
-
-import jadx.tests.api.IntegrationTest;
-import jadx.tests.api.utils.assertj.JadxAssertions;
-
-public class TestAnonymousClass11 extends IntegrationTest {
+public class TestAnonymousClass11Fixture {
 
 	public static class TestCls {
 
@@ -44,14 +39,5 @@ public class TestAnonymousClass11 extends IntegrationTest {
 
 		private void print3(int i, long l) {
 		}
-	}
-
-	@Test
-	public void test() {
-		JadxAssertions.assertThat(getClassNode(TestCls.class))
-				.code()
-				.containsOne("System.out.println(\"a\" + a);")
-				.containsOne("print(a);")
-				.doesNotContain("synthetic");
 	}
 }

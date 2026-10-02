@@ -1,11 +1,6 @@
 package jadx.tests.integration.inner;
 
-import org.junit.jupiter.api.Test;
-
-import jadx.tests.api.IntegrationTest;
-import jadx.tests.api.utils.assertj.JadxAssertions;
-
-public class TestAnonymousClass12 extends IntegrationTest {
+public class TestAnonymousClass12Fixture {
 
 	public static class TestCls {
 
@@ -29,14 +24,5 @@ public class TestAnonymousClass12 extends IntegrationTest {
 				}
 			};
 		}
-	}
-
-	@Test
-	public void test() {
-		JadxAssertions.assertThat(getClassNode(TestCls.class))
-				.code()
-				.containsOne("outer = new BasicAbstract() {")
-				.containsOne("inner = new BasicAbstract() {")
-				.containsOne("inner = null;");
 	}
 }

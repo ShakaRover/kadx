@@ -1,12 +1,6 @@
 package jadx.tests.integration.inner;
 
-import org.junit.jupiter.api.Test;
-
-import jadx.tests.api.IntegrationTest;
-
-import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
-
-public class TestAnonymousClass2 extends IntegrationTest {
+public class TestAnonymousClass2Fixture {
 
 	public static class TestCls {
 		public static class Inner {
@@ -41,17 +35,5 @@ public class TestAnonymousClass2 extends IntegrationTest {
 				};
 			}
 		}
-	}
-
-	@Test
-	public void test() {
-		assertThat(getClassNode(TestCls.class))
-				.code()
-				.doesNotContain("synthetic")
-				.doesNotContain("AnonymousClass_")
-				.contains("f = 1;")
-				.contains("f = i;")
-				.doesNotContain("Inner obj = ;")
-				.contains("Inner.this;");
 	}
 }

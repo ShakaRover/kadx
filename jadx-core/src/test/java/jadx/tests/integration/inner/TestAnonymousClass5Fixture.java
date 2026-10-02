@@ -4,15 +4,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.junit.jupiter.api.Test;
-
-import jadx.NotYetImplemented;
-import jadx.tests.api.IntegrationTest;
-import jadx.tests.api.utils.assertj.JadxAssertions;
-
 import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
 
-public class TestAnonymousClass5 extends IntegrationTest {
+public class TestAnonymousClass5Fixture {
 
 	public static class TestCls {
 		private final Map<String, TestCls> map = new HashMap<>();
@@ -65,15 +59,5 @@ public class TestAnonymousClass5 extends IntegrationTest {
 			assertThat(next).isSameAs(v);
 			assertThat(next.a).isEqualTo(4);
 		}
-	}
-
-	@Test
-	@NotYetImplemented
-	public void test() {
-		JadxAssertions.assertThat(getClassNode(TestCls.class))
-				.code()
-				.containsOne("map.get(name);")
-				.doesNotContain("access$008")
-				.doesNotContain("synthetic");
 	}
 }

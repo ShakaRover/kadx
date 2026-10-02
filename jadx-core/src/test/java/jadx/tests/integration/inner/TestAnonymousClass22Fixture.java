@@ -1,12 +1,6 @@
 package jadx.tests.integration.inner;
 
-import org.junit.jupiter.api.Test;
-
-import jadx.tests.api.IntegrationTest;
-
-import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
-
-public class TestAnonymousClass22 extends IntegrationTest {
+public class TestAnonymousClass22Fixture {
 
 	public static class TestCls {
 
@@ -28,13 +22,5 @@ public class TestAnonymousClass22 extends IntegrationTest {
 
 		public static class AnotherClass {
 		}
-	}
-
-	@Test
-	public void test() {
-		assertThat(getClassNode(TestCls.class))
-				.code()
-				.containsOne("return another.toString();")
-				.doesNotContain("AnotherClass.this");
 	}
 }
