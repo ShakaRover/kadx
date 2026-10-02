@@ -93,7 +93,7 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 
 | ID | 范围 | 约数 | 依赖 | 状态 |
 |----|------|-----:|------|------|
-| C06 | `dex/regions`（5） + `regions/conditions`（5） + `regions/loops`（4） | ~14 | C04 | ⏳ |
+| C06 | `dex/regions`（5） + `regions/conditions`（5） + `regions/loops`（4） | ~14 | C04 | ✅ 7129435c |
 | C07 | `core/utils`（26） | 26 | C05 | ⏳ |
 | C08 | `utils/android`(9)+`utils/blocks`(3)+`utils/exceptions`(7)+`utils/files`(1)+`utils/input`(1)+`utils/log`(1)+`utils/tasks`(1) | ~23 | C07 | ⏳ |
 | C09 | `clsp`（6） + `dex/trycatch`（7） | ~13 | C07 | ⏳ |
