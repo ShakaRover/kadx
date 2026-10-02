@@ -57,12 +57,15 @@ class MethodNode(
 	var accFlags: AccessInfo = AccessInfo(mthData.getAccessFlags(), AccessInfo.AFType.METHOD)
 
 	lateinit var retType: ArgType
+
 	@get:JvmName("argTypesValue")
 	lateinit var argTypes: List<ArgType>
+
 	@get:JvmName("typeParametersValue")
 	lateinit var typeParameters: List<ArgType>
 
 	private val codeReader: ICodeReader?
+
 	@get:JvmName("insnsCountValue")
 	val insnsCount: Int
 	private var noCode: Boolean
@@ -309,7 +312,8 @@ class MethodNode(
 		}
 	}
 
-	fun getBasicBlocks(): List<BlockNode> = blocks!!
+	// 原 Java 方法可能返回 null（块处理前），调用方（如 DebugChecks）会判空，故保留可空返回
+	fun getBasicBlocks(): List<BlockNode>? = blocks
 
 	fun setBasicBlocks(blocks: List<BlockNode>) {
 		this.blocks = blocks
@@ -531,7 +535,8 @@ class MethodNode(
 
 	fun getCodeReader(): ICodeReader? = codeReader
 
-	override fun getUseIn(): List<out ICodeNode> = useIn
+	// 协变返回类型：保留 Java 原 API 的 List<MethodNode>
+	override fun getUseIn(): List<MethodNode> = useIn
 
 	fun setUseIn(useIn: List<MethodNode>) {
 		this.useIn = useIn
@@ -583,7 +588,7 @@ class MethodNode(
 
 	override fun compareTo(o: MethodNode): Int = mthInfo.compareTo(o.mthInfo)
 
-	override fun toAttrString(): String = toAttrString() + " (m)"
+	override fun toAttrString(): String = super.toAttrString() + " (m)"
 
 	override fun toString(): String = "$parentClass.${mthInfo.name}(${listToString(argTypes)}):$retType"
 }

@@ -20,12 +20,14 @@ class PackageNode(
 	ICodeNodeRef,
 	Comparable<PackageNode> {
 	companion object {
+		@JvmStatic
 		fun getForClass(root: RootNode, fullPkg: String, cls: ClassNode): PackageNode {
 			val pkg = getOrBuild(root, fullPkg)
 			pkg.classes.add(cls)
 			return pkg
 		}
 
+		@JvmStatic
 		fun getOrBuild(root: RootNode, fullPkg: String): PackageNode {
 			val existPkg = root.resolvePackage(fullPkg)
 			if (existPkg != null) return existPkg
@@ -47,7 +49,13 @@ class PackageNode(
 
 	@get:JvmName("aliasPkgInfoValue")
 	var aliasPkgInfo: PackageInfo = pkgInfo
+
+	// 下面两个属性均有同名显式 getter（getSubPackages/getClasses），
+	// 故把属性生成的 getter 改名为 xxxValue，避免 JVM 上方法名重复
+	@get:JvmName("subPackagesValue")
 	val subPackages = ArrayList<PackageNode>()
+
+	@get:JvmName("classesValue")
 	val classes = ArrayList<ClassNode>()
 	var javaNode: JavaPackage? = null
 

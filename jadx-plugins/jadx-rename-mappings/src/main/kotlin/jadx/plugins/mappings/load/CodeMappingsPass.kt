@@ -73,9 +73,9 @@ public class CodeMappingsPass : JadxDecompilePass {
 	private companion object {
 		private fun applyRenames(cls: ClassNode, classMapping: ClassMappingView) {
 			for (mth in cls.methods) {
-				val methodName = mth.methodInfo.name
-				val methodDesc = mth.methodInfo.shortId.substring(methodName.length)
-				val ssaVars = mth.sVars
+				val methodName = mth.getMethodInfo().name
+				val methodDesc = mth.getMethodInfo().shortId.substring(methodName.length)
+				val ssaVars = mth.getSVars()
 				if (ssaVars.isEmpty()) {
 					continue
 				}

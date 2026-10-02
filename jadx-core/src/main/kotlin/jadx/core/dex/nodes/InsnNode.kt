@@ -18,16 +18,20 @@ import jadx.core.utils.exceptions.JadxRuntimeException
 import jadx.core.utils.InsnUtils.containsVar as insnContainsVar
 
 open class InsnNode(
-	val insnType: InsnType,
+	// Java 子类直接访问 protected 字段 insnType/offset，故用 @JvmField 暴露字段（不生成 getter/setter）
+	@JvmField protected val insnType: InsnType,
 	argsCount: Int = 0,
 ) : LineAttrNode() {
 	@get:JvmName("resultValue")
 	@set:JvmName("setResultValue")
 	var result: RegisterArg? = null
+
+	// 参数列表。显式 getter getArguments() 返回 Iterable，故属性生成的 getter 改名为 argumentsValue 以避免 JVM 同名冲突
+	@get:JvmName("argumentsValue")
 	val arguments: MutableList<InsnArg> = if (argsCount == 0) ArrayList() else ArrayList(argsCount)
-	@get:JvmName("offsetValue")
-	@set:JvmName("setOffsetValue")
-	var offset: Int = -1
+
+	@JvmField
+	protected var offset: Int = -1
 
 	constructor(type: InsnType, args: List<InsnArg>) : this(type, 0) {
 		this.arguments.addAll(args)
@@ -37,13 +41,16 @@ open class InsnNode(
 	}
 
 	companion object {
+		@JvmStatic
 		fun wrapArg(arg: InsnArg): InsnNode {
 			val insn = InsnNode(InsnType.ONE_ARG, 1)
 			insn.addArg(arg)
 			return insn
 		}
 
-		inline fun <reified T : InsnArg> duplicateArg(arg: T?): T? {
+		// 不使用 reified，保留与 Java 静态泛型方法一致的签名，Java 调用方可直接调用 InsnNode.duplicateArg(...)
+		@JvmStatic
+		fun <T : InsnArg> duplicateArg(arg: T?): T? {
 			if (arg == null) return null
 			@Suppress("UNCHECKED_CAST")
 			return arg.duplicate() as T
@@ -53,7 +60,7 @@ open class InsnNode(
 	fun setResult(res: RegisterArg?) {
 		result = res
 		if (res != null) {
-			res.parentInsn = this
+			res.setParentInsn(this)
 			val ssaVar = res.sVar
 			if (ssaVar != null) {
 				ssaVar.assign = res
@@ -61,18 +68,18 @@ open class InsnNode(
 		}
 	}
 
-	fun addArg(arg: InsnArg) {
+	open fun addArg(arg: InsnArg) {
 		arguments.add(arg)
 		attachArg(arg)
 	}
 
-	fun setArg(n: Int, arg: InsnArg) {
+	open fun setArg(n: Int, arg: InsnArg) {
 		arguments[n] = arg
 		attachArg(arg)
 	}
 
 	protected fun attachArg(arg: InsnArg) {
-		arg.parentInsn = this
+		arg.setParentInsn(this)
 		if (arg.isRegister) {
 			val reg = arg as RegisterArg
 			val ssaVar = reg.sVar
@@ -92,7 +99,7 @@ open class InsnNode(
 
 	fun getArgsCount(): Int = arguments.size
 
-	fun getArg(n: Int): InsnArg = arguments[n]
+	open fun getArg(n: Int): InsnArg = arguments[n]
 
 	fun containsArg(arg: InsnArg): Boolean {
 		for (a in arguments) {
@@ -103,7 +110,7 @@ open class InsnNode(
 
 	fun containsVar(arg: RegisterArg): Boolean = insnContainsVar(arguments, arg)
 
-	fun replaceArg(from: InsnArg, to: InsnArg): Boolean {
+	open fun replaceArg(from: InsnArg, to: InsnArg): Boolean {
 		for (i in arguments.indices) {
 			val arg = arguments[i]
 			if (arg === from) {
@@ -119,14 +126,14 @@ open class InsnNode(
 		return false
 	}
 
-	protected fun removeArg(arg: InsnArg): Boolean {
+	protected open fun removeArg(arg: InsnArg): Boolean {
 		val index = getArgIndex(arg)
 		if (index == -1) return false
 		removeArg(index)
 		return true
 	}
 
-	fun removeArg(index: Int): InsnArg {
+	open fun removeArg(index: Int): InsnArg {
 		val arg = arguments[index]
 		arguments.removeAt(index)
 		unbindArgUsage(null, arg)
@@ -162,7 +169,7 @@ open class InsnNode(
 		this.offset = offset
 	}
 
-	fun getRegisterArgs(collection: MutableCollection<RegisterArg>) {
+	open fun getRegisterArgs(collection: MutableCollection<RegisterArg>) {
 		for (arg in arguments) {
 			if (arg.isRegister) {
 				collection.add(arg as RegisterArg)
@@ -216,7 +223,7 @@ open class InsnNode(
 		return false
 	}
 
-	fun visitInsns(visitor: java.util.function.Consumer<InsnNode>) {
+	open fun visitInsns(visitor: java.util.function.Consumer<InsnNode>) {
 		visitor.accept(this)
 		for (arg in arguments) {
 			if (arg.isInsnWrap) {
@@ -260,7 +267,7 @@ open class InsnNode(
 		return null
 	}
 
-	fun isSame(other: InsnNode): Boolean {
+	open fun isSame(other: InsnNode): Boolean {
 		if (this === other) return true
 		if (insnType != other.insnType) return false
 		if (arguments.size != other.arguments.size) return false
@@ -337,10 +344,10 @@ open class InsnNode(
 		return copy(resDupArg)
 	}
 
-	fun rebindArgs() {
+	open fun rebindArgs() {
 		val resArg = result
 		if (resArg != null) {
-			val ssaVar = resArg.sVar ?: throw JadxRuntimeException("No SSA var for result arg: $resArg from ${resArg.parentInsn}")
+			val ssaVar = resArg.sVar ?: throw JadxRuntimeException("No SSA var for result arg: $resArg from ${resArg.getParentInsn()}")
 			ssaVar.assign = resArg
 		}
 		for (arg in arguments) {

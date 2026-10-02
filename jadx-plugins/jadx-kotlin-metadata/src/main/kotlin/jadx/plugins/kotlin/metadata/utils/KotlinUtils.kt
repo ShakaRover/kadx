@@ -28,17 +28,17 @@ object KotlinUtils {
 				?: return@mapNotNull null
 			MethodRename(
 				mth = mth,
-				alias = getGetterAlias(field.alias),
+				alias = getGetterAlias(field.getAlias()),
 			)
 		}
 	}
 
 	private fun getFieldGetterMethod(cls: ClassNode, field: FieldInfo): MethodNode? = cls.methods.firstOrNull {
-		it.returnType == field.type &&
+		it.getReturnType() == field.type &&
 			it.argTypes.isEmpty() &&
 			it.insnsCount == 3 &&
-			it.sVars.size == 2 &&
-			(it.sVars[1].assignInsn as? IndexInsnNode)?.index == field
+			it.getSVars().size == 2 &&
+			(it.getSVars()[1].assignInsn as? IndexInsnNode)?.index == field
 	}
 
 	private fun getGetterAlias(fieldAlias: String): String {
@@ -60,24 +60,25 @@ object KotlinUtils {
 				}
 		}
 		val insnList = possibleMthList.filter {
-			it.exitBlock.run {
-				iDom != null && iDom.instructions.firstOrNull()?.type == InsnType.RETURN
-				iDom.iDom != null
-			} &&
-				it.exitBlock.iDom.iDom.run {
-					instructions.firstOrNull() is InvokeNode
-				}
+			val exit = it.exitBlock ?: return@filter false
+			val dom = exit.idom ?: return@filter false
+			if (dom.getInstructions().firstOrNull()?.getType() != InsnType.RETURN) {
+				return@filter false
+			}
+			val dom2 = dom.idom ?: return@filter false
+			dom2.getInstructions().firstOrNull() is InvokeNode
 		}
 
 		val remapped = insnList.mapNotNull {
-			val insn = it.exitBlock.iDom.iDom.instructions.first() as InvokeNode
+			val dom2 = checkNotNull(it.exitBlock?.idom?.idom) { "No second dominator" }
+			val insn = dom2.getInstructions().first() as InvokeNode
 			cls.searchMethodByShortId(insn.callMth.shortId)?.run { it to this }
 		}
 
 		return remapped.map { (defaultMethod, originalMethod) ->
 			MethodRename(
 				mth = defaultMethod,
-				alias = getDefaultMethodAlias(originalMethod.alias),
+				alias = getDefaultMethodAlias(originalMethod.getAlias()),
 			)
 		}
 	}

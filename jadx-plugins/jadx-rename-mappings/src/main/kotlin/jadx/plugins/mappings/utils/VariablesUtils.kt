@@ -25,7 +25,7 @@ public object VariablesUtils {
 	}
 
 	public fun collect(mth: MethodNode): List<VarInfo> {
-		val codeInfo = mth.topParentClass.code
+		val codeInfo = mth.getTopParentClass().getCode()
 		val mthDefPos = mth.defPosition
 		val mthLineEndPos = CodeUtils.getLineEndForPos(codeInfo.codeStr, mthDefPos)
 		val codeVisitor = CodeVisitor(mth)
@@ -58,7 +58,7 @@ public object VariablesUtils {
 					} else {
 						LOG.warn(
 							"Local variable not present in bytecode, skipping: {}#{}",
-							mth.methodInfo.rawFullId,
+							mth.getMethodInfo().rawFullId,
 							declRef.name,
 						)
 					}

@@ -93,14 +93,15 @@ object KotlinMetadataUtils {
 	fun mapMethodArgs(cls: ClassNode, kmCls: KmClass): Map<MethodNode, List<MethodArgRename>> {
 		return buildMap {
 			kmCls.functions.forEach { kmFunction ->
-				val node: MethodNode = cls.searchMethodByShortId(kmFunction.shortId) ?: return@forEach
+				val shortId = kmFunction.shortId ?: return@forEach
+				val node: MethodNode = cls.searchMethodByShortId(shortId) ?: return@forEach
 
 				val argCount = node.argTypes.size
 				val paramCount = kmFunction.valueParameters.size
 				if (argCount == paramCount) {
 					// requires arg registers to be loaded, is this necessary ?
-					val aliasList = node.argRegs.zip(kmFunction.valueParameters).map { (rArg, kmValueParameter) ->
-						MethodArgRename(rArg = rArg, alias = kmValueParameter.name)
+					val aliasList = node.getArgRegs().zip(kmFunction.valueParameters).map { (rArg, kmValueParameter) ->
+						MethodArgRename(rArg = rArg, alias = checkNotNull(kmValueParameter.name))
 					}
 					put(node, aliasList)
 				}
@@ -110,15 +111,16 @@ object KotlinMetadataUtils {
 
 	fun mapFields(cls: ClassNode, kmCls: KmClass): List<FieldRename> {
 		return kmCls.properties.mapNotNull { kmProperty ->
-			val node = cls.searchFieldByShortId(kmProperty.shortId) ?: return@mapNotNull null
-			FieldRename(field = node, alias = kmProperty.name)
+			val shortId = kmProperty.shortId ?: return@mapNotNull null
+			val node = cls.searchFieldByShortId(shortId) ?: return@mapNotNull null
+			FieldRename(field = node, alias = checkNotNull(kmProperty.name))
 		}
 	}
 
 	fun mapCompanion(cls: ClassNode, kmCls: KmClass): CompanionRename? {
 		val compName = kmCls.companionObject ?: return null
 		val compField = cls.fields.firstOrNull {
-			it.name == compName && it.accessFlags.run { isStatic && isFinal && isPublic }
+			it.getName() == compName && it.accessFlags.run { isStatic && isFinal && isPublic }
 		} ?: return null
 
 		if (compField.type.isObject()) {
@@ -127,8 +129,8 @@ object KotlinMetadataUtils {
 				it.classInfo.makeRawFullName() == compType
 			} ?: return null
 
-			val isOnlyInit = compField.useIn.size == 1 && compField.useIn[0].methodInfo.isClassInit
-			val isEmpty = compCls.run { methods.all { it.isConstructor } && fields.isEmpty() }
+			val isOnlyInit = compField.getUseIn().size == 1 && compField.getUseIn()[0].getMethodInfo().isClassInit
+			val isEmpty = compCls.run { methods.all { it.isConstructor() } && fields.isEmpty() }
 
 			return CompanionRename(
 				field = compField,

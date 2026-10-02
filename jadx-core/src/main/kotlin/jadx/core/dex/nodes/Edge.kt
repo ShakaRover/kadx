@@ -3,7 +3,7 @@ package jadx.core.dex.nodes
 import jadx.core.dex.attributes.AFlag
 import jadx.core.dex.attributes.AttrNode
 
-class Edge(
+class Edge @JvmOverloads constructor(
 	val source: BlockNode,
 	val target: BlockNode,
 	isSynthetic: Boolean = false,

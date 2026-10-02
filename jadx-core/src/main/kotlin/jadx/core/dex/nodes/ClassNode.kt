@@ -24,8 +24,8 @@ import jadx.core.dex.attributes.AType
 import jadx.core.dex.attributes.nodes.InlinedAttr
 import jadx.core.dex.attributes.nodes.NotificationAttrNode
 import jadx.core.dex.info.AccessInfo
-import jadx.core.dex.info.FieldInfo
 import jadx.core.dex.info.ClassInfo
+import jadx.core.dex.info.FieldInfo
 import jadx.core.dex.info.MethodInfo
 import jadx.core.dex.instructions.args.ArgType
 import jadx.core.utils.ListUtils.safeAdd
@@ -49,6 +49,7 @@ class ClassNode(
 		private val LOG = LoggerFactory.getLogger(ClassNode::class.java)
 		private val DECOMPILE_WITH_MODE_SYNC = Any()
 
+		@JvmStatic
 		fun addSyntheticClass(root: RootNode, name: String, accessFlags: Int): ClassNode {
 			val classInfo = ClassInfo.fromName(root, name) ?: throw JadxRuntimeException("Invalid class name: $name")
 			if (root.resolveClass(classInfo) != null) {
@@ -57,6 +58,7 @@ class ClassNode(
 			return addSyntheticClass(root, classInfo, accessFlags)
 		}
 
+		@JvmStatic
 		fun addSyntheticClass(root: RootNode, classInfo: ClassInfo, accessFlags: Int): ClassNode {
 			val cls = ClassNode(root, classInfo, accessFlags)
 			cls.add(AFlag.SYNTHETIC)
@@ -115,13 +117,15 @@ class ClassNode(
 		}
 	}
 
-	private lateinit var clsData: IClassData
+	// 原 Java 中合成类的 clsData 为 null（getClsData 返回 null，调用方会判空），故不能用 lateinit
+	private var clsData: IClassData? = null
 	lateinit var classInfo: ClassInfo
 	lateinit var packageNode: PackageNode
 	override var accessFlags: AccessInfo = AccessInfo(0, AccessInfo.AFType.CLASS)
 	var superClass: ArgType? = null
 	lateinit var interfaces: List<ArgType>
 	private var generics: List<ArgType> = emptyList()
+
 	@get:JvmName("inputFileNameValue")
 	var inputFileName: String? = null
 
@@ -139,10 +143,10 @@ class ClassNode(
 
 	var dependencies: List<ClassNode> = emptyList()
 	var codegenDeps: List<ClassNode> = emptyList()
+
 	@get:JvmName("useInValue")
 	var useIn: List<ClassNode> = emptyList()
 	var useInMth: List<MethodNode> = emptyList()
-
 
 	private var mthInfoMap: MutableMap<MethodInfo, MethodNode> = HashMap()
 	var javaNode: JavaClass? = null
@@ -151,6 +155,8 @@ class ClassNode(
 		if (cls != null) {
 			this.clsData = cls.copy()
 			this.classInfo = ClassInfo.fromType(root, ArgType.`object`(cls.getType()))!!
+			// 原 Java 在主构造器中先设置 packageNode 再 load，load 过程中可能读取该字段
+			this.packageNode = PackageNode.getForClass(root, classInfo.`package`, this)
 			load(this.clsData, false)
 		}
 	}
@@ -390,8 +396,6 @@ class ClassNode(
 		}
 	}
 
-
-
 	fun getGenericTypeParameters(): List<ArgType> = generics
 
 	fun getType(): ArgType {
@@ -460,7 +464,6 @@ class ClassNode(
 	}
 
 	override fun getDeclaringClass(): ClassNode? = if (isInner()) parentClass else null
-
 
 	fun notInner() {
 		classInfo.notInner(root)
@@ -547,7 +550,6 @@ class ClassNode(
 		return if (parent == this) false else parent.hasNotGeneratedParent()
 	}
 
-
 	fun getInlinedClasses(): List<ClassNode> = inlinedClasses
 
 	fun getInnerAndInlinedClassesRecursive(resultClassesSet: MutableSet<ClassNode>) {
@@ -612,7 +614,6 @@ class ClassNode(
 
 	val rawName: String get() = classInfo.rawName
 
-
 	val name: String get() = classInfo.shortName
 
 	val alias: String get() = classInfo.aliasShortName
@@ -674,13 +675,10 @@ class ClassNode(
 
 	fun getTotalDepsCount(): Int = dependencies.size + codegenDeps.size
 
-
-
-
-
 	override fun getInputFileName(): String? = inputFileName
 
-	override fun getUseIn(): List<out ICodeNode> = useIn
+	// 协变返回类型：保留 Java 原 API 的 List<ClassNode>（而非宽泛的 List<ICodeNode>）
+	override fun getUseIn(): List<ClassNode> = useIn
 
 	override fun getAnnType() = ICodeAnnotation.AnnType.CLASS
 

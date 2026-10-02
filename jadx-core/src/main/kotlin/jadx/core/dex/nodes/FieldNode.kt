@@ -64,7 +64,8 @@ class FieldNode(
 
 	fun getTopParentClass(): ClassNode = parentClass.getTopParentClass()
 
-	override fun getUseIn(): List<out ICodeNode> = useIn
+	// 协变返回类型：保留 Java 原 API 的 List<MethodNode>
+	override fun getUseIn(): List<MethodNode> = useIn
 
 	fun setUseIn(useIn: List<MethodNode>) {
 		this.useIn = useIn

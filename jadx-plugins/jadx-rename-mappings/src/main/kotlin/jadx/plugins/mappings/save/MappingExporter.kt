@@ -133,7 +133,7 @@ public class MappingExporter(private val root: RootNode) {
 				}
 
 				for (mth in cls.methods) {
-					val methodInfo = mth.methodInfo
+					val methodInfo = mth.getMethodInfo()
 					val methodName = methodInfo.name
 					val methodDesc = methodInfo.shortId.substring(methodName.length)
 					if (methodInfo.hasAlias() && mappedMethods.contains(rawClassName + methodInfo.shortId)) {

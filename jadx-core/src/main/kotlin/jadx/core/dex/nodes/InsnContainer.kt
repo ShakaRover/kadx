@@ -9,9 +9,9 @@ import jadx.core.dex.attributes.AttrNode
 class InsnContainer(insns: List<InsnNode>) :
 	AttrNode(),
 	IBlock {
-	val insns: List<InsnNode> = if (insns.size == 1) listOf(insns[0]) else insns
+	val insns: List<InsnNode> = insns
 
-	constructor(insn: InsnNode) : this(listOf(insn))
+	constructor(insn: InsnNode) : this(arrayListOf(insn))
 
 	override fun getInstructions(): List<InsnNode> = insns
 

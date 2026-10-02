@@ -49,7 +49,19 @@ import jadx.core.dex.nodes.utils.SelectFromDuplicates.process as processDuplicat
 import jadx.core.dex.visitors.DepthTraversal.visit as depthVisit
 import jadx.core.utils.DebugChecks.insertPasses as insertDebugPasses
 
-class RootNode(decompiler: JadxDecompiler?) {
+class RootNode private constructor(
+	decompilerRef: JadxDecompiler?,
+	jadxArgs: JadxArgs,
+) {
+	constructor(decompiler: JadxDecompiler) : this(decompiler, decompiler.args)
+
+	/**
+	 * 已废弃：优先使用 [RootNode]（传入 JadxDecompiler）。
+	 * 保留此构造器以兼容仅持有 JadxArgs 的调用方（例如测试代码）。
+	 */
+	@Deprecated("Prefer RootNode(JadxDecompiler)")
+	constructor(args: JadxArgs) : this(null, args)
+
 	companion object {
 		private val LOG = LoggerFactory.getLogger(RootNode::class.java)
 	}
@@ -58,13 +70,16 @@ class RootNode(decompiler: JadxDecompiler?) {
 	val args: JadxArgs
 	private val errorsCounter = ErrorsCounter()
 	private val stringUtils: StringUtils
+
 	@get:JvmName("constValuesValue")
 	val constValues: ConstStorage
 	private val infoStorage = InfoStorage()
 	private val cacheStorage = CacheStorage()
 	private val typeUpdate: TypeUpdate
+
 	@get:JvmName("methodUtilsValue")
 	val methodUtils: MethodUtils
+
 	@get:JvmName("typeUtilsValue")
 	val typeUtils: TypeUtils
 	private val attributes = AttributeStorage()
@@ -74,19 +89,26 @@ class RootNode(decompiler: JadxDecompiler?) {
 
 	private val clsMap = HashMap<ClassInfo, ClassNode>()
 	private val rawClsMap = HashMap<String, ClassNode>()
+
 	@get:JvmName("classesValue")
 	var classes: List<ClassNode> = ArrayList()
 
 	private val pkgMap = HashMap<String, PackageNode>()
+
+	// 显式 getter getPackages() 已存在，属性 getter 改名以避免 JVM 同名冲突
+	@get:JvmName("packagesValue")
 	val packages = ArrayList<PackageNode>()
 
 	private var preDecompilePasses: MutableList<IDexTreeVisitor>
+
 	@get:JvmName("processClassesValue")
 	var processClasses: ProcessClass
 
 	private var clsp: ClspGraph? = null
+
 	@get:JvmName("appPackageValue")
 	var appPackage: String? = null
+
 	@get:JvmName("appResClassValue")
 	var appResClass: ClassNode? = null
 
@@ -94,8 +116,8 @@ class RootNode(decompiler: JadxDecompiler?) {
 	private var manifestAttributes: ManifestAttributes? = null
 
 	init {
-		this.decompiler = decompiler
-		args = decompiler?.args ?: throw IllegalArgumentException("decompiler or args required")
+		this.decompiler = decompilerRef
+		args = jadxArgs
 		preDecompilePasses = Jadx.getPreDecompilePassesList()
 		processClasses = ProcessClass(Jadx.getPassesList(args))
 		stringUtils = StringUtils(args)
@@ -175,7 +197,12 @@ class RootNode(decompiler: JadxDecompiler?) {
 			clsMap[clsInfo] = selectedCls
 			rawClsMap[selectedCls.rawName] = selectedCls
 
-			val sourceList = ArrayList<String?>(); for (cn in dupClsList) { sourceList.add(cn.getInputFileName()) }; java.util.Collections.sort(sourceList, null as java.util.Comparator<String?>?); val sources = sourceList.joinToString("\n  ")
+			val sourceList = ArrayList<String?>()
+			for (cn in dupClsList) {
+				sourceList.add(cn.getInputFileName())
+			}
+			java.util.Collections.sort(sourceList, null as java.util.Comparator<String?>?)
+			val sources = sourceList.joinToString("\n  ")
 			LOG.warn(
 				"Found duplicated class: {}, count: {}, sources:\n  {}\n Keep class with source: {}, others will be removed.",
 				clsInfo,

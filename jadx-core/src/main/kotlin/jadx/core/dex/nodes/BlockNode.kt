@@ -12,33 +12,44 @@ import java.util.BitSet
 import jadx.core.utils.EmptyBitSet.EMPTY as EMPTY_BITSET
 
 class BlockNode(
+	// 常量 ID（cid 的 Java getter 原名为 getCId，这里显式指定 JVM 名以保持 Java 调用方兼容）
+	@get:JvmName("getCId")
 	val cid: Int,
 	var pos: Int,
 	val startOffset: Int,
 ) : AttrNode(),
 	IBlock,
 	Comparable<BlockNode> {
+	// 以下三个属性均带有同名显式 getter（getInstructions/getPredecessors/getSuccessors），
+	// 因此把属性生成的 getter 改名为 xxxValue，避免 JVM 上出现两个同名方法导致 Java 端歧义
+	@get:JvmName("instructionsValue")
 	val instructions = ArrayList<InsnNode>(2)
-	var predecessors = ArrayList<BlockNode>(1)
-	var successors = ArrayList<BlockNode>(1)
+
+	@get:JvmName("predecessorsValue")
+	var predecessors: List<BlockNode> = ArrayList(1)
+
+	@get:JvmName("successorsValue")
+	var successors: List<BlockNode> = ArrayList(1)
 	private var cleanSuccessors: List<BlockNode>? = null
 
-	/** All dominators, excluding self */
-	var doms: BitSet = EMPTY_BITSET
+	/** 所有支配节点（不含自身）。原 Java 允许为 null（BlockProcessor.clearBlocksState 会置空），故保留可空 */
+	var doms: BitSet? = EMPTY_BITSET
 
-	/** Post dominators, excluding self */
-	var postDoms: BitSet = EMPTY_BITSET
+	/** 后支配节点（不含自身）。原 Java 允许为 null（PostDominatorTree 会判空），故保留可空 */
+	var postDoms: BitSet? = EMPTY_BITSET
 
 	/** Dominance frontier */
 	var domFrontier: BitSet? = null
 
-	/** Immediate dominator */
+	/** 直接支配节点（Immediate dominator）。Java 侧通过 getIDom/setIDom 访问，故显式指定 JVM 名 */
+	@get:JvmName("getIDom")
+	@set:JvmName("setIDom")
 	var idom: BlockNode? = null
 
 	/** Immediate post dominator */
 	var iPostDom: BlockNode? = null
 
-	private var dominatesOn = ArrayList<BlockNode>(3)
+	private var dominatesOn: MutableList<BlockNode> = ArrayList(3)
 
 	override fun getInstructions(): List<InsnNode> = instructions
 
@@ -53,6 +64,7 @@ class BlockNode(
 	}
 
 	companion object {
+		@JvmStatic
 		fun updateBlockPositions(blocks: List<BlockNode>) {
 			for (i in blocks.indices) {
 				blocks[i].pos = i
@@ -87,10 +99,13 @@ class BlockNode(
 
 	fun lock() {
 		try {
-			successors = lockList(successors) as ArrayList<BlockNode>
-			cleanSuccessors = if (cleanSuccessors === successors) this.successors else lockList(cleanSuccessors!!) as List<BlockNode>
-			predecessors = lockList(predecessors) as ArrayList<BlockNode>
-			dominatesOn = lockList(dominatesOn) as ArrayList<BlockNode>
+			// 先保存旧的 successors 引用：原 Java 用它与 cleanSuccessors 做身份比较，
+			// 若相同则直接复用锁定后的 successors，否则单独锁定 cleanSuccessors。
+			val successorsList = successors
+			successors = lockList(successorsList)
+			cleanSuccessors = if (successorsList === cleanSuccessors) successors else lockList(cleanSuccessors!!)
+			predecessors = lockList(predecessors)
+			dominatesOn = lockList(dominatesOn)
 			if (domFrontier == null) {
 				throw JadxRuntimeException("Dominance frontier not set for block: $this")
 			}
@@ -99,7 +114,13 @@ class BlockNode(
 		}
 	}
 
-	fun isDominator(block: BlockNode): Boolean = doms.get(block.pos)
+	fun isDominator(block: BlockNode): Boolean = checkNotNull(doms).get(block.pos)
+
+	/**
+	 * 已废弃：请使用 [getPos]。保留此方法仅为兼容旧 Java 调用方。
+	 */
+	@Deprecated("Use getPos()")
+	fun getId(): Int = pos
 
 	fun getDominatesOn(): List<BlockNode> = dominatesOn
 

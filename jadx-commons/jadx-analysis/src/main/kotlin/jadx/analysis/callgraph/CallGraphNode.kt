@@ -40,7 +40,7 @@ class CallGraphNode private constructor(
 	 * @param id 节点 ID
 	 * @param mthNode 方法节点，会自动提取 MethodInfo
 	 */
-	constructor(id: Int, mthNode: MethodNode) : this(id, mthNode.methodInfo, mthNode)
+	constructor(id: Int, mthNode: MethodNode) : this(id, mthNode.getMethodInfo(), mthNode)
 
 	/**
 	 * 获取节点 ID
