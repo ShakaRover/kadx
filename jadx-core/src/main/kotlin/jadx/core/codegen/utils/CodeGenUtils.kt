@@ -127,9 +127,9 @@ class CodeGenUtils {
 		}
 
 		private fun addCommentWithStyle(code: ICodeWriter, style: CommentStyle, commentStr: String) {
-			appendMultiLineString(code, "", style.start)
-			appendMultiLineString(code, style.onNewLine, commentStr)
-			appendMultiLineString(code, "", style.end)
+			appendMultiLineString(code, "", style.getStart())
+			appendMultiLineString(code, style.getOnNewLine(), commentStr)
+			appendMultiLineString(code, "", style.getEnd())
 		}
 
 		/** 用函数生成注释内容；第二个参数作为换行后的前缀（由 style 决定）。 */
@@ -138,9 +138,9 @@ class CodeGenUtils {
 			style: CommentStyle,
 			commentFunc: BiConsumer<ICodeWriter, String>,
 		) {
-			appendMultiLineString(code, "", style.start)
-			commentFunc.accept(code, style.onNewLine)
-			appendMultiLineString(code, "", style.end)
+			appendMultiLineString(code, "", style.getStart())
+			commentFunc.accept(code, style.getOnNewLine())
+			appendMultiLineString(code, "", style.getEnd())
 		}
 
 		/** 匹配任意换行符（\R 等价于 \r\n|\r|\n 等）。 */

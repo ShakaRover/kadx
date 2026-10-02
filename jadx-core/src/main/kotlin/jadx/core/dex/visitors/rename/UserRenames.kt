@@ -64,9 +64,9 @@ class UserRenames {
 				IJavaNodeRef.RefType.CLASS -> cls.rename(rename.getNewName())
 
 				IJavaNodeRef.RefType.FIELD -> {
-					val fieldNode = cls.searchFieldByShortId(nodeRef.getShortId())
+					val fieldNode = cls.searchFieldByShortId(checkNotNull(nodeRef.getShortId()))
 					if (fieldNode == null) {
-						val fieldName = StringUtils.getPrefix(nodeRef.getShortId(), ":")
+						val fieldName = StringUtils.getPrefix(checkNotNull(nodeRef.getShortId()), ":")
 						val fieldSign = StringBuilder()
 						for (f in cls.fields) {
 							if (f.getFieldInfo().name == fieldName) {
@@ -80,7 +80,7 @@ class UserRenames {
 				}
 
 				IJavaNodeRef.RefType.METHOD -> {
-					val mth = cls.searchMethodByShortId(nodeRef.getShortId())
+					val mth = cls.searchMethodByShortId(checkNotNull(nodeRef.getShortId()))
 					if (mth == null) {
 						LOG.warn("Method reference not found: {}", nodeRef)
 					} else {

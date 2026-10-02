@@ -52,36 +52,45 @@ public class MappingExporter(private val root: RootNode) {
 		val comments = HashMap<String, String>()
 
 		// 必须这样做才能确定哪些元素是*手动*重命名的
-		for (codeRename in codeData.renames) {
-			if (codeRename.nodeRef.type == RefType.CLASS) {
-				mappedClasses.add(codeRename.nodeRef.declaringClass)
-			} else if (codeRename.nodeRef.type == RefType.FIELD) {
-				mappedFields.add(codeRename.nodeRef.declaringClass + codeRename.nodeRef.shortId)
-			} else if (codeRename.nodeRef.type == RefType.METHOD) {
-				if (codeRename.codeRef == null) {
-					mappedMethods.add(codeRename.nodeRef.declaringClass + codeRename.nodeRef.shortId)
-				} else {
-					methodsWithMappedElements.add(codeRename.nodeRef.declaringClass + codeRename.nodeRef.shortId)
-					mappedMethodArgsAndVars[
-						codeRename.nodeRef.declaringClass +
-							codeRename.nodeRef.shortId +
-							codeRename.codeRef,
-					] = codeRename.newName
+		for (codeRename in codeData.getRenames()) {
+			val nodeRef = codeRename.getNodeRef()
+			when (nodeRef.getType()) {
+				RefType.CLASS -> mappedClasses.add(nodeRef.getDeclaringClass())
+
+				RefType.FIELD -> mappedFields.add(nodeRef.getDeclaringClass() + nodeRef.getShortId())
+
+				RefType.METHOD -> {
+					val codeRef = codeRename.getCodeRef()
+					if (codeRef == null) {
+						mappedMethods.add(nodeRef.getDeclaringClass() + nodeRef.getShortId())
+					} else {
+						methodsWithMappedElements.add(nodeRef.getDeclaringClass() + nodeRef.getShortId())
+						mappedMethodArgsAndVars[
+							nodeRef.getDeclaringClass() +
+								nodeRef.getShortId() +
+								codeRef,
+						] = codeRename.getNewName()
+					}
 				}
+
+				else -> {}
 			}
 		}
-		for (codeComment in codeData.comments) {
+		for (codeComment in codeData.getComments()) {
+			val nodeRef = codeComment.getNodeRef()
+			val codeRef = codeComment.getCodeRef()
+			val shortId = nodeRef.getShortId()
 			comments[
-				codeComment.nodeRef.declaringClass +
-					if (codeComment.nodeRef.shortId == null) {
+				nodeRef.getDeclaringClass() +
+					if (shortId == null) {
 						""
 					} else {
-						codeComment.nodeRef.shortId!! +
-							if (codeComment.codeRef == null) "" else codeComment.codeRef!!
+						shortId +
+							if (codeRef == null) "" else codeRef
 					},
-			] = codeComment.comment
-			if (codeComment.codeRef != null) {
-				methodsWithMappedElements.add(codeComment.nodeRef.declaringClass + codeComment.nodeRef.shortId)
+			] = codeComment.getComment()
+			if (codeRef != null) {
+				methodsWithMappedElements.add(nodeRef.getDeclaringClass() + nodeRef.getShortId())
 			}
 		}
 

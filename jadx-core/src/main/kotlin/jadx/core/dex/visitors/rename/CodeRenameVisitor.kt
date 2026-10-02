@@ -85,7 +85,7 @@ class CodeRenameVisitor : AbstractVisitor() {
 			for (rename in renames) {
 				val nodeRef = rename.getNodeRef()
 				if (nodeRef.getType() == IJavaNodeRef.RefType.METHOD) {
-					val methodNode = cls.searchMethodByShortId(nodeRef.getShortId())
+					val methodNode = cls.searchMethodByShortId(checkNotNull(nodeRef.getShortId()))
 					if (methodNode == null) {
 						LOG.warn("Method reference not found: {}", nodeRef)
 					} else {

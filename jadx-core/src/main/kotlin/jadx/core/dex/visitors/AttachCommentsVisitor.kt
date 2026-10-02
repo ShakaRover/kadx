@@ -63,7 +63,7 @@ class AttachCommentsVisitor : AbstractVisitor() {
 					IJavaNodeRef.RefType.CLASS -> addComment(cls, comment)
 
 					IJavaNodeRef.RefType.FIELD -> {
-						val fieldNode = cls.searchFieldByShortId(nodeRef.getShortId())
+						val fieldNode = cls.searchFieldByShortId(checkNotNull(nodeRef.getShortId()))
 						if (fieldNode == null) {
 							LOG.warn("Field reference not found: {}", nodeRef)
 						} else {
@@ -72,7 +72,7 @@ class AttachCommentsVisitor : AbstractVisitor() {
 					}
 
 					IJavaNodeRef.RefType.METHOD -> {
-						val methodNode = cls.searchMethodByShortId(nodeRef.getShortId())
+						val methodNode = cls.searchMethodByShortId(checkNotNull(nodeRef.getShortId()))
 						if (methodNode == null) {
 							LOG.warn("Method reference not found: {}", nodeRef)
 						} else {
