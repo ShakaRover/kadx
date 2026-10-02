@@ -85,7 +85,7 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 |----|----------------|-----:|------|------|
 | C01 | `dex/nodes`（24 已转）收尾：删原 .java + 修 InsnNode 访问器 | 24 | — | ✅ 7ef88abe |
 | C02 | `dex/attributes`（9） + `dex/attributes/nodes` 上半 | ~26 | C01 | ✅ 95d112d9 |
-| C03 | `dex/attributes/nodes` 下半 | ~17 | C02 | ⏳ |
+| C03 | `dex/attributes/nodes` 下半 | ~17 | C02 | ✅ 79869792 |
 | C04 | `dex/instructions`（25） + `instructions/mods`（2） + `instructions/java`（1） | ~28 | C01 | ⏳ |
 | C05 | `dex/instructions/invokedynamic`（4） + `dex/info`（8） + `nodes/parser`（1） + `nodes/utils`（3） | ~16 | C04 | ⏳ |
 
@@ -249,6 +249,13 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 - **Kotlin `contains` 不是 operator**：原 Java 接口的 `contains(...)` 被下游 Kotlin 写成 `AFlag.X !in node`，转 Kotlin 后必须给 `contains` 加 `operator` 修饰符，否则报 Unresolved。
 - **`sourceLine` 变 private property 会切断合成属性访问**：`LineAttrNode.sourceLine` 转私有后，`InsnNode.kt` 里的 `.sourceLine` 失效 → 改显式 `getSourceLine()`。再次印证「转完必 grep 全仓 .kt 调用点」。
 - 只要 `@JvmStatic`/`@JvmField`/`open`/`override` 到位，Java 调用方基本零改动；C02 仅需上述两处 Kotlin 侧修正。
+
+### 9.3 批次 C03 追加教训
+
+- **原 Java 合成属性转 Kotlin 后需改真 property**：`RegDebugInfoAttr.getName()/getRegType()` 转 Kotlin 后，`SSAVar.kt` 的 `debugInfoAttr.getName()` 失效 → 改 `debugInfoAttr.name`。
+- **Getter 命名差异**：`isVisited()` 若写成属性会变成 `getVisited` → 用「私有字段 + 显式 `isVisited()/setVisited()`」。
+- **K2 下裸 `SortedSet` 无法解析** → 写全限定 `java.util.SortedSet`（JVM 擦除相同）。
+- 哨兵类用私有构造器 + 嵌套 `enum class` 保留。
 
 ## 10. 下一单（Commander 已派发）
 
