@@ -84,7 +84,7 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | ID | 范围（包/文件） | 约数 | 依赖 | 状态 |
 |----|----------------|-----:|------|------|
 | C01 | `dex/nodes`（24 已转）收尾：删原 .java + 修 InsnNode 访问器 | 24 | — | ✅ 7ef88abe |
-| C02 | `dex/attributes`（9） + `dex/attributes/nodes` 上半 | ~26 | C01 | ⏳ |
+| C02 | `dex/attributes`（9） + `dex/attributes/nodes` 上半 | ~26 | C01 | ✅ 95d112d9 |
 | C03 | `dex/attributes/nodes` 下半 | ~17 | C02 | ⏳ |
 | C04 | `dex/instructions`（25） + `instructions/mods`（2） + `instructions/java`（1） | ~28 | C01 | ⏳ |
 | C05 | `dex/instructions/invokedynamic`（4） + `dex/info`（8） + `nodes/parser`（1） + `nodes/utils`（3） | ~16 | C04 | ⏳ |
@@ -243,6 +243,12 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 **下游 Kotlin 调用点（重点）：**
 - Java 类的合成属性（`.methodInfo`、`.sVars`、`.argRegs`、`.useIn`、`.type`、`.isConstructor` …）在类转 Kotlin 后**失效**，必须改为真实 property 或显式 `getXxx()`。C01 改了 `jadx-analysis`、`jadx-rename-mappings`、`jadx-kotlin-metadata`、`jadx-gui`。
 - **每单派发时必须提醒 Worker：转完后 grep 全仓该类的 `.kt` 调用点。**
+
+### 9.2 批次 C02 追加教训
+
+- **Kotlin `contains` 不是 operator**：原 Java 接口的 `contains(...)` 被下游 Kotlin 写成 `AFlag.X !in node`，转 Kotlin 后必须给 `contains` 加 `operator` 修饰符，否则报 Unresolved。
+- **`sourceLine` 变 private property 会切断合成属性访问**：`LineAttrNode.sourceLine` 转私有后，`InsnNode.kt` 里的 `.sourceLine` 失效 → 改显式 `getSourceLine()`。再次印证「转完必 grep 全仓 .kt 调用点」。
+- 只要 `@JvmStatic`/`@JvmField`/`open`/`override` 到位，Java 调用方基本零改动；C02 仅需上述两处 Kotlin 侧修正。
 
 ## 10. 下一单（Commander 已派发）
 
