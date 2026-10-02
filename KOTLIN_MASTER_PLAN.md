@@ -159,8 +159,13 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | T22 | `tests/integration/variables`(16) + `arith`(14) | 30 | ✅ 1d4578c1 |
 | T23 | `integration/java8`(11) + `functional`(8) + `api/compiler`(8) | 27 | ✅ 64c01198 |
 | T24 | `synchronize`(7)+`rename`(7)+`deobf`(7)+`annotations`(7)+`android`(7) | 35 | ✅ 52f4fc2a |
-| T25 | `core/utils`(6)+`debuginfo`(5)+`export`(5)+`api/utils/assertj`(5)+`usethis`(4)+`api`(4) | 29 | |
-| T26 | 剩余零散包（profiles/extensions/jbc/fallback/code/xmlgen/plugins…）+ 单例 | ~30 | Worker 按 `find` 实时收尾 |
+| T25 | debuginfo/export/assertj/usethis/api-utils/profiles + 测试基础设施 | 28 | ✅ a2e9e7f4（`IntegrationTest.java`、`JadxAssertions.java` 有意保留 Java） |
+| T26 | `jadx/core/**` 单元测试 + `NotYetImplemented*` | 26 | ⏳ |
+| T27 | integration 零散包（code/jbc/fallback/special/deobf.a）+ `BaseExternalTest` | 9 | ⏳ |
+
+> **有意保留的 Java 测试文件（不计入待转）：** `tests/api/IntegrationTest.java`（harness 基础设施）、
+> `tests/api/utils/assertj/JadxAssertions.java`（548 个测试静态导入其继承的 AssertJ 静态方法，Kotlin 无法继承 Java 静态成员）、
+> `names/pkg/a.java`、`names/pkg/b.java`、`names/pkg2/TestCls.java`、`names/pkg2/System.java`（反编译输入）。
 
 **里程碑 M4：** T01–T26 完成 → 全量 `./gradlew :jadx-core:test` + `./gradlew build`（core 彻底 Kotlin 化）。
 
