@@ -25,8 +25,8 @@ class InvokeUpdateCallback(
 	private val invoke: BaseInvokeNode,
 	private val argsCount: Int,
 	private val knownTypeVars: Set<ArgType>,
-	private val getReturnType: Supplier<ArgType>,
-	private val getArgType: Function<Int, ArgType>,
+	private val getReturnType: Supplier<ArgType?>,
+	private val getArgType: Function<Int, ArgType?>,
 ) : ITypeUpdateCallback {
 
 	private var isAssign = false

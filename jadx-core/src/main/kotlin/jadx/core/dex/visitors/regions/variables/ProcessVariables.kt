@@ -165,7 +165,7 @@ class ProcessVariables : AbstractVisitor() {
 				for (ssaVar in codeVar.ssaVars) {
 					val ssaType = ssaVar.getImmutableType()
 					if (ssaType != null && ssaType.isTypeKnown()) {
-						val comparator = mth.root().getTypeUpdate().getTypeCompare()
+						val comparator = mth.root().getTypeUpdate().typeCompare
 						val result = comparator.compareTypes(ssaType, codeVarType)
 						if (result == TypeCompareEnum.CONFLICT || result.isNarrow()) {
 							mth.addWarn(

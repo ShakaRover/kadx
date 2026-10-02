@@ -679,7 +679,7 @@ object BlockExceptionHandler {
 	/** 按异常类型（以及同名冲突时的类名）对处理器排序。 */
 	private fun sortHandlers(mth: MethodNode, tryBlocks: List<TryCatchBlockAttr>) {
 		val typeCompare = mth.root().getTypeCompare()
-		val comparator = typeCompare.getReversedComparator()
+		val comparator = typeCompare.reversedComparator
 		val catchTypesComparator = Comparator<ClassInfo> { first, second -> compareByTypeAndName(comparator, first, second) }
 		for (tryBlock in tryBlocks) {
 			for (handler in tryBlock.getHandlers()) {
