@@ -58,7 +58,7 @@ public class ResTableProtoParser(private val root: RootNode) :
 
 	private fun parse(p: Package) {
 		val packageName = p.packageName
-		resStorage!!.setAppPackage(packageName)
+		resStorage!!.appPackage = packageName
 		val types = p.typeList
 
 		for (type in types) {

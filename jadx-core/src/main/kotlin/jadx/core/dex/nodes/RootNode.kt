@@ -228,7 +228,7 @@ class RootNode private constructor(
 		try {
 			val parser = ResourcesLoader.decodeStream(arsc) { size, inputStream -> resLoader.decodeTable(arsc, inputStream) }
 			if (parser != null) {
-				processResources(parser.resStorage)
+				processResources(checkNotNull(parser.getResStorage()))
 				updateObfuscatedFiles(parser, resources)
 				initManifestAttributes().updateAttributes(parser)
 			}
@@ -271,8 +271,8 @@ class RootNode private constructor(
 		val useHeaders = args.isUseHeadersForDetectResourceExtensions
 		val start = System.currentTimeMillis()
 		var renamedCount = 0
-		val resStorage = parser.resStorage
-		val valuesParser = ValuesParser(parser.strings, resStorage.resourcesNames)
+		val resStorage = checkNotNull(parser.getResStorage())
+		val valuesParser = ValuesParser(parser.getStrings(), resStorage.resourcesNames)
 		val entryNames = HashMap<String, jadx.core.xmlgen.entry.ResourceEntry>()
 		for (resEntry in resStorage.resources) {
 			val valStr = valuesParser.getSimpleValueString(resEntry)

@@ -109,7 +109,7 @@ object AndroidResourcesUtils {
 				innerClsMap[innerClass.alias] = innerResCls
 			}
 		}
-		for (resource in resStorage.getResources()) {
+		for (resource in resStorage.resources) {
 			val resTypeName = resource.getTypeName()
 			val resName = resource.getKeyName().replace('.', '_')
 

@@ -117,7 +117,7 @@ public class ResXmlProtoParser(private val rootNode: RootNode) : CommonProtoPars
 		}
 	}
 
-	private fun decodeAttribute(a: XmlAttribute, attrCache: Set<String>, newLine: Boolean, isLastElement: Boolean) {
+	private fun decodeAttribute(a: XmlAttribute, attrCache: MutableSet<String>, newLine: Boolean, isLastElement: Boolean) {
 		val name = getAttributeFullName(a)
 		if (XmlDeobf.isDuplicatedAttr(name, attrCache)) {
 			return
@@ -178,7 +178,7 @@ public class ResXmlProtoParser(private val rootNode: RootNode) : CommonProtoPars
 	}
 
 	private fun deobfClassName(className: String?): String? {
-		val newName = XmlDeobf.deobfClassName(rootNode, className, appPackageName)
+		val newName = XmlDeobf.deobfClassName(rootNode, checkNotNull(className), appPackageName)
 		if (newName != null) {
 			return newName
 		}
