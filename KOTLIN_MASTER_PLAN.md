@@ -123,7 +123,7 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | ID | 范围 | 约数 | 依赖 | 状态 |
 |----|------|-----:|------|------|
 | C19 | `codegen`(10)+`codegen/utils`(2)+`codegen/json`(2)+`json/cls`(5)+`json/mapping`(4) | ~23 | C18 | ✅ e3d77fe8 |
-| C20 | `xmlgen`（19） + `xmlgen/entry`（6） | ~25 | C18 | ⏳ |
+| C20 | `xmlgen`（19） + `xmlgen/entry`（6） | ~25 | C18 | ✅ 1cdfd66b |
 | C21 | `export`（5） + `export/gen`（4） | ~9 | C19 | ⏳ |
 | C22 | `api` 顶层（20） + `api/args`（5） | ~25 | C19 | ⏳ |
 | C23 | `api/data`(8)+`api/data/impl`(5)+`api/impl`(7)+`api/impl/passes`(3) | ~23 | C22 | ⏳ |
@@ -269,6 +269,15 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 - **Kotlin lambda 版 `visitInsns { }` / `visitArgs { }` 在 lambda 返回非 null 时提前 return**，与 Java 的完整嵌套遍历语义不同；需要完整遍历时必须显式传 `java.util.function.Consumer`。C17 修好 26 个测试。
 - 类转 Kotlin 后，`RootNode.kt` 的 `p.name` 合成属性失效 → 改 `p.getName()`（C16）。
 - `object` 单例（如 `DepthTraversal`、`SaveCode`）保留 `import Xxx.member` 的静态导入可用；`companion object` 则需 `Xxx.Companion.member`。
+
+### 9.6 批次 C18–C20 追加教训
+
+- **`String.trim()` ≠ Kotlin `trim()`**：Java `trim()` 只去 ≤ U+0020，Kotlin `trim()` 去所有 `isWhitespace`（含 NUL 之外的更多字符）。C20 在 `readString16Fixed` 里因 NUL 填充差异导致 R 类包名回归，必须显式复刻 Java 语义。
+- **Kotlin `and/or/xor` 对 `Byte`/`Short` 未定义** → 先 `.toInt()` 再位运算。
+- **负数字面量方法调用优先级**：`-71.toByte()` 解析为 `-(71.toByte())`，要写 `(-71).toByte()`。
+- **KDoc 里出现 `/*`（如 `res/values/*.xml`）会开嵌套注释** → 用反引号包裹路径。
+- `sourceFileRename` 等保留 Java `default` 分支时，Kotlin `when` 需冗余 `else` 保语义。
+- 接口 getter 转 Kotlin 后可空性变化会让下游 `.prop` 失效（C20：`parser.resStorage` → `getResStorage()` + `checkNotNull`）。
 
 ## 10. 下一单（Commander 已派发）
 
