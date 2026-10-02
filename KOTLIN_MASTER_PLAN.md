@@ -160,7 +160,7 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | T23 | `integration/java8`(11) + `functional`(8) + `api/compiler`(8) | 27 | ✅ 64c01198 |
 | T24 | `synchronize`(7)+`rename`(7)+`deobf`(7)+`annotations`(7)+`android`(7) | 35 | ✅ 52f4fc2a |
 | T25 | debuginfo/export/assertj/usethis/api-utils/profiles + 测试基础设施 | 28 | ✅ a2e9e7f4（`IntegrationTest.java`、`JadxAssertions.java` 有意保留 Java） |
-| T26 | `jadx/core/**` 单元测试 + `NotYetImplemented*` | 26 | ⏳ |
+| T26 | `jadx/core/**` 单元测试 + `NotYetImplemented*` | 26 | ✅ 12f62644 |
 | T27 | integration 零散包（code/jbc/fallback/special/deobf.a）+ `BaseExternalTest` | 9 | ⏳ |
 
 > **有意保留的 Java 测试文件（不计入待转）：** `tests/api/IntegrationTest.java`（harness 基础设施）、
