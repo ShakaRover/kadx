@@ -334,16 +334,16 @@ class RootNode private constructor(
 		if (disabledPasses.isNotEmpty()) {
 			val disabledSet = HashSet(disabledPasses)
 			preDecompilePasses.removeIf { p ->
-				if (disabledSet.contains(p.name)) {
-					LOG.debug("Disable pass: {}", p.name)
+				if (disabledSet.contains(p.getName())) {
+					LOG.debug("Disable pass: {}", p.getName())
 					true
 				} else {
 					false
 				}
 			}
 			processClasses.passes.removeIf { p ->
-				if (disabledSet.contains(p.name)) {
-					LOG.debug("Disable pass: {}", p.name)
+				if (disabledSet.contains(p.getName())) {
+					LOG.debug("Disable pass: {}", p.getName())
 					true
 				} else {
 					false
