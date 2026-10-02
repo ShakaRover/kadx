@@ -67,10 +67,10 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | jadx-plugins/jadx-java-convert | 0 | 7 | 0 | 0 | ✅ |
 | jadx-plugins/jadx-raung-input | 0 | 2 | 0 | 0 | ✅ |
 | jadx-plugins-tools | 0 | 18 | 0 | 1 | ✅ |
-| **jadx-core** | **0** | **568** | **674** | **0** | 🟢 main 全 Kotlin（M3 d6e58719） |
+| **jadx-core** | **0** | **568** | **665** | **25** | 🟡 main ✅；test 迁移中（16 fixture 为有意保留的 Java） |
 | jadx-cli | 15 | 0 | 6 | 0 | ⏳ |
 | jadx-gui | 405 | 2 | 8 | 1 | ⏳ |
-| **合计剩余 .java** | | | | | **1109** |
+| **合计剩余 .java** | | | | | **1100**（含 16 个 fixture 不转） |
 
 > jadx-core main 的 556 含批次 1 的 **24 个待删重复 .java**，真实待转 **532**。
 
@@ -144,7 +144,7 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 
 | ID | 目录 | 约数 | 备注 |
 |----|------|-----:|------|
-| T01–T04 | `tests/integration/others` | 98 | 每批 ~25 |
+| T01–T04 | `tests/integration/others` | 98 | T01 ✅ c4544e05（25 driver → Kotlin，16 fixture 保留 Java）；T02–T04 待办 |
 | T05–T06 | `tests/integration/conditions` | 60 | |
 | T07–T08 | `tests/integration/trycatch` | 59 | |
 | T09–T10 | `tests/integration/loops` | 56 | |
@@ -290,10 +290,23 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 - **`@JvmStatic` 静态成员在 Kotlin 调用点写 `Xxx.member` 即可**（companion 也支持），无需 `.Companion.`。
 - **`ResourceType` 枚举 companion 初始化顺序**：`EXT_MAP` 的填充代码在 `<clinit>` 中位于枚举常量之后，`getFileType` 调用时已就绪，安全。
 
-## 10. 当前状态与下一单
+## 11. 测试迁移策略（关键决策：Option A）
 
-- **已完成：** C01–C22（AST → utils/clsp → CFG/SSA/regions → pass 链 → codegen/xmlgen/export → api 核心）。
-- **进行中：** C23（`api/data` + `api/impl` + `passes`，23 文件）。
-- **待办（core main）：** C24–C28（api/deobf、metadata、usage/security、plugins 各子包、core/plugins + core 顶层）。
-- **然后：** M3 全量 build → jadx-core test 迁移（T01–T26）→ jadx-cli（CL01–02）→ jadx-gui（G01–G21）→ jadx-analysis 尾测试（A01）。
-- **派单原则：** 每单结尾强制要求 Worker 回报「删了哪些 .java / 新增哪些 .kt / 构建输出 / commit hash / 遗留错误」；Worker 不得自行改本文件（教训记录由 Commander 汇总）。
+集成测试的嵌套 `TestCls` 是**被测 Java 输入**（jadx 是 Java 反编译器），必须保持 Java 字节码；
+若用 Kotlin 写 fixture，会引入 `final`/`@Metadata`/`@Nullable`/Intrinsics，反编译输出改变、断言必破。
+
+**因此确定 Option A：**
+- **测试驱动**（`@Test` 方法、harness 调用、断言）→ Kotlin `.kt`。
+- **Java fixture**（嵌套 `TestCls` 等）→ 独立 `*Fixture.java`（源码**逐字节复制**，保证 ECJ 输出与原来一致）。
+- 命名：`TestFoo` → `TestFoo.kt`（driver）+ `TestFooFixture.java`（`public class TestFooFixture { ...TestCls... }`）。
+- `*Fixture.java` 是**允许保留的 Java**（等同 `.smali`/`.json` 测试数据），**不计入“待转换”**。
+- 无 fixture 的测试（smali/单元测试）直接转 `.kt`。
+- 批次粒度 ~25 个 driver 文件；`find ... -name '*.java' | grep -v Fixture` 才是真实待转量。
+- harness（`IntegrationTest.java`）保持 Java 基础设施，ECJ Java 路径为主。
+
+## 12. 当前状态与下一单
+
+- **已完成：** C01–C28（jadx-core main 全 Kotlin，568 文件）+ T01。
+- **进行中：** T02（`others` 下一批 25 个 driver）。
+- **待办：** T02–T26（core test，剩余 ~649 driver）→ CL01–02 → G01–G21 → A01。
+- **派单原则：** 每单回报「driver 数 / fixture 数 / 构建输出 / commit hash / 遗留」；Worker 不改本文件。
