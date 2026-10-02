@@ -158,7 +158,7 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | T20–T21 | `tests/integration/inline`(18) / `arrays`(17) | 35 | ✅ b59bd4bc |
 | T22 | `tests/integration/variables`(16) + `arith`(14) | 30 | ✅ 1d4578c1 |
 | T23 | `integration/java8`(11) + `functional`(8) + `api/compiler`(8) | 27 | ✅ 64c01198 |
-| T24 | `synchronize`(7)+`rename`(7)+`deobf`(7)+`annotations`(7)+`android`(7) | 35 | ⏳ |
+| T24 | `synchronize`(7)+`rename`(7)+`deobf`(7)+`annotations`(7)+`android`(7) | 35 | ✅ 52f4fc2a |
 | T25 | `core/utils`(6)+`debuginfo`(5)+`export`(5)+`api/utils/assertj`(5)+`usethis`(4)+`api`(4) | 29 | |
 | T26 | 剩余零散包（profiles/extensions/jbc/fallback/code/xmlgen/plugins…）+ 单例 | ~30 | Worker 按 `find` 实时收尾 |
 
