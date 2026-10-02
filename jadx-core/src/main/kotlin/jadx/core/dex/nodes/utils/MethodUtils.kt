@@ -137,7 +137,7 @@ class MethodUtils(private val root: RootNode) {
 				}
 			}
 			if (!isMthConstructor) {
-				for (parent in clsDetails.parents) {
+				for (parent in clsDetails.parents.orEmpty()) {
 					if (processMethodArgsOverloaded(parent, mthInfo, collectedMths)) {
 						if (collectedMths == null) {
 							return true

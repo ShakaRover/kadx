@@ -381,7 +381,7 @@ class MethodNode(
 		return handler
 	}
 
-	fun clearExceptionHandlers(): Boolean = exceptionHandlers.removeIf { it.isRemoved }
+	fun clearExceptionHandlers(): Boolean = exceptionHandlers.removeIf { it.isRemoved() }
 
 	fun getExceptionHandlers(): Iterable<ExceptionHandler> = exceptionHandlers
 

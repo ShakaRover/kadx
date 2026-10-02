@@ -1499,9 +1499,9 @@ object BlockUtils {
 	 */
 	@JvmStatic
 	fun getTryAndHandlerCrossBlock(mth: MethodNode, handler: ExceptionHandler): BlockNode? {
-		val start = handler.getHandlerBlock()
+		val start = checkNotNull(handler.getHandlerBlock())
 		val topSplitter = getTopSplitterForHandler(start)
-		val allHandlers = handler.getTryBlock().getHandlers()
+		val allHandlers = checkNotNull(handler.getTryBlock()).getHandlers()
 		val handlerExitsCandidate = ArrayList(bitSetToBlocks(mth, start.domFrontier))
 		val visited = newBlocksBitSet(mth)
 		while (handlerExitsCandidate.isNotEmpty()) {
@@ -1512,7 +1512,7 @@ object BlockUtils {
 			visited.set(frontier.pos)
 			// 确认 frontier 的前驱来自 try 分支末尾，而非 handler 分支
 			for (pred in frontier.getPredecessors()) {
-				val predFromHandler = allHandlers.stream().anyMatch { h -> isPathExists(h.getHandlerBlock(), pred) }
+				val predFromHandler = allHandlers.stream().anyMatch { h -> isPathExists(checkNotNull(h.getHandlerBlock()), pred) }
 				if (!predFromHandler && isPathExists(topSplitter, pred) && frontier !== mth.exitBlock) {
 					return frontier
 				}

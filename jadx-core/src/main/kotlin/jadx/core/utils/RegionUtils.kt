@@ -448,7 +448,7 @@ object RegionUtils {
 		if (tb != null) {
 			val list = ArrayList<IContainer>(tb.getHandlersCount())
 			for (eh in tb.getHandlers()) {
-				list.add(eh.getHandlerRegion())
+				list.add(checkNotNull(eh.getHandlerRegion()))
 			}
 			return list
 		}
@@ -477,7 +477,7 @@ object RegionUtils {
 				val tb: TryCatchBlockAttr? = b.get(AType.TRY_BLOCK)
 				if (tb != null && b is IRegion) {
 					for (eh in tb.getHandlers()) {
-						if (isRegionContainsRegion(eh.getHandlerRegion(), region)) {
+						if (isRegionContainsRegion(checkNotNull(eh.getHandlerRegion()), region)) {
 							return true
 						}
 					}

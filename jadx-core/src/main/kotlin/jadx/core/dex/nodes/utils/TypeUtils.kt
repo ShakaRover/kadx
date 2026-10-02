@@ -32,11 +32,10 @@ class TypeUtils(private val root: RootNode) {
 			return classNode.getGenericTypeParameters()
 		}
 		val clsDetails = checkNotNull(root.getClsp()).getClsDetails(type)
-		if (clsDetails == null || clsDetails.getTypeParameters().isEmpty()) {
+		if (clsDetails == null || clsDetails.typeParameters.isEmpty()) {
 			return emptyList()
 		}
-		val generics = clsDetails.getTypeParameters()
-		return generics ?: emptyList()
+		return clsDetails.typeParameters
 	}
 
 	/** 获取类的类型变量属性；不存在时构建并缓存。 */
@@ -348,8 +347,9 @@ class TypeUtils(private val root: RootNode) {
 		} else {
 			val clspClass = checkNotNull(root.getClsp()).getClsDetails(type)
 			if (clspClass != null) {
-				for (superType in clspClass.parents) {
-					if (superType != ArgType.OBJECT) {
+				for (parent in clspClass.parents.orEmpty()) {
+					val superType = checkNotNull(parent)
+					if (superType !== ArgType.OBJECT) {
 						consumer.accept(type, superType)
 						visitSuperTypes(superType, consumer)
 					}
