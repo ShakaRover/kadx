@@ -114,7 +114,7 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | C13 | `dex/visitors/finaly` 主干（finaly 5 + traverser 3 + state 12） | ~20 | C12b | ✅ d6df60b6 |
 | C14 | `finaly/traverser/handlers`(8)+`visitors`(4)+`visitors/comparator`(2)+`factory`(2) | ~16 | C13 | ✅ 929c3f23 |
 | C15 | `deobf`（6） + `deobf/conditions`（8） | ~14 | C12b | ✅ ec7c288a |
-| C16 | `dex/visitors` 顶层 39 个 pass 上半 | ~20 | C14 | ⏳ |
+| C16 | `dex/visitors` 顶层 39 个 pass 上半 | ~20 | C14 | ✅ 99e78587 |
 | C17 | `dex/visitors` 顶层 39 个 pass 下半 | ~19 | C16 | ⏳ |
 | C18 | `visitors/rename`(4)+`usage`(3)+`shrink`(3)+`prepare`(2)+`fixaccessmodifiers`(2)+`debuginfo`(2)+`methods`(1)+`kotlin`(1)+`gradle`(1) | ~19 | C16 | ⏳ |
 
