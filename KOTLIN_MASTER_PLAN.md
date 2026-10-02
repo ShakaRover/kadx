@@ -103,7 +103,7 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | ID | 范围 | 约数 | 依赖 | 状态 |
 |----|------|-----:|------|------|
 | C10 | `dex/visitors/blocks`（8） + `dex/visitors/ssa`（3） | ~11 | C06 | ✅ e193335b |
-| C11 | `dex/visitors/regions`(18)+`regions/maker`(7)+`regions/variables`(4) | ~29 | C10 | ⏳ |
+| C11 | `dex/visitors/regions`(18)+`regions/maker`(7)+`regions/variables`(4) | ~29 | C10 | ✅ ad789ff1 |
 | C12a | `dex/visitors/typeinference` 上半 | ~15 | C10 | ⏳ |
 | C12b | `dex/visitors/typeinference` 下半 | ~15 | C12a | ⏳ |
 
