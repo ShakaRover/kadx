@@ -188,7 +188,7 @@ class UsageInfo(private val root: RootNode) : IUsageInfoData {
 			// TODO: 支持通过 API 注册自定义处理器
 			val clsDetails = checkNotNull(root.getClsp()).getClsDetails(type)
 			if (clsDetails != null && clsDetails.source == ClspClassSource.APACHE_HTTP_LEGACY_CLIENT) {
-				root.getGradleInfoStorage().setUseApacheHttpLegacy(true)
+				root.getGradleInfoStorage().isUseApacheHttpLegacy = true
 			}
 			val clsNode = root.resolveClass(type)
 			if (clsNode != null) {

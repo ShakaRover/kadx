@@ -90,7 +90,7 @@ class NonFinalResIdsVisitor :
 				for ((_, encodedValue) in annotation.values) {
 					val value = encodedValue.value
 					if (value is IFieldInfoRef && isCustomResourceClass(value.getFieldInfo().declClass)) {
-						gradleInfoStorage.setNonFinalResIds(true)
+						gradleInfoStorage.isNonFinalResIds = true
 						return true
 					}
 				}
@@ -116,7 +116,7 @@ class NonFinalResIdsVisitor :
 					val topParentClass = key.getTopParentClass()
 					if (AndroidResourcesUtils.isResourceClass(topParentClass) && "android.R" != topParentClass.fullName) {
 						this.nonFinalResIdsFlagRequired = true
-						gradleInfoStorage.setNonFinalResIds(true)
+						gradleInfoStorage.isNonFinalResIds = true
 						return false
 					}
 				}

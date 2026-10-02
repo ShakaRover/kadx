@@ -333,9 +333,9 @@ class BinaryXMLParser(private val rootNode: RootNode) : CommonBinaryParser() {
 		}
 		if (shortNsName != null && shortNsName == "android") {
 			if (attrName == "pathData") {
-				rootNode.getGradleInfoStorage().setVectorPathData(true)
+				rootNode.getGradleInfoStorage().isVectorPathData = true
 			} else if (attrName == "fillType") {
-				rootNode.getGradleInfoStorage().setVectorFillType(true)
+				rootNode.getGradleInfoStorage().isVectorFillType = true
 			}
 		}
 		writer.add('"')
