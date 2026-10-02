@@ -1,15 +1,6 @@
 package jadx.tests.integration.types;
 
-import org.junit.jupiter.api.Test;
-
-import jadx.tests.api.SmaliTest;
-
-import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
-
-/**
- * Issue 1407
- */
-public class TestTypeResolver19 extends SmaliTest {
+public class TestTypeResolver19Fixture {
 
 	public static class TestCls {
 		public static int[] test(byte[] bArr) {
@@ -31,14 +22,5 @@ public class TestTypeResolver19 extends SmaliTest {
 			}
 			return iArr;
 		}
-	}
-
-	@Test
-	public void test() {
-		noDebugInfo();
-		assertThat(getClassNode(TestCls.class))
-				.code()
-				.containsOne("iArr[i] = bArr[i];")
-				.containsOne("iArr[i] = i2;");
 	}
 }

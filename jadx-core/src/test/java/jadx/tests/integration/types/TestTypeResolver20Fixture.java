@@ -4,18 +4,9 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import jadx.tests.api.SmaliTest;
-import jadx.tests.api.extensions.profiles.TestProfile;
-import jadx.tests.api.extensions.profiles.TestWithProfiles;
-
-import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
-
-/**
- * Issue 1238
- */
-public class TestTypeResolver20 extends SmaliTest {
+public class TestTypeResolver20Fixture {
 
 	public static class TestCls {
 		public interface Sequence<T> {
@@ -54,22 +45,5 @@ public class TestTypeResolver20 extends SmaliTest {
 		public void check() {
 			assertThat(max(new ArraySeq<>(2, 5, 3, 4))).isEqualTo(5);
 		}
-	}
-
-	@TestWithProfiles({ TestProfile.DX_J8, TestProfile.JAVA8 })
-	public void test() {
-		noDebugInfo();
-		assertThat(getClassNode(TestCls.class))
-				.code()
-				.doesNotContain("next = next;")
-				.containsOne("T next = it.next();");
-	}
-
-	@Test
-	public void testSmali() {
-		assertThat(getClassNodeFromSmaliFiles())
-				.code()
-				.containsOne("T next = it.next();")
-				.containsOne("T next2 = it.next();");
 	}
 }

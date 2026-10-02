@@ -1,14 +1,14 @@
-package jadx.tests.integration.types;
+package jadx.tests.integration.types
 
-import org.junit.jupiter.api.Test;
+import jadx.NotYetImplemented
+import jadx.tests.api.SmaliTest
+import jadx.tests.api.utils.assertj.JadxAssertions.assertThat
+import org.junit.jupiter.api.Test
 
-import jadx.NotYetImplemented;
-import jadx.tests.api.SmaliTest;
-
-import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
-
-public class TestTypeResolver8 extends SmaliTest {
-
+/**
+ * 变量被赋为不同类型时无法解析类型（已知未实现）：期望还原为 `use(a != null ? new B(a) : null);`。
+ */
+class TestTypeResolver8 : SmaliTest() {
 	// @formatter:off
 	/*
 		public class A {}
@@ -31,14 +31,14 @@ public class TestTypeResolver8 extends SmaliTest {
 
 			private void use(B b) {}
 		}
-	*/
+	 */
 	// @formatter:on
 
 	@Test
 	@NotYetImplemented
-	public void test() {
+	fun test() {
 		assertThat(getClassNodeFromSmaliFiles("types", "TestTypeResolver8", "TestCls"))
-				.code()
-				.containsOne("use(a != null ? new B(a) : null);");
+			.code()
+			.containsOne("use(a != null ? new B(a) : null);")
 	}
 }

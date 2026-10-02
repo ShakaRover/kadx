@@ -1,15 +1,13 @@
-package jadx.tests.integration.types;
+package jadx.tests.integration.types
 
-import org.junit.jupiter.api.Test;
-
-import jadx.tests.api.SmaliTest;
-
-import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
+import jadx.tests.api.SmaliTest
+import jadx.tests.api.utils.assertj.JadxAssertions.assertThat
+import org.junit.jupiter.api.Test
 
 /**
- * Issue 1197
+ * Issue 1197：`Cursor` 变量的类型还原应保留为 `Cursor`，而不是被推断为 `AutoCloseable`。
  */
-public class TestTypeResolver17 extends SmaliTest {
+class TestTypeResolver17 : SmaliTest() {
 	// @formatter:off
 	/*
 		private static String test(Context context, Uri uri, String str, String str2) {
@@ -28,15 +26,15 @@ public class TestTypeResolver17 extends SmaliTest {
 				closeQuietly(cursor);
 			}
 		}
-	*/
+	 */
 	// @formatter:on
 
 	@Test
-	public void test() {
-		disableCompilation();
+	fun test() {
+		disableCompilation()
 		assertThat(getClassNodeFromSmali())
-				.code()
-				.containsOne("Cursor cursorQuery = null;")
-				.doesNotContain("(AutoCloseable autoCloseable = ");
+			.code()
+			.containsOne("Cursor cursorQuery = null;")
+			.doesNotContain("(AutoCloseable autoCloseable = ")
 	}
 }

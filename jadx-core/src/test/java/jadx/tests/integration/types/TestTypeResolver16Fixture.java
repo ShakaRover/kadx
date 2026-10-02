@@ -5,18 +5,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
-import org.junit.jupiter.api.Test;
-
-import jadx.tests.api.SmaliTest;
-
-import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
 import static java.util.Collections.emptyList;
 
-/**
- * Issue 1002
- * Insertion of additional cast (at use place) needed for successful type inference
- */
-public class TestTypeResolver16 extends SmaliTest {
+public class TestTypeResolver16Fixture {
 
 	@SuppressWarnings("unchecked")
 	public static class TestCls {
@@ -38,19 +29,5 @@ public class TestTypeResolver16 extends SmaliTest {
 				Function<? super T, ? extends K> function) {
 			return null;
 		}
-	}
-
-	@Test
-	public void test() {
-		assertThat(getClassNode(TestCls.class))
-				.code()
-				.containsOne("(List<T>) listUnion");
-	}
-
-	@Test
-	public void testSmali() {
-		assertThat(getClassNodeFromSmali())
-				.code()
-				.containsOne("(List<T>) listUnion");
 	}
 }

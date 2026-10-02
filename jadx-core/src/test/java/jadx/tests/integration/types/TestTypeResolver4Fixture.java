@@ -2,14 +2,9 @@ package jadx.tests.integration.types;
 
 import java.util.Arrays;
 
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import jadx.tests.api.IntegrationTest;
-import jadx.tests.api.utils.assertj.JadxAssertions;
-
-import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
-
-public class TestTypeResolver4 extends IntegrationTest {
+public class TestTypeResolver4Fixture {
 
 	public static class TestCls {
 
@@ -32,18 +27,5 @@ public class TestTypeResolver4 extends IntegrationTest {
 			String test = test(("1234" + "utfstr\0\0" + "4567").getBytes(), 4);
 			assertThat(test).isEqualTo("utfstr");
 		}
-	}
-
-	@Test
-	public void test() {
-		JadxAssertions.assertThat(getClassNode(TestCls.class))
-				.code()
-				.containsOne("(strArray[end] != 0 || strArray[end + 1] != 0)");
-	}
-
-	@Test
-	public void test2() {
-		noDebugInfo();
-		getClassNode(TestCls.class);
 	}
 }

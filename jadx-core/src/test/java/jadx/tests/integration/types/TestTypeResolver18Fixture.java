@@ -4,13 +4,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.jupiter.api.Test;
-
-import jadx.tests.api.IntegrationTest;
-
-import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
-
-public class TestTypeResolver18 extends IntegrationTest {
+public class TestTypeResolver18Fixture {
 
 	public static class TestCls<T> {
 		private final AtomicReference<T> reference = new AtomicReference<>();
@@ -26,12 +20,5 @@ public class TestTypeResolver18 extends IntegrationTest {
 			}
 			this.reference.set(null);
 		}
-	}
-
-	@Test
-	public void test() {
-		assertThat(getClassNode(TestCls.class))
-				.code()
-				.containsOne("((Closeable) t).close();");
 	}
 }

@@ -1,12 +1,13 @@
-package jadx.tests.integration.types;
+package jadx.tests.integration.types
 
-import org.junit.jupiter.api.Test;
+import jadx.tests.api.SmaliTest
+import jadx.tests.api.utils.assertj.JadxAssertions.assertThat
+import org.junit.jupiter.api.Test
 
-import jadx.tests.api.SmaliTest;
-
-import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
-
-public class TestTypeResolver14 extends SmaliTest {
+/**
+ * 资源查询的 `Cursor` 类型推断：`query` 变量不应被推断成带 `?` 的未解析类型（不出现 `? r2`）。
+ */
+class TestTypeResolver14 : SmaliTest() {
 	// @formatter:off
 	/*
 		public Date test() throws Exception {
@@ -25,14 +26,14 @@ public class TestTypeResolver14 extends SmaliTest {
 				query.close();
 			}
 		}
-	*/
+	 */
 	// @formatter:on
 
 	@Test
-	public void test() {
-		disableCompilation();
+	fun test() {
+		disableCompilation()
 		assertThat(getClassNodeFromSmali())
-				.code()
-				.doesNotContain("? r2");
+			.code()
+			.doesNotContain("? r2")
 	}
 }
