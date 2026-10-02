@@ -40,7 +40,7 @@ class FixAccessModifiers : AbstractVisitor() {
 
 	override fun init(root: RootNode) {
 		this.visibilityUtils = VisibilityUtils(root)
-		this.respectAccessModifiers = root.getArgs().isRespectBytecodeAccModifiers()
+		this.respectAccessModifiers = root.getArgs().isRespectBytecodeAccModifiers
 	}
 
 	@Throws(JadxException::class)

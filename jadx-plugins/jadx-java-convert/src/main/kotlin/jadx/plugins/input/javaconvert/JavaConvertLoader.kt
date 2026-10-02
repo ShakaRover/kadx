@@ -26,7 +26,7 @@ public class JavaConvertLoader(
 ) {
 
 	private val zipReader: ZipReader = context.getZipReader()
-	private val security: IJadxSecurity = context.getArgs().getSecurity()
+	private val security: IJadxSecurity = context.getArgs().security
 
 	public fun process(input: java.util.List<Path>): ConvertResult {
 		val result = ConvertResult()

@@ -27,7 +27,7 @@ abstract class NotificationAttrNode :
 	ICodeNode {
 
 	/** 判断当前节点配置的注释级别是否达到 [required]（用于决定某类注释是否输出） */
-	open fun checkCommentsLevel(required: CommentsLevel): Boolean = required.filter(this.root().getArgs().getCommentsLevel())
+	open fun checkCommentsLevel(required: CommentsLevel): Boolean = required.filter(this.root().getArgs().commentsLevel)
 
 	/** 记录一个反编译错误（计入全局错误统计，并带上异常堆栈） */
 	open fun addError(errStr: String, e: Throwable) {
@@ -58,7 +58,7 @@ abstract class NotificationAttrNode :
 
 	/** 追加一条带异常堆栈的警告注释 */
 	open fun addWarnComment(warn: String, exc: Throwable) {
-		val commentStr = warn + root().getArgs().getCodeNewLineStr() + Utils.getStackTrace(exc)
+		val commentStr = warn + root().getArgs().codeNewLineStr + Utils.getStackTrace(exc)
 		JadxCommentsAttr.add(this, CommentsLevel.WARN, commentStr)
 	}
 
@@ -73,5 +73,5 @@ abstract class NotificationAttrNode :
 	}
 
 	/** 取当前节点配置的注释级别 */
-	open fun getCommentsLevel(): CommentsLevel = this.root().getArgs().getCommentsLevel()
+	open fun getCommentsLevel(): CommentsLevel = this.root().getArgs().commentsLevel
 }

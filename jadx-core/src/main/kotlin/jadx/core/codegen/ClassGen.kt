@@ -58,10 +58,10 @@ class ClassGen(
 	constructor(cls: ClassNode, jadxArgs: JadxArgs) : this(
 		cls,
 		null,
-		jadxArgs.isUseImports(),
-		jadxArgs.isFallbackMode(),
-		jadxArgs.isShowInconsistentCode(),
-		jadxArgs.getIntegerFormat(),
+		jadxArgs.isUseImports,
+		jadxArgs.isFallbackMode,
+		jadxArgs.isShowInconsistentCode,
+		jadxArgs.integerFormat,
 	)
 
 	constructor(cls: ClassNode, parentClsGen: ClassGen) : this(
@@ -240,7 +240,7 @@ class ClassGen(
 						useClass(code, g)
 						if (classDeclaration &&
 							!cls.classInfo.isInner &&
-							cls.root().getArgs().isUseImports()
+							cls.root().getArgs().isUseImports
 						) {
 							addImport(ClassInfo.fromType(cls.root(), g))
 						}
@@ -351,7 +351,7 @@ class ClassGen(
 	 * 内联方法是否需要跳过输出的额外检查。
 	 */
 	private fun skipMethod(mth: MethodNode): Boolean {
-		if (cls.root().getArgs().getDecompilationMode().isSpecial()) {
+		if (cls.root().getArgs().decompilationMode.isSpecial()) {
 			// show all methods for special decompilation modes
 			return false
 		}

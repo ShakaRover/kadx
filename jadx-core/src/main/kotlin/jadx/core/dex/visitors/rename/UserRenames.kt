@@ -31,7 +31,7 @@ class UserRenames {
 		/** 应用所有用户重命名（类/字段/方法/包）。 */
 		@JvmStatic
 		fun apply(root: RootNode) {
-			val codeData = root.getArgs().getCodeData()
+			val codeData = root.getArgs().codeData
 			if (codeData == null || codeData.getRenames().isEmpty()) {
 				return
 			}

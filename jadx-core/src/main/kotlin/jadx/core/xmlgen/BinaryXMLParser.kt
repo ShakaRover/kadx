@@ -481,7 +481,7 @@ class BinaryXMLParser(private val rootNode: RootNode) : CommonBinaryParser() {
 			writer.add(elemName).add('>')
 		}
 		isLastEnd = true
-		if (writer.indent != 0) {
+		if (writer.getIndent() != 0) {
 			writer.decIndent()
 		}
 	}
@@ -503,7 +503,7 @@ class BinaryXMLParser(private val rootNode: RootNode) : CommonBinaryParser() {
 	}
 
 	private fun attachClassNode(writer: ICodeWriter, attrFullName: String, clsName: String?) {
-		if (!writer.isMetadataSupported) {
+		if (!writer.isMetadataSupported()) {
 			return
 		}
 		if (clsName == null || attrFullName != "android:name") {

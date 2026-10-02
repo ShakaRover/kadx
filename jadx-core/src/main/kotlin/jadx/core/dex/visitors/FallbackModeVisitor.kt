@@ -20,7 +20,7 @@ import jadx.core.utils.exceptions.JadxException
 class FallbackModeVisitor : AbstractVisitor() {
 
 	override fun init(root: RootNode) {
-		if (root.getArgs().isJsonOutput()) {
+		if (root.getArgs().isJsonOutput) {
 			JsonMappingGen.dump(root)
 		}
 	}

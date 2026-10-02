@@ -34,11 +34,11 @@ class SourceFileRename : AbstractVisitor() {
 
 	@Throws(JadxException::class)
 	override fun init(root: RootNode) {
-		val useSourceName = root.getArgs().getUseSourceNameAsClassNameAlias()
+		val useSourceName = root.getArgs().useSourceNameAsClassNameAlias
 		if (useSourceName == UseSourceNameAsClassNameAlias.NEVER) {
 			return
 		}
-		val repeatLimit = root.getArgs().getSourceNameRepeatLimit()
+		val repeatLimit = root.getArgs().sourceNameRepeatLimit
 		if (repeatLimit <= 1) {
 			return
 		}

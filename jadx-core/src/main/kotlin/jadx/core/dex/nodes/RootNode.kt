@@ -53,7 +53,7 @@ class RootNode private constructor(
 	decompilerRef: JadxDecompiler?,
 	jadxArgs: JadxArgs,
 ) {
-	constructor(decompiler: JadxDecompiler) : this(decompiler, decompiler.args)
+	constructor(decompiler: JadxDecompiler) : this(decompiler, decompiler.getArgs())
 
 	/**
 	 * 已废弃：优先使用 [RootNode]（传入 JadxDecompiler）。
@@ -239,7 +239,7 @@ class RootNode private constructor(
 
 	private fun getResourceFile(resources: List<ResourceFile>): ResourceFile? {
 		for (rf in resources) {
-			if (rf.type == ResourceType.ARSC) return rf
+			if (rf.getType() == ResourceType.ARSC) return rf
 		}
 		return null
 	}
@@ -281,7 +281,7 @@ class RootNode private constructor(
 			}
 		}
 		for (resource in resources) {
-			val resEntry = entryNames[resource.originalName]
+			val resEntry = entryNames[resource.getOriginalName()]
 			if (resEntry != null && resource.setAlias(resEntry, useHeaders)) {
 				renamedCount++
 			}
@@ -603,14 +603,14 @@ class RootNode private constructor(
 		processClasses.initPasses(this)
 	}
 
-	fun makeCodeWriter(): ICodeWriter = args.getCodeWriterProvider().apply(args)
+	fun makeCodeWriter(): ICodeWriter = args.codeWriterProvider.apply(args)
 
 	fun registerCodeDataUpdateListener(listener: ICodeDataUpdateListener) {
 		codeDataUpdateListeners.add(listener)
 	}
 
 	fun notifyCodeDataListeners() {
-		val codeData = args.codeData
+		val codeData = checkNotNull(args.codeData)
 		for (l in codeDataUpdateListeners) {
 			l.updated(codeData)
 		}

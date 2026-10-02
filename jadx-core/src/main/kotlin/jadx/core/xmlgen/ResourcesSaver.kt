@@ -26,7 +26,7 @@ class ResourcesSaver(
 	private val resourceFile: ResourceFile,
 ) : Runnable {
 
-	private val security: IJadxSecurity = decompiler.getArgs().getSecurity()
+	private val security: IJadxSecurity = decompiler.getArgs().security
 
 	override fun run() {
 		try {

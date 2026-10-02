@@ -240,10 +240,10 @@ class MethodNode(
 	fun collectArgNodes(): List<VarNode> {
 		val codeInfo: ICodeInfo = getTopParentClass().getCode()
 		val mthDefPos = getDefPosition()
-		val lineEndPos = getLineEndForPos(codeInfo.codeStr, mthDefPos)
+		val lineEndPos = getLineEndForPos(codeInfo.getCodeStr(), mthDefPos)
 		val argsCount = mthInfo.argsCount
 		val args = ArrayList<VarNode>(argsCount)
-		codeInfo.codeMetadata.searchDown(mthDefPos) { pos, ann ->
+		codeInfo.getCodeMetadata().searchDown(mthDefPos) { pos, ann ->
 			if (pos > lineEndPos) return@searchDown true
 			if (ann is NodeDeclareRef) {
 				val declRef = ann.node

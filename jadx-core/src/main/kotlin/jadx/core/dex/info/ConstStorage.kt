@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class ConstStorage(args: JadxArgs) {
 
-	private val replaceEnabled: Boolean = args.isReplaceConsts()
+	private val replaceEnabled: Boolean = args.isReplaceConsts
 	private val globalValues = ValueStorage()
 	private val classes = HashMap<ClassNode, ValueStorage>()
 

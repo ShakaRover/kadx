@@ -108,7 +108,7 @@ class AndroidGradleGenerator(
 				attrs.add(AppAttribute.VERSION_CODE)
 			}
 
-			val security = root.getArgs().getSecurity()
+			val security = root.getArgs().security
 			val parser = AndroidManifestParser(androidManifest, strings, attrs, security)
 			return parser.parse()
 		} catch (t: Exception) {
@@ -179,7 +179,7 @@ class AndroidGradleGenerator(
 	@Throws(FileNotFoundException::class)
 	private fun loadGradleTemplate(templatePath: String): TemplateFile {
 		val tmpl = TemplateFile.fromResources(templatePath)
-		val security = root.getArgs().getSecurity()
+		val security = root.getArgs().security
 		tmpl.setValueSanitizer { str -> security.sanitizeString(str, SanitizeType.GRADLE_GROOVY) }
 		return tmpl
 	}

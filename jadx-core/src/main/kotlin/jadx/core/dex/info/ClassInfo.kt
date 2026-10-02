@@ -58,7 +58,7 @@ class ClassInfo private constructor(
 			if (cls != null) {
 				return cls
 			}
-			val canBeInner = root.getArgs().isMoveInnerClasses()
+			val canBeInner = root.getArgs().isMoveInnerClasses
 			val newClsInfo = ClassInfo(root, clsType, canBeInner)
 			return root.getInfoStorage().putCls(newClsInfo)
 		}

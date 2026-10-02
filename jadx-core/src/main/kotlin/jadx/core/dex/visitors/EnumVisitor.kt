@@ -174,7 +174,7 @@ class EnumVisitor : AbstractVisitor() {
 			if (name != null &&
 				fieldNode.getAlias() != name &&
 				NameMapper.isValidAndPrintable(name) &&
-				cls.root().getArgs().isRenameValid()
+				cls.root().getArgs().isRenameValid
 			) {
 				fieldNode.getFieldInfo().alias = name
 			}

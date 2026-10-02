@@ -43,12 +43,12 @@ class XposedAction(codeArea: CodeArea) : JNodeAction(ActionModel.XPOSED_COPY, co
 
 	private fun generateMethodSnippet(jMethod: JMethod): String {
 		val javaMethod = jMethod.javaMethod
-		val methodNode = javaMethod.methodNode
+		val methodNode = javaMethod.getMethodNode()
 		val methodInfo = methodNode.getMethodInfo()
 
 		val xposedMethod: String
 		var args = methodInfo.argumentsTypes.map(::fixTypeContent)
-		val rawClassName = javaMethod.declaringClass.rawName
+		val rawClassName = javaMethod.getDeclaringClass().getRawName()
 
 		if (methodNode.isConstructor()) {
 			xposedMethod = "findAndHookConstructor"
@@ -114,8 +114,8 @@ class XposedAction(codeArea: CodeArea) : JNodeAction(ActionModel.XPOSED_COPY, co
 
 	private fun generateClassSnippet(jClass: JClass): String {
 		val javaClass = jClass.cls
-		val rawClassName = javaClass.rawName
-		val className = javaClass.name
+		val rawClassName = javaClass.getRawName()
+		val className = javaClass.getName()
 
 		val template = when (language) {
 			XposedCodegenLanguage.JAVA -> "Class<?> %sClass = classLoader.loadClass(\"%s\");"
@@ -127,8 +127,8 @@ class XposedAction(codeArea: CodeArea) : JNodeAction(ActionModel.XPOSED_COPY, co
 
 	private fun generateFieldSnippet(jField: JField): String {
 		val javaField = jField.javaField
-		val static = if (javaField.accessFlags.isStatic()) "Static" else ""
-		val type = PRIMITIVE_TYPE_MAPPING.getOrDefault(javaField.fieldNode.type.toString(), "Object")
+		val static = if (javaField.getAccessFlags().isStatic()) "Static" else ""
+		val type = PRIMITIVE_TYPE_MAPPING.getOrDefault(javaField.getFieldNode().type.toString(), "Object")
 		val xposedMethod = "XposedHelpers.get${static}${type}Field"
 
 		val template = when (language) {
@@ -136,7 +136,7 @@ class XposedAction(codeArea: CodeArea) : JNodeAction(ActionModel.XPOSED_COPY, co
 			XposedCodegenLanguage.KOTLIN -> "%s(/*runtimeObject*/, \"%s\")"
 		}
 
-		return String.format(template, xposedMethod, javaField.fieldNode.fieldInfo.name)
+		return String.format(template, xposedMethod, javaField.getFieldNode().fieldInfo.name)
 	}
 
 	private val language: XposedCodegenLanguage

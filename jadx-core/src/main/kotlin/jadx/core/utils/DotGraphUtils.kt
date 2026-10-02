@@ -404,7 +404,7 @@ class DotGraphUtils {
 
 		// 方法 CFG 的默认输出目录
 		@JvmStatic
-		fun getOutDir(mth: MethodNode): File = mth.root().getArgs().getOutDir()
+		fun getOutDir(mth: MethodNode): File = checkNotNull(mth.root().getArgs().outDir)
 
 		@JvmStatic
 		fun escape(obj: Any?): String {

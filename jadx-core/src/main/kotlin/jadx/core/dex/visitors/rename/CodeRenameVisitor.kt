@@ -44,7 +44,7 @@ class CodeRenameVisitor : AbstractVisitor() {
 
 	@Throws(JadxException::class)
 	override fun init(root: RootNode) {
-		updateRenamesMap(root.getArgs().getCodeData())
+		updateRenamesMap(root.getArgs().codeData)
 		root.registerCodeDataUpdateListener { updateRenamesMap(it) }
 	}
 

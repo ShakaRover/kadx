@@ -38,7 +38,7 @@ class AttachCommentsVisitor : AbstractVisitor() {
 
 	@Throws(JadxException::class)
 	override fun init(root: RootNode) {
-		updateCommentsData(root.getArgs().getCodeData())
+		updateCommentsData(root.getArgs().codeData)
 		root.registerCodeDataUpdateListener { data -> updateCommentsData(data) }
 	}
 

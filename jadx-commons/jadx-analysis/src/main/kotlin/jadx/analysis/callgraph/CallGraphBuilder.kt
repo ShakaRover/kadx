@@ -64,7 +64,7 @@ class CallGraphBuilder(
 	override fun build(): ICallGraph {
 		val edges = collectEdges()
 		val pkgFilterValue = pkgFilter
-		return CallGraph(decompiler.args, edges, resolvedOnly, pkgFilterValue)
+		return CallGraph(decompiler.getArgs(), edges, resolvedOnly, pkgFilterValue)
 	}
 
 	/**
@@ -85,7 +85,7 @@ class CallGraphBuilder(
 		val pkgFilterValue = pkgFilter
 
 		// 遍历所有类（包括内部类）
-		for (cls in decompiler.root.classes) {
+		for (cls in checkNotNull(decompiler.getRoot()).classes) {
 			// 跳过不匹配包名过滤器的类
 			if (ignorePkg(cls.classInfo, pkgFilterValue)) {
 				continue

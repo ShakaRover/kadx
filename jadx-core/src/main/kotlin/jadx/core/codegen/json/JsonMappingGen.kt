@@ -42,7 +42,7 @@ class JsonMappingGen private constructor() {
 			fillMapping(mapping, root)
 
 			val args: JadxArgs = root.getArgs()
-			val outDirSrc = args.getOutDirSrc().getAbsoluteFile()
+			val outDirSrc = checkNotNull(args.outDirSrc).getAbsoluteFile()
 			val mappingFile = File(outDirSrc, "mapping.json")
 			FileUtils.makeDirsForFile(mappingFile)
 			try {

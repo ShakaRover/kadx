@@ -135,7 +135,7 @@ object AndroidResourcesUtils {
 			if (fieldNode != null &&
 				fieldNode.getName() != resName &&
 				NameMapper.isValidAndPrintable(resName) &&
-				resCls.root().getArgs().isRenameValid()
+				resCls.root().getArgs().isRenameValid
 			) {
 				fieldNode.add(AFlag.DONT_RENAME)
 				fieldNode.getFieldInfo().alias = resName

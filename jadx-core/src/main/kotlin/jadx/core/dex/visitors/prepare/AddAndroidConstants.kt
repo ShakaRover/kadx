@@ -32,7 +32,7 @@ class AddAndroidConstants : AbstractVisitor() {
 
 	@Throws(JadxException::class)
 	override fun init(root: RootNode) {
-		if (!root.getArgs().isReplaceConsts()) {
+		if (!root.getArgs().isReplaceConsts) {
 			return
 		}
 		if (root.resolveClass(R_CLS) != null) {

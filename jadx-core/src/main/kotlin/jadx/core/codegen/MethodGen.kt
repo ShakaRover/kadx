@@ -98,7 +98,7 @@ class MethodGen(classGen: ClassGen, mth: MethodNode) {
 			code.startLine("/*")
 			code.incIndent()
 			code.startLine("Code decompiled incorrectly, please refer to instructions dump.")
-			if (!mth.root().getArgs().isShowInconsistentCode()) {
+			if (!mth.root().getArgs().isShowInconsistentCode) {
 				if (code.isMetadataSupported()) {
 					code.startLine("To view partially-correct code enable 'Show inconsistent code' option in preferences")
 				} else {
@@ -247,7 +247,7 @@ class MethodGen(classGen: ClassGen, mth: MethodNode) {
 		if (modeOverrideAttr != null) {
 			mode = modeOverrideAttr.mode
 		} else {
-			mode = args.getDecompilationMode()
+			mode = args.decompilationMode
 		}
 		when (mode) {
 			DecompilationMode.AUTO -> {
@@ -297,7 +297,7 @@ class MethodGen(classGen: ClassGen, mth: MethodNode) {
 			return
 		}
 		val args: JadxArgs = mth.root().getArgs()
-		val tmpCode = args.getCodeWriterProvider().apply(args)
+		val tmpCode = args.codeWriterProvider.apply(args)
 		try {
 			tmpCode.setIndent(code.getIndent())
 			generateSimpleCode(tmpCode)

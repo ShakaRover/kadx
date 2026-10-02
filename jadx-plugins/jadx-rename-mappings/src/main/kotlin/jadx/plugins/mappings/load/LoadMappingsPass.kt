@@ -29,7 +29,7 @@ public class LoadMappingsPass(private val options: RenameMappingsOptions) : Jadx
 	}
 
 	private fun loadMapping(args: JadxArgs): MappingTreeView = try {
-		val mappingsPath = args.getUserRenamesMappingsPath()!!
+		val mappingsPath = checkNotNull(args.userRenamesMappingsPath)
 		val mappingTree = MemoryMappingTree()
 		MappingReader.read(mappingsPath, options.getFormat(), mappingTree)
 		if (mappingTree.getSrcNamespace() == null) {

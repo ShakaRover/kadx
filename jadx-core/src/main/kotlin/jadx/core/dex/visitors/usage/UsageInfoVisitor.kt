@@ -62,7 +62,7 @@ import org.slf4j.LoggerFactory
 class UsageInfoVisitor : AbstractVisitor() {
 
 	override fun init(root: RootNode) {
-		val usageCache = root.getArgs().getUsageInfoCache()
+		val usageCache = root.getArgs().usageInfoCache
 		val usageInfoData = usageCache.get(root)
 		if (usageInfoData != null) {
 			try {

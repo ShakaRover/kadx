@@ -94,7 +94,7 @@ class ClassNode(
 		}
 
 		private fun processDefinitionAnnotations(codeInfo: ICodeInfo) {
-			val annotations = codeInfo.codeMetadata.getAsMap()
+			val annotations = codeInfo.getCodeMetadata().getAsMap()
 			if (annotations.isEmpty()) return
 			for ((pos, ann) in annotations as Map<Int, ICodeAnnotation>) {
 				if (ann.getAnnType() == ICodeAnnotation.AnnType.DECLARATION) {
@@ -634,7 +634,7 @@ class ClassNode(
 			for (innerClass in allInlinedClasses) {
 				innerClass.getDisassembledCode(code)
 			}
-			smali = code.finish().codeStr
+			smali = code.finish().getCodeStr()
 		}
 		return smali!!
 	}

@@ -65,7 +65,7 @@ class ExportGradle(
 	 * 2. 否则采用 [detectExportType] 的探测结果。
 	 */
 	private fun getExportGradleType(): ExportGradleType {
-		val argsExportType = root.getArgs().getExportGradleType()
+		val argsExportType = root.getArgs().exportGradleType
 		val detectedType = detectExportType(root, resources)
 		if (argsExportType == null ||
 			argsExportType == ExportGradleType.AUTO ||

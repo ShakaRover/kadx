@@ -27,7 +27,7 @@ class CodeGen private constructor() {
 				return ICodeInfo.EMPTY
 			}
 			val args = cls.root().getArgs()
-			return when (args.getOutputFormat()) {
+			return when (args.outputFormat) {
 				JadxArgs.OutputFormatEnum.JAVA -> generateJavaCode(cls, args)
 				JadxArgs.OutputFormatEnum.JSON -> generateJson(cls)
 				else -> throw JadxRuntimeException("Unknown output format")

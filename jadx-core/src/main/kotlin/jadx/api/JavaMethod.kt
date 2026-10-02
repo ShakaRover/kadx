@@ -1,0 +1,104 @@
+package jadx.api
+
+import jadx.api.metadata.ICodeAnnotation
+import jadx.api.metadata.ICodeNodeRef
+import jadx.core.dex.attributes.AType
+import jadx.core.dex.info.AccessInfo
+import jadx.core.dex.info.MethodInfo
+import jadx.core.dex.instructions.args.ArgType
+import jadx.core.dex.nodes.MethodNode
+import jadx.core.utils.Utils
+import org.jetbrains.annotations.ApiStatus
+
+/**
+ * 方法的 Java 视图：把内部 [MethodNode] 包装成对插件/GUI 友好的对象。
+ *
+ * 公共 API，getter 全部保留显式函数形态（JVM 方法名与原来一致）。
+ * 该类是 final 且使用自定义 equals/hashCode（基于 [MethodNode]），禁止改成 `data class`。
+ */
+class JavaMethod internal constructor(
+	private val mth: MethodNode,
+	private val parent: JavaClass,
+) : JavaNode {
+
+	override fun getName(): String = mth.getAlias()
+
+	override fun getFullName(): String = mth.getMethodInfo().fullName
+
+	override fun getDeclaringClass(): JavaClass = parent
+
+	override fun getTopParentClass(): JavaClass = parent.getTopParentClass()
+
+	/** 访问修饰符信息。 */
+	fun getAccessFlags(): AccessInfo = mth.accessFlags
+
+	/** 方法参数类型列表（解析类别名之后）。 */
+	fun getArguments(): List<ArgType> {
+		val infoArgTypes = mth.getMethodInfo().argumentsTypes
+		if (infoArgTypes.isEmpty()) {
+			return emptyList()
+		}
+		val arguments = mth.getArgTypes()
+		return Utils.collectionMap(arguments) { type -> ArgType.tryToResolveClassAlias(mth.root(), type) }
+	}
+
+	/** 返回类型（解析类别名之后）。 */
+	fun getReturnType(): ArgType {
+		val retType = mth.getReturnType()
+		return ArgType.tryToResolveClassAlias(mth.root(), retType)
+	}
+
+	override fun getUseIn(): List<JavaNode> = getDeclaringClass().getRootDecompiler().convertNodes(mth.getUseIn())
+
+	/** 本方法调用了哪些方法。 */
+	fun getUsed(): List<JavaNode> = getDeclaringClass().getRootDecompiler().convertNodes(mth.getUsed())
+
+	/** 未能解析的目标方法列表。 */
+	fun getUnresolvedUsed(): List<MethodInfo> = mth.getUnresolvedUsed()
+
+	/** 是否递归调用自身。 */
+	fun callsSelf(): Boolean = mth.callsSelf()
+
+	/** 与本方法存在覆写关系的所有方法。 */
+	fun getOverrideRelatedMethods(): List<JavaMethod> {
+		val ovrdAttr = mth.get(AType.METHOD_OVERRIDE) ?: return emptyList()
+		val decompiler = getDeclaringClass().getRootDecompiler()
+		return ovrdAttr.relatedMthNodes.map { decompiler.convertMethodNode(it) }
+	}
+
+	/** 是否为构造方法（`<init>`）。 */
+	fun isConstructor(): Boolean = mth.getMethodInfo().isConstructor()
+
+	/** 是否为静态初始化方法（`<clinit>`）。 */
+	fun isClassInit(): Boolean = mth.getMethodInfo().isClassInit()
+
+	override fun getDefPos(): Int = mth.getDefPosition()
+
+	/** 本方法的反编译代码字符串。 */
+	fun getCodeStr(): String = mth.getCodeStr()
+
+	override fun removeAlias() {
+		mth.getMethodInfo().removeAlias()
+	}
+
+	override fun isOwnCodeAnnotation(ann: ICodeAnnotation): Boolean {
+		if (ann.getAnnType() == ICodeAnnotation.AnnType.METHOD) {
+			return ann == mth
+		}
+		return false
+	}
+
+	override fun getCodeNodeRef(): ICodeNodeRef = mth
+
+	/**
+	 * 内部 API，非稳定。
+	 */
+	@ApiStatus.Internal
+	fun getMethodNode(): MethodNode = mth
+
+	override fun hashCode(): Int = mth.hashCode()
+
+	override fun equals(other: Any?): Boolean = this === other || (other is JavaMethod && mth == other.mth)
+
+	override fun toString(): String = mth.toString()
+}

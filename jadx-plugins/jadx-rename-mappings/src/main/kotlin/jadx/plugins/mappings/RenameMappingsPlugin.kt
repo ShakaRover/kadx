@@ -28,10 +28,10 @@ public class RenameMappingsPlugin : JadxPlugin {
 	override fun init(context: JadxPluginContext) {
 		context.registerOptions(options)
 		val args = context.getArgs()
-		if (args.getUserRenamesMappingsMode() == UserRenamesMappingsMode.IGNORE) {
+		if (args.userRenamesMappingsMode == UserRenamesMappingsMode.IGNORE) {
 			return
 		}
-		val mappingsPath = args.getUserRenamesMappingsPath()
+		val mappingsPath = args.userRenamesMappingsPath
 		if (mappingsPath == null || !Files.isReadable(mappingsPath)) {
 			return
 		}

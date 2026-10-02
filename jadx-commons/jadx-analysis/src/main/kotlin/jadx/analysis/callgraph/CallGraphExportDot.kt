@@ -90,7 +90,7 @@ class CallGraphExportDot(
 		}
 
 		cw.startLine('}')
-		return cw.codeStr
+		return cw.getCodeStr()
 	}
 
 	/**

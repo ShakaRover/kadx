@@ -23,7 +23,7 @@ public class SmaliInputPlugin : JadxPlugin {
 
 	override fun init(context: JadxPluginContext) {
 		context.registerOptions(options)
-		options.threads = context.getArgs().getThreadsCount()
+		options.threads = context.getArgs().threadsCount
 
 		val dexInput: DexInputPlugin = context.plugins().getInstance(DexInputPlugin::class.java)
 		// 注意：JadxCodeInput 是 Kotlin 接口，Kotlin lambda 不能做 SAM 转换（仅 Java 接口可以），需用 object 表达式

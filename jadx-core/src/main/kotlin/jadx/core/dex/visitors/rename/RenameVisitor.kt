@@ -40,7 +40,7 @@ import java.util.regex.Pattern
 class RenameVisitor : AbstractVisitor() {
 
 	override fun init(root: RootNode) {
-		val inputFiles = root.getArgs().getInputFiles()
+		val inputFiles = root.getArgs().inputFiles
 		if (inputFiles.isEmpty()) {
 			return
 		}
@@ -60,11 +60,11 @@ class RenameVisitor : AbstractVisitor() {
 
 		private fun checkNames(root: RootNode) {
 			val args = root.getArgs()
-			if (args.getRenameFlags().isEmpty()) {
+			if (args.renameFlags.isEmpty()) {
 				return
 			}
 
-			val aliasProvider = args.getAliasProvider()
+			val aliasProvider = args.aliasProvider
 
 			val classes = root.getClasses(true)
 			for (cls in classes) {
@@ -76,7 +76,7 @@ class RenameVisitor : AbstractVisitor() {
 			for (pkg in root.getPackages()) {
 				pkgUpdated = checkPackage(args, aliasProvider, pkg) || pkgUpdated
 			}
-			if (!args.isFsCaseSensitive() && args.isRenameCaseSensitive()) {
+			if (!args.isFsCaseSensitive && args.isRenameCaseSensitive) {
 				// 在大小写不敏感的文件系统上检查包目录冲突
 				val pkgPaths = HashSet<String>()
 				for (pkg in root.getPackages()) {
@@ -94,7 +94,7 @@ class RenameVisitor : AbstractVisitor() {
 			if (pkgUpdated) {
 				root.runPackagesUpdate()
 			}
-			if (!args.isFsCaseSensitive() && args.isRenameCaseSensitive()) {
+			if (!args.isFsCaseSensitive && args.isRenameCaseSensitive) {
 				// 检查类文件冲突（在包重命名之后）
 				val clsFullPaths = HashSet<String>(classes.size)
 				for (cls in classes) {
@@ -130,7 +130,7 @@ class RenameVisitor : AbstractVisitor() {
 				classInfo.changeShortName(newShortName)
 				cls.addAttr(RenameReasonAttr(cls).append("invalid class name"))
 			}
-			if (classInfo.isInner && args.isRenameValid()) {
+			if (classInfo.isInner && args.isRenameValid) {
 				// 检查内部类名字
 				var parentClass = classInfo.parentClass
 				while (parentClass != null) {
@@ -145,13 +145,13 @@ class RenameVisitor : AbstractVisitor() {
 		}
 
 		private fun checkPackage(args: JadxArgs, aliasProvider: IAliasProvider, pkg: PackageNode): Boolean {
-			if (args.isRenameValid() && pkg.getAliasPkgInfo().isDefaultPkg()) {
+			if (args.isRenameValid && pkg.getAliasPkgInfo().isDefaultPkg()) {
 				pkg.setFullAlias(Consts.DEFAULT_PACKAGE_NAME, false)
 				return true
 			}
 			val pkgName = pkg.getAliasPkgInfo().name
-			val notValid = args.isRenameValid() && !NameMapper.isValidIdentifier(pkgName)
-			val notPrintable = args.isRenamePrintable() && !NameMapper.isAllCharsPrintable(pkgName)
+			val notValid = args.isRenameValid && !NameMapper.isValidIdentifier(pkgName)
+			val notPrintable = args.isRenamePrintable && !NameMapper.isAllCharsPrintable(pkgName)
 			if (notValid || notPrintable) {
 				pkg.setLeafAlias(aliasProvider.forPackage(pkg), false)
 				return true
@@ -163,7 +163,7 @@ class RenameVisitor : AbstractVisitor() {
 			if (StringUtils.isEmpty(clsName)) {
 				return null
 			}
-			val renameValid = args.isRenameValid()
+			val renameValid = args.isRenameValid
 			if (renameValid) {
 				if (ANONYMOUS_CLASS_PATTERN.matcher(clsName).matches()) {
 					return Consts.ANONYMOUS_CLASS_PREFIX + NameMapper.removeInvalidCharsMiddle(clsName)
@@ -174,7 +174,7 @@ class RenameVisitor : AbstractVisitor() {
 					return 'C' + NameMapper.removeInvalidCharsMiddle(clsName)
 				}
 			}
-			var cleanClsName = if (args.isRenamePrintable()) {
+			var cleanClsName = if (args.isRenamePrintable) {
 				NameMapper.removeNonPrintableCharacters(clsName)
 			} else {
 				clsName
@@ -197,8 +197,8 @@ class RenameVisitor : AbstractVisitor() {
 				val fieldInfo = field.getFieldInfo()
 				val fieldName = fieldInfo.alias
 				val notUnique = !names.add(fieldName)
-				val notValid = args.isRenameValid() && !NameMapper.isValidIdentifier(fieldName)
-				val notPrintable = args.isRenamePrintable() && !NameMapper.isAllCharsPrintable(fieldName)
+				val notValid = args.isRenameValid && !NameMapper.isValidIdentifier(fieldName)
+				val notPrintable = args.isRenamePrintable && !NameMapper.isAllCharsPrintable(fieldName)
 				if (notUnique || notValid || notPrintable) {
 					field.rename(aliasProvider.forField(field))
 					field.addAttr(RenameReasonAttr(field, notValid, notPrintable))
@@ -218,15 +218,15 @@ class RenameVisitor : AbstractVisitor() {
 			}
 			for (mth in methods) {
 				val alias = mth.getAlias()
-				val notValid = args.isRenameValid() && !NameMapper.isValidIdentifier(alias)
-				val notPrintable = args.isRenamePrintable() && !NameMapper.isAllCharsPrintable(alias)
+				val notValid = args.isRenameValid && !NameMapper.isValidIdentifier(alias)
+				val notPrintable = args.isRenamePrintable && !NameMapper.isAllCharsPrintable(alias)
 				if (notValid || notPrintable) {
 					mth.rename(aliasProvider.forMethod(mth))
 					mth.addAttr(RenameReasonAttr(mth, notValid, notPrintable))
 				}
 			}
 			// 重命名签名相同的方法
-			if (args.isRenameValid()) {
+			if (args.isRenameValid) {
 				val names = HashSet<String>(methods.size)
 				for (mth in methods) {
 					val signature = mth.getMethodInfo().makeSignature(true, false)
@@ -258,7 +258,7 @@ class RenameVisitor : AbstractVisitor() {
 			val rootPkgs = collectRootPkgs(root)
 			root.getCacheStorage().rootPkgs = rootPkgs
 
-			if (root.getArgs().isRenameValid()) {
+			if (root.getArgs().isRenameValid) {
 				// 字段名与根包名冲突时重命名
 				for (cls in classes) {
 					for (field in cls.fields) {

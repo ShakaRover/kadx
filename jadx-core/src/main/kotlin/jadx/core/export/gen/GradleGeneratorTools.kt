@@ -16,7 +16,7 @@ object GradleGeneratorTools {
 	/** 推断工程名：只有一个输入文件时用其文件名，否则回退为 `PROJECT_NAME`。 */
 	@JvmStatic
 	fun guessProjectName(root: RootNode): String {
-		val inputFiles = root.getArgs().getInputFiles()
+		val inputFiles = root.getArgs().inputFiles
 		if (inputFiles.size == 1) {
 			return FileUtils.getPathBaseName(inputFiles[0].toPath())
 		}

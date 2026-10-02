@@ -33,7 +33,7 @@ class CollectConstValues : AbstractVisitor() {
 	@Throws(JadxException::class)
 	override fun visit(cls: ClassNode): Boolean {
 		val root = cls.root()
-		if (!root.getArgs().isReplaceConsts()) {
+		if (!root.getArgs().isReplaceConsts) {
 			return true
 		}
 		if (cls.fields.isEmpty()) {

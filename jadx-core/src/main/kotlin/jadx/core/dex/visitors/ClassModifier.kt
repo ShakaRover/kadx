@@ -252,7 +252,7 @@ class ClassModifier : AbstractVisitor() {
 		}
 
 		private fun removeBridgeMethod(cls: ClassNode, mth: MethodNode): Boolean {
-			if (cls.root().getArgs().isInlineMethods()) { // 简单 wrapper 删除与内联等价
+			if (cls.root().getArgs().isInlineMethods) { // 简单 wrapper 删除与内联等价
 				val allInsns = BlockUtils.collectAllInsns(checkNotNull(mth.getBasicBlocks()))
 				if (allInsns.size == 1) {
 					var wrappedInsn = allInsns[0]
@@ -297,7 +297,7 @@ class ClassModifier : AbstractVisitor() {
 				}
 			}
 			// 确认可删除，按需修改可见性与名字
-			if (!wrappedAccFlags.isPublic() && !mth.root().getArgs().isRespectBytecodeAccModifiers()) {
+			if (!wrappedAccFlags.isPublic() && !mth.root().getArgs().isRespectBytecodeAccModifiers) {
 				// 必须为 public
 				FixAccessModifiers.changeVisibility(wrappedMth, AccessFlags.PUBLIC)
 			}

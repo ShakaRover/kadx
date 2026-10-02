@@ -30,7 +30,7 @@ public class ResXmlProtoParser(private val rootNode: RootNode) : CommonProtoPars
 
 	private var currentTag: String? = null
 	private var appPackageName: String? = null
-	private val isPrettyPrint = !rootNode.getArgs().isSkipXmlPrettyPrint()
+	private val isPrettyPrint = !rootNode.getArgs().isSkipXmlPrettyPrint
 
 	@Synchronized
 	public fun parse(inputStream: InputStream): ICodeInfo {

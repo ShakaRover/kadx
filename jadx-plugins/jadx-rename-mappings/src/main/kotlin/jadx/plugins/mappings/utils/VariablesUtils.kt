@@ -27,9 +27,9 @@ public object VariablesUtils {
 	public fun collect(mth: MethodNode): List<VarInfo> {
 		val codeInfo = mth.getTopParentClass().getCode()
 		val mthDefPos = mth.defPosition
-		val mthLineEndPos = CodeUtils.getLineEndForPos(codeInfo.codeStr, mthDefPos)
+		val mthLineEndPos = CodeUtils.getLineEndForPos(codeInfo.getCodeStr(), mthDefPos)
 		val codeVisitor = CodeVisitor(mth)
-		codeInfo.codeMetadata.searchDown(mthLineEndPos) { pos, ann -> codeVisitor.process(pos, ann) }
+		codeInfo.getCodeMetadata().searchDown(mthLineEndPos) { pos, ann -> codeVisitor.process(pos, ann) }
 		return codeVisitor.vars
 	}
 

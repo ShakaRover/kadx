@@ -74,7 +74,7 @@ class ProcessKotlinInternals : AbstractVisitor() {
 			kotlinIntrinsicsCls = null
 			LOG.debug("Kotlin Intrinsics class not found")
 		}
-		hideInsns = root.getArgs().getUseKotlinMethodsForVarNames() == UseKotlinMethodsForVarNames.APPLY_AND_HIDE
+		hideInsns = root.getArgs().useKotlinMethodsForVarNames == UseKotlinMethodsForVarNames.APPLY_AND_HIDE
 	}
 
 	override fun visit(cls: ClassNode): Boolean {

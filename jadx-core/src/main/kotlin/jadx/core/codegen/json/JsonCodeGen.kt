@@ -172,7 +172,7 @@ class JsonCodeGen(cls: ClassNode) {
 			return emptyList()
 		}
 
-		val lines = Pattern.compile(args.getCodeNewLineStr()).split(codeStr)
+		val lines = Pattern.compile(args.codeNewLineStr).split(codeStr)
 		val metadata: ICodeMetadata = code.getCodeMetadata()
 		val lineMapping = metadata.getLineMapping()
 		val mthCodeOffset = mth.getMethodCodeOffset() + 16
@@ -180,7 +180,7 @@ class JsonCodeGen(cls: ClassNode) {
 		val linesCount = lines.size
 		val codeLines = ArrayList<JsonCodeLine>(linesCount)
 		var lineStartPos = 0
-		val newLineLen = args.getCodeNewLineStr().length
+		val newLineLen = args.codeNewLineStr.length
 		for (i in 0 until linesCount) {
 			val codeLine = lines[i]
 			val line = i + 2

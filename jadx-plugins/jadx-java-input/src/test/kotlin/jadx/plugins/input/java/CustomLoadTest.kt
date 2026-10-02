@@ -34,8 +34,8 @@ class CustomLoadTest {
 		loadDecompiler(loadResult)
 		assertThat(jadx.getClassesWithInners())
 			.hasSize(2)
-			.satisfiesOnlyOnce { cls -> assertThat(cls.name).isEqualTo("HelloWorld") }
-			.satisfiesOnlyOnce { cls -> assertThat(cls.name).isEqualTo("HelloInner") }
+			.satisfiesOnlyOnce { cls -> assertThat(cls.getName()).isEqualTo("HelloWorld") }
+			.satisfiesOnlyOnce { cls -> assertThat(cls.getName()).isEqualTo("HelloInner") }
 	}
 
 	@Test
@@ -46,9 +46,9 @@ class CustomLoadTest {
 			loadDecompiler(loadResult)
 			assertThat(jadx.getClassesWithInners())
 				.hasSize(1)
-				.satisfiesOnlyOnce { cls -> assertThat(cls.name).isEqualTo("HelloWorld\$HelloInner") }
+				.satisfiesOnlyOnce { cls -> assertThat(cls.getName()).isEqualTo("HelloWorld\$HelloInner") }
 
-			println(jadx.getClassesWithInners()[0].code)
+			println(jadx.getClassesWithInners()[0].getCode())
 		}
 	}
 
@@ -60,9 +60,9 @@ class CustomLoadTest {
 		loadDecompiler(loadResult)
 		assertThat(jadx.getClassesWithInners())
 			.hasSize(1)
-			.satisfiesOnlyOnce { cls -> assertThat(cls.name).isEqualTo("HelloWorld") }
+			.satisfiesOnlyOnce { cls -> assertThat(cls.getName()).isEqualTo("HelloWorld") }
 
-		println(jadx.getClassesWithInners()[0].code)
+		println(jadx.getClassesWithInners()[0].getCode())
 	}
 
 	@Test
@@ -86,21 +86,21 @@ class CustomLoadTest {
 		loadDecompiler(loadResult)
 		assertThat(jadx.getClassesWithInners())
 			.hasSize(2)
-			.satisfiesOnlyOnce { cls -> assertThat(cls.name).isEqualTo("HelloWorld") }
+			.satisfiesOnlyOnce { cls -> assertThat(cls.getName()).isEqualTo("HelloWorld") }
 			.satisfiesOnlyOnce { cls ->
-				assertThat(cls.name).isEqualTo("HelloInner")
-				assertThat(cls.code).isEmpty() // no code for moved inner class
+				assertThat(cls.getName()).isEqualTo("HelloInner")
+				assertThat(cls.getCode()).isEmpty() // no code for moved inner class
 			}
 
 		assertThat(jadx.getClasses())
 			.hasSize(1)
-			.satisfiesOnlyOnce { cls -> assertThat(cls.name).isEqualTo("HelloWorld") }
+			.satisfiesOnlyOnce { cls -> assertThat(cls.getName()).isEqualTo("HelloWorld") }
 			.satisfiesOnlyOnce { cls ->
-				assertThat(cls.innerClasses).hasSize(1)
-					.satisfiesOnlyOnce { inner -> assertThat(inner.name).isEqualTo("HelloInner") }
+				assertThat(cls.getInnerClasses()).hasSize(1)
+					.satisfiesOnlyOnce { inner -> assertThat(inner.getName()).isEqualTo("HelloInner") }
 			}
 
-		jadx.getClassesWithInners().forEach { cls -> println(cls.code) }
+		jadx.getClassesWithInners().forEach { cls -> println(cls.getCode()) }
 	}
 
 	fun loadDecompiler(codeLoader: ICodeLoader) {

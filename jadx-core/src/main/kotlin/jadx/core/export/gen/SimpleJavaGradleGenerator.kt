@@ -60,7 +60,7 @@ class SimpleJavaGradleGenerator(
 	@Throws(FileNotFoundException::class)
 	private fun loadGradleTemplate(templatePath: String): TemplateFile {
 		val tmpl = TemplateFile.fromResources(templatePath)
-		val security = root.getArgs().getSecurity()
+		val security = root.getArgs().security
 		tmpl.setValueSanitizer { str -> security.sanitizeString(str, SanitizeType.GRADLE_KOTLIN) }
 		return tmpl
 	}
