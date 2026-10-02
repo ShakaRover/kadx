@@ -86,7 +86,7 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | C01 | `dex/nodes`（24 已转）收尾：删原 .java + 修 InsnNode 访问器 | 24 | — | ✅ 7ef88abe |
 | C02 | `dex/attributes`（9） + `dex/attributes/nodes` 上半 | ~26 | C01 | ✅ 95d112d9 |
 | C03 | `dex/attributes/nodes` 下半 | ~17 | C02 | ✅ 79869792 |
-| C04 | `dex/instructions`（25） + `instructions/mods`（2） + `instructions/java`（1） | ~28 | C01 | ⏳ |
+| C04 | `dex/instructions`（25） + `instructions/mods`（2） + `instructions/java`（1） | ~28 | C01 | ✅ 1d78cfb1 |
 | C05 | `dex/instructions/invokedynamic`（4） + `dex/info`（8） + `nodes/parser`（1） + `nodes/utils`（3） | ~16 | C04 | ⏳ |
 
 ### 3.2 utils / clsp / trycatch / regions
