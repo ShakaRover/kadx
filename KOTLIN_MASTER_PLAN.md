@@ -67,10 +67,10 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | jadx-plugins/jadx-java-convert | 0 | 7 | 0 | 0 | ✅ |
 | jadx-plugins/jadx-raung-input | 0 | 2 | 0 | 0 | ✅ |
 | jadx-plugins-tools | 0 | 18 | 0 | 1 | ✅ |
-| **jadx-core** | **532** | **36** | **674** | **0** | 🟡 C01 ✅，进 C02 |
+| **jadx-core** | **0** | **568** | **674** | **0** | 🟢 main 全 Kotlin（M3 d6e58719） |
 | jadx-cli | 15 | 0 | 6 | 0 | ⏳ |
 | jadx-gui | 405 | 2 | 8 | 1 | ⏳ |
-| **合计剩余 .java** | | | | | **1641** |
+| **合计剩余 .java** | | | | | **1109** |
 
 > jadx-core main 的 556 含批次 1 的 **24 个待删重复 .java**，真实待转 **532**。
 
@@ -131,11 +131,11 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | C25 | `api/usage`(3)+`usage/impl`(2)+`api/security`(3)+`security/impl`(1)+`api/resources`(1)+`api/gui/tree`(1)+`api/utils`(1)+`api/utils/tasks`(1) | ~13 | C22 | ✅ 38a82fed |
 | C26 | `api/plugins`(5)+`plugins/pass`(2)+`pass/impl`(3)+`pass/types`(4)+`plugins/options`(4)+`options/impl`(4) | ~22 | C22 | ✅ 9c593edc |
 | C27 | `api/plugins/events`(4)+`events/types`(3)+`plugins/resources`(3)+`plugins/loader`(2)+`plugins/data`(3)+`plugins/utils`(3)+`plugins/gui`(3) | ~21 | C26 | ✅ b9795e7b |
-| C28 | `core/plugins`(4)+`plugins/files`(4)+`plugins/versions`(2)+`plugins/events`(2)+`core` 顶层(3) | ~15 | C22 | ⏳ |
+| C28 | `core/plugins`(4)+`plugins/files`(4)+`plugins/versions`(2)+`plugins/events`(2)+`core` 顶层(3) | ~15 | C22 | ✅ d6e58719 |
 
 **里程碑 M1：** C01–C05 完成后 → 全量 `./gradlew build`（AST 子阶段收口）。 ✅ 已达成（c67a4e3a，BUILD SUCCESSFUL）
 **里程碑 M2：** C01–C18 完成后 → 全量 build（`dex/*` 全转完，仅剩 codegen/api/xmlgen/export）。 ✅ 已达成（1b54a6ac）
-**里程碑 M3：** C01–C28 完成后 → 全量 build（core main + api 收口）。
+**里程碑 M3：** C01–C28 完成后 → 全量 build（core main + api 收口）。 ✅ 已达成（d6e58719，`find jadx-core/src/main -name '*.java'` = 0，BUILD SUCCESSFUL）
 
 ## 5. 阶段 3 收尾：jadx-core test 迁移（674）
 
