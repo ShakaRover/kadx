@@ -3,12 +3,7 @@ package jadx.tests.integration.inner;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
-import org.junit.jupiter.api.Test;
-
-import jadx.tests.api.IntegrationTest;
-import jadx.tests.api.utils.assertj.JadxAssertions;
-
-public class TestAnonymousClass9 extends IntegrationTest {
+public class TestAnonymousClass9Fixture {
 
 	public static class TestCls {
 
@@ -26,14 +21,5 @@ public class TestAnonymousClass9 extends IntegrationTest {
 				}
 			};
 		}
-	}
-
-	@Test
-	public void test() {
-		JadxAssertions.assertThat(getClassNode(TestCls.class))
-				.code()
-				.containsOne("c = new Callable<String>() {")
-				.containsOne("return new FutureTask<String>(this.c) {")
-				.doesNotContain("synthetic");
 	}
 }

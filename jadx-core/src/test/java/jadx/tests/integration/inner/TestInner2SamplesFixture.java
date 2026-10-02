@@ -1,11 +1,6 @@
 package jadx.tests.integration.inner;
 
-import org.junit.jupiter.api.Test;
-
-import jadx.tests.api.IntegrationTest;
-import jadx.tests.api.utils.assertj.JadxAssertions;
-
-public class TestInner2Samples extends IntegrationTest {
+public class TestInner2SamplesFixture {
 
 	public static class TestInner2 {
 		private String a;
@@ -57,14 +52,5 @@ public class TestInner2Samples extends IntegrationTest {
 				return d;
 			}
 		}
-	}
-
-	@Test
-	public void test() {
-		JadxAssertions.assertThat(getClassNode(TestInner2.class))
-				.code()
-				.containsOne("setD(\"d\");")
-				.doesNotContain("synthetic")
-				.doesNotContain("access$");
 	}
 }

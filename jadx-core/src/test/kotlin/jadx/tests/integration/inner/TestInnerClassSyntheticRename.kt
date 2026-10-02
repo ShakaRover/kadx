@@ -1,16 +1,14 @@
-package jadx.tests.integration.inner;
+package jadx.tests.integration.inner
 
-import org.junit.jupiter.api.Test;
-
-import jadx.tests.api.SmaliTest;
-
-import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
+import jadx.tests.api.SmaliTest
+import jadx.tests.api.utils.assertj.JadxAssertions.assertThat
+import org.junit.jupiter.api.Test
 
 /**
  * Issue: #336
  */
 @SuppressWarnings("CommentedOutCode")
-public class TestInnerClassSyntheticRename extends SmaliTest {
+class TestInnerClassSyntheticRename : SmaliTest() {
 	// @formatter:off
 	/*
 		private class TestCls extends AsyncTask<Uri, Uri, List<Uri>> {
@@ -25,16 +23,16 @@ public class TestInnerClassSyntheticRename extends SmaliTest {
 				Log.i("MyAsync", "onPostExecute");
 			}
 		}
-	*/
+	 */
 	// @formatter:on
 
 	@Test
-	public void test() {
-		disableCompilation();
+	fun test() {
+		disableCompilation()
 		assertThat(getClassNodeFromSmali())
-				.code()
-				.containsOne("List<Uri> doInBackground(Uri... uriArr) {")
-				.containsOne("void onPostExecute(List<Uri> list) {")
-				.doesNotContain("synthetic");
+			.code()
+			.containsOne("List<Uri> doInBackground(Uri... uriArr) {")
+			.containsOne("void onPostExecute(List<Uri> list) {")
+			.doesNotContain("synthetic")
 	}
 }

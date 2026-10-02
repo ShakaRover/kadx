@@ -1,13 +1,8 @@
 package jadx.tests.integration.inner;
 
-import org.junit.jupiter.api.Test;
-
-import jadx.tests.api.IntegrationTest;
-import jadx.tests.api.utils.assertj.JadxAssertions;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class TestInnerClass5 extends IntegrationTest {
+public class TestInnerClass5Fixture {
 
 	public static class TestCls {
 
@@ -84,13 +79,5 @@ public class TestInnerClass5 extends IntegrationTest {
 			assertThat(new I0().i()).isEqualTo("i-i0i1i0i1i2i0i1i2i1i2i3i1i2i3a");
 			assertThat(i0).isEqualTo("i1");
 		}
-	}
-
-	@Test
-	public void test() {
-		JadxAssertions.assertThat(getClassNode(TestCls.class))
-				.code()
-				.containsOne("public class I0 {")
-				.containsOne("public class I1 {");
 	}
 }

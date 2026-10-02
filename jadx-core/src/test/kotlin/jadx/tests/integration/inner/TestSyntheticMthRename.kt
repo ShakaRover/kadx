@@ -1,15 +1,13 @@
-package jadx.tests.integration.inner;
+package jadx.tests.integration.inner
 
-import org.junit.jupiter.api.Test;
-
-import jadx.tests.api.SmaliTest;
-
-import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
+import jadx.tests.api.SmaliTest
+import jadx.tests.api.utils.assertj.JadxAssertions.assertThat
+import org.junit.jupiter.api.Test
 
 /**
  * Issue: https://github.com/skylot/jadx/issues/397
  */
-public class TestSyntheticMthRename extends SmaliTest {
+class TestSyntheticMthRename : SmaliTest() {
 
 	// @formatter:off
 	/*
@@ -28,14 +26,14 @@ public class TestSyntheticMthRename extends SmaliTest {
 				}
 			}
 		}
-	*/
+	 */
 	// @formatter:on
 
 	@Test
-	public void test() {
+	fun test() {
 		assertThat(getClassNodeFromSmaliFiles("inner", "TestSyntheticMthRename", "TestCls"))
-				.code()
-				.containsOne("public String call(Runnable... p) {")
-				.doesNotContain("synthetic");
+			.code()
+			.containsOne("public String call(Runnable... p) {")
+			.doesNotContain("synthetic")
 	}
 }

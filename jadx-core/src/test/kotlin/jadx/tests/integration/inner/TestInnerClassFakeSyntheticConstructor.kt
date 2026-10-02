@@ -1,12 +1,13 @@
-package jadx.tests.integration.inner;
+package jadx.tests.integration.inner
 
-import org.junit.jupiter.api.Test;
+import jadx.tests.api.SmaliTest
+import jadx.tests.api.utils.assertj.JadxAssertions.assertThat
+import org.junit.jupiter.api.Test
 
-import jadx.tests.api.SmaliTest;
-
-import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
-
-public class TestInnerClassFakeSyntheticConstructor extends SmaliTest {
+/**
+ * smali 用例：伪造的合成构造器应被正确识别并还原。
+ */
+class TestInnerClassFakeSyntheticConstructor : SmaliTest() {
 
 	// @formatter:off
 	/*
@@ -22,14 +23,14 @@ public class TestInnerClassFakeSyntheticConstructor extends SmaliTest {
 				return new TestCls(str);
 			}
 		}
-	*/
+	 */
 	// @formatter:on
 
 	@Test
-	public void test() {
+	fun test() {
 		assertThat(getClassNodeFromSmali("inner/TestInnerClassFakeSyntheticConstructor", "jadx.tests.inner.TestCls"))
-				.code()
-				.containsOne("TestCls(String a) {");
+			.code()
+			.containsOne("TestCls(String a) {")
 		// and must compile
 	}
 }
