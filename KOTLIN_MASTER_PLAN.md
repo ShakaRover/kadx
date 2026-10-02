@@ -67,10 +67,10 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | jadx-plugins/jadx-java-convert | 0 | 7 | 0 | 0 | ✅ |
 | jadx-plugins/jadx-raung-input | 0 | 2 | 0 | 0 | ✅ |
 | jadx-plugins-tools | 0 | 18 | 0 | 1 | ✅ |
-| **jadx-core** | **556** | **36** | **674** | **0** | 🔴 批次 1 未收尾 |
+| **jadx-core** | **532** | **36** | **674** | **0** | 🟡 C01 ✅，进 C02 |
 | jadx-cli | 15 | 0 | 6 | 0 | ⏳ |
 | jadx-gui | 405 | 2 | 8 | 1 | ⏳ |
-| **合计剩余 .java** | | | | | **1665** |
+| **合计剩余 .java** | | | | | **1641** |
 
 > jadx-core main 的 556 含批次 1 的 **24 个待删重复 .java**，真实待转 **532**。
 
@@ -83,7 +83,7 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 
 | ID | 范围（包/文件） | 约数 | 依赖 | 状态 |
 |----|----------------|-----:|------|------|
-| C01 | `dex/nodes`（24 已转）收尾：删原 .java + 修 InsnNode 访问器 | 24 | — | 🔄 执行中 |
+| C01 | `dex/nodes`（24 已转）收尾：删原 .java + 修 InsnNode 访问器 | 24 | — | ✅ 7ef88abe |
 | C02 | `dex/attributes`（9） + `dex/attributes/nodes` 上半 | ~26 | C01 | ⏳ |
 | C03 | `dex/attributes/nodes` 下半 | ~17 | C02 | ⏳ |
 | C04 | `dex/instructions`（25） + `instructions/mods`（2） + `instructions/java`（1） | ~28 | C01 | ⏳ |
@@ -220,6 +220,29 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 6. `java.util.List` 仅在精确覆写接口时出现；其余用 Kotlin 集合。
 7. 大写属性名需 `@file:Suppress("ktlint:standard:property-naming")`；构造参数行尾注释要上移。
 8. 提交前必跑 `./gradlew spotlessApply`，否则 `spotlessCheck` 在后续全量 build 才爆。
+
+### 9.1 批次 C01 实战教训（后续每单必看）
+
+删除原 .java 后，Java 调用方会立刻暴露“JVM 表面”差异。C01 共修了 **100 个 compileJava 错误 + 58 个下游 Kotlin 调用点 + 多个运行时回归**，清单：
+
+**编译期（Kotlin 侧改）：**
+- 属性 getter 与显式函数同名冲突 → `@get:JvmName("…Value")`（C01 用于 `instructions/predecessors/successors/packages/subPackages/classes/arguments`）。
+- 原 Java `getIDom()/setIDom()` → `@get:JvmName("getIDom") @set:JvmName("setIDom")`；缺失的 `getCId()` 补回。
+- Java 子类访问 `protected` 字段 → `@JvmField protected`（C01：`InsnNode.insnType/offset`）。
+- Java 静态调用 → `@JvmStatic`（`updateBlockPositions`、`wrapArg`、`duplicateArg`、`addSyntheticClass`、`getForClass/getOrBuild`）；泛型静态方法需去 reified。
+- Java 子类覆写的方法必须 `open`；协变返回要显式（`getUseIn()` 返回 `List<ClassNode>`）；受检异常加 `@Throws(CodegenException::class)`。
+- SAM 接口 → `fun interface`（`ICodeDataUpdateListener`）；构造函数多默认参 → `@JvmOverloads`；被测试使用的旧构造器要保留（`RootNode(JadxArgs)`）。
+
+**运行时（重点）：**
+- Kotlin `!!`/非空返回 会在原 Java 返回 null 处 NPE → 恢复可空（`getBasicBlocks`、`BlockNode.doms/postDoms`、`clsData`）。
+- `lateinit` 字段可能未初始化 → 改可空（`ClassNode.clsData`）。
+- 构造函数初始化顺序：先赋 `packageNode` 再 `load()`（否则 lateinit 未初始化）。
+- `lock()/unlock()` 集合别名与 `as ArrayList` 强转 → 保留原始可变列表语义，`lockList` 返回 `singletonList/emptyList` 不可强转。
+- 自递归陷阱：`MethodNode.toAttrString()` 应调 `super.toAttrString()`。
+
+**下游 Kotlin 调用点（重点）：**
+- Java 类的合成属性（`.methodInfo`、`.sVars`、`.argRegs`、`.useIn`、`.type`、`.isConstructor` …）在类转 Kotlin 后**失效**，必须改为真实 property 或显式 `getXxx()`。C01 改了 `jadx-analysis`、`jadx-rename-mappings`、`jadx-kotlin-metadata`、`jadx-gui`。
+- **每单派发时必须提醒 Worker：转完后 grep 全仓该类的 `.kt` 调用点。**
 
 ## 10. 下一单（Commander 已派发）
 
