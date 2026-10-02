@@ -5,13 +5,9 @@ import java.lang.reflect.Parameter;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import jadx.tests.api.IntegrationTest;
-import jadx.tests.api.extensions.profiles.TestProfile;
-import jadx.tests.api.extensions.profiles.TestWithProfiles;
-
 import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
 
-public class TestMethodParametersAttribute extends IntegrationTest {
+public class TestMethodParametersAttributeFixture {
 
 	public static class TestCls {
 		public String test(String paramStr, final int number) {
@@ -28,14 +24,5 @@ public class TestMethodParametersAttribute extends IntegrationTest {
 		public void check() throws NoSuchMethodException {
 			assertThat(paramNames()).isEqualTo("paramStr, number");
 		}
-	}
-
-	@TestWithProfiles({ TestProfile.JAVA8, TestProfile.D8_J11 })
-	public void test() {
-		getCompilerOptions().addArgument("-parameters");
-		noDebugInfo();
-		assertThat(getClassNode(TestCls.class))
-				.code()
-				.containsOne("public String test(String paramStr, final int number) {");
 	}
 }

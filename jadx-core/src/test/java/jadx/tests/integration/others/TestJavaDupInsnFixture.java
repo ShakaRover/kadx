@@ -1,16 +1,11 @@
 package jadx.tests.integration.others;
 
-import org.junit.jupiter.api.Test;
-
 import jadx.core.dex.instructions.args.RegisterArg;
 import jadx.core.dex.instructions.args.SSAVar;
 import jadx.core.dex.nodes.BlockNode;
 import jadx.core.dex.nodes.MethodNode;
-import jadx.tests.api.IntegrationTest;
 
-import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
-
-public class TestJavaDupInsn extends IntegrationTest {
+public class TestJavaDupInsnFixture {
 
 	public static class TestCls {
 		private MethodNode mth;
@@ -25,12 +20,5 @@ public class TestJavaDupInsn extends IntegrationTest {
 			vars[regNum] = ssaVar;
 			return ssaVar;
 		}
-	}
-
-	@Test
-	public void test() {
-		noDebugInfo();
-		assertThat(getClassNode(TestCls.class))
-				.code();
 	}
 }

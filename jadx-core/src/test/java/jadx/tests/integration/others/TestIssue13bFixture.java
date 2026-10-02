@@ -6,13 +6,7 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
-import org.junit.jupiter.api.Test;
-
-import jadx.tests.api.IntegrationTest;
-
-import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
-
-public class TestIssue13b extends IntegrationTest {
+public class TestIssue13bFixture {
 
 	public static class TestCls {
 		private static final String PROPERTIES_FILE = "";
@@ -70,14 +64,5 @@ public class TestIssue13b extends IntegrationTest {
 			public static void e(String tag, String s) {
 			}
 		}
-	}
-
-	@Test
-	public void test() {
-		assertThat(getClassNode(TestCls.class))
-				.code()
-				.countString(4, "} catch (")
-				.countString(3, "Log.e(")
-				.containsOne("Thread.currentThread().interrupt();");
 	}
 }

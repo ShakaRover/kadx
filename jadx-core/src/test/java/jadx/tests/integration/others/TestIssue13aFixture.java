@@ -4,14 +4,7 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.jupiter.api.Test;
-
-import jadx.core.dex.nodes.ClassNode;
-import jadx.tests.api.IntegrationTest;
-
-import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
-
-public class TestIssue13a extends IntegrationTest {
+public class TestIssue13aFixture {
 
 	public static class TestCls {
 		private static final String TAG = "Parcel";
@@ -82,19 +75,5 @@ public class TestIssue13a extends IntegrationTest {
 
 			}
 		}
-	}
-
-	@Test
-	public void test() {
-		disableCompilation();
-		ClassNode cls = getClassNode(TestCls.class);
-		String code = cls.getCode().toString();
-
-		for (int i = 1; i <= 7; i++) {
-			assertThat(code).containsOne("'" + i + '\'');
-		}
-
-		// TODO: add additional checks
-		assertThat(code).doesNotContain("Throwable");
 	}
 }

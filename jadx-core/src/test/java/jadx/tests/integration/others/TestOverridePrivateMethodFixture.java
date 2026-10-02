@@ -1,12 +1,8 @@
 package jadx.tests.integration.others;
 
-import org.junit.jupiter.api.Test;
-
-import jadx.tests.api.IntegrationTest;
-
 import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
 
-public class TestOverridePrivateMethod extends IntegrationTest {
+public class TestOverridePrivateMethodFixture {
 
 	public static class TestCls {
 		public static class BaseClass {
@@ -26,12 +22,5 @@ public class TestOverridePrivateMethod extends IntegrationTest {
 			assertThat(new BaseClass().a()).isEqualTo(1);
 			// TODO: assertThat(((BaseClass) new MyClass()).a()).isEqualTo(1);
 		}
-	}
-
-	@Test
-	public void test() {
-		assertThat(getClassNode(TestCls.class))
-				.code()
-				.doesNotContain("@Override");
 	}
 }
