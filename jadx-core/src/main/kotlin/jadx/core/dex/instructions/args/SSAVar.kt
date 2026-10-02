@@ -200,8 +200,8 @@ class SSAVar(val regNum: Int, val version: Int, initialAssign: RegisterArg) : Co
 			for (arg in useArgs) {
 				val debugInfoAttr: RegDebugInfoAttr? = arg.get(AType.REG_DEBUG_INFO)
 				if (debugInfoAttr != null) {
-					names.add(debugInfoAttr.getName())
-					types.add(debugInfoAttr.getRegType())
+					names.add(debugInfoAttr.name)
+					types.add(debugInfoAttr.regType)
 				}
 			}
 		}
