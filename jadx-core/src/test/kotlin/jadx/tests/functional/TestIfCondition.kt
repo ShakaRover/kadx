@@ -1,0 +1,94 @@
+package jadx.tests.functional
+
+import jadx.core.dex.instructions.IfNode
+import jadx.core.dex.instructions.IfOp
+import jadx.core.dex.instructions.args.ArgType
+import jadx.core.dex.instructions.args.InsnArg
+import jadx.core.dex.instructions.args.LiteralArg
+import jadx.core.dex.regions.conditions.IfCondition
+import jadx.core.dex.regions.conditions.IfCondition.Mode
+import jadx.tests.api.utils.assertj.JadxAssertions.assertThat
+import org.junit.jupiter.api.Test
+
+/**
+ * [IfCondition] 的归一化、合并与化简（not/and/or）语义校验。
+ */
+class TestIfCondition {
+
+	@Test
+	fun testNormalize() {
+		// 'a != false' => 'a == true'
+		val a = mockArg()
+		val c = makeCondition(IfOp.NE, a, LiteralArg.litFalse())
+		val simp = IfCondition.simplify(c)
+
+		assertThat(simp.getMode()).isEqualTo(Mode.COMPARE)
+		val compare = checkNotNull(simp.getCompare())
+		assertThat(compare.getA()).isEqualTo(a)
+		assertThat(compare.getB()).isEqualTo(LiteralArg.litTrue())
+	}
+
+	@Test
+	fun testMerge() {
+		val a = makeSimpleCondition()
+		val b = makeSimpleCondition()
+		val c = IfCondition.merge(Mode.OR, a, b)
+
+		assertThat(c.getMode()).isEqualTo(Mode.OR)
+		assertThat(c.first()).isEqualTo(a)
+		assertThat(c.second()).isEqualTo(b)
+	}
+
+	@Test
+	fun testSimplifyNot() {
+		// !(!a) => a
+		val a = IfCondition.not(IfCondition.not(makeSimpleCondition()))
+		assertThat(IfCondition.simplify(a)).isEqualTo(a)
+	}
+
+	@Test
+	fun testSimplifyNot2() {
+		// !(!a) => a
+		val a = IfCondition.not(makeNegCondition())
+		assertThat(IfCondition.simplify(a)).isEqualTo(a)
+	}
+
+	@Test
+	fun testSimplify() {
+		// '!(!a || !b)' => 'a && b'
+		val a = makeSimpleCondition()
+		val b = makeSimpleCondition()
+		val c = IfCondition.not(IfCondition.merge(Mode.OR, IfCondition.not(a), IfCondition.not(b)))
+		val simp = IfCondition.simplify(c)
+
+		assertThat(simp.getMode()).isEqualTo(Mode.AND)
+		assertThat(simp.first()).isEqualTo(a)
+		assertThat(simp.second()).isEqualTo(b)
+	}
+
+	@Test
+	fun testSimplify2() {
+		// '(!a || !b) && !c' => '!((a && b) || c)'
+		val a = makeSimpleCondition()
+		val b = makeSimpleCondition()
+		val c = makeSimpleCondition()
+		val cond = IfCondition.merge(Mode.AND, IfCondition.merge(Mode.OR, IfCondition.not(a), IfCondition.not(b)), IfCondition.not(c))
+		val simp = IfCondition.simplify(cond)
+
+		assertThat(simp.getMode()).isEqualTo(Mode.NOT)
+		val f = simp.first()
+		assertThat(f.getMode()).isEqualTo(Mode.OR)
+		assertThat(f.first().getMode()).isEqualTo(Mode.AND)
+		assertThat(f.first().first()).isEqualTo(a)
+		assertThat(f.first().second()).isEqualTo(b)
+		assertThat(f.second()).isEqualTo(c)
+	}
+
+	private fun makeCondition(op: IfOp, a: InsnArg, b: InsnArg): IfCondition = IfCondition.fromIfNode(IfNode(op, -1, a, b))
+
+	private fun makeSimpleCondition(): IfCondition = makeCondition(IfOp.EQ, mockArg(), LiteralArg.litTrue())
+
+	private fun makeNegCondition(): IfCondition = makeCondition(IfOp.NE, mockArg(), LiteralArg.litTrue())
+
+	private fun mockArg(): InsnArg = InsnArg.reg(0, ArgType.INT)
+}
