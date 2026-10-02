@@ -125,7 +125,7 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | C19 | `codegen`(10)+`codegen/utils`(2)+`codegen/json`(2)+`json/cls`(5)+`json/mapping`(4) | ~23 | C18 | ✅ e3d77fe8 |
 | C20 | `xmlgen`（19） + `xmlgen/entry`（6） | ~25 | C18 | ✅ 1cdfd66b |
 | C21 | `export`（5） + `export/gen`（4） | ~9 | C19 | ✅ cf163394 |
-| C22 | `api` 顶层（20） + `api/args`（5） | ~25 | C19 | ⏳ |
+| C22 | `api` 顶层（20） + `api/args`（5） | ~25 | C19 | ✅ 21bd1286 |
 | C23 | `api/data`(8)+`api/data/impl`(5)+`api/impl`(7)+`api/impl/passes`(3) | ~23 | C22 | ⏳ |
 | C24 | `api/deobf`(3)+`deobf/impl`(3)+`api/metadata`(3)+`metadata/impl`(1)+`metadata/annotations`(5) | ~15 | C22 | ⏳ |
 | C25 | `api/usage`(3)+`usage/impl`(2)+`api/security`(3)+`security/impl`(1)+`api/resources`(1)+`api/gui/tree`(1)+`api/utils`(1)+`api/utils/tasks`(1) | ~13 | C22 | ⏳ |
@@ -278,6 +278,17 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 - **KDoc 里出现 `/*`（如 `res/values/*.xml`）会开嵌套注释** → 用反引号包裹路径。
 - `sourceFileRename` 等保留 Java `default` 分支时，Kotlin `when` 需冗余 `else` 保语义。
 - 接口 getter 转 Kotlin 后可空性变化会让下游 `.prop` 失效（C20：`parser.resStorage` → `getResStorage()` + `checkNotNull`）。
+
+### 9.7 批次 C22 追加教训（公共 API 高危）
+
+- **公共 API getter 一律保留显式函数**（`fun getX()`），不用 Kotlin 属性：Java 调用方零改动，且 `getRoot()` 等可空返回值语义清晰。代价是 Kotlin 调用点的 `.prop` 合成属性失效，需改 `.getX()`（本批共修 ~90 处，脚本批量处理）。
+- **`internal fun` 会被 Kotlin 改名（`convertClassNode$jadx_core`），Java 测试无法调用**：`JadxDecompiler.convertClassNode/convertFieldNode/convertMethodNode/convertPackageNode/convertNodes` 必须为 public（加 `@ApiStatus.Internal` 标注非稳定），否则 `jadx-core` test 的 `JadxInternalAccess.java` 编译失败。
+- **`JadxArgs` 用 Kotlin 属性最省事**：getter/setter 自动生成，但布尔 `isX` 与普通 `getX` 的 Kotlin 调用点混用；`pluginOptions` 必须是 `Map`（而非 `MutableMap`）才能接受 `mapValues` 的只读 Map，同时 Java 侧仍能 `.put()`。
+- **`java.util.List` 显式参数（`JadxCodeInput.loadFiles`）从 Kotlin 传参**：Kotlin `List` 与 `java.util.ArrayList` 都不匹配显式 `java.util.List`，需 `@Suppress("UNCHECKED_CAST") input as java.util.List<Path>`。
+- **构造器里的初始化逻辑不能丢**：`ResourcesLoader` 原构造器 `resTableParserProviders.add(new ResTableBinaryParserProvider())` 被漏掉，导致 ARSC 解码返回空 subFiles（`testResourcesLoad` 失败）；转换时务必逐行比对构造器/静态块。
+- **`ICodeWriter.attachAnnotation/attachDefinition/attachLineAnnotation/add(String)` 参数要可空**：原 Java 实现显式判空 no-op（`add` 则 `append(null)`），声明非空会让 `InsnGen` 等调用点编译失败。
+- **`@JvmStatic` 静态成员在 Kotlin 调用点写 `Xxx.member` 即可**（companion 也支持），无需 `.Companion.`。
+- **`ResourceType` 枚举 companion 初始化顺序**：`EXT_MAP` 的填充代码在 `<clinit>` 中位于枚举常量之后，`getFileType` 调用时已就绪，安全。
 
 ## 10. 下一单（Commander 已派发）
 
