@@ -126,7 +126,7 @@ class UsageDialogPlus private constructor(
 				if (nodeInfo is CodeNode) {
 					simpleCodePanel.showCode(nodeInfo, nodeInfo.makeDescString())
 				} else if (nodeInfo is JNode) {
-					simpleCodePanel.showCode(nodeInfo, nodeInfo.makeDescString())
+					simpleCodePanel.showCode(nodeInfo, nodeInfo.makeDescString() ?: "")
 				}
 				// 更新结果信息：显示当前选中节点的子节点数
 				updateResultsInfo(node1)
