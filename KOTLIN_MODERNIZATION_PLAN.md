@@ -90,6 +90,33 @@
 ./gradlew build --console=plain
 ```
 
+## 6. 进度（本阶段已执行）
+
+| 阶段 | 状态 | 结果 |
+|------|------|------|
+| N1a/N1b | ✅ 53788c85 | `jobs` → `CoroutineScope(Dispatchers.Swing)` + `Flow` + `Job` 取消；`SwingWorker` 清零 |
+| N1c–N1f | ✅ 76fdf3f4 | RxJava → Flow；`fileswatcher` → `flow{}`；`Thread.sleep` 轮询 → `delay`；**RxJava 依赖已删** |
+| N2 | ✅ 99b1cda9 | `TaskExecutor`/`JadxEventsManager` 等 → 协程（有界 `Semaphore`）；`synchronized` 经评估保留（短临界区）；core 测试 1018→1022 |
+| N3a | ✅ 9fee7be2 / 8165f82df | `java.util.function` 146→65 文件（其余为 Java 互操作例外） |
+| N3b | ✅ 745f509b | `Optional` 12→2（保留 ExBin Java 接口覆写） |
+| N3c | ✅ b132b768 | `Objects.requireNonNull` 18→13（保留公共插件 API / NPE 语义） |
+| N3d | ✅ 5c7f948d | `String.format` 52→47（保留 locale/填充敏感格式） |
+| N3e | ✅ eea3806c | `!!` 非空断言 **清零**（剩余仅为注释/字符串） |
+| N3f | ✅ 09fdb9f9 | `.stream()`/`Collectors` 归零（热点 pass 与 `parallelStream` 除外） |
+| N3g | ✅ c94cb6f1 | C 风格 `for` 可转者已转（热点/逃逸/动态步长保留） |
+| N3h | ✅ 3d46eef9 | 冗余 cast 清理（无真 `instanceof` 运算符） |
+
+**当前测量**：`java.util.function` 65 · `Optional` 2 · `requireNonNull` 13 · `String.format` 47 · `!!` 34(仅注释/字符串) · `.stream()` 8 · `@JvmStatic` 328 · `@JvmField` 91 · 显式 `fun getX()` 756 · `fun isX()` 310；协程 20 文件；`SwingWorker` 0 / RxJava 0。`./gradlew build` 绿。
+
+## 7. 待办（下一阶段）
+
+| ID | 范围 | 风险/说明 |
+|----|------|-----------|
+| **N3i** | 显式 `fun getX()`/`fun isX()` → Kotlin 属性（756/310 文件） | 大而机械；**仅内部类**；`jadx.api.*`/`jadx.api.plugins.*` 与 Java 互操作面保留。需同步改所有调用点 |
+| **N3j** | 移除无 Java 调用方的 `@JvmStatic`(328)/`@JvmField`(91) | 需逐个确认无 Java 调用方；**`JadxAssertions`（fixture 静态导入）、公共插件 API、反射点必须保留** |
+| N2 残留 | 剩余 `ExecutorService`(8)/`new Thread`(10) | 逐处评估是否适合协程；`FileUtils.parallelStream` 等保留 |
+| N3d 残留 | 剩余 `String.format`(47) | 多为 locale/填充敏感，可保留 |
+
 ## 5. 风险
 
 - **EDT 死锁 / UI 冻结**：协程化最大的坑。所有 `Dispatchers.Swing` 的使用必须保证不阻塞 EDT（耗时操作 `withContext(Dispatchers.IO)`）。
