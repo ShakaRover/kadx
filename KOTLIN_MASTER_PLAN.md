@@ -195,7 +195,8 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | G03 | `treemodel` | 21 | ✅ f5339248 |
 | G04 | `ui/action` | 18 | ✅ 0ce6be75（已知小行为差异：JsonPrettifyAction 无节点时由“无害”变 ISE） |
 | G05 | `jobs` | 17 | ✅ bec31313（phase 5.1，无协程） |
-| G06 | `ui/tab` + `ui/tab/dnd` | 22 | ⏳ |
+| G06 | `ui/tab` + `ui/tab/dnd` | 22 | ✅ d08f718e |
+| G07 | `ui/dialog` | 15 | ⏳ |
 | G03 | `treemodel` | 21 |
 | G04 | `ui/action` | 18 |
 | G05 | `jobs` | 17 |
