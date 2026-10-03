@@ -24,7 +24,7 @@ class XposedAction(codeArea: CodeArea) : JNodeAction(ActionModel.XPOSED_COPY, co
 		} catch (e: Exception) {
 			LOG.error("Failed to generate Xposed code snippet", e)
 			JOptionPane.showMessageDialog(
-				getCodeArea().mainWindow,
+				getCodeArea().getMainWindow(),
 				e.localizedMessage,
 				NLS.str("error_dialog.title"),
 				JOptionPane.ERROR_MESSAGE,
@@ -140,7 +140,7 @@ class XposedAction(codeArea: CodeArea) : JNodeAction(ActionModel.XPOSED_COPY, co
 	}
 
 	private val language: XposedCodegenLanguage
-		get() = getCodeArea().mainWindow.settings.xposedCodegenLanguage
+		get() = getCodeArea().getMainWindow().settings.xposedCodegenLanguage
 
 	companion object {
 		private val LOG: Logger = LoggerFactory.getLogger(XposedAction::class.java)
