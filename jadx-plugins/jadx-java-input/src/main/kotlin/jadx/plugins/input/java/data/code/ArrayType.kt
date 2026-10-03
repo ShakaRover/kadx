@@ -10,7 +10,6 @@ import jadx.plugins.input.java.utils.JavaClassParseException
  */
 object ArrayType {
 
-	@JvmStatic
 	fun byValue(value: Int): String = when (value) {
 		4 -> "Z"
 		5 -> "C"

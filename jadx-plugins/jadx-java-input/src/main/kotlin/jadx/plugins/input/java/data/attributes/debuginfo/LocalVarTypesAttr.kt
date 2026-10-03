@@ -20,7 +20,6 @@ class LocalVarTypesAttr(
 
 	companion object {
 		/** @return 读取器：逐条读五元组，类型位置取的是签名 */
-		@JvmStatic
 		fun reader(): IJavaAttributeReader = object : IJavaAttributeReader {
 			override fun read(clsData: JavaClassData, reader: DataReader): IJavaAttribute {
 				val constPool: ConstPoolReader = clsData.constPoolReader

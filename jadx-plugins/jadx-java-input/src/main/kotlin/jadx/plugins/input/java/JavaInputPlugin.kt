@@ -36,10 +36,8 @@ class JavaInputPlugin : JadxPlugin {
 
 	companion object {
 		/** 从文件列表加载 class/jar；空结果返回 [EmptyCodeLoader] */
-		@JvmStatic
 		fun loadClassFiles(inputFiles: List<Path>): ICodeLoader = loadClassFiles(inputFiles, null)
 
-		@JvmStatic
 		fun loadClassFiles(inputFiles: List<Path>, @Nullable closeable: Closeable?): ICodeLoader {
 			val readers = JavaInputLoader().collectFiles(inputFiles)
 			if (readers.isEmpty()) {
@@ -51,7 +49,6 @@ class JavaInputPlugin : JadxPlugin {
 		/**
 		 * Method for provide several inputs by using load methods from [JavaInputLoader] class.
 		 */
-		@JvmStatic
 		fun load(loader: (JavaInputLoader) -> List<JavaClassReader>): ICodeLoader = wrapClassReaders(loader(JavaInputLoader()))
 
 		/**
@@ -59,7 +56,6 @@ class JavaInputPlugin : JadxPlugin {
 		 * Should be used only once per JadxDecompiler instance.
 		 * For load several times use [load] method.
 		 */
-		@JvmStatic
 		fun loadFromInputStream(input: InputStream, fileName: String): ICodeLoader = try {
 			wrapClassReaders(JavaInputLoader().loadInputStream(input, fileName))
 		} catch (e: Exception) {
@@ -71,14 +67,12 @@ class JavaInputPlugin : JadxPlugin {
 		 * Should be used only once per JadxDecompiler instance.
 		 * For load several times use [load] method.
 		 */
-		@JvmStatic
 		fun loadSingleClass(content: ByteArray, fileName: String): ICodeLoader {
 			val reader = JavaInputLoader().loadClass(content, fileName)
 			return JavaLoadResult(listOf(reader))
 		}
 
 		/** 把 reader 列表包装成 [ICodeLoader]；空列表返回 [EmptyCodeLoader] */
-		@JvmStatic
 		fun wrapClassReaders(readers: List<JavaClassReader>): ICodeLoader {
 			if (readers.isEmpty()) {
 				return EmptyCodeLoader.INSTANCE

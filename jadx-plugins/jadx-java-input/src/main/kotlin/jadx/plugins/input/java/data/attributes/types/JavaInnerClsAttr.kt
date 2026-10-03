@@ -22,7 +22,6 @@ class JavaInnerClsAttr(map: Map<String, InnerClsInfo>) :
 
 	companion object {
 		/** @return 读取器：逐条读内部类四元组（外部类索引为 0 表示顶级类） */
-		@JvmStatic
 		fun reader(): IJavaAttributeReader = object : IJavaAttributeReader {
 			override fun read(clsData: JavaClassData, reader: DataReader): IJavaAttribute {
 				val len = reader.readU2()

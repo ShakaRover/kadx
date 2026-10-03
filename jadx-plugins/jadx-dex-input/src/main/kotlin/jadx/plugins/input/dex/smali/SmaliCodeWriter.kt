@@ -7,17 +7,15 @@ package jadx.plugins.input.dex.smali
  * 文本，本类负责换行、缩进与片段追加；所有 `add*`/`startLine` 方法返回 this 支持链式调用。
  *
  * **Kotlin 转换说明**：原 Java `public static final String` → companion object 内
- * `@JvmField val`，Java 调用方 `SmaliCodeWriter.NL` 零改动。
+ * `val`，调用方 `SmaliCodeWriter.NL` 零改动。
  */
 public class SmaliCodeWriter {
 
 	public companion object {
 		/** 平台相关换行符 */
-		@JvmField
 		public val NL: String = System.getProperty("line.separator") ?: "\n"
 
 		/** 单级缩进字符串（4 个空格）*/
-		@JvmField
 		public val INDENT_STR: String = "    "
 	}
 

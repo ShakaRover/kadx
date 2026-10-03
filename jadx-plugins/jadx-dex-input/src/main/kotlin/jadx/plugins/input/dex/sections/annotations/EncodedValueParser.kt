@@ -41,7 +41,6 @@ public class EncodedValueParser {
 		 * @param ext 外部 section 读取器（查字符串/类型/引用池）
 		 * @throws DexException 遇到未知类型标签
 		 */
-		@JvmStatic
 		public fun parseValue(reader: SectionReader, ext: SectionReader): EncodedValue {
 			val argAndType = reader.readUByte()
 			val type = argAndType and 0x1F
@@ -94,7 +93,6 @@ public class EncodedValueParser {
 		/**
 		 * 解析 encoded_array：uleb128 计数 + 逐个元素。
 		 */
-		@JvmStatic
 		public fun parseEncodedArray(reader: SectionReader, ext: SectionReader): List<EncodedValue> {
 			val count = reader.readUleb128()
 			val values = ArrayList<EncodedValue>(count)

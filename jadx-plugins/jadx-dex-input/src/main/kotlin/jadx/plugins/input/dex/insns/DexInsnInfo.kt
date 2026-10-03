@@ -337,7 +337,6 @@ public class DexInsnInfo(
 		 * @return 未注册的操作码返回 null（低字节为 0 的高位变体查 [PAYLOAD_INFO]）
 		 */
 		@Nullable
-		@JvmStatic
 		public fun get(opcodeUnit: Int): DexInsnInfo? {
 			val opcode = opcodeUnit and 0xFF
 			if (opcode == 0 && opcodeUnit != 0) {

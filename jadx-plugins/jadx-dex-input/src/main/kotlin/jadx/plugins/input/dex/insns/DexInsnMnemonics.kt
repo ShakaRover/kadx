@@ -45,7 +45,6 @@ public class DexInsnMnemonics {
 		 *
 		 * @param opcode 原始操作码单元（只取低 8 位作为表下标）
 		 */
-		@JvmStatic
 		public fun get(opcode: Int): String = MNEMONICS[opcode and 0xFF]
 	}
 }

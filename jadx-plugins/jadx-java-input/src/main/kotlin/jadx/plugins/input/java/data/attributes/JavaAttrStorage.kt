@@ -40,7 +40,6 @@ class JavaAttrStorage {
 
 	companion object {
 		/** 空容器单例：attribute 区为空时直接返回它，避免分配数组 */
-		@JvmField
 		val EMPTY: JavaAttrStorage = JavaAttrStorage()
 	}
 }

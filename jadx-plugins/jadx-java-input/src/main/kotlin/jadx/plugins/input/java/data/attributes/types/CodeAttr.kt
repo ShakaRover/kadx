@@ -18,7 +18,6 @@ class CodeAttr(
 
 	companion object {
 		/** @return 读取器：只记录当前读头位置，不消费任何字节 */
-		@JvmStatic
 		fun reader(): IJavaAttributeReader = object : IJavaAttributeReader {
 			override fun read(clsData: JavaClassData, reader: DataReader): IJavaAttribute = CodeAttr(reader.offset)
 		}

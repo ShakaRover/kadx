@@ -19,7 +19,6 @@ object ModifiedUTF8Decoder {
 	 *
 	 * @throws JavaClassParseException 字节序列结构不一致（截断、非法多字节序列）时抛出
 	 */
-	@JvmStatic
 	fun decodeString(bytes: ByteArray): String {
 		val len = bytes.size
 

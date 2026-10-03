@@ -26,7 +26,6 @@ class JavaParamAnnsAttr(
 
 	companion object {
 		/** @return 指定可见性级别的参数注解读取器 */
-		@JvmStatic
 		fun reader(visibility: AnnotationVisibility): IJavaAttributeReader = object : IJavaAttributeReader {
 			override fun read(clsData: JavaClassData, reader: DataReader): IJavaAttribute {
 				val len = reader.readU1()
@@ -39,7 +38,6 @@ class JavaParamAnnsAttr(
 		}
 
 		/** 把存储中的两组参数注解按位置合并；都为空时返回 null */
-		@JvmStatic
 		fun merge(storage: JavaAttrStorage): AnnotationMethodParamsAttr? {
 			val runtimeAnnAttr = storage.get(JavaAttrType.RUNTIME_PARAMETER_ANNOTATIONS)
 			val buildAnnAttr = storage.get(JavaAttrType.BUILD_PARAMETER_ANNOTATIONS)

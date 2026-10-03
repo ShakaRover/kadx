@@ -20,7 +20,6 @@ class JavaMethodParametersAttr(list: List<MethodParametersAttr.Info>) :
 
 	companion object {
 		/** @return 读取器：逐条读参数名与访问标志 */
-		@JvmStatic
 		fun reader(): IJavaAttributeReader = object : IJavaAttributeReader {
 			override fun read(clsData: JavaClassData, reader: DataReader): IJavaAttribute {
 				val constPool: ConstPoolReader = clsData.constPoolReader

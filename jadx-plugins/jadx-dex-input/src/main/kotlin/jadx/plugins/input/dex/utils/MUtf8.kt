@@ -22,7 +22,6 @@ public class MUtf8 {
 		 * - `1110xxxx 10xxxxxx 10xxxxxx` → 3 字节序列；
 		 * - `0x00` → 字符串结束。
 		 */
-		@JvmStatic
 		public fun decode(inReader: SectionReader): String {
 			val len = inReader.readUleb128()
 			val out = CharArray(len)

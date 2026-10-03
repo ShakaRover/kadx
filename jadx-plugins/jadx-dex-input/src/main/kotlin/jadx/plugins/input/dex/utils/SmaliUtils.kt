@@ -27,7 +27,6 @@ public class SmaliUtils {
 		 * @param clsDefOffset class_def 条目在 DEX 中的绝对偏移
 		 * @return smali 文本；baksmali 失败时返回错误描述（不抛异常）
 		 */
-		@JvmStatic
 		public fun getSmaliCode(dexBuf: ByteArray, clsDefOffset: Int): String {
 			val stringWriter = StringWriter()
 			try {

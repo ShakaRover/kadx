@@ -18,7 +18,6 @@ class LineNumberTableAttr(
 
 	companion object {
 		/** @return 读取器：逐条读 (start_pc, line_number) 对 */
-		@JvmStatic
 		fun reader(): IJavaAttributeReader = object : IJavaAttributeReader {
 			override fun read(clsData: JavaClassData, reader: DataReader): IJavaAttribute {
 				val len = reader.readU2()

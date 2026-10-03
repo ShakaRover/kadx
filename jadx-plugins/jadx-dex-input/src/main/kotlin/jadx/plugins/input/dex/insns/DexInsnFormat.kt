@@ -14,8 +14,8 @@ import jadx.plugins.input.dex.sections.SectionReader
  * 其变长编码。
  *
  * **Kotlin 转换说明**：
- * - 原 Java `public static final DexInsnFormat` → companion object 内 `@JvmField val`，
- *   Java 调用方（如 DexInsnInfo）`DexInsnFormat.FORMAT_12X` 零改动；
+ * - 原 Java `public static final DexInsnFormat` → companion object 内 `val`，
+ *   调用方（如 DexInsnInfo）`DexInsnFormat.FORMAT_12X` 零改动；
  * - 参数名 `in` 是 Kotlin 关键字，重命名为 `reader`（均为位置传参，无命名调用受影响）。
  *
  * @param length 指令长度（单位：16-bit code unit）；-1 表示变长 payload
@@ -28,7 +28,6 @@ public abstract class DexInsnFormat(
 
 	public companion object {
 		/** 格式 10X：无操作数（nop）*/
-		@JvmField
 		public val FORMAT_10X = object : DexInsnFormat(1, 0) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
 				// no op
@@ -36,7 +35,6 @@ public abstract class DexInsnFormat(
 		}
 
 		/** 格式 12X：两个 4-bit 寄存器（move）*/
-		@JvmField
 		public val FORMAT_12X = object : DexInsnFormat(1, 2) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
 				val regs = insn.argsReg
@@ -46,7 +44,6 @@ public abstract class DexInsnFormat(
 		}
 
 		/** 格式 11N：一个寄存器 + 4-bit 有符号立即数（const/4）*/
-		@JvmField
 		public val FORMAT_11N = object : DexInsnFormat(1, 1) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
 				val regs = insn.argsReg
@@ -56,7 +53,6 @@ public abstract class DexInsnFormat(
 		}
 
 		/** 格式 11X：一个 8-bit 寄存器（return-void）*/
-		@JvmField
 		public val FORMAT_11X = object : DexInsnFormat(1, 1) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
 				val regs = insn.argsReg
@@ -65,7 +61,6 @@ public abstract class DexInsnFormat(
 		}
 
 		/** 格式 10T：8-bit 有符号相对跳转（goto）*/
-		@JvmField
 		public val FORMAT_10T = object : DexInsnFormat(1, 0) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
 				insn.setTarget(insn.offset + signedByte1(opcodeUnit))
@@ -73,7 +68,6 @@ public abstract class DexInsnFormat(
 		}
 
 		/** 格式 20T：16-bit 有符号相对跳转（goto/16）*/
-		@JvmField
 		public val FORMAT_20T = object : DexInsnFormat(2, 0) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
 				insn.setTarget(insn.offset + reader.readShort())
@@ -81,7 +75,6 @@ public abstract class DexInsnFormat(
 		}
 
 		/** 格式 20BC：8-bit 立即数 + 16-bit 无符号索引（const/4 变体、check-cast 等）*/
-		@JvmField
 		public val FORMAT_20BC = object : DexInsnFormat(2, 0) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
 				insn.setLiteral(byte1(opcodeUnit).toLong())
@@ -90,7 +83,6 @@ public abstract class DexInsnFormat(
 		}
 
 		/** 格式 22X：一个寄存器 + 一个 16-bit 值（move/16）*/
-		@JvmField
 		public val FORMAT_22X = object : DexInsnFormat(2, 2) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
 				val regs = insn.argsReg
@@ -100,7 +92,6 @@ public abstract class DexInsnFormat(
 		}
 
 		/** 格式 21T：一个寄存器 + 16-bit 有符号相对跳转（if-*）*/
-		@JvmField
 		public val FORMAT_21T = object : DexInsnFormat(2, 1) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
 				val regs = insn.argsReg
@@ -110,7 +101,6 @@ public abstract class DexInsnFormat(
 		}
 
 		/** 格式 21S：一个寄存器 + 16-bit 有符号立即数（const/16）*/
-		@JvmField
 		public val FORMAT_21S = object : DexInsnFormat(2, 1) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
 				val regs = insn.argsReg
@@ -123,7 +113,6 @@ public abstract class DexInsnFormat(
 		 * 格式 21H：一个寄存器 + 高位置位立即数（const/high16、const-wide/16）。
 		 * 立即数左移位数由操作码决定：CONST_HIGH16 移 16 位，否则（const-wide/16）移 48 位。
 		 */
-		@JvmField
 		public val FORMAT_21H = object : DexInsnFormat(2, 1) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
 				val regs = insn.argsReg
@@ -136,7 +125,6 @@ public abstract class DexInsnFormat(
 		}
 
 		/** 格式 21C：一个寄存器 + 16-bit 无符号索引（const-string、new-instance 等）*/
-		@JvmField
 		public val FORMAT_21C = object : DexInsnFormat(2, 1) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
 				val regs = insn.argsReg
@@ -146,7 +134,6 @@ public abstract class DexInsnFormat(
 		}
 
 		/** 格式 23X：三个寄存器（add-int 等双操作数指令）*/
-		@JvmField
 		public val FORMAT_23X = object : DexInsnFormat(2, 3) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
 				val regs = insn.argsReg
@@ -158,7 +145,6 @@ public abstract class DexInsnFormat(
 		}
 
 		/** 格式 22B：两个寄存器 + 8-bit 有符号立即数（add-int/lit8）*/
-		@JvmField
 		public val FORMAT_22B = object : DexInsnFormat(2, 2) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
 				val regs = insn.argsReg
@@ -170,7 +156,6 @@ public abstract class DexInsnFormat(
 		}
 
 		/** 格式 22T：两个寄存器 + 16-bit 有符号相对跳转（if-eq 等）*/
-		@JvmField
 		public val FORMAT_22T = object : DexInsnFormat(2, 2) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
 				val regs = insn.argsReg
@@ -181,7 +166,6 @@ public abstract class DexInsnFormat(
 		}
 
 		/** 格式 22S：两个寄存器 + 16-bit 有符号立即数（const/16 双寄存器变体）*/
-		@JvmField
 		public val FORMAT_22S = object : DexInsnFormat(2, 2) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
 				val regs = insn.argsReg
@@ -192,7 +176,6 @@ public abstract class DexInsnFormat(
 		}
 
 		/** 格式 22C：两个寄存器 + 16-bit 无符号索引（aget、sget 等）*/
-		@JvmField
 		public val FORMAT_22C = object : DexInsnFormat(2, 2) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
 				val regs = insn.argsReg
@@ -204,11 +187,9 @@ public abstract class DexInsnFormat(
 		}
 
 		/** 格式 22CS：同 [FORMAT_22C]（const-class 等复用）*/
-		@JvmField
 		public val FORMAT_22CS: DexInsnFormat = FORMAT_22C
 
 		/** 格式 30T：32-bit 有符号相对跳转（goto/32）*/
-		@JvmField
 		public val FORMAT_30T = object : DexInsnFormat(3, 0) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
 				insn.setTarget(insn.offset + reader.readInt())
@@ -216,7 +197,6 @@ public abstract class DexInsnFormat(
 		}
 
 		/** 格式 32X：两个 16-bit 寄存器（move-wide/16）*/
-		@JvmField
 		public val FORMAT_32X = object : DexInsnFormat(3, 2) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
 				val regs = insn.argsReg
@@ -226,7 +206,6 @@ public abstract class DexInsnFormat(
 		}
 
 		/** 格式 31I：一个寄存器 + 32-bit 立即数（const）*/
-		@JvmField
 		public val FORMAT_31I = object : DexInsnFormat(3, 1) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
 				val regs = insn.argsReg
@@ -236,7 +215,6 @@ public abstract class DexInsnFormat(
 		}
 
 		/** 格式 31T：一个寄存器 + 32-bit 有符号相对跳转（if-eqz 长跳变体）*/
-		@JvmField
 		public val FORMAT_31T = object : DexInsnFormat(3, 1) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
 				val regs = insn.argsReg
@@ -246,7 +224,6 @@ public abstract class DexInsnFormat(
 		}
 
 		/** 格式 31C：一个寄存器 + 32-bit 无符号索引（const-string/jumbo）*/
-		@JvmField
 		public val FORMAT_31C = object : DexInsnFormat(3, 1) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
 				val regs = insn.argsReg
@@ -256,7 +233,6 @@ public abstract class DexInsnFormat(
 		}
 
 		/** 格式 35C：最多 5 个寄存器 + 索引（invoke-*、filled-new-array）*/
-		@JvmField
 		public val FORMAT_35C = object : DexInsnFormat(3, -1) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
 				readRegsList(insn, opcodeUnit, reader)
@@ -264,15 +240,12 @@ public abstract class DexInsnFormat(
 		}
 
 		/** 格式 35MS：同 [FORMAT_35C]（invoke-polymorphic）*/
-		@JvmField
 		public val FORMAT_35MS: DexInsnFormat = FORMAT_35C
 
 		/** 格式 35MI：同 [FORMAT_35C]（invoke-custom）*/
-		@JvmField
 		public val FORMAT_35MI: DexInsnFormat = FORMAT_35C
 
 		/** 格式 3RC：连续寄存器范围 + 索引（invoke-super/range 等 range 形式调用）*/
-		@JvmField
 		public val FORMAT_3RC = object : DexInsnFormat(3, -1) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
 				readRegsRange(insn, opcodeUnit, reader)
@@ -280,15 +253,12 @@ public abstract class DexInsnFormat(
 		}
 
 		/** 格式 3RMS：同 [FORMAT_3RC]（invoke-polymorphic/range）*/
-		@JvmField
 		public val FORMAT_3RMS: DexInsnFormat = FORMAT_3RC
 
 		/** 格式 3RMI：同 [FORMAT_3RC]（invoke-custom/range）*/
-		@JvmField
 		public val FORMAT_3RMI: DexInsnFormat = FORMAT_3RC
 
 		/** 格式 45CC：最多 5 个寄存器 + 索引 + 类型索引（filled-new-array）*/
-		@JvmField
 		public val FORMAT_45CC = object : DexInsnFormat(4, -1) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
 				readRegsList(insn, opcodeUnit, reader)
@@ -297,7 +267,6 @@ public abstract class DexInsnFormat(
 		}
 
 		/** 格式 4RCC：连续寄存器范围 + 索引 + 类型索引（filled-new-array/range）*/
-		@JvmField
 		public val FORMAT_4RCC = object : DexInsnFormat(4, -1) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
 				readRegsRange(insn, opcodeUnit, reader)
@@ -306,7 +275,6 @@ public abstract class DexInsnFormat(
 		}
 
 		/** 格式 51I：一个寄存器 + 64-bit 立即数（const-wide）*/
-		@JvmField
 		public val FORMAT_51I = object : DexInsnFormat(5, 1) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
 				val regs = insn.argsReg
@@ -319,7 +287,6 @@ public abstract class DexInsnFormat(
 		 * packed-switch payload：first_key + 连续 targets 数组。
 		 * 长度 = size*2+4 个 code unit（size 个 target，key 由 first_key+i 推算）。
 		 */
-		@JvmField
 		public val FORMAT_PACKED_SWITCH_PAYLOAD = object : DexInsnFormat(-1, -1) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
 				val size = reader.readUShort()
@@ -342,7 +309,6 @@ public abstract class DexInsnFormat(
 		}
 
 		/** sparse-switch payload：keys 与 targets 两个独立数组 */
-		@JvmField
 		public val FORMAT_SPARSE_SWITCH_PAYLOAD = object : DexInsnFormat(-1, -1) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
 				val size = reader.readUShort()
@@ -366,7 +332,6 @@ public abstract class DexInsnFormat(
 		}
 
 		/** fill-array-data payload：按元素大小（1/2/4/8 字节）读取原始数组数据 */
-		@JvmField
 		public val FORMAT_FILL_ARRAY_DATA_PAYLOAD = object : DexInsnFormat(-1, -1) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
 				val elemSize = reader.readUShort()

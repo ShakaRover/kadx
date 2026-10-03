@@ -32,13 +32,11 @@ class JavaAnnotationsAttr(
 
 	companion object {
 		/** @return 指定可见性级别的注解列表读取器 */
-		@JvmStatic
 		fun reader(visibility: AnnotationVisibility): IJavaAttributeReader = object : IJavaAttributeReader {
 			override fun read(clsData: JavaClassData, reader: DataReader): IJavaAttribute = JavaAnnotationsAttr(readAnnotationsList(visibility, clsData, reader))
 		}
 
 		/** 读一个注解列表（u2 数量 + N 个注解） */
-		@JvmStatic
 		fun readAnnotationsList(visibility: AnnotationVisibility, clsData: JavaClassData, reader: DataReader): List<IAnnotation> {
 			val len = reader.readU2()
 			val list = ArrayList<IAnnotation>(len)
@@ -52,7 +50,6 @@ class JavaAnnotationsAttr(
 		 * 读单个注解：类型索引 + "键名 → 元素值"对。
 		 * 嵌套注解（'@' tag）由 [EncodedValueReader] 递归处理。
 		 */
-		@JvmStatic
 		fun readAnnotation(visibility: AnnotationVisibility, clsData: JavaClassData, reader: DataReader): JadxAnnotation {
 			val constPool: ConstPoolReader = clsData.constPoolReader
 			// getUtf8 可返回 null（损坏 class）；JadxAnnotation.type 声明非空，提前调用时原 Java 同样 NPE
@@ -74,7 +71,6 @@ class JavaAnnotationsAttr(
 		 * 把存储中的运行时/构建期两组注解合并为一个 [AnnotationsAttr]；
 		 * 两组都为空时返回 null。
 		 */
-		@JvmStatic
 		fun merge(storage: JavaAttrStorage): AnnotationsAttr? {
 			val runtimeAnnAttr = storage.get(JavaAttrType.RUNTIME_ANNOTATIONS)
 			val buildAnnAttr = storage.get(JavaAttrType.BUILD_ANNOTATIONS)

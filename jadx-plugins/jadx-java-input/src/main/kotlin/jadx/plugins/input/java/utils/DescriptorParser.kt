@@ -10,7 +10,7 @@ import jadx.plugins.input.java.data.JavaMethodProto
  * `L...;` 表示对象类型、`[...]` 表示数组、单个字符（I/J/Z/...）表示基本类型。
  *
  * **为什么用私有构造器 + companion 静态入口**：原 Java 通过两个 static 工厂方法对外暴露，
- * 实例只是解析过程的临时载体；Kotlin 侧保持同样的使用方式（@JvmStatic 保证 Java 调用方零改动）。
+ * 实例只是解析过程的临时载体；Kotlin 侧保持同样的使用方式。
  */
 class DescriptorParser private constructor(private val desc: String) {
 
@@ -96,13 +96,11 @@ class DescriptorParser private constructor(private val desc: String) {
 
 	companion object {
 		/** 解析描述符并填充到已有的 [mthProto]（供调用方复用 proto 实例的场景） */
-		@JvmStatic
 		fun fillMethodProto(mthDesc: String, mthProto: JavaMethodProto) {
 			DescriptorParser(mthDesc).parseMethodDescriptor(mthProto)
 		}
 
 		/** 解析描述符并返回新的 [JavaMethodProto] */
-		@JvmStatic
 		fun parseToMethodProto(mthDesc: String): JavaMethodProto {
 			val mthProto = JavaMethodProto()
 			DescriptorParser(mthDesc).parseMethodDescriptor(mthProto)

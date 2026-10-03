@@ -20,7 +20,6 @@ class LocalVarsAttr(
 
 	companion object {
 		/** @return 读取器：逐条读五元组并查常量池还原名字/描述符 */
-		@JvmStatic
 		fun reader(): IJavaAttributeReader = object : IJavaAttributeReader {
 			override fun read(clsData: JavaClassData, reader: DataReader): IJavaAttribute {
 				val constPool: ConstPoolReader = clsData.constPoolReader

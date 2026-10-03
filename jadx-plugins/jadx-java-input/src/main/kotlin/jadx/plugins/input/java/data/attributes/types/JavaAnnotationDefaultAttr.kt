@@ -22,13 +22,11 @@ class JavaAnnotationDefaultAttr(value: EncodedValue) :
 
 	companion object {
 		/** @return 读取器：直接委托 [EncodedValueReader] 读一个元素值 */
-		@JvmStatic
 		fun reader(): IJavaAttributeReader = object : IJavaAttributeReader {
 			override fun read(clsData: JavaClassData, reader: DataReader): IJavaAttribute = JavaAnnotationDefaultAttr(EncodedValueReader.read(clsData, reader))
 		}
 
 		/** 从属性存储中取出本属性；未解析时返回 null */
-		@JvmStatic
 		fun convert(attributes: JavaAttrStorage): AnnotationDefaultAttr? = attributes.get(JavaAttrType.ANNOTATION_DEFAULT)
 	}
 }

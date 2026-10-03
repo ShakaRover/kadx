@@ -19,7 +19,6 @@ public class DexCheckSum {
 		 * @param offset DEX 数据在 content 中的起始偏移（支持嵌入在其他容器中的 DEX）
 		 * @throws DexException 文件截断或校验和不匹配
 		 */
-		@JvmStatic
 		public fun verify(fileName: String, content: ByteArray, offset: Int) {
 			if (offset + 32 + 4 > content.size) {
 				throw DexException("Dex file truncated, can't read file length, file: $fileName")

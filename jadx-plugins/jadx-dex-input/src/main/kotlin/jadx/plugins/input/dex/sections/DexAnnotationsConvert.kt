@@ -29,17 +29,14 @@ public class DexAnnotationsConvert {
 	public companion object {
 		private val LOG = LoggerFactory.getLogger(DexAnnotationsConvert::class.java)
 
-		@JvmStatic
 		public fun forClass(cls: String, list: MutableList<IJadxAttribute>, annotationList: List<IAnnotation>) {
 			appendAnnotations(cls, list, annotationList)
 		}
 
-		@JvmStatic
 		public fun forMethod(list: MutableList<IJadxAttribute>, annotationList: List<IAnnotation>) {
 			appendAnnotations(null, list, annotationList)
 		}
 
-		@JvmStatic
 		public fun forField(list: MutableList<IJadxAttribute>, annotationList: List<IAnnotation>) {
 			appendAnnotations(null, list, annotationList)
 		}

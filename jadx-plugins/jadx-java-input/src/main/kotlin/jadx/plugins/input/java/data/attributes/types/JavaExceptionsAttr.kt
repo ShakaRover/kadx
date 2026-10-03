@@ -18,7 +18,6 @@ class JavaExceptionsAttr(list: List<String>) :
 
 	companion object {
 		/** @return 读取器：读"数量 + N 个类名索引"序列 */
-		@JvmStatic
 		fun reader(): IJavaAttributeReader = object : IJavaAttributeReader {
 			override fun read(clsData: JavaClassData, reader: DataReader): IJavaAttribute {
 				// readClassesList 元素理论上可空（损坏 class），与原 Java 一样直接透传

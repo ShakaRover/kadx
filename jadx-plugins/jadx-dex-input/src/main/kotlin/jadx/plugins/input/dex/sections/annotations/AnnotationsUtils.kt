@@ -19,7 +19,6 @@ public class AnnotationsUtils {
 		/**
 		 * 取指定名称、指定类型的属性值，缺失或类型不符时返回 [defValue]。
 		 */
-		@JvmStatic
 		public fun <T> getValue(ann: IAnnotation?, name: String, type: EncodedType, defValue: T): T {
 			if (ann == null || ann.values.isEmpty()) {
 				return defValue
@@ -36,7 +35,6 @@ public class AnnotationsUtils {
 		 * 取指定名称、指定类型的属性值，缺失或类型不符时返回 null。
 		 */
 		@Nullable
-		@JvmStatic
 		public fun getValue(ann: IAnnotation?, name: String, type: EncodedType): Any? {
 			if (ann == null || ann.values.isEmpty()) {
 				return null
@@ -51,7 +49,6 @@ public class AnnotationsUtils {
 		/**
 		 * 取指定名称的 ENCODED_ARRAY 属性，缺失或类型不符时返回空列表。
 		 */
-		@JvmStatic
 		public fun getArray(ann: IAnnotation?, name: String): List<EncodedValue> {
 			if (ann == null || ann.values.isEmpty()) {
 				return Collections.emptyList()

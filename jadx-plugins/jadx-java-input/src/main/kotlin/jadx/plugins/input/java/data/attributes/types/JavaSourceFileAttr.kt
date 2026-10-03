@@ -18,7 +18,6 @@ class JavaSourceFileAttr(fileName: String) :
 
 	companion object {
 		/** @return 读取器：读一个 u2 索引取文件名 */
-		@JvmStatic
 		fun reader(): IJavaAttributeReader = object : IJavaAttributeReader {
 			override fun read(clsData: JavaClassData, reader: DataReader): IJavaAttribute = JavaSourceFileAttr(checkNotNull(clsData.constPoolReader.getUtf8(reader.readU2())))
 		}

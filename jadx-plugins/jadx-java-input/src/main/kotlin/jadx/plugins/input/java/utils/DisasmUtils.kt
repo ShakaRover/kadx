@@ -22,7 +22,6 @@ object DisasmUtils {
 	private val LOG: Logger = LoggerFactory.getLogger(DisasmUtils::class.java)
 
 	/** 用内置 Raung 反汇编器把 class 字节转成文本 */
-	@JvmStatic
 	fun get(bytes: ByteArray): String = useRaung(bytes)
 
 	private fun useRaung(bytes: ByteArray): String = RaungDisasm.create().executeForBytes(bytes)
@@ -59,7 +58,6 @@ object DisasmUtils {
 	}
 
 	/** 把输入流完整读入并转成字符串（8KB 缓冲循环读取） */
-	@JvmStatic
 	@Throws(IOException::class)
 	fun inputStreamToString(input: InputStream): String {
 		val out = ByteArrayOutputStream()

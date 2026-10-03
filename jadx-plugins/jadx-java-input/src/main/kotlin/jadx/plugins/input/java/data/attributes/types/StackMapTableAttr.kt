@@ -22,7 +22,6 @@ class StackMapTableAttr(
 
 	companion object {
 		/** 空表单例：方法没有 StackMapTable attribute 时使用 */
-		@JvmField
 		val EMPTY: StackMapTableAttr = StackMapTableAttr(Collections.emptyMap())
 	}
 }

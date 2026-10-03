@@ -58,86 +58,60 @@ class JavaAttrType<T : IJavaAttribute> private constructor(
 
 		// ===== 以下常量的声明顺序 = 原 Java static 块赋值顺序（决定 id 值），勿调换 =====
 
-		@JvmField
 		val CONST_VALUE: JavaAttrType<ConstValueAttr> = bind("ConstantValue", ConstValueAttr.reader())
 
-		@JvmField
 		val CODE: JavaAttrType<CodeAttr> = bind("Code", CodeAttr.reader())
 
-		@JvmField
 		val LINE_NUMBER_TABLE: JavaAttrType<LineNumberTableAttr> = bind("LineNumberTable", LineNumberTableAttr.reader())
 
-		@JvmField
 		val LOCAL_VAR_TABLE: JavaAttrType<LocalVarsAttr> = bind("LocalVariableTable", LocalVarsAttr.reader())
 
-		@JvmField
 		val LOCAL_VAR_TYPE_TABLE: JavaAttrType<LocalVarTypesAttr> = bind("LocalVariableTypeTable", LocalVarTypesAttr.reader())
 
-		@JvmField
 		val INNER_CLASSES: JavaAttrType<JavaInnerClsAttr> = bind("InnerClasses", JavaInnerClsAttr.reader())
 
-		@JvmField
 		val BOOTSTRAP_METHODS: JavaAttrType<JavaBootstrapMethodsAttr> = bind("BootstrapMethods", JavaBootstrapMethodsAttr.reader())
 
-		@JvmField
 		val RUNTIME_ANNOTATIONS: JavaAttrType<JavaAnnotationsAttr> = bind("RuntimeVisibleAnnotations", JavaAnnotationsAttr.reader(AnnotationVisibility.RUNTIME))
 
-		@JvmField
 		val BUILD_ANNOTATIONS: JavaAttrType<JavaAnnotationsAttr> = bind("RuntimeInvisibleAnnotations", JavaAnnotationsAttr.reader(AnnotationVisibility.BUILD))
 
-		@JvmField
 		val RUNTIME_PARAMETER_ANNOTATIONS: JavaAttrType<JavaParamAnnsAttr> = bind("RuntimeVisibleParameterAnnotations", JavaParamAnnsAttr.reader(AnnotationVisibility.RUNTIME))
 
-		@JvmField
 		val BUILD_PARAMETER_ANNOTATIONS: JavaAttrType<JavaParamAnnsAttr> = bind("RuntimeInvisibleParameterAnnotations", JavaParamAnnsAttr.reader(AnnotationVisibility.BUILD))
 
-		@JvmField
 		val ANNOTATION_DEFAULT: JavaAttrType<JavaAnnotationDefaultAttr> = bind("AnnotationDefault", JavaAnnotationDefaultAttr.reader())
 
-		@JvmField
 		val SOURCE_FILE: JavaAttrType<JavaSourceFileAttr> = bind("SourceFile", JavaSourceFileAttr.reader())
 
-		@JvmField
 		val SIGNATURE: JavaAttrType<JavaSignatureAttr> = bind("Signature", JavaSignatureAttr.reader())
 
-		@JvmField
 		val EXCEPTIONS: JavaAttrType<JavaExceptionsAttr> = bind("Exceptions", JavaExceptionsAttr.reader())
 
-		@JvmField
 		val METHOD_PARAMETERS: JavaAttrType<JavaMethodParametersAttr> = bind("MethodParameters", JavaMethodParametersAttr.reader())
 
-		@JvmField
 		val STACK_MAP_TABLE: JavaAttrType<StackMapTableAttr> = bind("StackMapTable", StackMapTableReader())
 
 		// ignored（信息已由注解/access flag 表达，无需单独解析）
-		@JvmField
 		val DEPRECATED: JavaAttrType<IgnoredAttr> = bind("Deprecated", null)
 
 		// duplicated by annotation
-		@JvmField
 		val SYNTHETIC: JavaAttrType<IgnoredAttr> = bind("Synthetic", null)
 
 		// duplicated by access flag
-		@JvmField
 		val ENCLOSING_METHOD: JavaAttrType<IgnoredAttr> = bind("EnclosingMethod", null)
 
 		// TODO: not supported yet
-		@JvmField
 		val RUNTIME_TYPE_ANNOTATIONS: JavaAttrType<IgnoredAttr> = bind("RuntimeVisibleTypeAnnotations", null)
 
-		@JvmField
 		val BUILD_TYPE_ANNOTATIONS: JavaAttrType<IgnoredAttr> = bind("RuntimeInvisibleTypeAnnotations", null)
 
-		@JvmField
 		val MODULE: JavaAttrType<IgnoredAttr> = bind("Module", null)
 
-		@JvmField
 		val NEST_HOST: JavaAttrType<IgnoredAttr> = bind("NestHost", null)
 
-		@JvmField
 		val NEST_MEMBERS: JavaAttrType<IgnoredAttr> = bind("NestMembers", null)
 
-		@JvmField
 		val SOURCE_DEBUG_EXTENSION: JavaAttrType<IgnoredAttr> = bind("SourceDebugExtension", null)
 
 		/** 注册一个新属性类型：分配自增 id、写入名字索引表 */
@@ -151,11 +125,9 @@ class JavaAttrType<T : IJavaAttribute> private constructor(
 
 		/** 按 .class 中的属性名查类型；未知名字返回 null */
 		@Nullable
-		@JvmStatic
 		fun byName(name: String?): JavaAttrType<*>? = NAME_TO_TYPE_MAP[name]
 
 		/** @return 已注册属性类型的总数（storage 数组大小） */
-		@JvmStatic
 		fun size(): Int = NAME_TO_TYPE_MAP.size
 	}
 }

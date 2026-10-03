@@ -103,8 +103,7 @@ class JavaInputLoader(
 		private val JAVA_CLASS_FILE_MAGIC = byteArrayOf(0xCA.toByte(), 0xFE.toByte(), 0xBA.toByte(), 0xBE.toByte())
 		private val ZIP_FILE_MAGIC = byteArrayOf(0x50.toByte(), 0x4B.toByte(), 0x03.toByte(), 0x04.toByte())
 
-		/** @JvmStatic 供 Java 调用方（如测试）复用魔数判断 */
-		@JvmStatic
+		/** 供测试等 Kotlin 调用方复用魔数判断 */
 		fun isStartWithBytes(fileMagic: ByteArray, expectedBytes: ByteArray): Boolean {
 			val len = expectedBytes.size
 			if (fileMagic.size < len) {

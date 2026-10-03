@@ -10,11 +10,9 @@ public class DexConsts {
 
 	public companion object {
 		/** DEX 文件头魔数：`dex\n`（0x64 0x65 0x78 0x0a）*/
-		@JvmField
 		public val DEX_FILE_MAGIC: ByteArray = byteArrayOf(0x64, 0x65, 0x78, 0x0a)
 
 		/** ZIP 文件头魔数：`PK\x03\x04`（.apk/.zip 容器识别）*/
-		@JvmField
 		public val ZIP_FILE_MAGIC: ByteArray = byteArrayOf(0x50, 0x4B, 0x03, 0x04)
 
 		/** 魔数最大长度（DEX 与 ZIP 均为 4 字节）*/

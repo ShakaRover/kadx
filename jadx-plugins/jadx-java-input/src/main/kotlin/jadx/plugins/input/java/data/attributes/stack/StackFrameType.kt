@@ -35,7 +35,6 @@ enum class StackFrameType(private val start: Int, private val end: Int) {
 
 		/** @return [data] 对应的帧类型；非法值返回 null */
 		@Nullable
-		@JvmStatic
 		fun getType(data: Int): StackFrameType? = MAPPING[data]
 	}
 }

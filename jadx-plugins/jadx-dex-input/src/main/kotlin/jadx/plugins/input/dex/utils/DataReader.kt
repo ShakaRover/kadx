@@ -15,7 +15,6 @@ public class DataReader {
 		 * DEX 规范中所有多字节整型均为 little-endian；
 		 * 逐字节 `and 0xFF` 消除 Java byte 有符号扩展，再移位拼接。
 		 */
-		@JvmStatic
 		public fun readU4(data: ByteArray, pos: Int): Int {
 			val b1 = data[pos].toInt() and 0xFF
 			val b2 = data[pos + 1].toInt() and 0xFF

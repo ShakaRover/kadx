@@ -148,7 +148,6 @@ public class AnnotationsParser(
 		 * @param readVisibility true 时先读 visibility 字节（class/field/method 级注解需要），
 		 *        false 时无 visibility 前缀（参数注解）
 		 */
-		@JvmStatic
 		public fun readAnnotation(inReader: SectionReader, ext: SectionReader, readVisibility: Boolean): IAnnotation {
 			var visibility: AnnotationVisibility? = null
 			if (readVisibility) {

@@ -16,7 +16,6 @@ public class Leb128 {
 		 * 读取有符号 LEB128 序列（最多 5 字节），按最高有效位做符号扩展。
 		 * @throws DexException 超过 5 字节仍未结束（非法序列）
 		 */
-		@JvmStatic
 		public fun readSignedLeb128(reader: SectionReader): Int {
 			var result = 0
 			var cur: Int
@@ -43,7 +42,6 @@ public class Leb128 {
 		 * 读取无符号 LEB128 序列（最多 5 字节）。
 		 * @throws DexException 超过 5 字节仍未结束（非法序列）
 		 */
-		@JvmStatic
 		public fun readUnsignedLeb128(reader: SectionReader): Int {
 			var result = 0
 			var cur: Int

@@ -76,7 +76,6 @@ public class DebugInfoParser(
 		private const val DBG_LINE_RANGE: Int = 15
 
 		/** @return DEX 类型描述符占用的寄存器数：long/double 为 2，其余为 1 */
-		@JvmStatic
 		public fun getTypeLen(type: String): Int = when (type[0]) {
 			'J', 'D' -> 2
 			else -> 1

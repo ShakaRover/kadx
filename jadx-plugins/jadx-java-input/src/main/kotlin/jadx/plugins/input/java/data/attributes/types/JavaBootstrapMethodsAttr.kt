@@ -20,7 +20,6 @@ class JavaBootstrapMethodsAttr(
 
 	companion object {
 		/** @return 读取器：逐条读 method handle 索引与 args 索引数组 */
-		@JvmStatic
 		fun reader(): IJavaAttributeReader = object : IJavaAttributeReader {
 			override fun read(clsData: JavaClassData, reader: DataReader): IJavaAttribute {
 				val len = reader.readU2()

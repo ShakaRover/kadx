@@ -26,7 +26,6 @@ object EncodedValueReader {
 	 * 从 [reader] 当前位置读取一个注解元素值。
 	 * @throws JavaClassParseException tag 字符不是合法的 element_value 类型时抛出
 	 */
-	@JvmStatic
 	fun read(clsData: JavaClassData, reader: DataReader): EncodedValue {
 		val constPool: ConstPoolReader = clsData.constPoolReader
 		val tag = reader.readU1().toChar()

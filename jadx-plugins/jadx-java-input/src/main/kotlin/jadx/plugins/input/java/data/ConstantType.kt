@@ -55,7 +55,6 @@ enum class ConstantType(tagValue: Int, val dataSize: Int) {
 		 * 按 tag 值查类型。
 		 * @throws JavaClassParseException tag 不是合法的常量池条目类型时抛出
 		 */
-		@JvmStatic
 		fun getTypeByTag(tag: Int): ConstantType {
 			val type = TAG_MAP[tag]
 			if (type == null) {

@@ -26,26 +26,20 @@ import org.jetbrains.annotations.Nullable
 object JavaInsnsRegister {
 
 	// float/double 常量在 ldc 指令里以"位模式 long"形式存入字面量字段（与原 Java static final 相同）
-	@JvmField
 	val FLOAT_ZERO: Long = 0.0f.toRawBits().toLong()
 
-	@JvmField
 	val FLOAT_ONE: Long = 1.0f.toRawBits().toLong()
 
-	@JvmField
 	val FLOAT_TWO: Long = 2.0f.toRawBits().toLong()
 
-	@JvmField
 	val DOUBLE_ZERO: Long = 0.0.toRawBits()
 
-	@JvmField
 	val DOUBLE_ONE: Long = 1.0.toRawBits()
 
 	private val INSN_INFO: Array<JavaInsnInfo?> = buildInsnInfo()
 
 	/** @return [opcode] 对应的指令信息；未登记的 opcode 返回 null */
 	@Nullable
-	@JvmStatic
 	fun get(opcode: Int): JavaInsnInfo? = INSN_INFO[opcode]
 
 	private fun buildInsnInfo(): Array<JavaInsnInfo?> {

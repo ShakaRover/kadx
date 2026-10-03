@@ -24,7 +24,6 @@ public class DexHeaderV41(
 		 * 尝试按 DEX v4.1 格式解析容器头。
 		 * @return 非 v4.1 格式（header_size < 120）时返回 null
 		 */
-		@JvmStatic
 		public fun readIfPresent(content: ByteArray): DexHeaderV41? {
 			val headerSize = DataReader.readU4(content, 36)
 			if (headerSize < 120) {
@@ -42,7 +41,6 @@ public class DexHeaderV41(
 		 * **算法**：从 offset=0 开始，每次读取当前位置子 DEX 的 file_size（header +32 处），
 		 * 累加得到下一个子 DEX 起点；直到越过 containerSize（或文件实际长度）。
 		 */
-		@JvmStatic
 		public fun readSubDexOffsets(content: ByteArray, header: DexHeaderV41): List<Int> {
 			var start = 0
 			var end = header.fileSize
