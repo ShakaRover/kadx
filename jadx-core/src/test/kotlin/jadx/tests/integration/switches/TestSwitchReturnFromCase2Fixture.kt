@@ -1,4 +1,9 @@
-package jadx.tests.integration.switches;
+package jadx.tests.integration.switches
+
+object TestSwitchReturnFromCase2Fixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.switches;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,4 +29,6 @@ public class TestSwitchReturnFromCase2Fixture {
 			assertThat(test(1)).isFalse();
 		}
 	}
+}
+"""
 }

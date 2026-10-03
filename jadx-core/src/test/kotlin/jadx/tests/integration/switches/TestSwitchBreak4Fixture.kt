@@ -1,8 +1,13 @@
-package jadx.tests.integration.switches;
+package jadx.tests.integration.switches
+
+object TestSwitchBreak4Fixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.switches;
 
 import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
 
-public class TestSwitchBreak3Fixture {
+public class TestSwitchBreak4Fixture {
 
 	@SuppressWarnings("SwitchStatementWithTooFewBranches")
 	public static class TestCls {
@@ -14,10 +19,10 @@ public class TestSwitchBreak3Fixture {
 				case 0:
 					if (b1 == b2) {
 						setValue(1);
-						// no break here;
 					} else if (b1 == b3) {
 						setValue(2);
-						// no break here;
+					} else {
+						setValue(3);
 					}
 					break;
 				default:
@@ -35,8 +40,10 @@ public class TestSwitchBreak3Fixture {
 			assertThat(value).isEqualTo(1);
 			test(0, true, false, true);
 			assertThat(value).isEqualTo(2);
-			test(1, true, true, true);
-			assertThat(value).isEqualTo(0);
+			test(0, true, false, false);
+			assertThat(value).isEqualTo(3);
 		}
 	}
+}
+"""
 }

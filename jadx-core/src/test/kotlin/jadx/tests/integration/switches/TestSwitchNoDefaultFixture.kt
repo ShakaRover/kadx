@@ -1,4 +1,9 @@
-package jadx.tests.integration.switches;
+package jadx.tests.integration.switches
+
+object TestSwitchNoDefaultFixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.switches;
 
 public class TestSwitchNoDefaultFixture {
 
@@ -22,4 +27,6 @@ public class TestSwitchNoDefaultFixture {
 			System.out.println(s);
 		}
 	}
+}
+"""
 }

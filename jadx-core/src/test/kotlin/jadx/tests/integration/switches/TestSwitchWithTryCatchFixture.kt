@@ -1,4 +1,9 @@
-package jadx.tests.integration.switches;
+package jadx.tests.integration.switches
+
+object TestSwitchWithTryCatchFixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.switches;
 
 @SuppressWarnings("checkstyle:printstacktrace")
 public class TestSwitchWithTryCatchFixture {
@@ -50,4 +55,6 @@ public class TestSwitchWithTryCatchFixture {
 		private void exc() throws Exception {
 		}
 	}
+}
+"""
 }

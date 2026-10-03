@@ -1,4 +1,9 @@
-package jadx.tests.integration.switches;
+package jadx.tests.integration.switches
+
+object TestSwitchOverStringsFixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.switches;
 
 import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
 
@@ -32,4 +37,6 @@ public class TestSwitchOverStringsFixture {
 			assertThat(test("ucguedt")).isEqualTo(0);
 		}
 	}
+}
+"""
 }

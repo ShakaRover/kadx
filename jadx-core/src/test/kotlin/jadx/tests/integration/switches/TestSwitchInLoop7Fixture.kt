@@ -1,6 +1,11 @@
-package jadx.tests.integration.switches;
+package jadx.tests.integration.switches
 
-public class TestSwitchInLoop8Fixture {
+object TestSwitchInLoop7Fixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.switches;
+
+public class TestSwitchInLoop7Fixture {
 
 	public static class TestCls {
 		private void test() {
@@ -24,15 +29,35 @@ public class TestSwitchInLoop8Fixture {
 					case 1:
 						i++;
 						break;
-					default:
-						continue;
-				}
-				if (i < 2) {
-					i++;
 				}
 			}
 			return;
 		}
+		// Output below:
+		// @formatter:off
+		/*
+			public void function() {
+				int i = 0;
+				int n = getN();
+				while (i <= n) {
+					i++;
+					if (n != 5) {
+						switch (n) {
+							case 0:
+								if (n == 1) {
+									break;
+								} else {
+									return;
+								}
+							case 1:
+								i++;
+								break;
+						}
+					}
+				}
+			}
+		*/
+		// @formatter:on
 
 		private int getN() {
 			double i = Math.random();
@@ -51,4 +76,6 @@ public class TestSwitchInLoop8Fixture {
 			return -1;
 		}
 	}
+}
+"""
 }

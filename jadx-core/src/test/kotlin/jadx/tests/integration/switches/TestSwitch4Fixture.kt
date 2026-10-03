@@ -1,4 +1,9 @@
-package jadx.tests.integration.switches;
+package jadx.tests.integration.switches
+
+object TestSwitch4Fixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.switches;
 
 import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
 
@@ -24,4 +29,6 @@ public class TestSwitch4Fixture {
 			assertThat(parse("a=1234".toCharArray(), 2, 4)).isEqualTo(1234);
 		}
 	}
+}
+"""
 }

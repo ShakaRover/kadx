@@ -1,4 +1,9 @@
-package jadx.tests.integration.switches;
+package jadx.tests.integration.switches
+
+object TestSwitchBreakFixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.switches;
 
 import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
 
@@ -30,4 +35,6 @@ public class TestSwitchBreakFixture {
 			assertThat(test(9)).isEqualTo("1--4--1--4--1-");
 		}
 	}
+}
+"""
 }

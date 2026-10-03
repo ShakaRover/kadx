@@ -1,4 +1,9 @@
-package jadx.tests.integration.switches;
+package jadx.tests.integration.switches
+
+object TestSwitchInLoop4Fixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.switches;
 
 import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
 
@@ -27,4 +32,6 @@ public class TestSwitchInLoop4Fixture {
 			assertThat(test("abc", 1)).isFalse();
 		}
 	}
+}
+"""
 }

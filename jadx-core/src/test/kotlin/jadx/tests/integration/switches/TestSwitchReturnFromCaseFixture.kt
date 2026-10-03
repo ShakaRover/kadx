@@ -1,4 +1,9 @@
-package jadx.tests.integration.switches;
+package jadx.tests.integration.switches
+
+object TestSwitchReturnFromCaseFixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.switches;
 
 public class TestSwitchReturnFromCaseFixture {
 
@@ -30,4 +35,6 @@ public class TestSwitchReturnFromCaseFixture {
 			System.out.println(s);
 		}
 	}
+}
+"""
 }

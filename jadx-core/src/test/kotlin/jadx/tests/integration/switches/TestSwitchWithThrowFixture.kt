@@ -1,4 +1,9 @@
-package jadx.tests.integration.switches;
+package jadx.tests.integration.switches
+
+object TestSwitchWithThrowFixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.switches;
 
 import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -31,4 +36,6 @@ public class TestSwitchWithThrowFixture {
 					.hasMessageContaining("Other");
 		}
 	}
+}
+"""
 }

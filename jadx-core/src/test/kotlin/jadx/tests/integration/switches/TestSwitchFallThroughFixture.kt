@@ -1,4 +1,9 @@
-package jadx.tests.integration.switches;
+package jadx.tests.integration.switches
+
+object TestSwitchFallThroughFixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.switches;
 
 import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
 
@@ -38,4 +43,6 @@ public class TestSwitchFallThroughFixture {
 			assertThat(testWrap(0)).isEqualTo(-2);
 		}
 	}
+}
+"""
 }

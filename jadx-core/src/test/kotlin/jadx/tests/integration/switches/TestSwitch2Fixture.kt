@@ -1,4 +1,9 @@
-package jadx.tests.integration.switches;
+package jadx.tests.integration.switches
+
+object TestSwitch2Fixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.switches;
 
 public class TestSwitch2Fixture {
 
@@ -47,4 +52,6 @@ public class TestSwitch2Fixture {
 			}
 		}
 	}
+}
+"""
 }
