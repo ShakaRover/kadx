@@ -69,7 +69,7 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | jadx-plugins-tools | 0 | 18 | 0 | 1 | ✅ |
 | **jadx-core** | **0** | **568** | **472** | **668** | 🟢 main+test 均完成（test 剩 466 个有意 Java：fixture/输入/harness） |
 | jadx-cli | 0 | 21 | 0 | 0 | ✅ 5df919da |
-| jadx-gui | 405 | 2 | 8 | 1 | ⏳ |
+| jadx-gui | 0 | 407 | 0 | 9 | ✅ 4b241c6c / 1250f10f（全 Kotlin） |
 | **合计剩余 .java** | | | | | **约 435**（gui 413 + cli 21 + analysis 1，均非 fixture） |
 
 > jadx-core main 的 556 含批次 1 的 **24 个待删重复 .java**，真实待转 **532**。
@@ -182,11 +182,9 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 
 ## 7. 阶段 5：jadx-gui（main 405 + test 8）—— **先语法迁移**
 
-> **状态：未开始（下一阶段）。** jadx-core / jadx-cli / 全部插件模块已完成。
-> 阶段 5.1 严格保持原 Swing 线程模型（`SwingWorker` / `invokeLater`）；**不引入协程**。
-> 阶段 5.2（协程重构）待全部语法迁移 + 测试通过后另立专项，不在本计划范围。
-> gui 已带 `id("jadx-kotlin")`；直接 `src/main/kotlin` 建文件、删原 `.java`。
-> 验证：`./gradlew :jadx-gui:compileKotlin :jadx-gui:compileJava :jadx-gui:test` + `./gradlew build`。
+> **状态：✅ 已完成（G01–G21）。** `find jadx-gui/src -name '*.java'` = 0。
+> 全程保持原 Swing 线程模型（`SwingWorker` / `invokeLater` / RxJava），**未引入协程**。
+> 阶段 5.2（协程重构）待另立专项，不在本计划范围。
 
 | ID | 包组 | 约数 |
 |----|------|-----:|
@@ -230,7 +228,7 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | G19 | `ui`(+`startpage`,`filedialog`,`menu`,`cellrenders`,`export`,`treenodes`) | 23 |
 | G20 | `cache/code`(+`disk`,`manager`) + `events`(+`types`,`services`) + `tree` + 顶层入口 | 15 |
 | G21 | gui test（8 java；`TestJadxUpdate.kt` 已转） | 8 | ✅ 4b241c6c（jadx-gui 全 Kotlin） |
-| X01 | `jadx-plugins/jadx-rename-mappings` test 漏网 2 文件 | 2 | ⏳ |
+| X01 | `jadx-plugins/jadx-rename-mappings` test 漏网 2 文件 | 2 | ✅ 042021e7 |
 
 ## 8. 阶段 1 尾巴
 
@@ -334,10 +332,11 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 - 批次粒度 ~25 个 driver 文件；`find ... -name '*.java' | grep -v Fixture` 才是真实待转量。
 - harness（`IntegrationTest.java`）保持 Java 基础设施，ECJ Java 路径为主。
 
-## 12. 当前状态与下一单
+## 12. 最终状态（项目 Kotlin 化完成）
 
-- **已完成：** C01–C28（jadx-core main 568 文件）、T01–T27（jadx-core test，仅剩 6 个有意 Java + 466 fixture/输入）、CL01–CL02（jadx-cli 21）、A01（analysis 1）。
-  **除 jadx-gui 外，全项目生产代码已 100% Kotlin。**
-- **下一阶段（唯一剩余）：** 阶段 5 jadx-gui（main 405 + test 8），按 §7 的 G01–G21 逐批派发。
-- **派单模板：** 复用 `TEST_MIGRATION_BRIEF.md` 的 Option A（若 gui 测试有 Java fixture）+ `KOTLIN_MASTER_PLAN.md` §9 坑位。
-- **派单原则：** 每单回报「转换/删除数、构建输出、commit hash、遗留」；Worker 不改本文件。
+- **全部模块完成：** jadx-commons、jadx-plugins（含 input-api / dex / java / smali / apks / apkm / java-convert / raung / rename-mappings / kotlin-metadata）、jadx-plugins-tools、jadx-core、jadx-cli、jadx-gui。
+- **全局剩余 `.java` = 472**，全部为有意保留：
+  - 466 个 `*Fixture.java`（反编译器的 **Java 输入**，见 §11 Option A）；
+  - 6 个基础设施/输入文件：`tests/api/IntegrationTest.java`（测试 harness）、`tests/api/utils/assertj/JadxAssertions.java`（继承 AssertJ 静态方法）、`names/pkg/a.java`、`names/pkg/b.java`、`names/pkg2/TestCls.java`、`names/pkg2/System.java`（反编译输入）。
+- **总 Kotlin 文件 ~1936**；`./gradlew build` **BUILD SUCCESSFUL**（core 1018 tests / cli 24 / gui 39 / 各插件全绿）。
+- **后续（可选专项）：** 阶段 5.2 协程重构（`jadx.gui.jobs` / `BackgroundWorker` → `Dispatchers.Swing`）；以及若需文件级 100% 无 Java，可评估把 fixture 内联为 Java 源字符串（Option D）。
