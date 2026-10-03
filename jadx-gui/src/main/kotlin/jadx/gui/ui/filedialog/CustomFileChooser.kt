@@ -17,8 +17,6 @@ import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import java.io.File
 import java.nio.file.Path
-import java.util.Objects
-import java.util.stream.Collectors
 import javax.swing.AbstractAction
 import javax.swing.Action
 import javax.swing.JDialog
@@ -49,9 +47,8 @@ internal class CustomFileChooser(private val data: FileDialogWrapper) : JFileCho
 		isAcceptAllFileFilterUsed = true
 		val fileExtList = data.getFileExtList()
 		if (Utils.notEmpty(fileExtList)) {
-			val validFileExtList = fileExtList.stream()
+			val validFileExtList = fileExtList
 				.filter { StringUtils.notBlank(it) }
-				.collect(Collectors.toList())
 			if (Utils.notEmpty(validFileExtList)) {
 				val description = NLS.str("file_dialog.supported_files") + ": (" + Utils.listToString(validFileExtList) + ')'
 				fileFilter = FileNameMultiExtensionFilter(description, *validFileExtList.toTypedArray())
@@ -146,10 +143,8 @@ internal class CustomFileChooser(private val data: FileDialogWrapper) : JFileCho
 				return false
 			}
 			val clipboardFiles = contents.getTransferData(DataFlavor.javaFileListFlavor) as List<File>
-			val paths = clipboardFiles.stream()
-				.filter { Objects.nonNull(it) }
-				.map { file -> '"' + file.absolutePath + '"' }
-				.collect(Collectors.joining(" "))
+			val paths = clipboardFiles.filterNotNull()
+				.joinToString(" ") { file -> '"' + file.absolutePath + '"' }
 			if (paths.isEmpty()) {
 				return false
 			}

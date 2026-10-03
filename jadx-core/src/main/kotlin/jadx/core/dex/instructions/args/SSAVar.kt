@@ -14,7 +14,6 @@ import jadx.core.utils.exceptions.JadxRuntimeException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.Comparator
-import java.util.stream.Collectors
 
 class SSAVar(val regNum: Int, val version: Int, initialAssign: RegisterArg) : Comparable<SSAVar> {
 	var assign: RegisterArg = initialAssign
@@ -219,11 +218,11 @@ class SSAVar(val regNum: Int, val version: Int, initialAssign: RegisterArg) : Co
 		val sb = StringBuilder()
 		sb.append('r').append(regNum).append('v').append(version)
 		if (!names.isEmpty()) {
-			val orderedNames = names.stream().sorted().collect(Collectors.joining(", ", "[", "]"))
+			val orderedNames = names.sorted().joinToString(", ", "[", "]")
 			sb.append(", names: ").append(orderedNames)
 		}
 		if (types.isNotEmpty()) {
-			val orderedTypes = types.stream().map { it.toString() }.sorted().collect(Collectors.joining(", ", "[", "]"))
+			val orderedTypes = types.map { it.toString() }.sorted().joinToString(", ", "[", "]")
 			sb.append(", types: ").append(orderedTypes)
 		}
 		return sb.toString()

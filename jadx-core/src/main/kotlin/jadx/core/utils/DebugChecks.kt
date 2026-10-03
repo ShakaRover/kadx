@@ -108,7 +108,7 @@ object DebugChecks {
 				val ifNode = insn as IfNode
 				if (ifNode.getThenBlock() != ifNode.getElseBlock()) {
 					// 排除临时边
-					val branches = block.getSuccessors().stream().filter { b -> !hasTmpEdge(block, b) }.count().toInt()
+					val branches = block.getSuccessors().count { b -> !hasTmpEdge(block, b) }
 					if (branches != 2) {
 						DebugUtils.dumpRaw(mth, "error")
 						throw JadxRuntimeException(

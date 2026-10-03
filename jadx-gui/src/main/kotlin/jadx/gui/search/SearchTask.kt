@@ -65,7 +65,7 @@ class SearchTask(
 		}
 		resetCancel()
 		resultsCount.set(0)
-		taskProgress.updateTotal(jobs.stream().mapToInt { it.getProvider().total() }.sum())
+		taskProgress.updateTotal(jobs.sumOf { it.getProvider().total() })
 		deferred = backgroundExecutor.executeAsync(this)
 	}
 
@@ -120,7 +120,7 @@ class SearchTask(
 	override fun checkMemoryUsage(): Boolean = true
 
 	override fun getTaskProgress(): ITaskProgress {
-		taskProgress.updateProgress(jobs.stream().mapToInt { it.getProvider().progress() }.sum())
+		taskProgress.updateProgress(jobs.sumOf { it.getProvider().progress() })
 		progressFlow.tryEmit(taskProgress)
 		return taskProgress
 	}

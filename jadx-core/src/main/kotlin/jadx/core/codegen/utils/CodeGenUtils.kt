@@ -41,7 +41,7 @@ class CodeGenUtils {
 			}
 			val errors = node.getAll(AType.JADX_ERROR)
 			if (!errors.isEmpty()) {
-				errors.stream().distinct().sorted().forEach { err ->
+				errors.distinct().sorted().forEach { err ->
 					addError(code, err.error, err.cause)
 				}
 			}

@@ -1509,7 +1509,7 @@ object BlockUtils {
 			visited.set(frontier.pos)
 			// 确认 frontier 的前驱来自 try 分支末尾，而非 handler 分支
 			for (pred in frontier.getPredecessors()) {
-				val predFromHandler = allHandlers.stream().anyMatch { h -> isPathExists(checkNotNull(h.getHandlerBlock()), pred) }
+				val predFromHandler = allHandlers.any { h -> isPathExists(checkNotNull(h.getHandlerBlock()), pred) }
 				if (!predFromHandler && isPathExists(topSplitter, pred) && frontier !== mth.exitBlock) {
 					return frontier
 				}

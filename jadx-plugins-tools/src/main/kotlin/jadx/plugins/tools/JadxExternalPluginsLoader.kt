@@ -14,7 +14,7 @@ import java.nio.file.Files.isDirectory
 import java.nio.file.Files.isRegularFile
 import java.nio.file.Path
 import java.util.ServiceLoader
-import java.util.stream.Collectors
+import kotlin.streams.toList
 
 class JadxExternalPluginsLoader : JadxPluginLoader {
 	companion object {
@@ -64,7 +64,7 @@ class JadxExternalPluginsLoader : JadxPluginLoader {
 
 	private fun loadFromClsLoader(map: MutableMap<String, JadxPlugin>, classLoader: ClassLoader) {
 		val serviceLoader = ServiceLoader.load(JadxPlugin::class.java, classLoader)
-		val providers = serviceLoader.stream().collect(Collectors.toList())
+		val providers = serviceLoader.stream().toList()
 		for (provider in providers) {
 			val pluginClass = provider.type()
 			val clsName = pluginClass.name

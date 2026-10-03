@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory
 import java.util.ArrayList
 import java.util.Collections
 import java.util.HashSet
-import java.util.stream.Collectors
 
 /**
  * 反编译批调度器：把待反编译的类划分成若干批次，尽量减少线程之间的锁竞争。
@@ -106,16 +105,15 @@ class DecompilerScheduler : IDecompileScheduler {
 			return deps
 		}
 
-		private fun buildFallback(classes: List<JavaClass>): List<List<JavaClass>> = classes.stream()
-			.sorted(Comparator.comparingInt { c: JavaClass -> c.getClassNode().getTotalDepsCount() })
+		private fun buildFallback(classes: List<JavaClass>): List<List<JavaClass>> = classes
+			.sortedBy { c: JavaClass -> c.getClassNode().getTotalDepsCount() }
 			.map { c: JavaClass -> Collections.singletonList(c) }
-			.collect(Collectors.toList())
 
 		private fun dumpBatchesStats(classes: List<JavaClass>, result: List<List<JavaClass>>, deps: List<DepInfo>) {
-			val clsInBatches = result.stream().mapToInt { it.size }.sum()
-			val avg = result.stream().mapToInt { it.size }.average().orElse(-1.0)
-			val maxSingleDeps = classes.stream().mapToInt { it.getTotalDepsCount() }.max().orElse(-1)
-			val maxSubDeps = deps.stream().mapToInt { it.getDepsCount() }.max().orElse(-1)
+			val clsInBatches = result.sumOf { it.size }
+			val avg = if (result.isEmpty()) -1.0 else result.sumOf { it.size }.toDouble() / result.size
+			val maxSingleDeps = classes.maxOfOrNull { it.getTotalDepsCount() } ?: -1
+			val maxSubDeps = deps.maxOfOrNull { it.getDepsCount() } ?: -1
 			LOG.info(
 				"Batches stats:" +
 					"\n input classes: " + classes.size +
@@ -128,7 +126,7 @@ class DecompilerScheduler : IDecompileScheduler {
 		}
 
 		private fun check(result: List<List<JavaClass>>, classes: List<JavaClass>) {
-			val classInBatches = result.stream().mapToInt { it.size }.sum()
+			val classInBatches = result.sumOf { it.size }
 			if (classes.size != classInBatches) {
 				throw JadxRuntimeException(
 					"Incorrect number of classes in result batch: $classInBatches, expected: " + classes.size,

@@ -351,8 +351,7 @@ class UsageDialogPlus private constructor(
 	private fun collectUsageData(node: JNode, treeNode: DefaultMutableTreeNode) {
 		val usageList = ArrayList<CodeNode>()
 		buildUsageQuery(node).forEach { (searchNode, useNodes) ->
-			useNodes.stream()
-				.map { it.getTopParentClass() }
+			useNodes.map { it.getTopParentClass() }
 				.distinct()
 				.forEach { u -> processUsage(searchNode, checkNotNull(u), usageList) }
 		}

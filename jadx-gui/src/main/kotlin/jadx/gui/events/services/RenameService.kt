@@ -25,7 +25,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.Collections
 import java.util.function.Consumer
-import java.util.stream.Collectors
 
 /**
  * 重命名服务：监听用户的“重命名节点”事件并完成后续联动更新。
@@ -103,12 +102,8 @@ class RenameService private constructor(private val mainWindow: MainWindow) {
 
 		val nodeCache: JNodeCache = mainWindow.getCacheObject().getNodeCache()
 		val updatedTopClasses: MutableSet<JClass> = toUpdate
-			.stream()
-			.map { it.getTopParentClass() }
-			.map { nodeCache.makeFrom(it) }
-			.filter { it != null }
-			.map { checkNotNull(it) }
-			.collect(Collectors.toSet())
+			.mapNotNull { nodeCache.makeFrom(it.getTopParentClass()) }
+			.toMutableSet()
 
 		LOG.debug("Classes to update: {}", updatedTopClasses)
 		if (updatedTopClasses.isEmpty()) {

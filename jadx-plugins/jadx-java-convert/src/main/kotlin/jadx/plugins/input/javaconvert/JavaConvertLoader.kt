@@ -12,6 +12,7 @@ import java.nio.file.Path
 import java.nio.file.attribute.FileTime
 import java.util.jar.JarEntry
 import java.util.jar.JarOutputStream
+import kotlin.streams.toList
 
 /**
  * 把 .jar/.aar/.class 输入转换成 dex 的加载器。
@@ -215,7 +216,7 @@ public class JavaConvertLoader(
 				pathStream
 					.filter { p -> Files.isRegularFile(p, LinkOption.NOFOLLOW_LINKS) }
 					.filter(dexMatcher::matches)
-					.collect(java.util.stream.Collectors.toList())
+					.toList()
 			}
 		}
 

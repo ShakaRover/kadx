@@ -45,7 +45,6 @@ import java.util.Collections
 import java.util.HashMap
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.TimeUnit
-import java.util.stream.Collectors
 
 /**
  * jadx 反编译器主入口（公共 API）。
@@ -207,8 +206,8 @@ class JadxDecompiler : Closeable {
 		}
 		pluginManager.initResolved()
 		if (LOG.isDebugEnabled) {
-			val passes = customPasses.values.stream().flatMap { it.stream() }
-				.map { p -> p.getInfo().getName() }.collect(Collectors.toList())
+			val passes = customPasses.values.flatMap { it }
+				.map { p -> p.getInfo().getName() }
 			LOG.debug("Loaded custom passes: {} {}", passes.size, passes)
 		}
 	}
@@ -317,9 +316,7 @@ class JadxDecompiler : Closeable {
 				break
 			}
 		}
-		val inputFileNames = args.inputFiles.stream()
-			.map { it.absolutePath }
-			.collect(Collectors.toSet())
+		val inputFileNames = args.inputFiles.map { it.absolutePath }.toSet()
 		val codeSources = collectCodeSources()
 
 		val tasks = ArrayList<Runnable>()
@@ -531,25 +528,19 @@ class JadxDecompiler : Closeable {
 		return javaPkg
 	}
 
-	fun searchJavaClassByOrigFullName(fullName: String): JavaClass? = checkNotNull(getRoot()).getClasses().stream()
-		.filter { cls -> cls.classInfo.fullName == fullName }
-		.findFirst()
-		.map { cls -> convertClassNode(cls) }
-		.orElse(null)
+	fun searchJavaClassByOrigFullName(fullName: String): JavaClass? = checkNotNull(getRoot()).getClasses()
+		.firstOrNull { cls -> cls.classInfo.fullName == fullName }
+		?.let { cls -> convertClassNode(cls) }
 
-	fun searchClassNodeByOrigFullName(fullName: String): ClassNode? = checkNotNull(getRoot()).getClasses().stream()
-		.filter { cls -> cls.classInfo.fullName == fullName }
-		.findFirst()
-		.orElse(null)
+	fun searchClassNodeByOrigFullName(fullName: String): ClassNode? = checkNotNull(getRoot()).getClasses()
+		.firstOrNull { cls -> cls.classInfo.fullName == fullName }
 
 	/**
 	 * 如果类带有 DONT_GENERATE 标记，则返回其父类。
 	 */
 	fun searchJavaClassOrItsParentByOrigFullName(fullName: String): JavaClass? {
-		val node = checkNotNull(getRoot()).getClasses().stream()
-			.filter { cls -> cls.classInfo.fullName == fullName }
-			.findFirst()
-			.orElse(null)
+		val node = checkNotNull(getRoot()).getClasses()
+			.firstOrNull { cls -> cls.classInfo.fullName == fullName }
 		if (node != null) {
 			return if (node.contains(AFlag.DONT_GENERATE)) {
 				convertClassNode(node.getTopParentClass())
@@ -560,11 +551,9 @@ class JadxDecompiler : Closeable {
 		return null
 	}
 
-	fun searchJavaClassByAliasFullName(fullName: String): JavaClass? = checkNotNull(getRoot()).getClasses().stream()
-		.filter { cls -> cls.classInfo.aliasFullName == fullName }
-		.findFirst()
-		.map { cls -> convertClassNode(cls) }
-		.orElse(null)
+	fun searchJavaClassByAliasFullName(fullName: String): JavaClass? = checkNotNull(getRoot()).getClasses()
+		.firstOrNull { cls -> cls.classInfo.aliasFullName == fullName }
+		?.let { cls -> convertClassNode(cls) }
 
 	fun getJavaNodeByRef(ann: ICodeNodeRef): JavaNode? = getJavaNodeByCodeAnnotation(null, ann)
 

@@ -34,8 +34,7 @@ import java.util.Collections
 import java.util.Locale
 import java.util.jar.JarEntry
 import java.util.jar.JarOutputStream
-import java.util.stream.Collectors
-import java.util.stream.Stream
+import kotlin.streams.toList
 
 /**
  * 通用文件/IO 工具集。
@@ -97,7 +96,7 @@ object FileUtils {
 	fun listFiles(dir: Path): List<Path> {
 		try {
 			Files.list(dir).use { files ->
-				return files.collect(Collectors.toList())
+				return files.toList()
 			}
 		} catch (e: IOException) {
 			throw JadxRuntimeException("Failed to list files in directory: $dir", e)
@@ -109,7 +108,7 @@ object FileUtils {
 	fun listFiles(dir: Path, filter: (Path) -> Boolean): List<Path> {
 		try {
 			Files.list(dir).use { files ->
-				return files.filter { filter(it) }.collect(Collectors.toList())
+				return files.filter { filter(it) }.toList()
 			}
 		} catch (e: IOException) {
 			throw JadxRuntimeException("Failed to list files in directory: $dir", e)
@@ -547,13 +546,13 @@ object FileUtils {
 	}
 
 	@JvmStatic
-	fun toPaths(files: List<File>): List<Path> = files.stream().map { it.toPath() }.collect(Collectors.toList())
+	fun toPaths(files: List<File>): List<Path> = files.map { it.toPath() }
 
 	@JvmStatic
-	fun toPaths(files: Array<File>): List<Path> = Stream.of(*files).map { it.toPath() }.collect(Collectors.toList())
+	fun toPaths(files: Array<File>): List<Path> = files.map { it.toPath() }
 
 	@JvmStatic
-	fun toPathsWithTrim(files: Array<File>): List<Path> = Stream.of(*files).map { toPathWithTrim(it) }.collect(Collectors.toList())
+	fun toPathsWithTrim(files: Array<File>): List<Path> = files.map { toPathWithTrim(it) }
 
 	@JvmStatic
 	fun toPathWithTrim(file: File): Path = toPathWithTrim(file.getPath())
@@ -562,10 +561,10 @@ object FileUtils {
 	fun toPathWithTrim(file: String): Path = Path.of(file.trim())
 
 	@JvmStatic
-	fun fileNamesToPaths(fileNames: List<String>): List<Path> = fileNames.stream().map { Paths.get(it) }.collect(Collectors.toList())
+	fun fileNamesToPaths(fileNames: List<String>): List<Path> = fileNames.map { Paths.get(it) }
 
 	@JvmStatic
-	fun toFiles(paths: List<Path>): List<File> = paths.stream().map { it.toFile() }.collect(Collectors.toList())
+	fun toFiles(paths: List<Path>): List<File> = paths.map { it.toFile() }
 
 	@JvmStatic
 	fun md5Sum(str: String): String = md5Sum(str.toByteArray(StandardCharsets.UTF_8))

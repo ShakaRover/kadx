@@ -39,7 +39,6 @@ import jadx.plugins.tools.JadxExternalPluginsLoader
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.Collections
-import java.util.stream.Collectors
 
 /**
  * 核心 [JadxDecompiler] 的 GUI 包装器。
@@ -190,9 +189,7 @@ class JadxWrapper(private val mainWindow: MainWindow) {
 		if (excludedPackages.isEmpty()) {
 			return classList
 		}
-		return classList.stream()
-			.filter { cls -> isClassIncluded(excludedPackages, cls) }
-			.collect(Collectors.toList())
+		return classList.filter { cls -> isClassIncluded(excludedPackages, cls) }
 	}
 
 	/** 获取未被排除包设置过滤掉的类（含内部类）。 */
@@ -202,9 +199,7 @@ class JadxWrapper(private val mainWindow: MainWindow) {
 		if (excludedPackages.isEmpty()) {
 			return classes
 		}
-		return classes.stream()
-			.filter { cls -> isClassIncluded(excludedPackages, cls) }
-			.collect(Collectors.toList())
+		return classes.filter { cls -> isClassIncluded(excludedPackages, cls) }
 	}
 
 	/** 类是否未被任何排除项命中（完全匹配或属于其子包）。 */
@@ -298,10 +293,8 @@ class JadxWrapper(private val mainWindow: MainWindow) {
 	 *
 	 * @param fullName 外层类的全名，不支持内部类。
 	 */
-	fun searchJavaClassByFullAlias(fullName: String): JavaClass? = getDecompiler().getClasses().stream()
-		.filter { cls -> cls.getFullName() == fullName }
-		.findFirst()
-		.orElse(null)
+	fun searchJavaClassByFullAlias(fullName: String): JavaClass? = getDecompiler().getClasses()
+		.firstOrNull { cls -> cls.getFullName() == fullName }
 
 	fun searchJavaClassByOrigClassName(fullName: String): JavaClass? = getDecompiler().searchJavaClassByOrigFullName(fullName)
 
@@ -310,10 +303,8 @@ class JadxWrapper(private val mainWindow: MainWindow) {
 	 *
 	 * @param rawName 外层类的原始名，不支持内部类。
 	 */
-	fun searchJavaClassByRawName(rawName: String): JavaClass? = getDecompiler().getClasses().stream()
-		.filter { cls -> cls.getRawName() == rawName }
-		.findFirst()
-		.orElse(null)
+	fun searchJavaClassByRawName(rawName: String): JavaClass? = getDecompiler().getClasses()
+		.firstOrNull { cls -> cls.getRawName() == rawName }
 
 	companion object {
 		private val LOG: Logger = LoggerFactory.getLogger(JadxWrapper::class.java)

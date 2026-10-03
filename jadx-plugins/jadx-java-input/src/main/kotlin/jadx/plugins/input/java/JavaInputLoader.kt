@@ -31,12 +31,11 @@ class JavaInputLoader(
 
 	private var classUniqId = 1
 
-	fun collectFiles(inputFiles: List<Path>): List<JavaClassReader> = inputFiles.stream()
+	fun collectFiles(inputFiles: List<Path>): List<JavaClassReader> = inputFiles
 		.map { it.toFile() }
 		.map { loadFromFile(it) }
 		.filter { !it.isEmpty() }
-		.flatMap { it.stream() }
-		.collect(java.util.stream.Collectors.toList())
+		.flatten()
 
 	fun loadInputStream(input: InputStream, name: String): List<JavaClassReader> = loadReader(input, name, null, null)
 

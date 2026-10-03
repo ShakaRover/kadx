@@ -16,7 +16,6 @@ import jadx.core.dex.nodes.InsnNode
 import jadx.core.dex.nodes.MethodNode
 import jadx.core.utils.exceptions.JadxRuntimeException
 import java.util.ArrayList
-import java.util.stream.Collectors
 
 /**
  * 指令删除辅助类，支持在遍历指令列表的过程中安全删除。
@@ -157,9 +156,8 @@ class InsnRemover {
 			}
 			throw JadxRuntimeException(
 				"Can't remove SSA var: $ssaVar, still in use, count: $useCount" +
-					", list:\n  " + ssaVar.getUseList().stream()
-						.map { arg -> "$arg from " + arg.getParentInsn() }
-						.collect(Collectors.joining("\n  ")),
+					", list:\n  " + ssaVar.getUseList()
+						.joinToString("\n  ") { arg -> "$arg from " + arg.getParentInsn() },
 			)
 		}
 

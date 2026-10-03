@@ -356,11 +356,10 @@ class TryCatchBlockAttr(
 		for ((scopeEndBlock, sourceHandlers) in fallthroughGroups) {
 			for (scopeEndPredecessor in scopeEndBlock.getPredecessors()) {
 				// 筛选出“非 finally 处理器出口”且目标可到达该前驱的边
-				val matchedHandlerPaths = sourceHandlers.stream()
+				val matchedHandlerPaths = sourceHandlers
 					.filter { handler -> !(handler.isHandlerExit() && handler.getExceptionHandler() === finallyHandler) }
 					.map { handler -> handler.target }
 					.filter { scopeStart -> BlockUtils.isPathExists(scopeStart, scopeEndPredecessor) }
-					.toArray()
 				if (matchedHandlerPaths.isNotEmpty()) {
 					searchBlocks.add(scopeEndPredecessor)
 				}

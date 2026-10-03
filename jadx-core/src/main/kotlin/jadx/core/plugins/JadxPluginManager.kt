@@ -131,10 +131,8 @@ class JadxPluginManager(private val decompiler: JadxDecompiler) {
 			} else {
 				val suggestion = provideSuggestions[provide]
 				if (suggestion != null) {
-					list.stream()
-						.filter { p -> p.getPluginId() == suggestion }
-						.findFirst()
-						.ifPresent { resolved.add(it) }
+					list.firstOrNull { p -> p.getPluginId() == suggestion }
+						?.let { resolved.add(it) }
 				} else {
 					val selected = list[0]
 					resolved.add(selected)

@@ -242,9 +242,7 @@ class AndroidManifestParser {
 	companion object {
 		/** 在资源列表中查找 AndroidManifest.xml；找不到返回 null。 */
 		@JvmStatic
-		fun getAndroidManifest(resources: List<ResourceFile>): ResourceFile? = resources.stream()
-			.filter { resourceFile -> resourceFile.getType() === ResourceType.MANIFEST }
-			.findFirst()
-			.orElse(null)
+		fun getAndroidManifest(resources: List<ResourceFile>): ResourceFile? = resources
+			.firstOrNull { resourceFile -> resourceFile.getType() === ResourceType.MANIFEST }
 	}
 }

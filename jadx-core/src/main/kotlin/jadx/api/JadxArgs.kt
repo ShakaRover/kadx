@@ -38,7 +38,6 @@ import java.util.HashMap
 import java.util.HashSet
 import java.util.function.Function
 import java.util.function.Predicate
-import java.util.stream.Collectors
 
 /**
  * jadx 的全部配置项（公共可变配置对象）。
@@ -390,9 +389,7 @@ class JadxArgs : Closeable {
 				return ""
 			}
 			return decompiler.getPluginManager().getResolvedPluginContexts()
-				.stream()
-				.map { obj: PluginContext -> obj.getInputsHash() }
-				.collect(Collectors.joining(":"))
+				.joinToString(":") { obj: PluginContext -> obj.getInputsHash() }
 		}
 	}
 }

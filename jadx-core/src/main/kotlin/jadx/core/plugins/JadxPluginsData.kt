@@ -19,22 +19,16 @@ class JadxPluginsData(
 ) : IJadxPlugins {
 
 	override fun getById(pluginId: String): JadxPluginRuntimeData = pluginManager.getResolvedPluginContexts()
-		.stream()
-		.filter { p -> p.getPluginId() == pluginId }
-		.findFirst()
-		.orElseThrow { JadxRuntimeException("Plugin with id '$pluginId' not found") }
+		.firstOrNull { p -> p.getPluginId() == pluginId }
+		?: throw JadxRuntimeException("Plugin with id '$pluginId' not found")
 
 	override fun getProviding(provideId: String): JadxPluginRuntimeData = pluginManager.getResolvedPluginContexts()
-		.stream()
-		.filter { p -> p.getPluginInfo().getProvides() == provideId }
-		.findFirst()
-		.orElseThrow { JadxRuntimeException("Plugin providing '$provideId' not found") }
+		.firstOrNull { p -> p.getPluginInfo().getProvides() == provideId }
+		?: throw JadxRuntimeException("Plugin providing '$provideId' not found")
 
 	@Suppress("UNCHECKED_CAST")
 	override fun <P : JadxPlugin> getInstance(pluginCls: Class<P>): P = pluginManager.getResolvedPluginContexts()
-		.stream()
-		.filter { p -> p.getPluginInstance().javaClass == pluginCls }
-		.map { p -> p.getPluginInstance() as P }
-		.findFirst()
-		.orElseThrow { JadxRuntimeException("Plugin class '$pluginCls' not found") }
+		.firstOrNull { p -> p.getPluginInstance().javaClass == pluginCls }
+		?.let { p -> p.getPluginInstance() as P }
+		?: throw JadxRuntimeException("Plugin class '$pluginCls' not found")
 }

@@ -24,7 +24,6 @@ import java.io.IOException
 import java.util.Comparator
 import java.util.HashMap
 import java.util.HashSet
-import java.util.stream.Collectors
 import javax.swing.Icon
 import javax.swing.ImageIcon
 
@@ -68,11 +67,11 @@ class SummaryNode(mainWindow: MainWindow) : JNode() {
 		builder.append("</ul>")
 
 		val classes = wrapper.getRootNode().getClasses(true)
-		val codeSources = classes.stream()
+		val codeSources = classes
 			.map { it.getInputFileName() ?: "" }
 			.distinct()
 			.sorted()
-			.collect(Collectors.toList())
+			.toMutableList()
 		codeSources.remove("synthetic")
 		val codeSourcesCount = codeSources.size
 		builder.append("<h3>Code sources</h3>")
@@ -89,9 +88,9 @@ class SummaryNode(mainWindow: MainWindow) : JNode() {
 
 		addNativeLibsInfo(builder)
 
-		val methodsCount = classes.stream().mapToInt { cls -> cls.methods.size }.sum()
-		val fieldsCount = classes.stream().mapToInt { cls -> cls.fields.size }.sum()
-		val insnCount = classes.stream().flatMap { cls -> cls.methods.stream() }.mapToInt { it.getInsnsCount() }.sum()
+		val methodsCount = classes.sumOf { cls -> cls.methods.size }
+		val fieldsCount = classes.sumOf { cls -> cls.fields.size }
+		val insnCount = classes.sumOf { cls -> cls.methods.sumOf { it.getInsnsCount() } }
 		builder.append("<h3>Counts</h3>")
 		builder.append("<ul>")
 		builder.append("<li>Classes: " + classes.size + "</li>")
@@ -102,11 +101,10 @@ class SummaryNode(mainWindow: MainWindow) : JNode() {
 	}
 
 	private fun addNativeLibsInfo(builder: StringEscapeUtils.Builder) {
-		val nativeLibs = wrapper.getResources().stream()
+		val nativeLibs = wrapper.getResources()
 			.map { it.getOriginalName() }
 			.filter { f -> f.endsWith(".so") }
 			.sorted()
-			.collect(Collectors.toList())
 		builder.append("<h3>Native libs</h3>")
 		builder.append("<ul>")
 		if (nativeLibs.isEmpty()) {
@@ -122,17 +120,17 @@ class SummaryNode(mainWindow: MainWindow) : JNode() {
 					libsByArch.computeIfAbsent(arch) { HashSet() }.add(name)
 				}
 			}
-			val arches = libsByArch.keys.stream()
+			val arches = libsByArch.keys
 				.sorted()
-				.collect(Collectors.joining(", "))
+				.joinToString(", ")
 			builder.append("<li>Arch list: ")
 			builder.escape(arches)
 			builder.append("</li>")
 
-			val perArchCount = libsByArch.entries.stream()
+			val perArchCount = libsByArch.entries
 				.map { entry -> entry.key + ":" + entry.value.size }
 				.sorted()
-				.collect(Collectors.joining(", "))
+				.joinToString(", ")
 			builder.append("<li>Per arch count: ")
 			builder.escape(perArchCount)
 			builder.append("</li>")
@@ -152,10 +150,10 @@ class SummaryNode(mainWindow: MainWindow) : JNode() {
 		builder.append("<h2>Decompilation</h2>")
 		val classes = wrapper.getRootNode().getClassesWithoutInner()
 		val classesCount = classes.size
-		val notLoadedClasses = classes.stream().filter { c -> c.state === ProcessState.NOT_LOADED }.count()
-		val loadedClasses = classes.stream().filter { c -> c.state === ProcessState.LOADED }.count()
-		val processedClasses = classes.stream().filter { c -> c.state === ProcessState.PROCESS_COMPLETE }.count()
-		val generatedClasses = classes.stream().filter { c -> c.state === ProcessState.GENERATED_AND_UNLOADED }.count()
+		val notLoadedClasses = classes.count { c -> c.state === ProcessState.NOT_LOADED }
+		val loadedClasses = classes.count { c -> c.state === ProcessState.LOADED }
+		val processedClasses = classes.count { c -> c.state === ProcessState.PROCESS_COMPLETE }
+		val generatedClasses = classes.count { c -> c.state === ProcessState.GENERATED_AND_UNLOADED }
 		builder.append("<ul>")
 		builder.append("<li>Top level classes: " + classesCount + "</li>")
 		builder.append("<li>Not loaded: " + valueAndPercent(notLoadedClasses, classesCount) + "</li>")
@@ -168,8 +166,8 @@ class SummaryNode(mainWindow: MainWindow) : JNode() {
 		val problemNodes = HashSet<IAttributeNode>()
 		problemNodes.addAll(counter.getErrorNodes())
 		problemNodes.addAll(counter.getWarnNodes())
-		val problemMethods = problemNodes.stream().filter { it is MethodNode }.count()
-		val methodsCount = classes.stream().mapToInt { cls -> cls.methods.size }.sum()
+		val problemMethods = problemNodes.count { it is MethodNode }
+		val methodsCount = classes.sumOf { cls -> cls.methods.size }
 		val methodSuccessRate = (methodsCount - problemMethods) * 100.0 / methodsCount.toDouble()
 
 		builder.append("<h3>Issues</h3>")
@@ -184,7 +182,7 @@ class SummaryNode(mainWindow: MainWindow) : JNode() {
 		builder.append("</ul>")
 	}
 
-	private fun valueAndPercent(value: Long, total: Int): String = String.format("%d (%.2f%%)", value, value * 100 / total.toDouble())
+	private fun valueAndPercent(value: Int, total: Int): String = String.format("%d (%.2f%%)", value, value * 100 / total.toDouble())
 
 	override fun hasContent(): Boolean = true
 

@@ -151,9 +151,8 @@ class ADBDialog(private val mainWindow: MainWindow) :
 		procTree.addTreeSelectionListener {
 			val selectedNode = procTree.getLastSelectedPathComponent()
 			if (selectedNode is DeviceTreeNode) {
-				lastSelectedDeviceNode = deviceNodes.stream()
-					.filter { item -> item.tNode === selectedNode }
-					.findFirst().orElse(null)
+				lastSelectedDeviceNode = deviceNodes
+					.firstOrNull { item -> item.tNode === selectedNode }
 			}
 		}
 

@@ -27,7 +27,7 @@ class MergedSearchProvider : ISearchProvider {
 	/** 开始搜索前重置游标并汇总总量。 */
 	fun prepare() {
 		current = if (list.isEmpty()) -1 else 0
-		total = list.stream().mapToInt { it.total() }.sum()
+		total = list.sumOf { it.total() }
 	}
 
 	override fun next(cancelable: Cancelable): JNode? {
@@ -48,7 +48,7 @@ class MergedSearchProvider : ISearchProvider {
 		}
 	}
 
-	override fun progress(): Int = list.stream().mapToInt { it.progress() }.sum()
+	override fun progress(): Int = list.sumOf { it.progress() }
 
 	override fun total(): Int = total
 }

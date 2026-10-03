@@ -123,10 +123,8 @@ class CacheManager(private val settings: JadxSettings) {
 		if (files.isEmpty()) {
 			throw JadxRuntimeException("Failed to build local cache dir")
 		}
-		val path = files.stream()
-			.filter { p -> !p.fileName.toString().endsWith(".jadx.kts") }
-			.findFirst()
-			.orElseGet { files[0] }
+		val path = files.firstOrNull { p -> !p.fileName.toString().endsWith(".jadx.kts") }
+			?: files[0]
 		val name = CommonFileUtils.removeFileExtension(path.fileName.toString())
 		return path.resolveSibling("$name.jadx.cache")
 	}

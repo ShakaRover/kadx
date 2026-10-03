@@ -16,7 +16,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.Collections
 import java.util.Comparator
-import java.util.stream.Collectors
 import javax.swing.JTree
 import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreePath
@@ -133,9 +132,8 @@ class TreeExpansionService(private val mainWindow: MainWindow, private val tree:
 			val node = current.searchNode { n -> n.getID() == nodeStr }
 			if (node == null) {
 				if (DEBUG) {
-					val children = current.childrenList().stream()
+					val children = current.childrenList()
 						.map { n -> (n as JNode).getID() }
-						.collect(Collectors.toList())
 					LOG.warn(
 						"Failed to restore path: {}, node '{}' not found in '{}' children: {}",
 						pathArr,

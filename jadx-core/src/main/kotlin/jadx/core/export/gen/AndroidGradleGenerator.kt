@@ -81,20 +81,11 @@ class AndroidGradleGenerator(
 			}
 			var strings: ResContainer? = null
 			if (exportApp) {
-				val arscFile = resources.stream()
-					.filter { resourceFile -> resourceFile.getType() === ResourceType.ARSC }
-					.findFirst().orElse(null)
+				val arscFile = resources.firstOrNull { resourceFile -> resourceFile.getType() === ResourceType.ARSC }
 				if (arscFile != null) {
 					val resContainers = arscFile.loadContent().getSubFiles()
-					strings = resContainers
-						.stream()
-						.filter { resContainer -> resContainer.getName().contains("values/strings.xml") }
-						.findFirst()
-						.orElseGet {
-							resContainers.stream()
-								.filter { resContainer -> resContainer.getName().contains("strings.xml") }
-								.findFirst().orElse(null)
-						}
+					strings = resContainers.firstOrNull { resContainer -> resContainer.getName().contains("values/strings.xml") }
+						?: resContainers.firstOrNull { resContainer -> resContainer.getName().contains("strings.xml") }
 				}
 			}
 

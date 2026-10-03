@@ -12,7 +12,6 @@ import java.util.EnumSet
 import java.util.Locale
 import java.util.function.Consumer
 import java.util.function.Function
-import java.util.stream.Collectors
 
 /**
  * [JadxPluginOptions] 的推荐基类。
@@ -114,7 +113,7 @@ abstract class BasePluginOptionsBuilder : JadxPluginOptions {
 
 		override fun description(): String = checkNotNull(desc)
 
-		override fun values(): List<String> = valuesList.stream().map(checkNotNull(formatter)).collect(Collectors.toList())
+		override fun values(): List<String> = valuesList.map { checkNotNull(formatter).apply(it) }
 
 		@Nullable
 		@Suppress("UNCHECKED_CAST")

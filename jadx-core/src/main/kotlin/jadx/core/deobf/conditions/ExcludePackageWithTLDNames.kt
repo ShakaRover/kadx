@@ -5,7 +5,6 @@ import jadx.core.dex.nodes.PackageNode
 import jadx.core.utils.exceptions.JadxRuntimeException
 import java.io.BufferedReader
 import java.io.InputStreamReader
-import java.util.stream.Collectors
 
 /**
  * 排除“顶级域名（TLD）”同名包的改写条件。
@@ -27,9 +26,9 @@ class ExcludePackageWithTLDNames : AbstractDeobfCondition() {
 			try {
 				val stream = ExcludePackageWithTLDNames::class.java.getResourceAsStream("tlds.txt")
 				BufferedReader(InputStreamReader(checkNotNull(stream))).use { reader ->
-					return reader.lines()
+					return reader.readLines()
 						.filter { line -> !line.startsWith("#") && line.isNotEmpty() }
-						.collect(Collectors.toSet())
+						.toSet()
 				}
 			} catch (e: Exception) {
 				throw JadxRuntimeException("Failed to load top level domain list file: tlds.txt", e)

@@ -8,7 +8,6 @@ import java.util.ArrayList
 import java.util.Comparator
 import java.util.HashMap
 import java.util.IdentityHashMap
-import java.util.stream.Collectors
 
 /**
  * 把插件自定义 Pass 合并进内置 visitor 列表，并按声明的 runBefore/runAfter 依赖排序。
@@ -33,7 +32,7 @@ class PassMerge(private val visitors: MutableList<IDexTreeVisitor>) {
 		visitors.forEach { p -> namesMap[p] = p.getName() }
 		mergePasses.forEach { p -> namesMap[p.getVisitor()] = p.getName() }
 
-		mergePassesNames = mergePasses.stream().map { it.getName() }.collect(Collectors.toSet())
+		mergePassesNames = mergePasses.map { it.getName() }.toSet()
 
 		for (mergePass in mergePasses) {
 			val pos = searchInsertPos(mergePass)
@@ -117,7 +116,7 @@ class PassMerge(private val visitors: MutableList<IDexTreeVisitor>) {
 	 * 把依赖关系做成双向的：A 声明 runAfter B，则在 B 的 before 列表里加上 A。
 	 */
 	private fun linkDeps(mergePasses: List<MergePass>) {
-		val map = mergePasses.stream().collect(Collectors.toMap({ p: MergePass -> p.getName() }, { p: MergePass -> p }))
+		val map = mergePasses.associateBy { p -> p.getName() }
 		for (pass in mergePasses) {
 			for (after in pass.getInfo().runAfter()) {
 				val beforePass = map[after]
@@ -162,7 +161,7 @@ class PassMerge(private val visitors: MutableList<IDexTreeVisitor>) {
 	 * 有 visitor 依赖的 pass 排前面。
 	 */
 	private class ExtDepsComparator(visitors: List<IDexTreeVisitor>) : Comparator<MergePass> {
-		private val names: Set<String> = visitors.stream().map { it.getName() }.collect(Collectors.toSet())
+		private val names: Set<String> = visitors.map { it.getName() }.toSet()
 
 		override fun compare(first: MergePass, second: MergePass): Int {
 			val isFirst = containsVisitor(first.before()) || containsVisitor(first.after())

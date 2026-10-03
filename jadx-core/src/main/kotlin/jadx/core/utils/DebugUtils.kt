@@ -30,11 +30,8 @@ import jadx.core.utils.exceptions.JadxException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
-import java.util.Comparator
 import java.util.LinkedHashSet
 import java.util.concurrent.ConcurrentHashMap
-import java.util.stream.Collectors
-import java.util.stream.Stream
 
 /**
  * 仅用于调试的工具集（CheckStyle 会拒绝在正式代码中调用）。
@@ -191,10 +188,9 @@ object DebugUtils {
 				ig.makeInsn(insn, code)
 				val codeStr = code.getCodeStr()
 
-				val insnStrings = codeStr.split(Regex("\\R")).stream()
+				val insnStrings = codeStr.split(Regex("\\R"))
 					.filter { StringUtils.notBlank(it) }
 					.map { s -> "|> $s" }
-					.collect(Collectors.toList())
 				val it = insnStrings.iterator()
 				while (true) {
 					val insnStr = it.next()
@@ -213,9 +209,8 @@ object DebugUtils {
 
 	private fun printWithAttributes(cw: ICodeWriter, indent: String, codeStr: String, attrNode: IAttributeNode) {
 		val str = if (attrNode.isAttrStorageEmpty()) codeStr else codeStr + ' ' + attrNode.getAttributesString()
-		val attrStrings = str.split(Regex("\\R")).stream()
+		val attrStrings = str.split(Regex("\\R"))
 			.filter { StringUtils.notBlank(it) }
-			.collect(Collectors.toList())
 		val it = attrStrings.iterator()
 		if (!it.hasNext()) {
 			return
@@ -244,15 +239,15 @@ object DebugUtils {
 		LOG.debug("Methods override top 10:")
 		val distinctByOverrideCount = distinctByKey<MethodOverrideAttr> { attr -> attr.relatedMthNodes.size }
 		val distinctByRelatedMthNodes = distinctByKey<MethodOverrideAttr> { attr -> attr.relatedMthNodes }
-		root.getClasses().stream()
-			.flatMap { c -> c.methods.stream() }
+		root.getClasses().asSequence()
+			.flatMap { c -> c.methods.asSequence() }
 			.filter { m -> m.contains(AType.METHOD_OVERRIDE) }
 			.map { m -> checkNotNull(m.get(AType.METHOD_OVERRIDE)) }
 			.filter { o -> o.overrideList.isNotEmpty() }
 			.filter { o -> distinctByOverrideCount(o) }
 			.filter { o -> distinctByRelatedMthNodes(o) }
-			.sorted(Comparator.comparingInt { o -> -o.relatedMthNodes.size })
-			.limit(10)
+			.sortedBy { o -> -o.relatedMthNodes.size }
+			.take(10)
 			.forEach { o -> LOG.debug("  {} : {}", o.relatedMthNodes.size, Utils.last(o.overrideList)) }
 	}
 

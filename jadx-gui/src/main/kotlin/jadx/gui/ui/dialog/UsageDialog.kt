@@ -77,8 +77,7 @@ class UsageDialog private constructor(
 	private fun collectUsageData() {
 		usageList = ArrayList()
 		buildUsageQuery().forEach { (searchNode, useNodes) ->
-			useNodes.stream()
-				.map { it.getTopParentClass() }
+			useNodes.map { it.getTopParentClass() }
 				.distinct()
 				.forEach { u -> processUsage(searchNode, checkNotNull(u)) }
 		}

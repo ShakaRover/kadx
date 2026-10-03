@@ -26,7 +26,6 @@ import jadx.core.dex.visitors.regions.DepthRegionTraversal
 import jadx.core.utils.exceptions.JadxRuntimeException
 import java.util.ArrayList
 import java.util.Collections
-import java.util.Objects
 
 /**
  * 区域（Region）遍历与判断工具集。
@@ -197,8 +196,8 @@ object RegionUtils {
 		}
 		if (container is IBranchRegion) {
 			val branches = container.getBranches()
-			val count = branches.stream().filter { Objects.nonNull(it) }.count()
-			if (count == 1L) {
+			val count = branches.count { it != null }
+			if (count == 1) {
 				// 只有一个非空分支
 				for (branch in branches) {
 					if (branch != null) {

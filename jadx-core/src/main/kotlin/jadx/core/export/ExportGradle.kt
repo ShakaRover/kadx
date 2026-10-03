@@ -89,10 +89,10 @@ class ExportGradle(
 		fun detectExportType(root: RootNode, resources: List<ResourceFile>): ExportGradleType {
 			val androidManifest = AndroidManifestParser.getAndroidManifest(resources)
 			if (androidManifest != null) {
-				if (resources.stream().anyMatch { r -> r.getOriginalName() == "classes.jar" }) {
+				if (resources.any { r -> r.getOriginalName() == "classes.jar" }) {
 					return ExportGradleType.ANDROID_LIBRARY
 				}
-				if (resources.stream().anyMatch { r -> r.getType() === ResourceType.ARSC }) {
+				if (resources.any { r -> r.getType() === ResourceType.ARSC }) {
 					return ExportGradleType.ANDROID_APP
 				}
 			}

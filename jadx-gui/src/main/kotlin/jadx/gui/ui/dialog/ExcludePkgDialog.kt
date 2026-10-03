@@ -14,7 +14,6 @@ import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.util.HashMap
 import java.util.HashSet
-import java.util.stream.Collectors
 import javax.swing.BorderFactory
 import javax.swing.Box
 import javax.swing.BoxLayout
@@ -117,9 +116,7 @@ class ExcludePkgDialog(private val mainWindow: MainWindow) : JDialog(mainWindow)
 	}
 	private fun initPackageList() {
 		val pkgs = mainWindow.getWrapper().getPackages()
-			.stream()
 			.map { obj -> obj.getFullName() }
-			.collect(Collectors.toList())
 		getPackageTree(pkgs).forEach { pkg -> treeRoot.add(pkg) }
 		initCheckbox()
 		tree.expandPath(TreePath(treeRoot.getPath()))

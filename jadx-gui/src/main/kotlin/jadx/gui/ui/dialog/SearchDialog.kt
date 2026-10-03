@@ -67,7 +67,6 @@ import java.util.EnumSet
 import java.util.HashSet
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import java.util.stream.Collectors
 import javax.swing.BorderFactory
 import javax.swing.Box
 import javax.swing.BoxLayout
@@ -603,9 +602,7 @@ class SearchDialog private constructor(
 		}
 		val searchPkg: JavaPackage? = searchSettings.getSearchPackage()
 		if (searchPkg != null) {
-			searchClasses = searchClasses.stream()
-				.filter { cls -> searchSettings.isInSearchPkg(cls) }
-				.collect(Collectors.toList())
+			searchClasses = searchClasses.filter { cls -> searchSettings.isInSearchPkg(cls) }
 		}
 		if (text.isEmpty() && options.contains(SearchOptions.COMMENT)) {
 			// 允许空文本用于注释搜索
