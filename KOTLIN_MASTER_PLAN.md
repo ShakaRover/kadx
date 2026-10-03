@@ -332,6 +332,32 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 - 批次粒度 ~25 个 driver 文件；`find ... -name '*.java' | grep -v Fixture` 才是真实待转量。
 - harness（`IntegrationTest.java`）保持 Java 基础设施，ECJ Java 路径为主。
 
+## 13. 零 Java 专项（Z）：把 fixture 也移入 Kotlin
+
+**目标：** 仓库 `.java` = 0。
+**机制（已由 Z1 验证，commit bce5fb0e）：**
+- 每个 fixture 变成 `TestFooFixture.kt`：
+  ```kotlin
+  object TestFooFixture {
+      class TestCls                       // 仅声明 driver 引用到的嵌套类型 stub
+      const val JAVA_SOURCE = """<原 Java 源码>"""
+  }
+  ```
+  顶层输入类用 `class a { companion object { const val JAVA_SOURCE = """...""" } }`。
+- Kotlin raw string 里的 `$`（后接标识符/`{`）要写成 `${'$'}`；`\` 字面量。
+- 修改 `IntegrationTest`（仍为 Java）：`compileClass`/`getClassNodes` 先调 `findEmbeddedJavaSource(cls)`
+  （沿 `getEnclosingClass()` 链找静态 `String JAVA_SOURCE` 字段）→ `compileJavaSource` 写临时 `<X>.java` →
+  复用 `compileSourceFiles`（ECJ 路径/classpath 不变）。**driver 无需修改。**
+- 例外：少数 driver 引用额外嵌套类型（如 `TestImportGenericMapFixture.SuperClass.ToImport`）需加 stub；
+  仅出现在断言字符串里的类名无需 stub。
+
+**批次（Z1 已完成 10）：** 剩余 460 fixture + 2 基础设施（`IntegrationTest.java`、`JadxAssertions.java`）。
+- Z2–Z3：`others`(67) · Z4–Z5：`loops`(47)+部分 · Z6：`trycatch`(44) · Z7：`conditions`(36) · Z8：`types`(35)
+- Z9：`inner`(33) · Z10：`switches`(31) · Z11：`invoke`(21)+`enums`(19) · Z12：`generics`(16)+`arrays`(14)
+- Z13：`inline`(13)+`arith`(12)+`java8`(11) · Z14：`variables`(10)+`deobf`(7)+`annotations`(7)+`android`(7)
+- Z15：`rename`(6)+`names`(6)+`usethis`(4)+`synchronize`(4)+`debuginfo`(4)+`jbc`(2)+`code`(2)+`fallback`(1)+`deobf.a`(1)
+- **Z16（收尾）：** `IntegrationTest.java` + `JadxAssertions.java` → Kotlin（后者需 companion `@JvmStatic` 转发用到的 AssertJ 重载），然后 `find . -name '*.java'` = 0。
+
 ## 12. 最终状态（项目 Kotlin 化完成）
 
 - **全部模块完成：** jadx-commons、jadx-plugins（含 input-api / dex / java / smali / apks / apkm / java-convert / raung / rename-mappings / kotlin-metadata）、jadx-plugins-tools、jadx-core、jadx-cli、jadx-gui。
