@@ -398,7 +398,7 @@ class CodeArea internal constructor(panel: ContentPanel, jnode: JNode) :
 	fun backgroundRefreshClass() {
 		UiUtils.uiThreadGuard()
 		getMainWindow().getBackgroundExecutor().execute("Refreshing...") {
-			getNode().getRootClass().reload(getMainWindow().getCacheObject())
+			checkNotNull(getNode().getRootClass()).reload(getMainWindow().getCacheObject())
 			UiUtils.uiRunAndWait {
 				refreshClass(true)
 			}

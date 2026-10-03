@@ -25,7 +25,7 @@ class JCodeMode(
 	@Volatile
 	private var codeInfo: ICodeInfo? = null
 
-	override fun getJParent(): JClass = jCls.getJParent()
+	override fun getJParent(): JClass? = jCls.getJParent()
 
 	override fun getIcon(): Icon = jCls.getIcon()
 

@@ -42,7 +42,7 @@ class XposedAction(codeArea: CodeArea) : JNodeAction(ActionModel.XPOSED_COPY, co
 	}
 
 	private fun generateMethodSnippet(jMethod: JMethod): String {
-		val javaMethod = jMethod.javaMethod
+		val javaMethod = jMethod.getJavaMethod()
 		val methodNode = javaMethod.getMethodNode()
 		val methodInfo = methodNode.getMethodInfo()
 
@@ -113,7 +113,7 @@ class XposedAction(codeArea: CodeArea) : JNodeAction(ActionModel.XPOSED_COPY, co
 	}
 
 	private fun generateClassSnippet(jClass: JClass): String {
-		val javaClass = jClass.cls
+		val javaClass = jClass.getCls()
 		val rawClassName = javaClass.getRawName()
 		val className = javaClass.getName()
 
@@ -126,7 +126,7 @@ class XposedAction(codeArea: CodeArea) : JNodeAction(ActionModel.XPOSED_COPY, co
 	}
 
 	private fun generateFieldSnippet(jField: JField): String {
-		val javaField = jField.javaField
+		val javaField = jField.getJavaField()
 		val static = if (javaField.getAccessFlags().isStatic()) "Static" else ""
 		val type = PRIMITIVE_TYPE_MAPPING.getOrDefault(javaField.getFieldNode().type.toString(), "Object")
 		val xposedMethod = "XposedHelpers.get${static}${type}Field"

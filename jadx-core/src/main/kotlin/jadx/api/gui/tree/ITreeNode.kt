@@ -18,11 +18,16 @@ interface ITreeNode : TreeNode {
 	/** 与语言环境无关的节点标识。 */
 	fun getID(): String
 
-	/** 节点标题。 */
-	fun getName(): String
+	/**
+	 * 节点标题；无标题时返回 `null`（例如未关联 Java 节点的占位节点）。
+	 *
+	 * 说明：jadx-gui 的 `JNode` 在无 [jadx.api.JavaNode] 时返回 null，
+	 * 因此这里如实声明为可空，避免 Kotlin 侧覆写类型不匹配。
+	 */
+	fun getName(): String?
 
-	/** 节点图标。 */
-	fun getIcon(): Icon
+	/** 节点图标；无图标时返回 `null`（例如文本占位节点）。 */
+	fun getIcon(): Icon?
 
 	/** 关联的代码节点引用；无关联时返回 `null`。 */
 	fun getCodeNodeRef(): ICodeNodeRef?

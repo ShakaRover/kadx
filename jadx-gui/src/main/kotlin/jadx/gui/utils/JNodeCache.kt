@@ -35,7 +35,7 @@ class JNodeCache(private val wrapper: JadxWrapper) {
 		}
 		// 这里不能用 computeIfAbsent：convert() 可能递归访问缓存，会抛 'Recursive update' 异常
 		var jNode = cache[nodeRef]
-		if (jNode == null || jNode.getJavaNode().getCodeNodeRef() !== nodeRef) {
+		if (jNode == null || jNode.getJavaNode()?.getCodeNodeRef() !== nodeRef) {
 			val newNode = checkNotNull(convert(nodeRef))
 			cache[nodeRef] = newNode
 			jNode = newNode
@@ -125,10 +125,10 @@ class JNodeCache(private val wrapper: JadxWrapper) {
 			return convert(node)
 		}
 		if (node is JavaMethod) {
-			return JMethod(node, makeFrom(node.getDeclaringClass()))
+			return JMethod(node, checkNotNull(makeFrom(node.getDeclaringClass())))
 		}
 		if (node is JavaField) {
-			return JField(node, makeFrom(node.getDeclaringClass()))
+			return JField(node, checkNotNull(makeFrom(node.getDeclaringClass())))
 		}
 		if (node is JavaVariable) {
 			val jMth = makeFrom(node.getMth()) as JMethod

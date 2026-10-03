@@ -54,7 +54,7 @@ class BinaryContentPanel(panel: TabbedPane, jnode: JNode) :
 		val binaryNode = getNode()
 		if (binaryNode is JResource) {
 			try {
-				val zipEntry = binaryNode.getResFile().getZipEntry()
+				val zipEntry = binaryNode.getResFile()?.getZipEntry()
 				if (zipEntry != null) {
 					// 需要一个不会被关闭的 InputStream，因此不能使用 ResourcesLoader.decodeStream
 					return LazyLoadingBinaryData(zipEntry.getInputStream(), zipEntry.getUncompressedSize())
