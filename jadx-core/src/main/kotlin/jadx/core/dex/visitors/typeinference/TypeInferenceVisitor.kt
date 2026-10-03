@@ -168,7 +168,7 @@ class TypeInferenceVisitor : AbstractVisitor() {
 		val comparator = typeUpdate.typeCompare.comparator
 		var best: ArgType? = null
 		for (bound in bounds) {
-			val type = bound.getType()
+			val type = bound.type
 			if (best == null || comparator.compare(type, best) > 0) {
 				best = type
 			}
@@ -202,7 +202,7 @@ class TypeInferenceVisitor : AbstractVisitor() {
 		if (bound == null) {
 			return
 		}
-		if (bound is ITypeBoundDynamic || bound.getType() !== ArgType.UNKNOWN) {
+		if (bound is ITypeBoundDynamic || bound.type !== ArgType.UNKNOWN) {
 			typeInfo.bounds.add(bound)
 		}
 	}

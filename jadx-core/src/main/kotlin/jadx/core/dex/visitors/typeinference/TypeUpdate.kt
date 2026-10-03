@@ -258,7 +258,7 @@ class TypeUpdate(private val root: RootNode) {
 
 	fun inBounds(bounds: Set<ITypeBound>, candidateType: ArgType): Boolean {
 		for (bound in bounds) {
-			val boundType = bound.getType()
+			val boundType = bound.type
 			if (!checkBound(candidateType, bound, boundType)) {
 				return false
 			}
@@ -271,7 +271,7 @@ class TypeUpdate(private val root: RootNode) {
 			val boundType = if (bound is ITypeBoundDynamic) {
 				bound.getType(updateInfo)
 			} else {
-				bound.getType()
+				bound.type
 			}
 			if (!checkBound(candidateType, bound, boundType)) {
 				if (Consts.DEBUG_TYPE_INFERENCE) {
@@ -288,10 +288,10 @@ class TypeUpdate(private val root: RootNode) {
 		return when (compareResult) {
 			TypeCompareEnum.EQUAL -> true
 
-			TypeCompareEnum.WIDER -> bound.getBound() != BoundEnum.USE
+			TypeCompareEnum.WIDER -> bound.bound != BoundEnum.USE
 
 			TypeCompareEnum.NARROW -> {
-				if (bound.getBound() == BoundEnum.ASSIGN) {
+				if (bound.bound == BoundEnum.ASSIGN) {
 					!boundType.isTypeKnown() && checkAssignForUnknown(boundType, candidateType)
 				} else {
 					true

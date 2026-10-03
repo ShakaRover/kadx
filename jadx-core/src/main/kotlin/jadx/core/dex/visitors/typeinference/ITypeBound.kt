@@ -9,17 +9,17 @@ import jadx.core.dex.instructions.args.RegisterArg
  * **用途**：类型推导为每个变量收集所有边界（[TypeInfo.getBounds]），
  * 再从中挑选最合适的类型。
  *
- * **Kotlin 转换说明**：接口方法保持与 Java 完全相同的 `getXxx()` 形式，
- * 以便 Java 子类（如 [TypeBoundInvokeUse]）继续用 `getBound()/getType()/getArg()` 覆写。
+ * **Kotlin 转换说明**：接口成员为 Kotlin 属性，JVM 上仍生成 `getBound()/getType()/getArg()`，
+ * Java 子类（如 [TypeBoundInvokeUse]）的覆写方式保持不变。
  */
 interface ITypeBound {
 
 	/** 该边界属于赋值方向还是使用方向 */
-	fun getBound(): BoundEnum
+	val bound: BoundEnum
 
 	/** 边界给出的候选类型 */
-	fun getType(): ArgType
+	val type: ArgType
 
 	/** 关联的寄存器参数；常量边界可能没有关联参数，故可为空 */
-	fun getArg(): RegisterArg?
+	val arg: RegisterArg?
 }

@@ -23,11 +23,11 @@ class TypeBoundInvokeAssign(
 	private val genericReturnType: ArgType,
 ) : ITypeBoundDynamic {
 
-	override fun getBound(): BoundEnum = BoundEnum.ASSIGN
+	override val bound: BoundEnum get() = BoundEnum.ASSIGN
 
 	override fun getType(updateInfo: TypeUpdateInfo): ArgType = getReturnType(updateInfo.getType(instanceArg))
 
-	override fun getType(): ArgType = getReturnType(instanceArg.getType())
+	override val type: ArgType get() = getReturnType(instanceArg.getType())
 
 	private fun getReturnType(instanceType: ArgType): ArgType {
 		val mthDeclType: ArgType
@@ -58,7 +58,7 @@ class TypeBoundInvokeAssign(
 
 	private val instanceArg: InsnArg get() = invokeNode.getArg(0)
 
-	override fun getArg(): RegisterArg? = invokeNode.getResult()
+	override val arg: RegisterArg? get() = invokeNode.getResult()
 
 	override fun equals(o: Any?): Boolean {
 		if (this === o) {
@@ -75,7 +75,7 @@ class TypeBoundInvokeAssign(
 
 	override fun toString(): String = "InvokeAssign{" + invokeNode.callMth.shortId +
 		", returnType=" + genericReturnType +
-		", currentType=" + getType() +
+		", currentType=" + type +
 		", instanceArg=" + instanceArg +
 		'}'
 }

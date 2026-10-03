@@ -16,18 +16,12 @@ import java.util.Objects
  * - 保留两个构造器重载（两参/三参），Java 调用方零改动。
  */
 class TypeBoundConst(
-	private val bound: BoundEnum,
-	private val type: ArgType,
-	private val arg: RegisterArg?,
+	override val bound: BoundEnum,
+	override val type: ArgType,
+	override val arg: RegisterArg?,
 ) : ITypeBound {
 
 	constructor(bound: BoundEnum, type: ArgType) : this(bound, type, null)
-
-	override fun getBound(): BoundEnum = bound
-
-	override fun getType(): ArgType = type
-
-	override fun getArg(): RegisterArg? = arg
 
 	override fun equals(o: Any?): Boolean {
 		if (this === o) {

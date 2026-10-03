@@ -20,11 +20,11 @@ class TypeBoundCheckCastAssign(
 	val insn: IndexInsnNode,
 ) : ITypeBoundDynamic {
 
-	override fun getBound(): BoundEnum = BoundEnum.ASSIGN
+	override val bound: BoundEnum get() = BoundEnum.ASSIGN
 
 	override fun getType(updateInfo: TypeUpdateInfo): ArgType = getReturnType(updateInfo.getType(insn.getArg(0)))
 
-	override fun getType(): ArgType = getReturnType(insn.getArg(0).getType())
+	override val type: ArgType get() = getReturnType(insn.getArg(0).getType())
 
 	private fun getReturnType(argType: ArgType): ArgType {
 		val castType = insn.indexAsType
@@ -33,7 +33,7 @@ class TypeBoundCheckCastAssign(
 		return if (result.isNarrow()) argType else castType
 	}
 
-	override fun getArg(): RegisterArg? = insn.getResult()
+	override val arg: RegisterArg? get() = insn.getResult()
 
 	override fun toString(): String = "CHECK_CAST_ASSIGN{(" + insn.index + ") " + insn.getArg(0).getType() + "}"
 }

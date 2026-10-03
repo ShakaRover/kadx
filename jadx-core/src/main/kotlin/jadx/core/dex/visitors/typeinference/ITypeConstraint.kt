@@ -11,7 +11,7 @@ import jadx.core.dex.instructions.args.SSAVar
 interface ITypeConstraint {
 
 	/** 该约束涉及的 SSA 变量集合 */
-	fun getRelatedVars(): List<SSAVar>
+	val relatedVars: List<SSAVar>
 
 	/** 在给定搜索状态下校验约束是否满足 */
 	fun check(state: TypeSearchState): Boolean

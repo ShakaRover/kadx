@@ -23,7 +23,7 @@ abstract class AbstractTypeConstraint(
 	arg: InsnArg,
 ) : ITypeConstraint {
 
-	private val relatedVars: List<SSAVar> = collectRelatedVars(insn, arg)
+	override val relatedVars: List<SSAVar> = collectRelatedVars(insn, arg)
 
 	private fun collectRelatedVars(insn: InsnNode, arg: InsnArg): List<SSAVar> {
 		val list = ArrayList<SSAVar>(insn.argsCount)
@@ -45,8 +45,6 @@ abstract class AbstractTypeConstraint(
 		}
 		return list
 	}
-
-	override fun getRelatedVars(): List<SSAVar> = relatedVars
 
 	override fun toString(): String = "(" + insn.type + ':' + Utils.listToString(relatedVars) { it.toShortString() } + ')'
 }

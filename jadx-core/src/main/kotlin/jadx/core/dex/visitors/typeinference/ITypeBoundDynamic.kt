@@ -12,7 +12,7 @@ import jadx.core.dex.instructions.args.ArgType
 interface ITypeBoundDynamic : ITypeBound {
 
 	/**
-	 * 当 [TypeUpdateInfo] 可用时，用本方法替代 [ITypeBound.getType]。
+	 * 当 [TypeUpdateInfo] 可用时，用本方法替代 [ITypeBound.type]。
 	 *
 	 * @param updateInfo 当前这一轮类型更新的中间状态
 	 */

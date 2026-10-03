@@ -18,15 +18,15 @@ import jadx.core.dex.nodes.RootNode
 class TypeBoundInvokeUse(
 	private val root: RootNode,
 	private val invokeNode: BaseInvokeNode,
-	private val arg: RegisterArg,
+	override val arg: RegisterArg,
 	private val genericArgType: ArgType,
 ) : ITypeBoundDynamic {
 
-	override fun getBound(): BoundEnum = BoundEnum.USE
+	override val bound: BoundEnum get() = BoundEnum.USE
 
 	override fun getType(updateInfo: TypeUpdateInfo): ArgType = getArgType(updateInfo.getType(checkNotNull(invokeNode.getInstanceArg())), updateInfo.getType(arg))
 
-	override fun getType(): ArgType = getArgType(checkNotNull(invokeNode.getInstanceArg()).getType(), arg.getType())
+	override val type: ArgType get() = getArgType(checkNotNull(invokeNode.getInstanceArg()).getType(), arg.getType())
 
 	private fun getArgType(instanceType: ArgType, argType: ArgType): ArgType {
 		val resultGeneric = root.getTypeUtils().replaceClassGenerics(instanceType, genericArgType)
@@ -35,8 +35,6 @@ class TypeBoundInvokeUse(
 		}
 		return argType
 	}
-
-	override fun getArg(): RegisterArg = arg
 
 	override fun equals(o: Any?): Boolean {
 		if (this === o) {
@@ -53,7 +51,7 @@ class TypeBoundInvokeUse(
 
 	override fun toString(): String = "InvokeAssign{" + invokeNode.callMth.shortId +
 		", argType=" + genericArgType +
-		", currentType=" + getType() +
+		", currentType=" + type +
 		", instanceArg=" + invokeNode.getInstanceArg() +
 		'}'
 }

@@ -181,7 +181,7 @@ class FixTypesVisitor : AbstractVisitor() {
 		var best: ArgType? = null
 		val comparator = typeUpdate.typeCompare.comparator
 		for (bound in bounds) {
-			val type: ArgType? = bound.getType()
+			val type: ArgType? = bound.type
 			if (type != null && (best == null || comparator.compare(best, type) < 0)) {
 				best = type
 			}
@@ -213,7 +213,7 @@ class FixTypesVisitor : AbstractVisitor() {
 		}
 		if (ssaVar != null) {
 			for (b in ssaVar.typeInfo.bounds) {
-				val boundType = b.getType()
+				val boundType = b.type
 				if (boundType.isObject() || boundType.isArray()) {
 					// 已有对象/数组边界，不再尝试基本类型
 					return Collections.emptyList()
@@ -277,7 +277,7 @@ class FixTypesVisitor : AbstractVisitor() {
 	private fun tryRawType(mth: MethodNode, ssaVar: SSAVar): Boolean {
 		val objTypes = LinkedHashSet<ArgType>()
 		for (bound in ssaVar.typeInfo.bounds) {
-			val boundType = bound.getType()
+			val boundType = bound.type
 			if (boundType.isTypeKnown() && boundType.isObject()) {
 				objTypes.add(boundType)
 			}
@@ -434,7 +434,7 @@ class FixTypesVisitor : AbstractVisitor() {
 	private fun restoreTypeVarCasts(ssaVar: SSAVar): Int {
 		val typeInfo = ssaVar.typeInfo
 		val bounds = typeInfo.bounds
-		if (!ListUtils.anyMatch(bounds) { it.getType().isGenericType() }) {
+		if (!ListUtils.anyMatch(bounds) { it.type.isGenericType() }) {
 			return 0
 		}
 		val casts = ListUtils.filter(bounds) { it is TypeBoundCheckCastAssign }
@@ -453,7 +453,7 @@ class FixTypesVisitor : AbstractVisitor() {
 		val extendType = extendTypes[0]
 		for (bound in casts) {
 			val cast = bound as TypeBoundCheckCastAssign
-			val castType = cast.getType()
+			val castType = cast.type
 			val result = typeUpdate.typeCompare.compareTypes(extendType, castType)
 			if (result.isEqual() || result == TypeCompareEnum.NARROW_BY_GENERIC) {
 				cast.insn.index = bestType
@@ -484,7 +484,7 @@ class FixTypesVisitor : AbstractVisitor() {
 
 	private fun tryInsertVarCast(mth: MethodNode, ssaVar: SSAVar): Int {
 		for (bound in ssaVar.typeInfo.bounds) {
-			val boundType = bound.getType()
+			val boundType = bound.type
 			if (boundType.isTypeKnown() &&
 				boundType != ssaVar.typeInfo.getType() &&
 				boundType.containsTypeVariable() &&
@@ -765,7 +765,7 @@ class FixTypesVisitor : AbstractVisitor() {
 	private fun tryWiderObjects(mth: MethodNode, ssaVar: SSAVar): Boolean {
 		val objTypes = LinkedHashSet<ArgType>()
 		for (bound in ssaVar.typeInfo.bounds) {
-			val boundType = bound.getType()
+			val boundType = bound.type
 			if (boundType.isTypeKnown() && boundType.isObject()) {
 				objTypes.add(boundType)
 			}
@@ -811,8 +811,8 @@ class FixTypesVisitor : AbstractVisitor() {
 		}
 		var assigned = false
 		for (bound in typeInfo.bounds) {
-			val boundType = bound.getType()
-			when (bound.getBound()) {
+			val boundType = bound.type
+			when (bound.bound) {
 				BoundEnum.ASSIGN -> {
 					if (!boundType.contains(PrimitiveType.BOOLEAN)) {
 						return false

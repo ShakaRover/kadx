@@ -172,7 +172,7 @@ class TypeSearch(private val mth: MethodNode) {
 	private fun resolveIndependentVariables(varInfo: TypeSearchVarInfo): Boolean {
 		var allRelatedVarsResolved = true
 		for (constraint in varInfo.getConstraints()) {
-			for (v in constraint.getRelatedVars()) {
+			for (v in constraint.relatedVars) {
 				if (!state.getVarInfo(v).isTypeResolved()) {
 					allRelatedVarsResolved = false
 					break
@@ -236,10 +236,10 @@ class TypeSearch(private val mth: MethodNode) {
 		val uses = LinkedHashSet<ArgType>()
 		val bounds = ssaVar.typeInfo.bounds
 		for (bound in bounds) {
-			if (bound.getBound() == BoundEnum.ASSIGN) {
-				assigns.add(bound.getType())
+			if (bound.bound == BoundEnum.ASSIGN) {
+				assigns.add(bound.type)
 			} else {
-				uses.add(bound.getType())
+				uses.add(bound.type)
 			}
 		}
 
