@@ -18,7 +18,7 @@ import jadx.core.utils.tasks.TaskExecutor
  * **为什么不用 `data class`**：任务对象需要按引用比较。
  */
 class SimpleTask(
-	private val title: String,
+	private val taskTitle: String,
 	private val jobs: List<Runnable>,
 	private val onFinish: ((TaskStatus) -> Unit)?,
 ) : IBackgroundTask {
@@ -30,7 +30,7 @@ class SimpleTask(
 
 	constructor(title: String, jobs: List<Runnable>) : this(title, jobs, null)
 
-	override fun getTitle(): String = title
+	override val title: String get() = taskTitle
 
 	fun getJobs(): List<Runnable> = jobs
 
@@ -43,14 +43,14 @@ class SimpleTask(
 	}
 
 	override fun onFinish(taskInfo: ITaskInfo) {
-		onFinish?.invoke(taskInfo.getStatus())
+		onFinish?.invoke(taskInfo.status)
 	}
 
 	override fun checkMemoryUsage(): Boolean = true
 
 	override fun canBeCanceled(): Boolean = false
 
-	override fun isCanceled(): Boolean = false
+	override val isCanceled: Boolean get() = false
 
 	override fun cancel() {
 	}

@@ -16,7 +16,7 @@ abstract class CancelableBackgroundTask : IBackgroundTask {
 	/** 取消标志，使用原子类型保证多线程可见性。 */
 	private val cancel = AtomicBoolean(false)
 
-	override fun isCanceled(): Boolean = cancel.get()
+	override val isCanceled: Boolean get() = cancel.get()
 
 	override fun cancel() {
 		cancel.set(true)

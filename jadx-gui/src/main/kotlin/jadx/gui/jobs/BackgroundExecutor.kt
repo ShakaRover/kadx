@@ -73,7 +73,7 @@ class BackgroundExecutor(
 		val internalTask = buildTask(task)
 		val deferred = scope.async {
 			runTask(internalTask)
-			internalTask.getStatus()
+			internalTask.status
 		}
 		internalTask.setJob(deferred)
 		return deferred
@@ -189,7 +189,7 @@ class BackgroundExecutor(
 			if (UiUtils.JADX_GUI_DEBUG) {
 				LOG.debug(
 					"Starting background task '{}', jobs count: {}, time limit: {} ms, memory check: {}",
-					task.getTitle(),
+					task.title,
 					tasksCount,
 					task.timeLimit(),
 					task.checkMemoryUsage(),
@@ -248,7 +248,7 @@ class BackgroundExecutor(
 			taskExecutor.terminate()
 
 			val executor = taskExecutor.getInternalExecutor() ?: return
-			val cancelTimeout = task.getCancelTimeoutMS()
+			val cancelTimeout = task.cancelTimeoutMS
 			if (cancelTimeout != 0) {
 				if (executor.awaitTermination(cancelTimeout.toLong(), TimeUnit.MILLISECONDS)) {
 					LOG.debug("Task cancel complete")
@@ -257,7 +257,7 @@ class BackgroundExecutor(
 			}
 			LOG.debug("Forcing tasks cancel")
 			executor.shutdownNow()
-			val complete = executor.awaitTermination(task.getShutdownTimeoutMS().toLong(), TimeUnit.MILLISECONDS)
+			val complete = executor.awaitTermination(task.shutdownTimeoutMS.toLong(), TimeUnit.MILLISECONDS)
 			LOG.debug(
 				"Forced task cancel status: {}",
 				if (complete) {
@@ -287,15 +287,15 @@ class BackgroundExecutor(
 		val waitUntilTime = if (timeLimit == 0) 0L else startTime + timeLimit
 		val checkMemoryUsage = task.checkMemoryUsage()
 		return {
-			if (task.isCanceled() || Thread.currentThread().isInterrupted) {
+			if (task.isCanceled || Thread.currentThread().isInterrupted) {
 				TaskStatus.CANCEL_BY_USER
 			} else if (waitUntilTime != 0L && waitUntilTime < System.currentTimeMillis()) {
-				LOG.warn("Task '{}' execution timeout, force cancel", task.getTitle())
+				LOG.warn("Task '{}' execution timeout, force cancel", task.title)
 				TaskStatus.CANCEL_BY_TIMEOUT
 			} else if (checkMemoryUsage && !UiUtils.isFreeMemoryAvailable) {
 				LOG.warn("High memory usage: {}", UiUtils.memoryInfo())
 				if (checkNotNull(internalTask.getTaskExecutor()).getThreadsCount() == 1) {
-					LOG.warn("Task '{}' memory limit reached, force cancel", task.getTitle())
+					LOG.warn("Task '{}' memory limit reached, force cancel", task.title)
 					TaskStatus.CANCEL_BY_MEMORY
 				} else {
 					LOG.warn("Low free memory, reduce processing threads count to 1")
@@ -303,7 +303,7 @@ class BackgroundExecutor(
 					System.gc()
 					UiUtils.sleep(1000) // 等待 GC
 					if (!UiUtils.isFreeMemoryAvailable) {
-						LOG.error("Task '{}' memory limit reached (after GC), force cancel", task.getTitle())
+						LOG.error("Task '{}' memory limit reached (after GC), force cancel", task.title)
 						TaskStatus.CANCEL_BY_MEMORY
 					} else {
 						null

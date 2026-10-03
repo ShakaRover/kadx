@@ -15,9 +15,9 @@ class SilentTask(
 	private val task: Runnable,
 ) : CancelableBackgroundTask() {
 
-	override fun isSilent(): Boolean = true
+	override val isSilent: Boolean = true
 
-	override fun getTitle(): String = "<silent>"
+	override val title: String get() = "<silent>"
 
 	override fun scheduleTasks(): ITaskExecutor {
 		val executor = TaskExecutor()

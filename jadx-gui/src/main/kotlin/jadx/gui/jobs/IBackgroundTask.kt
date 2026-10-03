@@ -14,15 +14,14 @@ import kotlinx.coroutines.flow.emptyFlow
  * - [onDone]：所有 job 结束后在**执行线程**上调用；
  * - [onFinish]：随后在 **EDT（事件分发线程）** 上调用，可安全操作 Swing 组件。
  *
- * **为什么保留 `getXxx` / `isXxx` 显式函数**：本接口被大量 Java 类实现
- * （`SearchTask`、`SimpleTask`、`TaskWithExtraOnFinish` 等），方法名必须与原
- * Java 完全一致；默认实现依赖 Kotlin 的接口默认方法（`jvm-default=enable`），
- * Java 实现方无需重写全部方法。
+ * **为什么使用属性形态**：接口属性在 JVM 上仍生成 `getXxx()` / `isXxx()`，本接口
+ * 被大量实现（`SearchTask`、`SimpleTask`、`TaskWithExtraOnFinish` 等），方法名保持不变；
+ * 默认实现依赖 Kotlin 的接口默认方法（`jvm-default=enable`），实现方无需重写全部成员。
  */
 interface IBackgroundTask : Cancelable {
 
 	/** 任务标题（显示在进度条上）。 */
-	fun getTitle(): String
+	val title: String
 
 	/** 把任务拆分为可执行的阶段并返回执行器。 */
 	fun scheduleTasks(): ITaskExecutor
@@ -45,11 +44,11 @@ interface IBackgroundTask : Cancelable {
 	fun checkMemoryUsage(): Boolean = false
 
 	/** 自定义任务进度（可选），默认 `null` 表示由执行器统计。 */
-	fun getTaskProgress(): ITaskProgress? = null
+	val taskProgress: ITaskProgress? get() = null
 
 	/** 进度通知流（可选），默认无进度更新。 */
-	fun getProgressFlow(): Flow<ITaskProgress> = emptyFlow()
+	val progressFlow: Flow<ITaskProgress> get() = emptyFlow()
 
 	/** 是否为静默任务（不显示进度），默认否。 */
-	fun isSilent(): Boolean = false
+	val isSilent: Boolean get() = false
 }

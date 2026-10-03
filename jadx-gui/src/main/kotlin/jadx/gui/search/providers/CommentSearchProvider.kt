@@ -48,7 +48,7 @@ class CommentSearchProvider(
 	private var progress = 0
 
 	override fun next(cancelable: Cancelable): JNode? {
-		while (!cancelable.isCanceled()) {
+		while (!cancelable.isCanceled) {
 			val comments = project.codeData.getComments()
 			if (progress >= comments.size) {
 				return null

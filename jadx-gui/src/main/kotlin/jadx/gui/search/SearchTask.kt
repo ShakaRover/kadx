@@ -40,13 +40,13 @@ class SearchTask(
 
 	private val backgroundExecutor: BackgroundExecutor = mainWindow.getBackgroundExecutor()
 	private val jobs: MutableList<SearchJob> = ArrayList()
-	private val taskProgress = TaskProgress()
+	private val taskProgressState = TaskProgress()
 
 	private val resultsCount = AtomicInteger(0)
 	private var resultsLimit = 0
 	private var deferred: Deferred<TaskStatus>? = null
 
-	private val progressFlow = MutableSharedFlow<ITaskProgress>(replay = 1)
+	private val progressFlowState = MutableSharedFlow<ITaskProgress>(replay = 1)
 
 	/** 注册一个搜索提供者。 */
 	fun addProviderJob(provider: ISearchProvider) {
@@ -65,7 +65,7 @@ class SearchTask(
 		}
 		resetCancel()
 		resultsCount.set(0)
-		taskProgress.updateTotal(jobs.sumOf { it.getProvider().total() })
+		taskProgressState.updateTotal(jobs.sumOf { it.getProvider().total() })
 		deferred = backgroundExecutor.executeAsync(this)
 	}
 
@@ -76,7 +76,7 @@ class SearchTask(
 	 */
 	@Synchronized
 	fun addResult(resultNode: JNode): Boolean {
-		if (isCanceled()) {
+		if (isCanceled) {
 			// 取消后忽略新结果
 			return true
 		}
@@ -102,7 +102,7 @@ class SearchTask(
 		}
 	}
 
-	override fun getTitle(): String = NLS.str("search_dialog.tip_searching")
+	override val title: String get() = NLS.str("search_dialog.tip_searching")
 
 	override fun scheduleTasks(): ITaskExecutor {
 		val executor = TaskExecutor()
@@ -111,25 +111,26 @@ class SearchTask(
 	}
 
 	override fun onFinish(taskInfo: ITaskInfo) {
-		val complete = !isCanceled() &&
-			taskInfo.getStatus() == TaskStatus.COMPLETE &&
-			taskInfo.getJobsComplete() == taskInfo.getJobsCount()
+		val complete = !isCanceled &&
+			taskInfo.status == TaskStatus.COMPLETE &&
+			taskInfo.jobsComplete == taskInfo.jobsCount
 		onFinishCallback(taskInfo, complete)
 	}
 
 	override fun checkMemoryUsage(): Boolean = true
 
-	override fun getTaskProgress(): ITaskProgress {
-		taskProgress.updateProgress(jobs.sumOf { it.getProvider().progress() })
-		progressFlow.tryEmit(taskProgress)
-		return taskProgress
-	}
+	override val taskProgress: ITaskProgress
+		get() {
+			taskProgressState.updateProgress(jobs.sumOf { it.getProvider().progress() })
+			progressFlowState.tryEmit(taskProgressState)
+			return taskProgressState
+		}
 
-	override fun getProgressFlow(): Flow<ITaskProgress> = progressFlow.asSharedFlow()
+	override val progressFlow: Flow<ITaskProgress> get() = progressFlowState.asSharedFlow()
 
-	override fun getCancelTimeoutMS(): Int = 0
+	override val cancelTimeoutMS: Int get() = 0
 
-	override fun getShutdownTimeoutMS(): Int = 10
+	override val shutdownTimeoutMS: Int get() = 10
 
 	companion object {
 		private val LOG: Logger = LoggerFactory.getLogger(SearchTask::class.java)

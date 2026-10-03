@@ -24,7 +24,7 @@ class ClassSearchProvider(
 
 	override fun next(cancelable: Cancelable): JNode? {
 		while (true) {
-			if (cancelable.isCanceled() || clsNum >= classes.size) {
+			if (cancelable.isCanceled || clsNum >= classes.size) {
 				return null
 			}
 			val curCls = classes[clsNum++]

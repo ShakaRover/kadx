@@ -38,7 +38,7 @@ class DecompileTask(private val mainWindow: MainWindow) : CancelableBackgroundTa
 
 	private var result: ProcessResult? = null
 
-	override fun getTitle(): String = NLS.str("progress.decompile")
+	override val title: String get() = NLS.str("progress.decompile")
 
 	override fun scheduleTasks(): ITaskExecutor {
 		val executor = TaskExecutor()
@@ -73,7 +73,7 @@ class DecompileTask(private val mainWindow: MainWindow) : CancelableBackgroundTa
 		for (batch in batches) {
 			jobs.add {
 				for (cls in batch) {
-					if (isCanceled()) {
+					if (isCanceled) {
 						return@add
 					}
 					try {
@@ -92,7 +92,7 @@ class DecompileTask(private val mainWindow: MainWindow) : CancelableBackgroundTa
 	}
 
 	override fun onDone(taskInfo: ITaskInfo) {
-		val taskTime = taskInfo.getTime()
+		val taskTime = taskInfo.time
 		val avgPerCls = taskTime / maxOf(expectedCompleteCount, 1)
 		val timeLimit = timeLimit()
 		val skippedCls = expectedCompleteCount - complete.get()
@@ -102,10 +102,10 @@ class DecompileTask(private val mainWindow: MainWindow) : CancelableBackgroundTa
 					", classes: " + expectedCompleteCount +
 					", skipped: " + skippedCls +
 					", time limit:{ total: " + timeLimit + "ms, per cls: " + CLS_LIMIT + "ms }" +
-					", status: " + taskInfo.getStatus(),
+					", status: " + taskInfo.status,
 			)
 		}
-		result = ProcessResult(skippedCls, taskInfo.getStatus(), timeLimit)
+		result = ProcessResult(skippedCls, taskInfo.status, timeLimit)
 
 		wrapper.unloadClasses()
 		processDecompilationResults()

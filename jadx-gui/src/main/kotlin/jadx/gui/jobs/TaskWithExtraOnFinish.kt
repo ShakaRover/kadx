@@ -27,10 +27,10 @@ class TaskWithExtraOnFinish : IBackgroundTask {
 
 	override fun onFinish(taskInfo: ITaskInfo) {
 		task.onFinish(taskInfo)
-		extraOnFinish(taskInfo.getStatus())
+		extraOnFinish(taskInfo.status)
 	}
 
-	override fun getTitle(): String = task.getTitle()
+	override val title: String get() = task.title
 
 	override fun scheduleTasks(): ITaskExecutor = task.scheduleTasks()
 
@@ -38,13 +38,13 @@ class TaskWithExtraOnFinish : IBackgroundTask {
 		task.onDone(taskInfo)
 	}
 
-	override fun getProgressFlow(): Flow<ITaskProgress> = task.getProgressFlow()
+	override val progressFlow: Flow<ITaskProgress> get() = task.progressFlow
 
-	override fun getTaskProgress(): ITaskProgress? = task.getTaskProgress()
+	override val taskProgress: ITaskProgress? get() = task.taskProgress
 
 	override fun canBeCanceled(): Boolean = task.canBeCanceled()
 
-	override fun isCanceled(): Boolean = task.isCanceled()
+	override val isCanceled: Boolean get() = task.isCanceled
 
 	override fun cancel() {
 		task.cancel()
@@ -54,7 +54,7 @@ class TaskWithExtraOnFinish : IBackgroundTask {
 
 	override fun checkMemoryUsage(): Boolean = task.checkMemoryUsage()
 
-	override fun getCancelTimeoutMS(): Int = task.getCancelTimeoutMS()
+	override val cancelTimeoutMS: Int get() = task.cancelTimeoutMS
 
-	override fun getShutdownTimeoutMS(): Int = task.getShutdownTimeoutMS()
+	override val shutdownTimeoutMS: Int get() = task.shutdownTimeoutMS
 }

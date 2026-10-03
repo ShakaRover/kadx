@@ -42,7 +42,7 @@ class CodeSearchProvider(
 	override fun next(cancelable: Cancelable): JNode? {
 		val inclCls = includedClasses
 		while (true) {
-			if (cancelable.isCanceled() || clsNum >= classes.size) {
+			if (cancelable.isCanceled || clsNum >= classes.size) {
 				return null
 			}
 

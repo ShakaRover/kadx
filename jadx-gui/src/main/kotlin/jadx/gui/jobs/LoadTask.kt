@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicReference
  */
 class LoadTask<T> : CancelableBackgroundTask {
 
-	private val title: String
+	private val taskTitle: String
 	private val taskData: AtomicReference<T>
 	private val bgTask: Runnable
 	private val uiTask: Runnable
@@ -27,13 +27,13 @@ class LoadTask<T> : CancelableBackgroundTask {
 		this(NLS.str("progress.load"), loadBgTask, uiTask)
 
 	constructor(title: String, loadBgTask: () -> T, uiTask: (T) -> Unit) : super() {
-		this.title = title
+		this.taskTitle = title
 		this.taskData = AtomicReference()
 		this.bgTask = Runnable { taskData.set(loadBgTask()) }
 		this.uiTask = Runnable { uiTask(taskData.get()) }
 	}
 
-	override fun getTitle(): String = title
+	override val title: String get() = taskTitle
 
 	override fun scheduleTasks(): ITaskExecutor {
 		val executor = TaskExecutor()

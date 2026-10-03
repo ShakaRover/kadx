@@ -40,7 +40,7 @@ class MergedSearchProvider : ISearchProvider {
 				return next
 			}
 			current++
-			if (current >= list.size || cancelable.isCanceled()) {
+			if (current >= list.size || cancelable.isCanceled) {
 				// 搜索完成
 				current = -1
 				return null

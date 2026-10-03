@@ -31,7 +31,7 @@ class ExportTask(
 	private var timeLimit: Int = 0
 	private var uiCodeCache: ICodeCache? = null
 
-	override fun getTitle(): String = NLS.str("msg.saving_sources")
+	override val title: String get() = NLS.str("msg.saving_sources")
 
 	override fun scheduleTasks(): ITaskExecutor {
 		wrapCodeCache()
@@ -53,14 +53,14 @@ class ExportTask(
 	override fun onFinish(taskInfo: ITaskInfo) {
 		// 恢复初始代码缓存
 		wrapper.args.codeCache = checkNotNull(uiCodeCache)
-		if (taskInfo.getJobsSkipped() == 0L) {
+		if (taskInfo.jobsSkipped == 0L) {
 			return
 		}
-		val reason = getIncompleteReason(taskInfo.getStatus())
+		val reason = getIncompleteReason(taskInfo.status)
 		if (reason != null) {
 			JOptionPane.showMessageDialog(
 				mainWindow,
-				NLS.str("message.saveIncomplete", reason, taskInfo.getJobsSkipped()),
+				NLS.str("message.saveIncomplete", reason, taskInfo.jobsSkipped),
 				NLS.str("message.errorTitle"),
 				JOptionPane.ERROR_MESSAGE,
 			)

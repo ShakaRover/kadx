@@ -25,7 +25,7 @@ class FieldSearchProvider(
 
 	override fun next(cancelable: Cancelable): JNode? {
 		while (true) {
-			if (cancelable.isCanceled()) {
+			if (cancelable.isCanceled) {
 				return null
 			}
 			val cls = classes[clsNum]

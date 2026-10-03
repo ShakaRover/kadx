@@ -62,7 +62,7 @@ class ResourceSearchProvider(
 
 	override fun next(cancelable: Cancelable): JNode? {
 		while (true) {
-			if (cancelable.isCanceled()) {
+			if (cancelable.isCanceled) {
 				return null
 			}
 			val resNode = getNextResFile(cancelable) ?: return null
@@ -110,7 +110,7 @@ class ResourceSearchProvider(
 	private fun getNextResFile(cancelable: Cancelable): JResource? {
 		while (true) {
 			val node = resQueue.peekLast()
-			if (node == null || cancelable.isCanceled()) {
+			if (node == null || cancelable.isCanceled) {
 				return null
 			}
 			if (node.getType() == JResource.JResType.FILE) {

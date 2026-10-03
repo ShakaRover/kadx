@@ -531,10 +531,10 @@ class SearchDialog private constructor(
 		task.setResultsLimit(mainWindow.getSettings().searchResultsPerPage)
 		progressJob?.cancel()
 		progressJob = scope.launch {
-			task.getProgressFlow().collect { progress -> updateProgress(progress) }
+			task.progressFlow.collect { progress -> updateProgress(progress) }
 		}
 		task.fetchResults()
-		LOG.debug("Total search items count estimation: {}", task.getTaskProgress().total())
+		LOG.debug("Total search items count estimation: {}", task.taskProgress.total())
 	}
 
 	private fun prepareSearch(text: String): SearchTask? {

@@ -49,7 +49,7 @@ class ProgressUpdater(
 
 	/** 添加任务到刷新队列；静默任务不显示进度，直接跳过。 */
 	fun addTask(task: InternalTask) {
-		if (task.getBgTask().isSilent()) {
+		if (task.getBgTask().isSilent) {
 			return
 		}
 		currentTask.set(task)
@@ -72,19 +72,19 @@ class ProgressUpdater(
 		val cancelStatus = withContext(Dispatchers.IO) { task.getCancelCheck().invoke() }
 		if (cancelStatus != null) {
 			task.setStatus(cancelStatus)
-			applyState(ProgressState.Canceling(task.getBgTask().getTitle()))
+			applyState(ProgressState.Canceling(task.getBgTask().title))
 			cancelCallback(task)
 			return
 		}
 		val bgTask = task.getBgTask()
-		val customProgress = bgTask.getTaskProgress()
+		val customProgress = bgTask.taskProgress
 		val taskProgress = customProgress ?: TaskProgress(
 			checkNotNull(task.getTaskExecutor()).getProgress().toLong(),
-			task.getJobsCount(),
+			task.jobsCount,
 		)
 		applyState(
 			ProgressState.Active(
-				title = bgTask.getTitle(),
+				title = bgTask.title,
 				taskProgress = taskProgress,
 				cancelable = bgTask.canBeCanceled(),
 				firstUpdate = task.checkForFirstUpdate(),

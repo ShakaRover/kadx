@@ -29,7 +29,7 @@ class MethodSearchProvider(
 			return null
 		}
 		while (true) {
-			if (cancelable.isCanceled()) {
+			if (cancelable.isCanceled) {
 				return null
 			}
 			val cls = classes[clsNum]

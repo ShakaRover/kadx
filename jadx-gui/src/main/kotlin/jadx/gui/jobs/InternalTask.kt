@@ -33,30 +33,30 @@ class InternalTask(
 	private var job: Job? = null
 
 	private var startTime: Long = 0
-	private var execTime: Long = 0
+	private var execTimeValue: Long = 0
 
 	/** 取消检查函数：返回非 null 表示应取消并给出原因；未开始时为 null。 */
 	private var cancelCheck: (() -> TaskStatus?)? = null
 
-	private var status: TaskStatus = TaskStatus.WAIT
+	private var statusValue: TaskStatus = TaskStatus.WAIT
 	private var taskExecutor: ITaskExecutor? = null
-	private var jobsCount: Long = 0
-	private var jobsComplete: Long = 0
+	private var jobsCountValue: Long = 0
+	private var jobsCompleteValue: Long = 0
 
 	/** 记录任务开始：保存起始时间与取消检查函数，并置为运行中。 */
 	fun taskStart(startTime: Long, cancelCheck: () -> TaskStatus?) {
 		this.startTime = startTime
 		this.cancelCheck = cancelCheck
-		this.status = TaskStatus.STARTED
+		this.statusValue = TaskStatus.STARTED
 		this.running.set(true)
 	}
 
 	/** 记录任务结束：停止运行标志，并把 STARTED 收敛为 COMPLETE。 */
 	fun taskComplete() {
 		this.running.set(false)
-		if (status == TaskStatus.STARTED) {
+		if (statusValue == TaskStatus.STARTED) {
 			// 也可能已被设置为 ERROR 或取消状态，此时不覆盖
-			this.status = TaskStatus.COMPLETE
+			this.statusValue = TaskStatus.COMPLETE
 		}
 		updateExecTime()
 	}
@@ -81,10 +81,10 @@ class InternalTask(
 
 	fun getStartTime(): Long = startTime
 
-	override fun getStatus(): TaskStatus = status
+	override val status: TaskStatus get() = statusValue
 
 	fun setStatus(taskStatus: TaskStatus) {
-		this.status = taskStatus
+		this.statusValue = taskStatus
 	}
 
 	fun getTaskExecutor(): ITaskExecutor? = taskExecutor
@@ -93,27 +93,27 @@ class InternalTask(
 		this.taskExecutor = taskExecutor
 	}
 
-	override fun getJobsComplete(): Long = jobsComplete
+	override val jobsComplete: Long get() = jobsCompleteValue
 
 	fun setJobsComplete(jobsComplete: Long) {
-		this.jobsComplete = jobsComplete
+		this.jobsCompleteValue = jobsComplete
 	}
 
-	override fun getJobsCount(): Long = jobsCount
+	override val jobsCount: Long get() = jobsCountValue
 
 	fun setJobsCount(jobsCount: Long) {
-		this.jobsCount = jobsCount
+		this.jobsCountValue = jobsCount
 	}
 
-	override fun getJobsSkipped(): Long = jobsCount - jobsComplete
+	override val jobsSkipped: Long get() = jobsCountValue - jobsCompleteValue
 
-	override fun getTime(): Long = execTime
+	override val time: Long get() = execTimeValue
 
 	/** 根据当前时间刷新执行耗时。 */
 	fun updateExecTime() {
-		this.execTime = System.currentTimeMillis() - startTime
+		this.execTimeValue = System.currentTimeMillis() - startTime
 	}
 
-	override fun toString(): String = "InternalTask{" + bgTask.getTitle() + ", status=" + status +
-		", progress=" + jobsComplete + " of " + jobsCount + '}'
+	override fun toString(): String = "InternalTask{" + bgTask.title + ", status=" + statusValue +
+		", progress=" + jobsCompleteValue + " of " + jobsCountValue + '}'
 }
