@@ -22,7 +22,7 @@ import javax.swing.JPanel
  * **做什么**：监听日志收集器（[LogCollector]）中 ERROR/WARN 级别的日志数量，
  * 在界面上显示两个可点击的图标；点击图标会打开对应级别的日志查看器。
  *
- * **线程模型**：日志计数由 [IssuesListener] 通过 `SwingUtilities.invokeLater` 回调到 EDT。
+ * **线程模型**：日志计数由 [IssuesListener] 在 `Dispatchers.Swing`（EDT）上回调。
  */
 class IssuesPanel(private val mainWindow: MainWindow) : JPanel() {
 

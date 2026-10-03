@@ -39,9 +39,6 @@ dependencies {
 	implementation("org.apache.commons:commons-text:1.15.0")
 	implementation("commons-io:commons-io:2.21.0")
 
-	implementation("io.reactivex.rxjava3:rxjava:3.1.12")
-	implementation("com.github.akarnokd:rxjava3-swing:3.1.1")
-
 	// Coroutines for background jobs and Swing (EDT) dispatch
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.10.2")

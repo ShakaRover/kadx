@@ -1,29 +1,38 @@
 package jadx.gui.ui
 
-import hu.akarnokd.rxjava3.swing.SwingSchedulers
-import io.reactivex.rxjava3.core.Flowable
-import io.reactivex.rxjava3.disposables.Disposable
-import io.reactivex.rxjava3.schedulers.Schedulers
 import jadx.gui.utils.NLS
 import jadx.gui.utils.UiUtils
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.swing.Swing
+import kotlinx.coroutines.withContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.awt.Color
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import java.util.Objects
-import java.util.concurrent.TimeUnit
 import javax.swing.FocusManager
 import javax.swing.JProgressBar
 
 /**
  * 堆内存使用量进度条。
  *
- * **做什么**：定时（每 2 秒）在后台线程采样 JVM 堆使用量，再切回 EDT 刷新进度条；
+ * **做什么**：定时（每 2 秒）采样 JVM 堆使用量，再回到 EDT 刷新进度条；
  * 应用窗口不活跃时跳过刷新；点击进度条会触发一次 GC。
  *
- * **为什么保留 RxJava 与 Swing 线程模型**：本阶段只做语法迁移，采样仍走
- * `Schedulers.newThread()` + `SwingSchedulers.edt()`，不引入协程。
+ * **线程模型（N1c 协程化）**：采样在 `Dispatchers.Default` 上执行，UI 更新回到
+ * [scope] 的 `Dispatchers.Swing`；定时器是一个可取消的 [Job]，
+ * 通过 `flow { delay(..) }` + `distinctUntilChanged` 复刻原 RxJava 的语义。
  *
  * **注意**：`SKIP_UPDATE` 是哨兵对象，必须用引用比较 `!==` 判断，不能用 `!=`。
  */
@@ -40,8 +49,12 @@ class HeapUsageBar : JProgressBar() {
 	private var peakUsed: Long = 0
 	private val labelTemplate: String
 
+	/** 协程作用域：随组件生命周期（[removeNotify]）取消，禁止使用 GlobalScope。 */
 	@Transient
-	private var timer: Disposable? = null
+	private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
+
+	@Transient
+	private var timer: Job? = null
 
 	@Transient
 	private var currentColor: Color? = null
@@ -79,6 +92,12 @@ class HeapUsageBar : JProgressBar() {
 		}
 	}
 
+	override fun removeNotify() {
+		reset()
+		scope.cancel()
+		super.removeNotify()
+	}
+
 	/** 一次采样结果（值、显示文本、颜色）。 */
 	private class UpdateData {
 		var value: Int = 0
@@ -91,12 +110,17 @@ class HeapUsageBar : JProgressBar() {
 			return
 		}
 		update()
-		timer = Flowable.interval(2L, TimeUnit.SECONDS, Schedulers.newThread())
-			.map { prepareUpdate() }
-			.filter { update -> update !== SKIP_UPDATE }
-			.distinctUntilChanged { a, b -> a.label == b.label } // 仅在 label 变化时放行
-			.subscribeOn(SwingSchedulers.edt())
-			.subscribe { update -> applyUpdate(update) }
+		timer = scope.launch {
+			flow {
+				while (currentCoroutineContext().isActive) {
+					delay(UPDATE_INTERVAL_MS)
+					emit(withContext(Dispatchers.Default) { prepareUpdate() })
+				}
+			}
+				.filter { update -> update !== SKIP_UPDATE }
+				.distinctUntilChanged { a, b -> a.label == b.label } // 仅在 label 变化时放行
+				.collect { update -> applyUpdate(update) }
+		}
 	}
 
 	private fun prepareUpdate(): UpdateData {
@@ -136,11 +160,8 @@ class HeapUsageBar : JProgressBar() {
 	}
 
 	fun reset() {
-		val timer = this.timer
-		if (timer != null) {
-			timer.dispose()
-			this.timer = null
-		}
+		timer?.cancel()
+		timer = null
 	}
 
 	companion object {
@@ -149,6 +170,9 @@ class HeapUsageBar : JProgressBar() {
 		private val LOG: Logger = LoggerFactory.getLogger(HeapUsageBar::class.java)
 
 		private const val GB: Double = 1024 * 1024 * 1024.0
+
+		/** 采样间隔（毫秒）。 */
+		private const val UPDATE_INTERVAL_MS = 2000L
 
 		private val GREEN: Color = Color(0, 180, 0)
 		private val RED: Color = Color(200, 0, 0)

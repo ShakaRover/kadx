@@ -1,15 +1,18 @@
 package jadx.gui.utils.fileswatcher
 
-import io.reactivex.rxjava3.processors.PublishProcessor
 import jadx.gui.ui.MainWindow
-import jadx.gui.utils.UiUtils
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.swing.Swing
+import kotlinx.coroutines.withContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.nio.file.Path
-import java.nio.file.WatchEvent
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * 实时重载（live reload）工作器。
@@ -17,26 +20,16 @@ import java.util.concurrent.TimeUnit
  * **做什么**：监视项目输入文件，防抖 1 秒后在 EDT 上触发 [MainWindow.reopen]，
  * 实现“文件改动后自动重新反编译”。
  *
- * **线程模型**：保留原 Java 的“单线程 Executor + [FilesWatcher] 阻塞循环 + RxJava 防抖”，
- * 不引入协程。
+ * **线程模型（N1d 协程化）**：用 [FilesWatcher.watchEvents] 的 Flow 在
+ * `Dispatchers.IO` 上收集事件，防抖后通过 `Dispatchers.Swing` 回到 EDT 重载；
+ * [stop] 取消 [scope]，从而中断监视循环。
  */
+@OptIn(FlowPreview::class)
 class LiveReloadWorker(private val mainWindow: MainWindow) {
-
-	private val processor: PublishProcessor<Path> = PublishProcessor.create()
 
 	@Volatile
 	private var started = false
-	private var executor: ExecutorService? = null
-	private var watcher: FilesWatcher? = null
-
-	init {
-		processor
-			.debounce(1L, TimeUnit.SECONDS)
-			.subscribe {
-				LOG.debug("Reload triggered")
-				UiUtils.uiRun(Runnable { mainWindow.reopen() })
-			}
-	}
+	private var scope: CoroutineScope? = null
 
 	fun isStarted(): Boolean = started
 
@@ -55,22 +48,21 @@ class LiveReloadWorker(private val mainWindow: MainWindow) {
 		}
 	}
 
-	private fun onUpdate(path: Path, pathKind: WatchEvent.Kind<Path>) {
-		LOG.debug("Path updated: {}", path)
-		processor.onNext(path)
-	}
-
 	@Synchronized
 	private fun start() {
 		try {
-			watcher = FilesWatcher(mainWindow.getProject().getFilePaths(), this::onUpdate)
-			executor = Executors.newSingleThreadExecutor()
-			started = true
-			val currentWatcher = watcher
-			val currentExecutor = executor
-			if (currentWatcher != null && currentExecutor != null) {
-				currentExecutor.submit(Runnable { currentWatcher.watch() })
+			val watcher = FilesWatcher(mainWindow.getProject().getFilePaths())
+			val newScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+			newScope.launch {
+				watcher.watchEvents()
+					.debounce(RELOAD_DEBOUNCE_MS.milliseconds)
+					.collect {
+						LOG.debug("Reload triggered")
+						withContext(Dispatchers.Swing) { mainWindow.reopen() }
+					}
 			}
+			scope = newScope
+			started = true
 		} catch (e: Exception) {
 			LOG.warn("Failed to start live reload worker", e)
 			resetState()
@@ -80,12 +72,8 @@ class LiveReloadWorker(private val mainWindow: MainWindow) {
 	@Synchronized
 	private fun stop() {
 		try {
-			watcher?.cancel()
-			executor?.shutdownNow()
-			val canceled = executor?.awaitTermination(5L, TimeUnit.SECONDS) ?: false
-			if (!canceled) {
-				LOG.warn("Failed to cancel live reload worker")
-			}
+			// 取消作用域会中断监视循环并关闭 WatchService
+			scope?.cancel()
 		} catch (e: Exception) {
 			LOG.warn("Failed to stop live reload worker", e)
 		} finally {
@@ -95,11 +83,13 @@ class LiveReloadWorker(private val mainWindow: MainWindow) {
 
 	private fun resetState() {
 		started = false
-		executor = null
-		watcher = null
+		scope = null
 	}
 
 	companion object {
 		private val LOG: Logger = LoggerFactory.getLogger(LiveReloadWorker::class.java)
+
+		/** 重载防抖窗口（毫秒）。 */
+		private const val RELOAD_DEBOUNCE_MS = 1000L
 	}
 }

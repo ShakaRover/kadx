@@ -1,6 +1,13 @@
 package jadx.gui.utils.fileswatcher
 
 import jadx.core.utils.Utils
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.runInterruptible
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.IOException
@@ -19,28 +26,28 @@ import java.nio.file.WatchKey
 import java.nio.file.WatchService
 import java.nio.file.attribute.BasicFileAttributes
 import java.util.Collections
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.function.BiConsumer
+
+/** 文件监视事件：[path] 上发生了 [kind]（创建/删除/修改）。 */
+data class FileEvent(val path: Path, val kind: WatchEvent.Kind<Path>)
 
 /**
  * 基于 [WatchService] 的文件/目录监视器。
  *
  * **做什么**：对给定路径（文件或目录）注册递归监视，当发生创建/删除/修改事件时
- * 回调 [listener]；新建目录会被自动纳入监视。
+ * 通过 [watchEvents] 发布；新建目录会被自动纳入监视。
  *
- * **线程模型**：保留原 Java 的阻塞式 `watch()` 循环（通常在后台线程运行），
- * 不使用协程。
+ * **线程模型（N1d 协程化）**：原阻塞式 `watch()` 循环改为冷 [Flow]，在
+ * [Dispatchers.IO] 上运行；取消时通过 [runInterruptible] 中断 `take()`，
+ * 并在 `finally` 中关闭 [WatchService]。
  */
 class FilesWatcher
 @Throws(IOException::class)
 constructor(
 	paths: List<Path>,
-	private val listener: BiConsumer<Path, WatchEvent.Kind<Path>>,
 ) {
 	private val watcher: WatchService = FileSystems.getDefault().newWatchService()
 	private val keys: MutableMap<WatchKey, Path> = HashMap()
 	private val files: MutableMap<Path, Set<Path>> = HashMap()
-	private val cancelFlag = AtomicBoolean(false)
 
 	init {
 		for (path in paths) {
@@ -56,63 +63,59 @@ constructor(
 		}
 	}
 
-	/** 请求停止监视循环。 */
-	fun cancel() {
-		cancelFlag.set(true)
-	}
-
-	/** 阻塞式监视循环；应在后台线程调用。 */
+	/**
+	 * 冷流：在 [Dispatchers.IO] 上监视已注册的路径并发布 [FileEvent]。
+	 *
+	 * 流的生命周期即监视的生命周期：收集协程被取消时，阻塞中的 `take()` 会被中断，
+	 * [WatchService] 随之关闭。所有 watch key 失效后流正常结束。
+	 */
 	@Suppress("UNCHECKED_CAST")
-	fun watch() {
-		cancelFlag.set(false)
+	fun watchEvents(): Flow<FileEvent> = flow {
 		LOG.debug("File watcher started for {} dirs", keys.size)
-		while (!cancelFlag.get()) {
-			val key: WatchKey = try {
-				watcher.take()
-			} catch (e: InterruptedException) {
-				LOG.debug("File watcher interrupted")
-				return
-			}
-			val dir = keys[key]
-			if (dir == null) {
-				LOG.warn("Unknown directory key: {}", key)
-				continue
-			}
-			for (event in key.pollEvents()) {
-				if (cancelFlag.get() || Thread.interrupted()) {
-					return
-				}
-				val kind = event.kind()
-				if (kind === OVERFLOW) {
+		try {
+			while (currentCoroutineContext().isActive) {
+				// runInterruptible 在取消时中断线程，take() 被中断后转换为 CancellationException
+				val key: WatchKey = runInterruptible { watcher.take() }
+				val dir = keys[key]
+				if (dir == null) {
+					LOG.warn("Unknown directory key: {}", key)
 					continue
 				}
-				val fileName = (event as WatchEvent<Path>).context()
-				val path = dir.resolve(fileName)
+				for (event in key.pollEvents()) {
+					val kind = event.kind()
+					if (kind === OVERFLOW) {
+						continue
+					}
+					val fileName = (event as WatchEvent<Path>).context()
+					val path = dir.resolve(fileName)
 
-				val files = this.files[dir]
-				if (files == null || files.contains(path)) {
-					listener.accept(path, kind as WatchEvent.Kind<Path>)
-				}
-				if (kind === ENTRY_CREATE) {
-					try {
-						if (Files.isDirectory(path, NOFOLLOW_LINKS)) {
-							registerDirs(path)
+					val watchedFiles = files[dir]
+					if (watchedFiles == null || watchedFiles.contains(path)) {
+						emit(FileEvent(path, kind as WatchEvent.Kind<Path>))
+					}
+					if (kind === ENTRY_CREATE) {
+						try {
+							if (Files.isDirectory(path, NOFOLLOW_LINKS)) {
+								registerDirs(path)
+							}
+						} catch (e: Exception) {
+							LOG.warn("Failed to update directory watch: {}", path, e)
 						}
-					} catch (e: Exception) {
-						LOG.warn("Failed to update directory watch: {}", path, e)
+					}
+				}
+				val valid = key.reset()
+				if (!valid) {
+					keys.remove(key)
+					if (keys.isEmpty()) {
+						LOG.debug("File watcher stopped: all watch keys removed")
+						break
 					}
 				}
 			}
-			val valid = key.reset()
-			if (!valid) {
-				keys.remove(key)
-				if (keys.isEmpty()) {
-					LOG.debug("File watcher stopped: all watch keys removed")
-					return
-				}
-			}
+		} finally {
+			watcher.close()
 		}
-	}
+	}.flowOn(Dispatchers.IO)
 
 	@Throws(IOException::class)
 	private fun registerDirs(start: Path) {

@@ -2,11 +2,6 @@ package jadx.gui.ui.dialog
 
 import com.formdev.flatlaf.FlatClientProperties
 import com.formdev.flatlaf.icons.FlatSearchWithHistoryIcon
-import io.reactivex.rxjava3.core.BackpressureStrategy
-import io.reactivex.rxjava3.core.Emitter
-import io.reactivex.rxjava3.core.Flowable
-import io.reactivex.rxjava3.disposables.Disposable
-import io.reactivex.rxjava3.schedulers.Schedulers
 import jadx.api.JavaClass
 import jadx.api.JavaPackage
 import jadx.api.resources.ResourceContentType
@@ -39,16 +34,25 @@ import jadx.gui.utils.SimpleListener
 import jadx.gui.utils.TextStandardActions
 import jadx.gui.utils.UiUtils
 import jadx.gui.utils.cache.ValueCache
+import jadx.gui.utils.flow.UiFlowUtils
 import jadx.gui.utils.layout.WrapLayout
-import jadx.gui.utils.rx.RxUtils
 import jadx.gui.utils.ui.DocumentUpdateListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExecutorCoroutineDispatcher
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
+import kotlinx.coroutines.withContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.awt.BorderLayout
@@ -62,9 +66,8 @@ import java.util.Collections
 import java.util.EnumSet
 import java.util.HashSet
 import java.util.Objects
-import java.util.concurrent.Executor
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
 import java.util.function.BiConsumer
 import java.util.function.Consumer
 import java.util.stream.Collectors
@@ -85,16 +88,18 @@ import javax.swing.SpinnerNumberModel
 import javax.swing.WindowConstants
 import javax.swing.border.TitledBorder
 import javax.swing.event.ChangeListener
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * 文本/类/注释搜索对话框。
  *
  * **做什么**：根据预设（[SearchPreset]）与选项（[SearchOptions]）构建后台搜索任务，
- * 通过 RxJava 防抖地把输入变化转为搜索请求，结果填入 [CommonSearchDialog] 的表格。
+ * 通过 Flow 防抖地把输入变化转为搜索请求，结果填入 [CommonSearchDialog] 的表格。
  *
- * **为什么保留 Swing 线程模型**：搜索在单线程 executor 上跑，UI 更新回到 EDT，
- * 不引入协程（阶段 5.1 约束）。
+ * **线程模型（N1c 协程化）**：输入事件用 [Flow] 合并 + `debounce`，在 [scope]（EDT）上收集，
+ * 实际搜索在单线程调度器 [searchBackgroundDispatcher] 上执行，UI 更新回到 EDT。
  */
+@OptIn(FlowPreview::class)
 class SearchDialog private constructor(
 	mainWindow: MainWindow,
 	private val searchPreset: SearchPreset,
@@ -115,7 +120,7 @@ class SearchDialog private constructor(
 	private lateinit var stopBtn: JButton
 	private lateinit var sortBtn: JButton
 
-	private var searchDisposable: Disposable? = null
+	private var searchJob: Job? = null
 	private lateinit var searchEmitter: SearchEventEmitter
 	private var activeTabListener: ChangeListener? = null
 
@@ -130,7 +135,10 @@ class SearchDialog private constructor(
 	private val pendingResults: MutableList<JNode> = ArrayList()
 
 	/** 用单线程执行全部后台工作，从而无需额外同步。 */
-	private val searchBackgroundExecutor: Executor = Executors.newSingleThreadExecutor()
+	private val searchBackgroundExecutor: ExecutorService = Executors.newSingleThreadExecutor()
+
+	/** 搜索执行调度器（单线程），由 [searchBackgroundExecutor] 支持。 */
+	private val searchBackgroundDispatcher: ExecutorCoroutineDispatcher = searchBackgroundExecutor.asCoroutineDispatcher()
 
 	// 跨搜索缓存
 	private val includedClsCache = ValueCache<String, List<JavaClass>>()
@@ -164,17 +172,18 @@ class SearchDialog private constructor(
 	}
 
 	override fun dispose() {
-		val disposable = searchDisposable
-		if (disposable != null && !disposable.isDisposed) {
-			disposable.dispose()
-		}
+		searchJob?.cancel()
 		progressJob?.cancel()
 		scope.cancel()
 		resultsModel.clear()
 		removeActiveTabListener()
-		searchBackgroundExecutor.execute {
-			stopSearchTask()
-			unloadTempData()
+		if (!searchBackgroundExecutor.isShutdown) {
+			searchBackgroundExecutor.execute {
+				stopSearchTask()
+				unloadTempData()
+			}
+			// 关闭调度器（shutdown 会先执行完已排队的清理任务）
+			searchBackgroundDispatcher.close()
 		}
 		super.dispose()
 	}
@@ -471,42 +480,40 @@ class SearchDialog private constructor(
 		resultsActionsPanel.add(sortBtn)
 	}
 	private fun initSearchEvents() {
-		val disposable = searchDisposable
-		if (disposable != null) {
-			disposable.dispose()
-			searchDisposable = null
-		}
+		searchJob?.cancel()
+		searchJob = null
 		searchEmitter = SearchEventEmitter()
-		val searchEvents: Flowable<String>
+		val searchEvents: Flow<String>
 		if (mainWindow.getSettings().isUseAutoSearch()) {
-			searchEvents = Flowable.merge(
-				listOf(
-					RxUtils.textFieldChanges(searchField),
-					RxUtils.textFieldEnterPress(searchField),
-					RxUtils.textFieldChanges(packageField),
-					RxUtils.textFieldEnterPress(packageField),
-					RxUtils.textFieldChanges(resExtField),
-					RxUtils.textFieldEnterPress(resExtField),
-					RxUtils.spinnerChanges(resSizeLimit),
-					RxUtils.spinnerEnterPress(resSizeLimit),
-					searchEmitter.getFlowable(),
-				),
-			)
+			searchEvents = listOf(
+				UiFlowUtils.textFieldChanges(searchField),
+				UiFlowUtils.textFieldEnterPress(searchField),
+				UiFlowUtils.textFieldChanges(packageField),
+				UiFlowUtils.textFieldEnterPress(packageField),
+				UiFlowUtils.textFieldChanges(resExtField),
+				UiFlowUtils.textFieldEnterPress(resExtField),
+				UiFlowUtils.spinnerChanges(resSizeLimit),
+				UiFlowUtils.spinnerEnterPress(resSizeLimit),
+				searchEmitter.getFlow(),
+			).merge()
 		} else {
-			searchEvents = Flowable.merge(
-				listOf(
-					RxUtils.textFieldEnterPress(searchField),
-					RxUtils.textFieldEnterPress(packageField),
-					RxUtils.textFieldEnterPress(resExtField),
-					RxUtils.spinnerEnterPress(resSizeLimit),
-					searchEmitter.getFlowable(),
-				),
-			)
+			searchEvents = listOf(
+				UiFlowUtils.textFieldEnterPress(searchField),
+				UiFlowUtils.textFieldEnterPress(packageField),
+				UiFlowUtils.textFieldEnterPress(resExtField),
+				UiFlowUtils.spinnerEnterPress(resSizeLimit),
+				searchEmitter.getFlow(),
+			).merge()
 		}
-		searchDisposable = searchEvents
-			.debounce(100, TimeUnit.MILLISECONDS)
-			.observeOn(Schedulers.from(searchBackgroundExecutor))
-			.subscribe { _ -> this.search(searchField.getText()) }
+		searchJob = scope.launch {
+			searchEvents
+				.debounce(SEARCH_DEBOUNCE_MS.milliseconds)
+				.collect { text ->
+					withContext(searchBackgroundDispatcher) {
+						this@SearchDialog.search(text)
+					}
+				}
+		}
 
 		// 设置初始值
 		optionsListener.sendUpdate(options)
@@ -835,28 +842,21 @@ class SearchDialog private constructor(
 	}
 
 	private inner class SearchEventEmitter {
-		private val flowable: Flowable<String>
-		private var emitter: Emitter<String>? = null
+		private val events = MutableSharedFlow<String>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
-		init {
-			flowable = Flowable.create({ emitter -> saveEmitter(emitter) }, BackpressureStrategy.LATEST)
-		}
+		fun getFlow(): Flow<String> = events
 
-		fun getFlowable(): Flowable<String> = flowable
-
-		private fun saveEmitter(emitter: Emitter<String>) {
-			this.emitter = emitter
-		}
-
-		@Synchronized
 		fun emitSearch() {
-			emitter?.onNext(searchField.getText())
+			events.tryEmit(searchField.getText())
 		}
 	}
 
 	companion object {
 		private val LOG: Logger = LoggerFactory.getLogger(SearchDialog::class.java)
 		private const val serialVersionUID = -5105405456969134105L
+
+		/** 输入防抖窗口（毫秒）。 */
+		private const val SEARCH_DEBOUNCE_MS = 100L
 
 		@JvmStatic
 		fun search(window: MainWindow, preset: SearchPreset) {
