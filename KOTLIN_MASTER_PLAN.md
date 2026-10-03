@@ -68,7 +68,7 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | jadx-plugins/jadx-raung-input | 0 | 2 | 0 | 0 | ✅ |
 | jadx-plugins-tools | 0 | 18 | 0 | 1 | ✅ |
 | **jadx-core** | **0** | **568** | **472** | **668** | 🟢 main+test 均完成（test 剩 466 个有意 Java：fixture/输入/harness） |
-| jadx-cli | 15 | 0 | 6 | 0 | ⏳ |
+| jadx-cli | 0 | 21 | 0 | 0 | ✅ 5df919da |
 | jadx-gui | 405 | 2 | 8 | 1 | ⏳ |
 | **合计剩余 .java** | | | | | **约 435**（gui 413 + cli 21 + analysis 1，均非 fixture） |
 
@@ -173,8 +173,10 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 
 | ID | 范围 | 约数 | 依赖 | 状态 |
 |----|------|-----:|------|------|
-| CL01 | `cli` 包全部 main（含 `config`/`commands`/`plugins`/`tools`/`clst`） | 15 | M3 | ⏳ |
-| CL02 | `cli` test（含 `plugins/tools/utils/PluginUtilsTest`） | 6 | CL01 | ⏳ |
+| CL01 | `cli` 包全部 main（含 `config`/`commands`/`plugins`/`tools`/`clst`） | 15 | M3 | ✅ 5df919da |
+| CL02 | `cli` test（含 `plugins/tools/utils/PluginUtilsTest`） | 6 | CL01 | ✅ 5df919da |
+
+> CLI 已 100% Kotlin；`jadx-cli/build.gradle.kts` 补上了 `id("jadx-kotlin")`；jcommander 注解落在 Kotlin backing field 上（`javap` 验证）。
 
 > CLI 依赖 core 公共 API；core main 收口后再动，避免 API 震荡。
 
