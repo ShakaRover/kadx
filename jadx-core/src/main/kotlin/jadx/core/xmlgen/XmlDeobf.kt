@@ -17,7 +17,6 @@ object XmlDeobf {
 	 * 仅当名称包含 `.`（像类名）且能在类信息存储中命中时才返回结果，否则返回 null。
 	 * [packageName] 非空且名称以 `.` 开头时，按相对类名补全为完整类名。
 	 */
-	@JvmStatic
 	fun deobfClassName(root: RootNode, potentialClassName: String, packageName: String?): String? {
 		var className = potentialClassName
 		if (className.indexOf('.') == -1) {
@@ -38,6 +37,5 @@ object XmlDeobf {
 	/**
 	 * 判断属性是否重复：向 [attrCache] 添加 [attrFullName]，若已存在（add 返回 false）则视为重复。
 	 */
-	@JvmStatic
 	fun isDuplicatedAttr(attrFullName: String, attrCache: MutableSet<String>): Boolean = !attrCache.add(attrFullName)
 }

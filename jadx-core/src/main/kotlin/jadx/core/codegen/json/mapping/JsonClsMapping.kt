@@ -19,7 +19,7 @@ class JsonClsMapping {
 	var fields: List<JsonFieldMapping>? = null
 	var methods: List<JsonMthMapping>? = null
 
-	fun isInner(): Boolean = inner
+	val isInner: Boolean get() = inner
 
 	fun setInner(inner: Boolean) {
 		this.inner = inner

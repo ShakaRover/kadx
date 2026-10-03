@@ -86,7 +86,7 @@ class JsonCodeGen(cls: ClassNode) {
 		addInnerClasses(cls, jsonCls, classGen)
 
 		if (!cls.classInfo.isInner) {
-			val imports = Utils.collectionMap(classGen.getImports()) { it.aliasFullName }
+			val imports = Utils.collectionMap(classGen.imports) { it.aliasFullName }
 			jsonCls.imports = imports.sorted()
 		}
 		return jsonCls

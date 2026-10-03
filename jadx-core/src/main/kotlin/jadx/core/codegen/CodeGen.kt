@@ -15,13 +15,12 @@ import java.util.concurrent.Callable
  * **重试机制**：若生成过程中某些 visitor 请求重启（[AFlag.RESTART_CODEGEN]），
  * 会清除标记并重试一次；再次失败才抛异常。
  *
- * **Kotlin 转换说明**：原 Java 为静态工具类，这里保留私有构造器 + `companion object` + `@JvmStatic`，
- * Java 调用方 `CodeGen.generate(cls)` 保持不变。
+ * **Kotlin 转换说明**：原 Java 为静态工具类，这里保留私有构造器 + `companion object`，
+ * 调用方 `CodeGen.generate(cls)` 保持不变。
  */
 class CodeGen private constructor() {
 
 	companion object {
-		@JvmStatic
 		fun generate(cls: ClassNode): ICodeInfo {
 			if (cls.contains(AFlag.DONT_GENERATE)) {
 				return ICodeInfo.EMPTY

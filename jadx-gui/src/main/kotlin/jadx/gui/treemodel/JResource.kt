@@ -273,7 +273,7 @@ open class JResource : JLoadableNode {
 			return ICodeInfo.EMPTY
 		}
 		val rc = resFile.loadContent()
-		if (rc.getDataType() == ResContainer.DataType.RES_TABLE) {
+		if (rc.dataType == ResContainer.DataType.RES_TABLE) {
 			val codeInfo = loadCurrentSingleRes(rc)
 			val nodes = ResTableHelper.buildTree(this, rc)
 			sortResNodes(nodes)
@@ -286,12 +286,12 @@ open class JResource : JLoadableNode {
 	}
 
 	private fun loadCurrentSingleRes(rc: ResContainer): ICodeInfo {
-		when (rc.getDataType()) {
-			ResContainer.DataType.TEXT, ResContainer.DataType.RES_TABLE -> return rc.getText()
+		when (rc.dataType) {
+			ResContainer.DataType.TEXT, ResContainer.DataType.RES_TABLE -> return rc.text
 
 			ResContainer.DataType.RES_LINK -> {
 				try {
-					val resourceFile = rc.getResLink()
+					val resourceFile = rc.resLink
 					return ResourcesLoader.decodeStream(resourceFile) { size, inputStream ->
 						// TODO: 在加载前检查大小
 						if (size > 10 * 1024 * 1024L) {

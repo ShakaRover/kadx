@@ -40,10 +40,10 @@ class ImagePanel(panel: TabbedPane, res: JResource) : ContentPanel(panel, res) {
 	private fun loadImage(res: JResource): BufferedImage? {
 		val resFile = checkNotNull(res.getResFile())
 		val resContainer = resFile.loadContent()
-		val dataType = resContainer.getDataType()
+		val dataType = resContainer.dataType
 		if (dataType == ResContainer.DataType.DECODED_DATA) {
 			try {
-				return ImageIO.read(ByteArrayInputStream(resContainer.getDecodedData()))
+				return ImageIO.read(ByteArrayInputStream(resContainer.decodedData))
 			} catch (e: Exception) {
 				throw JadxRuntimeException("Failed to load image", e)
 			}

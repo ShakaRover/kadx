@@ -23,7 +23,7 @@ import java.util.ArrayList
 /**
  * 生成 `mapping.json`：把类 / 字段 / 方法的原名与别名映射导出为 JSON，供重命名工具或人工参考。
  *
- * **Kotlin 转换说明**：静态方法放入 `companion object` + `@JvmStatic`；
+ * **Kotlin 转换说明**：静态方法放入 `companion object`；
  * `try-with-resources` 用 Kotlin 的 `use { }` 改写（语义相同，必定关闭 writer）。
  */
 class JsonMappingGen private constructor() {
@@ -36,7 +36,6 @@ class JsonMappingGen private constructor() {
 			.disableHtmlEscaping()
 			.create()
 
-		@JvmStatic
 		fun dump(root: RootNode) {
 			val mapping = JsonMapping()
 			fillMapping(mapping, root)

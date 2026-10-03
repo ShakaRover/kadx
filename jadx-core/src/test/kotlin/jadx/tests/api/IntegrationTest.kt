@@ -407,10 +407,10 @@ abstract class IntegrationTest : TestUtils() {
 		})
 
 		// 把资源映射转换为资源存储对象
-		val resStorage = ResourceStorage(jadxArgs.security)
+		val resourceStorage = ResourceStorage(jadxArgs.security)
 		for ((id, name) in resMap) {
 			val parts = name.split(Regex("\\."))
-			resStorage.add(ResourceEntry(id, "", parts[0], parts[1], ""))
+			resourceStorage.add(ResourceEntry(id, "", parts[0], parts[1], ""))
 		}
 
 		// 模拟资源表解析器：直接返回构造好的资源存储
@@ -418,11 +418,11 @@ abstract class IntegrationTest : TestUtils() {
 			override fun decode(inputStream: InputStream) {
 			}
 
-			override fun getResStorage(): ResourceStorage = resStorage
+			override val resStorage: ResourceStorage get() = resourceStorage
 
 			override fun decodeFiles(): ResContainer = ResContainer.textResource(resTableName, SimpleCodeInfo(resTableName))
 
-			override fun getStrings(): BinaryXMLStrings = BinaryXMLStrings()
+			override val strings: BinaryXMLStrings get() = BinaryXMLStrings()
 		}
 
 		decompiler.getResourcesLoader().addResTableParserProvider(object : IResTableParserProvider {

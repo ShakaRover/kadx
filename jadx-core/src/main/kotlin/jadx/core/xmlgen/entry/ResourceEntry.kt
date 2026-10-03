@@ -12,16 +12,16 @@ package jadx.core.xmlgen.entry
  * 因此保持普通类，不生成 `data class` 的 `equals/hashCode`。
  */
 class ResourceEntry(
-	private val id: Int,
-	private val pkgName: String,
-	private val typeName: String,
-	private val keyName: String,
-	private val config: String,
+	val id: Int,
+	val pkgName: String,
+	val typeName: String,
+	val keyName: String,
+	val config: String,
 ) {
-	private var parentRef: Int = 0
-	private var protoValue: ProtoValue? = null
-	private var simpleValue: RawValue? = null
-	private var namedValues: List<RawNamedValue>? = null
+	var parentRef: Int = 0
+	var protoValue: ProtoValue? = null
+	var simpleValue: RawValue? = null
+	var namedValues: List<RawNamedValue>? = null
 
 	fun copy(newKeyName: String): ResourceEntry {
 		val copy = ResourceEntry(id, pkgName, typeName, newKeyName, config)
@@ -33,40 +33,6 @@ class ResourceEntry(
 	}
 
 	fun copyWithId(resName: String): ResourceEntry = copy(String.format("%s_res_0x%08x", resName, id))
-
-	fun getId(): Int = id
-
-	fun getPkgName(): String = pkgName
-
-	fun getTypeName(): String = typeName
-
-	fun getKeyName(): String = keyName
-
-	fun getConfig(): String = config
-
-	fun setParentRef(parentRef: Int) {
-		this.parentRef = parentRef
-	}
-
-	fun getParentRef(): Int = parentRef
-
-	fun getProtoValue(): ProtoValue? = protoValue
-
-	fun setProtoValue(protoValue: ProtoValue?) {
-		this.protoValue = protoValue
-	}
-
-	fun getSimpleValue(): RawValue? = simpleValue
-
-	fun setSimpleValue(simpleValue: RawValue?) {
-		this.simpleValue = simpleValue
-	}
-
-	fun setNamedValues(namedValues: List<RawNamedValue>?) {
-		this.namedValues = namedValues
-	}
-
-	fun getNamedValues(): List<RawNamedValue>? = namedValues
 
 	override fun toString(): String = "  0x" + Integer.toHexString(id) + " (" + id + ')' + config + " = " + typeName + '.' + keyName
 }

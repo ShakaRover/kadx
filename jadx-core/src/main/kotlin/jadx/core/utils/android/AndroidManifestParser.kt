@@ -227,7 +227,7 @@ class AndroidManifestParser {
 		if (appStrings == null) {
 			return null
 		}
-		val content = appStrings.getText().getCodeStr()
+		val content = appStrings.text.getCodeStr()
 		return parseXml(content)
 	}
 
@@ -235,7 +235,7 @@ class AndroidManifestParser {
 		if (androidManifest == null) {
 			return null
 		}
-		val content = androidManifest.loadContent().getText().getCodeStr()
+		val content = androidManifest.loadContent().text.getCodeStr()
 		return parseXml(content)
 	}
 

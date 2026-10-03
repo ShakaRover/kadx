@@ -62,7 +62,6 @@ class BinaryXMLStrings @JvmOverloads constructor(
 	fun size(): Int = this.stringCount
 
 	companion object {
-		@JvmField
 		val INVALID_STRING_PLACEHOLDER = "⟨STRING_DECODE_ERROR⟩"
 
 		private fun extractString8(strArray: ByteArray, offset: Int): String {

@@ -30,9 +30,7 @@ open class ConditionGen(insnGen: InsnGen) : InsnGen(insnGen.mgen, insnGen.fallba
 
 	/** 条件递归遍历用的栈；只保存当前路径上的条件，避免无限递归。 */
 	private class CondStack {
-		private val stack: Queue<IfCondition> = ArrayDeque()
-
-		fun getStack(): Queue<IfCondition> = stack
+		val stack: Queue<IfCondition> = ArrayDeque()
 
 		fun push(cond: IfCondition) {
 			stack.add(cond)
@@ -103,7 +101,7 @@ open class ConditionGen(insnGen: InsnGen) : InsnGen(insnGen.mgen, insnGen.fallba
 			}
 			if (op == IfOp.EQ) {
 				// == true
-				if (stack.getStack().size == 1) {
+				if (stack.stack.size == 1) {
 					addArg(code, firstArg, false)
 				} else {
 					wrap(code, firstArg)

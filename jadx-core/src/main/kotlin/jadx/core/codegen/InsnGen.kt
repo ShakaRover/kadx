@@ -65,17 +65,15 @@ import java.util.EnumSet
  * 复用 [addArg] / [makeInsn] / [useType] 等参数渲染逻辑。
  *
  * **字段可见性说明**：
- * - `mgen` / `fallback` 会被子类 [ConditionGen] 通过外部实例访问，因此声明为公开 `@JvmField`；
- * - `mth` / `root` 只在子类内部（`this`）访问，保持 `@JvmField protected`。
+ * - `mgen` / `fallback` 会被子类 [ConditionGen] 通过外部实例访问，因此声明为公开属性；
+ * - `mth` / `root` 只在子类内部（`this`）访问，保持 `protected`。
  */
 open class InsnGen(
-	@JvmField val mgen: MethodGen,
-	@JvmField val fallback: Boolean,
+	val mgen: MethodGen,
+	val fallback: Boolean,
 ) {
-	@JvmField
-	protected val mth: MethodNode = mgen.getMethodNode()
+	protected val mth: MethodNode = mgen.methodNode
 
-	@JvmField
 	protected val root: RootNode = mth.root()
 
 	/** 指令渲染标志：是否只渲染表达式主体、是否需要避免加括号、是否内联。 */
@@ -85,7 +83,7 @@ open class InsnGen(
 		INLINE,
 	}
 
-	private fun isFallback(): Boolean = fallback
+	private val isFallback: Boolean get() = fallback
 
 	/** 渲染一个参数，并在其非空时追加 `.`（用于 `obj.field`、`obj.method` 等场景）。 */
 	@Throws(CodegenException::class)
@@ -114,7 +112,7 @@ open class InsnGen(
 			if (code.isMetadataSupported()) {
 				code.attachAnnotation(VarNode.getRef(mth, reg))
 			}
-			code.add(mgen.getNameGen().useArg(reg))
+			code.add(mgen.nameGen.useArg(reg))
 		} else if (arg.isLiteral) {
 			addLiteralArg(code, arg as LiteralArg, flags)
 		} else if (arg.isInsnWrap) {
@@ -173,7 +171,7 @@ open class InsnGen(
 
 	/** 只输出变量名（不含类型），用于参数声明等场景。 */
 	private fun defVar(code: ICodeWriter, codeVar: CodeVar) {
-		val varName = mgen.getNameGen().assignArg(codeVar)
+		val varName = mgen.nameGen.assignArg(codeVar)
 		if (code.isMetadataSupported()) {
 			code.attachDefinition(VarNode.get(mth, codeVar))
 		}
@@ -228,19 +226,19 @@ open class InsnGen(
 				}
 			}
 		}
-		makeStaticFieldAccess(code, field, fieldNode, mgen.getClassGen())
+		makeStaticFieldAccess(code, field, fieldNode, mgen.classGen)
 	}
 
 	fun useClass(code: ICodeWriter, type: ArgType) {
-		mgen.getClassGen().useClass(code, type)
+		mgen.classGen.useClass(code, type)
 	}
 
 	fun useClass(code: ICodeWriter, cls: ClassInfo) {
-		mgen.getClassGen().useClass(code, cls)
+		mgen.classGen.useClass(code, cls)
 	}
 
 	protected fun useType(code: ICodeWriter, type: ArgType) {
-		mgen.getClassGen().useType(code, type)
+		mgen.classGen.useType(code, type)
 	}
 
 	@Throws(CodegenException::class)
@@ -340,7 +338,7 @@ open class InsnGen(
 				code.add("break")
 				val labelAttr = insn.get(AType.LOOP_LABEL)
 				if (labelAttr != null) {
-					code.add(' ').add(mgen.getNameGen().getLoopLabel(labelAttr))
+					code.add(' ').add(mgen.nameGen.getLoopLabel(labelAttr))
 				}
 			}
 
@@ -468,7 +466,7 @@ open class InsnGen(
 			}
 
 			InsnType.MONITOR_ENTER -> {
-				if (isFallback()) {
+				if (isFallback) {
 					code.add("monitor-enter(")
 					addArg(code, insn.getArg(0))
 					code.add(')')
@@ -476,7 +474,7 @@ open class InsnGen(
 			}
 
 			InsnType.MONITOR_EXIT -> {
-				if (isFallback()) {
+				if (isFallback) {
 					code.add("monitor-exit(")
 					if (insn.getArgsCount() == 1) {
 						addArg(code, insn.getArg(0))
@@ -710,9 +708,9 @@ open class InsnGen(
 				code.attachAnnotation(refMth)
 			}
 			if (forceShortName) {
-				mgen.getClassGen().addClsShortNameForced(code, insn.getClassType())
+				mgen.classGen.addClsShortNameForced(code, insn.getClassType())
 			} else {
-				mgen.getClassGen().addClsName(code, insn.getClassType())
+				mgen.classGen.addClsName(code, insn.getClassType())
 			}
 			val genericInfoAttr = insn.get(AType.GENERIC_INFO)
 			if (genericInfoAttr != null) {
@@ -725,7 +723,7 @@ open class InsnGen(
 						} else {
 							first = false
 						}
-						mgen.getClassGen().useType(code, type)
+						mgen.classGen.useType(code, type)
 					}
 				}
 				code.add('>')
@@ -797,8 +795,8 @@ open class InsnGen(
 		generateMethodArguments(code, insn, 0, callMth)
 		code.add(' ')
 
-		val classGen = ClassGen(cls, mgen.getClassGen().getParentGen())
-		classGen.setOuterNameGen(mgen.getNameGen())
+		val classGen = ClassGen(cls, mgen.classGen.parentGen)
+		classGen.outerNameGen = mgen.nameGen
 		classGen.addClassBody(code, true)
 
 		mth.parentClass.addInlinedClass(cls)
@@ -869,7 +867,7 @@ open class InsnGen(
 
 	@Throws(CodegenException::class)
 	private fun makeInvokeCustomRaw(insn: InvokeCustomRawNode, callMthNode: MethodNode?, code: ICodeWriter) {
-		if (isFallback()) {
+		if (isFallback) {
 			code.add("call_site(")
 			code.incIndent()
 			for (value in checkNotNull(insn.callSiteValues)) {
@@ -990,9 +988,9 @@ open class InsnGen(
 
 	@Throws(CodegenException::class)
 	private fun makeInlinedLambdaMethod(code: ICodeWriter, customNode: InvokeCustomNode, callMth: MethodNode) {
-		val callMthGen = MethodGen(mgen.getClassGen(), callMth)
-		val nameGen = callMthGen.getNameGen()
-		nameGen.inheritUsedNames(this.mgen.getNameGen())
+		val callMthGen = MethodGen(mgen.classGen, callMth)
+		val nameGen = callMthGen.nameGen
+		nameGen.inheritUsedNames(this.mgen.nameGen)
 
 		val implArgs = checkNotNull(customNode.implMthInfo).argumentsTypes
 		val callArgs = callMth.getArgRegs()
@@ -1203,9 +1201,8 @@ open class InsnGen(
 	}
 
 	companion object {
-		@JvmStatic
 		fun makeStaticFieldAccess(code: ICodeWriter, field: FieldInfo, clsGen: ClassGen) {
-			val fieldNode = clsGen.getClassNode().root().resolveField(field)
+			val fieldNode = clsGen.classNode.root().resolveField(field)
 			makeStaticFieldAccess(code, field, fieldNode, clsGen)
 		}
 
@@ -1216,8 +1213,8 @@ open class InsnGen(
 			clsGen: ClassGen,
 		) {
 			val declClass = field.declClass
-			val fieldFromThisClass = clsGen.getClassNode().classInfo == declClass
-			if (!fieldFromThisClass || !clsGen.isBodyGenStarted()) {
+			val fieldFromThisClass = clsGen.classNode.classInfo == declClass
+			if (!fieldFromThisClass || !clsGen.isBodyGenStarted) {
 				// Android specific resources class handler
 				if (!handleAppResField(code, clsGen, declClass)) {
 					clsGen.useClass(code, declClass)

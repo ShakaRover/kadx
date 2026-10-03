@@ -6,8 +6,7 @@ import jadx.core.deobf.NameMapper
  * 资源名称（resource name）合法性处理工具。
  *
  * 目标：让名称既能被 aapt2 当作资源条目名，又能转换成合法的 `R` 类字段名。
- * 原 Java 为包级私有工具类，这里用 `object` + `@JvmStatic` 保持 Java 调用
- * `ResNameUtils.xxx(...)` 不变。
+ * 原 Java 为包级私有工具类，这里用 `object` 单例，调用 `ResNameUtils.xxx(...)` 不变。
  */
 object ResNameUtils {
 
@@ -16,7 +15,6 @@ object ResNameUtils {
 	 *
 	 * [allowNonPrintable] 为 true 时允许非 ASCII 可打印字符（仍要求是合法标识符）。
 	 */
-	@JvmStatic
 	fun sanitizeAsResourceName(name: String, postfix: String, allowNonPrintable: Boolean): String {
 		if (name.isEmpty()) {
 			return postfix
@@ -58,7 +56,6 @@ object ResNameUtils {
 	}
 
 	/** 把资源名转换为 `R` 类字段名（点号替换为下划线）。 */
-	@JvmStatic
 	fun convertToRFieldName(resourceName: String): String = resourceName.replace('.', '_')
 
 	/** 码点能否作为资源名首字符（aapt2 + R 类生成双重约束）。 */

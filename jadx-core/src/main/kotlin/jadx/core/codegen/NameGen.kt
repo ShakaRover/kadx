@@ -20,11 +20,11 @@ import java.util.regex.Pattern
  */
 class NameGen(mth: MethodNode, classGen: ClassGen) {
 	private val mth: MethodNode = mth
-	private val fallback: Boolean = classGen.isFallbackMode()
+	private val fallback: Boolean = classGen.isFallbackMode
 	private val varNames: MutableSet<String> = HashSet()
 
 	init {
-		val outerNameGen = classGen.getOuterNameGen()
+		val outerNameGen = classGen.outerNameGen
 		if (outerNameGen != null) {
 			inheritUsedNames(outerNameGen)
 		}

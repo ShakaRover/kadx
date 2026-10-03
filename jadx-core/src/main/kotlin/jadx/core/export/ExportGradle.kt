@@ -19,8 +19,8 @@ import java.io.File
  * 先 [init] 建目录，再 [generateGradleFiles] 写文件。
  *
  * **Kotlin 转换说明**：
- * - 静态方法 [detectExportType] 放入 `companion object` 并标注 `@JvmStatic`，
- *   Java 侧（如 jadx-gui）的 `ExportGradle.detectExportType(...)` 调用不变；
+ * - 静态方法 [detectExportType] 放入 `companion object`，
+ *   调用方 `ExportGradle.detectExportType(...)` 不变；
  * - `generator` 字段在 [init] 前为 null，如实声明为可空，用 `checkNotNull` 在调用处校验。
  */
 class ExportGradle(
@@ -34,7 +34,7 @@ class ExportGradle(
 
 	/** 初始化：选择生成器、建目录，并返回输出目录。 */
 	fun init(): OutDirs {
-		val exportType = getExportGradleType()
+		val exportType = exportGradleType
 		LOG.info("Export Gradle project using '{}' template", exportType)
 		val gen: IExportGradleGenerator = when (exportType) {
 			ExportGradleType.ANDROID_APP,
@@ -47,7 +47,7 @@ class ExportGradle(
 		}
 		generator = gen
 		gen.init()
-		val outDirs = gen.getOutDirs()
+		val outDirs = gen.outDirs
 		outDirs.makeDirs()
 		return outDirs
 	}
@@ -64,17 +64,18 @@ class ExportGradle(
 	 * 1. 用户显式指定且不是 [ExportGradleType.AUTO]、也不等于探测结果时，以用户为准；
 	 * 2. 否则采用 [detectExportType] 的探测结果。
 	 */
-	private fun getExportGradleType(): ExportGradleType {
-		val argsExportType = root.getArgs().exportGradleType
-		val detectedType = detectExportType(root, resources)
-		if (argsExportType == null ||
-			argsExportType == ExportGradleType.AUTO ||
-			argsExportType == detectedType
-		) {
-			return detectedType
+	private val exportGradleType: ExportGradleType
+		get() {
+			val argsExportType = root.getArgs().exportGradleType
+			val detectedType = detectExportType(root, resources)
+			if (argsExportType == null ||
+				argsExportType == ExportGradleType.AUTO ||
+				argsExportType == detectedType
+			) {
+				return detectedType
+			}
+			return argsExportType
 		}
-		return argsExportType
-	}
 
 	companion object {
 		private val LOG: Logger = LoggerFactory.getLogger(ExportGradle::class.java)
@@ -85,7 +86,6 @@ class ExportGradle(
 		 * 有 `AndroidManifest.xml` 时：含 `classes.jar` 视为 Android Library，
 		 * 含 `resources.arsc` 视为 Android App；否则为纯 Java 工程。
 		 */
-		@JvmStatic
 		fun detectExportType(root: RootNode, resources: List<ResourceFile>): ExportGradleType {
 			val androidManifest = AndroidManifestParser.getAndroidManifest(resources)
 			if (androidManifest != null) {

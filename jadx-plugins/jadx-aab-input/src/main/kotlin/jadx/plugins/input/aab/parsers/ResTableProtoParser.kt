@@ -30,7 +30,7 @@ public class ResTableProtoParser(private val root: RootNode) :
 	CommonProtoParser(),
 	IResTableParser {
 
-	private var resStorage: ResourceStorage? = null
+	override var resStorage: ResourceStorage? = null
 	private var baseFileName = ""
 
 	override fun setBaseFileName(fileName: String) {
@@ -79,13 +79,11 @@ public class ResTableProtoParser(private val root: RootNode) :
 					} else {
 						protoValue = parse(configValue.value.compoundValue)
 					}
-					resEntry.setProtoValue(protoValue)
+					resEntry.protoValue = protoValue
 				}
 			}
 		}
 	}
 
-	override fun getResStorage(): ResourceStorage? = resStorage
-
-	override fun getStrings(): BinaryXMLStrings = BinaryXMLStrings()
+	override val strings: BinaryXMLStrings get() = BinaryXMLStrings()
 }

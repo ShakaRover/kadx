@@ -42,7 +42,7 @@ class ResourceStorage(private val security: IJadxSecurity) {
 	}
 
 	fun addRename(entry: ResourceEntry) {
-		addRename(entry.getId(), entry.getKeyName())
+		addRename(entry.id, entry.keyName)
 	}
 
 	fun addRename(id: Int, keyName: String) {
@@ -54,7 +54,7 @@ class ResourceStorage(private val security: IJadxSecurity) {
 	fun searchEntryWithSameName(resourceEntry: ResourceEntry): ResourceEntry? = uniqNameEntries[resourceEntry]
 
 	fun finish() {
-		list.sortBy { it.getId() }
+		list.sortBy { it.id }
 		uniqNameEntries.clear()
 		renames.clear()
 	}
@@ -70,7 +70,7 @@ class ResourceStorage(private val security: IJadxSecurity) {
 		get() {
 			val map = HashMap<Int, String>()
 			for (entry in list) {
-				map[entry.getId()] = entry.getTypeName() + '/' + entry.getKeyName()
+				map[entry.id] = entry.typeName + '/' + entry.keyName
 			}
 			return map
 		}
@@ -78,6 +78,6 @@ class ResourceStorage(private val security: IJadxSecurity) {
 	companion object {
 		/** 先按配置、再按类型、最后按名称排序，保证同名冲突可稳定检测。 */
 		private val RES_ENTRY_NAME_COMPARATOR: Comparator<ResourceEntry> =
-			compareBy({ it.getConfig() }, { it.getTypeName() }, { it.getKeyName() })
+			compareBy({ it.config }, { it.typeName }, { it.keyName })
 	}
 }

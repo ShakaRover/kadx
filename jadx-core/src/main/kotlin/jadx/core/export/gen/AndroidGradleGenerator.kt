@@ -31,7 +31,7 @@ import java.util.EnumSet
  * 以及（必要时）`gradle.properties`。
  *
  * **Kotlin 转换说明**：`outDirs` / `baseDir` / `applicationParams` 三个字段在 [init] 里赋值、
- * 之后才使用，故用 `lateinit`；`getOutDirs()` 保持返回非空 [OutDirs]，与原 Java 接口一致。
+ * 之后才使用，故用 `lateinit`；`outDirs` 保持返回非空 [OutDirs]，与原 Java 接口一致。
  */
 class AndroidGradleGenerator(
 	private val root: RootNode,
@@ -43,7 +43,7 @@ class AndroidGradleGenerator(
 	/** 是否为 Android App（否则为 Android Library）。 */
 	private val exportApp: Boolean = exportType == ExportGradleType.ANDROID_APP
 
-	private lateinit var outDirs: OutDirs
+	override lateinit var outDirs: OutDirs
 	private lateinit var baseDir: File
 	private lateinit var applicationParams: ApplicationParams
 
@@ -69,8 +69,6 @@ class AndroidGradleGenerator(
 		}
 	}
 
-	override fun getOutDirs(): OutDirs = outDirs
-
 	/** 解析 AndroidManifest.xml（可选配合 strings.xml），失败时返回空参数集合并记录警告。 */
 	private fun parseApplicationParams(): ApplicationParams {
 		try {
@@ -83,9 +81,9 @@ class AndroidGradleGenerator(
 			if (exportApp) {
 				val arscFile = resources.firstOrNull { resourceFile -> resourceFile.getType() === ResourceType.ARSC }
 				if (arscFile != null) {
-					val resContainers = arscFile.loadContent().getSubFiles()
-					strings = resContainers.firstOrNull { resContainer -> resContainer.getName().contains("values/strings.xml") }
-						?: resContainers.firstOrNull { resContainer -> resContainer.getName().contains("strings.xml") }
+					val resContainers = arscFile.loadContent().subFiles
+					strings = resContainers.firstOrNull { resContainer -> resContainer.name.contains("values/strings.xml") }
+						?: resContainers.firstOrNull { resContainer -> resContainer.name.contains("strings.xml") }
 				}
 			}
 

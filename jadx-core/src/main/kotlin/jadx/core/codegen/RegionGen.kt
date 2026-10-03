@@ -157,7 +157,7 @@ open class RegionGen(mgen: MethodGen) : InsnGen(mgen, false) {
 		code.startLineWithNum(region.getSourceLine())
 		val labelAttr = region.getInfo().start.get(AType.LOOP_LABEL)
 		if (labelAttr != null) {
-			code.add(mgen.getNameGen().getLoopLabel(labelAttr)).add(": ")
+			code.add(mgen.nameGen.getLoopLabel(labelAttr)).add(": ")
 		}
 
 		val condition = region.getCondition()
@@ -365,9 +365,9 @@ open class RegionGen(mgen: MethodGen) : InsnGen(mgen, false) {
 			if (code.isMetadataSupported()) {
 				code.attachDefinition(VarNode.get(mth, checkNotNull(ssaVar)))
 			}
-			code.add(mgen.getNameGen().assignArg(checkNotNull(ssaVar).codeVar))
+			code.add(mgen.nameGen.assignArg(checkNotNull(ssaVar).codeVar))
 		} else if (arg is NamedArg) {
-			code.add(mgen.getNameGen().assignNamedArg(arg))
+			code.add(mgen.nameGen.assignNamedArg(arg))
 		} else {
 			throw JadxRuntimeException("Unexpected arg type in catch block: $arg, class: " + arg.javaClass.simpleName)
 		}

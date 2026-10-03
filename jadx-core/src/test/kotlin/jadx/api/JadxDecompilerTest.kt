@@ -69,8 +69,8 @@ class JadxDecompilerTest {
 			assertThat(resources).hasSize(8)
 			val arsc = resources.first { it.getType() == ResourceType.ARSC }
 			val resContainer = arsc.loadContent()
-			val xmlRes = resContainer.getSubFiles().first { it.getName() == "res/values/colors.xml" }
-			assertThat(xmlRes.getText())
+			val xmlRes = resContainer.subFiles.first { it.name == "res/values/colors.xml" }
+			assertThat(xmlRes.text)
 				.code()
 				.containsOne("<color name=\"colorPrimary\">#008577</color>")
 		}

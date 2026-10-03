@@ -21,37 +21,37 @@ class ValuesParser(
 
 	/** 取“简单值”字符串；复杂值（有 namedValues）返回 null。 */
 	fun getSimpleValueString(ri: ResourceEntry): String? {
-		val protoValue = ri.getProtoValue()
+		val protoValue = ri.protoValue
 		if (protoValue != null) {
-			return protoValue.getValue()
+			return protoValue.value
 		}
-		val simpleValue = ri.getSimpleValue() ?: return null
+		val simpleValue = ri.simpleValue ?: return null
 		return decodeValue(simpleValue)
 	}
 
 	/** 取完整值字符串：复杂值以 `name=value` 列表形式输出。 */
 	fun getValueString(ri: ResourceEntry): String? {
-		val protoValue = ri.getProtoValue()
+		val protoValue = ri.protoValue
 		if (protoValue != null) {
-			if (protoValue.getValue() != null) {
-				return protoValue.getValue()
+			if (protoValue.value != null) {
+				return protoValue.value
 			}
-			val values = checkNotNull(protoValue.getNamedValues())
+			val values = checkNotNull(protoValue.namedValues)
 			val strList = ArrayList<String?>(values.size)
 			for (value in values) {
-				if (value.getName() == null) {
-					strList.add(value.getValue())
+				if (value.name == null) {
+					strList.add(value.value)
 				} else {
-					strList.add(value.getName() + '=' + value.getValue())
+					strList.add(value.name + '=' + value.value)
 				}
 			}
 			return strList.toString()
 		}
-		val simpleValue = ri.getSimpleValue()
+		val simpleValue = ri.simpleValue
 		if (simpleValue != null) {
 			return decodeValue(simpleValue)
 		}
-		val namedValues = checkNotNull(ri.getNamedValues())
+		val namedValues = checkNotNull(ri.namedValues)
 		val strList = ArrayList<String?>(namedValues.size)
 		for (value in namedValues) {
 			val nameStr = decodeNameRef(value.nameRef)

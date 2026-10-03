@@ -45,10 +45,10 @@ class FontPanel(panel: TabbedPane, res: JResource) : ContentPanel(panel, res) {
 	private fun loadFont(res: JResource): Font {
 		val resFile: ResourceFile = checkNotNull(res.getResFile())
 		val resContainer = resFile.loadContent()
-		val dataType = resContainer.getDataType()
+		val dataType = resContainer.dataType
 		return if (dataType == ResContainer.DataType.DECODED_DATA) {
 			try {
-				Font.createFont(Font.TRUETYPE_FONT, ByteArrayInputStream(resContainer.getDecodedData())).deriveFont(12f)
+				Font.createFont(Font.TRUETYPE_FONT, ByteArrayInputStream(resContainer.decodedData)).deriveFont(12f)
 			} catch (e: Exception) {
 				throw JadxRuntimeException("Failed to load font", e)
 			}

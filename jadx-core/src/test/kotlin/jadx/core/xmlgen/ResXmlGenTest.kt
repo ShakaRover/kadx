@@ -26,7 +26,7 @@ class ResXmlGenTest {
 	fun testSimpleAttr() {
 		val resStorage = ResourceStorage(security)
 		val re = ResourceEntry(2130903103, "jadx.gui.app", "attr", "size", "")
-		re.setNamedValues(listOf(RawNamedValue(16777216, RawValue(16, 64))))
+		re.namedValues = listOf(RawNamedValue(16777216, RawValue(16, 64)))
 		resStorage.add(re)
 
 		val vp = ValuesParser(null, resStorage.resourcesNames)
@@ -34,8 +34,8 @@ class ResXmlGenTest {
 		val files = resXmlGen.makeResourcesXml(args)
 
 		assertThat(files).hasSize(1)
-		assertThat(files[0].getName()).isEqualTo("res/values/attrs.xml")
-		val input = files[0].getText().toString()
+		assertThat(files[0].name).isEqualTo("res/values/attrs.xml")
+		val input = files[0].text.toString()
 		assertThat(input).isEqualTo(
 			"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
 				"<resources>\n" +
@@ -49,12 +49,11 @@ class ResXmlGenTest {
 	fun testAttrEnum() {
 		val resStorage = ResourceStorage(security)
 		val re = ResourceEntry(2130903103, "jadx.gui.app", "attr", "size", "")
-		re.setNamedValues(
+		re.namedValues =
 			listOf(
 				RawNamedValue(0x01000000, RawValue(16, 65536)),
 				RawNamedValue(0x01040000, RawValue(16, 1)),
-			),
-		)
+			)
 		resStorage.add(re)
 
 		val vp = ValuesParser(null, resStorage.resourcesNames)
@@ -62,8 +61,8 @@ class ResXmlGenTest {
 		val files = resXmlGen.makeResourcesXml(args)
 
 		assertThat(files).hasSize(1)
-		assertThat(files[0].getName()).isEqualTo("res/values/attrs.xml")
-		val input = files[0].getText().toString()
+		assertThat(files[0].name).isEqualTo("res/values/attrs.xml")
+		val input = files[0].text.toString()
 		assertThat(input).isEqualTo(
 			"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
 				"<resources>\n" +
@@ -78,12 +77,11 @@ class ResXmlGenTest {
 	fun testAttrFlag() {
 		val resStorage = ResourceStorage(security)
 		val re = ResourceEntry(2130903103, "jadx.gui.app", "attr", "size", "")
-		re.setNamedValues(
+		re.namedValues =
 			listOf(
 				RawNamedValue(0x01000000, RawValue(16, 131072)),
 				RawNamedValue(0x01040000, RawValue(16, 1)),
-			),
-		)
+			)
 		resStorage.add(re)
 
 		val vp = ValuesParser(null, resStorage.resourcesNames)
@@ -91,8 +89,8 @@ class ResXmlGenTest {
 		val files = resXmlGen.makeResourcesXml(args)
 
 		assertThat(files).hasSize(1)
-		assertThat(files[0].getName()).isEqualTo("res/values/attrs.xml")
-		val input = files[0].getText().toString()
+		assertThat(files[0].name).isEqualTo("res/values/attrs.xml")
+		val input = files[0].text.toString()
 		assertThat(input).isEqualTo(
 			"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
 				"<resources>\n" +
@@ -107,9 +105,8 @@ class ResXmlGenTest {
 	fun testAttrMin() {
 		val resStorage = ResourceStorage(security)
 		val re = ResourceEntry(2130903103, "jadx.gui.app", "attr", "size", "")
-		re.setNamedValues(
-			listOf(RawNamedValue(16777216, RawValue(16, 4)), RawNamedValue(16777217, RawValue(16, 1))),
-		)
+		re.namedValues =
+			listOf(RawNamedValue(16777216, RawValue(16, 4)), RawNamedValue(16777217, RawValue(16, 1)))
 		resStorage.add(re)
 
 		val vp = ValuesParser(null, resStorage.resourcesNames)
@@ -117,8 +114,8 @@ class ResXmlGenTest {
 		val files = resXmlGen.makeResourcesXml(args)
 
 		assertThat(files).hasSize(1)
-		assertThat(files[0].getName()).isEqualTo("res/values/attrs.xml")
-		val input = files[0].getText().toString()
+		assertThat(files[0].name).isEqualTo("res/values/attrs.xml")
+		val input = files[0].text.toString()
 		assertThat(input).isEqualTo(
 			"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
 				"<resources>\n" +
@@ -132,20 +129,20 @@ class ResXmlGenTest {
 	fun testStyle() {
 		val resStorage = ResourceStorage(security)
 		var re = ResourceEntry(2130903103, "jadx.gui.app", "style", "JadxGui", "")
-		re.setNamedValues(listOf(RawNamedValue(16842836, RawValue(1, 17170445))))
+		re.namedValues = listOf(RawNamedValue(16842836, RawValue(1, 17170445)))
 		resStorage.add(re)
 
 		re = ResourceEntry(2130903104, "jadx.gui.app", "style", "JadxGui.Dialog", "")
-		re.setParentRef(2130903103)
-		re.setNamedValues(arrayListOf())
+		re.parentRef = 2130903103
+		re.namedValues = arrayListOf()
 		resStorage.add(re)
 		val vp = ValuesParser(null, resStorage.resourcesNames)
 		val resXmlGen = ResXmlGen(resStorage, vp, manifestAttributes)
 		val files = resXmlGen.makeResourcesXml(args)
 
 		assertThat(files).hasSize(1)
-		assertThat(files[0].getName()).isEqualTo("res/values/styles.xml")
-		val input = files[0].getText().toString()
+		assertThat(files[0].name).isEqualTo("res/values/styles.xml")
+		val input = files[0].text.toString()
 		assertThat(input).isEqualTo(
 			"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
 				"<resources>\n" +
@@ -162,8 +159,8 @@ class ResXmlGenTest {
 	fun testString() {
 		val resStorage = ResourceStorage(security)
 		val re = ResourceEntry(2130903103, "jadx.gui.app", "string", "app_name", "")
-		re.setSimpleValue(RawValue(3, 0))
-		re.setNamedValues(listOf())
+		re.simpleValue = RawValue(3, 0)
+		re.namedValues = listOf()
 		resStorage.add(re)
 
 		val strings = BinaryXMLStrings()
@@ -173,8 +170,8 @@ class ResXmlGenTest {
 		val files = resXmlGen.makeResourcesXml(args)
 
 		assertThat(files).hasSize(1)
-		assertThat(files[0].getName()).isEqualTo("res/values/strings.xml")
-		val input = files[0].getText().toString()
+		assertThat(files[0].name).isEqualTo("res/values/strings.xml")
+		val input = files[0].text.toString()
 		assertThat(input).isEqualTo(
 			"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
 				"<resources>\n" +
@@ -187,8 +184,8 @@ class ResXmlGenTest {
 	fun testStringFormattedFalse() {
 		val resStorage = ResourceStorage(security)
 		val re = ResourceEntry(2130903103, "jadx.gui.app", "string", "app_name", "")
-		re.setSimpleValue(RawValue(3, 0))
-		re.setNamedValues(listOf())
+		re.simpleValue = RawValue(3, 0)
+		re.namedValues = listOf()
 		resStorage.add(re)
 
 		val strings = BinaryXMLStrings()
@@ -198,8 +195,8 @@ class ResXmlGenTest {
 		val files = resXmlGen.makeResourcesXml(args)
 
 		assertThat(files).hasSize(1)
-		assertThat(files[0].getName()).isEqualTo("res/values/strings.xml")
-		val input = files[0].getText().toString()
+		assertThat(files[0].name).isEqualTo("res/values/strings.xml")
+		val input = files[0].text.toString()
 		assertThat(input).isEqualTo(
 			"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
 				"<resources>\n" +
@@ -212,9 +209,8 @@ class ResXmlGenTest {
 	fun testArrayEscape() {
 		val resStorage = ResourceStorage(security)
 		val re = ResourceEntry(2130903103, "jadx.gui.app", "array", "single_quote_escape_sample", "")
-		re.setNamedValues(
-			listOf(RawNamedValue(16777216, RawValue(3, 0))),
-		)
+		re.namedValues =
+			listOf(RawNamedValue(16777216, RawValue(3, 0)))
 		resStorage.add(re)
 
 		val strings = BinaryXMLStrings()
@@ -224,8 +220,8 @@ class ResXmlGenTest {
 		val files = resXmlGen.makeResourcesXml(args)
 
 		assertThat(files).hasSize(1)
-		assertThat(files[0].getName()).isEqualTo("res/values/arrays.xml")
-		val input = files[0].getText().toString()
+		assertThat(files[0].name).isEqualTo("res/values/arrays.xml")
+		val input = files[0].text.toString()
 		assertThat(input).isEqualTo(
 			"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
 				"<resources>\n" +

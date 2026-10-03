@@ -24,7 +24,7 @@ import java.util.HashMap
  * 生成最终文件。
  *
  * **Kotlin 转换说明**：
- * - 静态工厂 [fromResources] 放入 `companion object` 并标注 `@JvmStatic`，Java 调用不变；
+ * - 静态工厂 [fromResources] 放入 `companion object`，调用方式不变；
  * - 受检异常用 `@Throws` 标注，Java 调用方的 `throws`/`catch` 语义不变；
  * - 原 Java `String.getBytes()` 使用平台默认字符集，这里显式写
  *   [Charset.defaultCharset] 以保持字节输出完全一致。
@@ -197,7 +197,6 @@ class TemplateFile private constructor(
 
 	companion object {
 		/** 从 classpath 资源路径加载模板；资源不存在时抛 [FileNotFoundException]。 */
-		@JvmStatic
 		@Throws(FileNotFoundException::class)
 		fun fromResources(path: String): TemplateFile {
 			val res = TemplateFile::class.java.getResourceAsStream(path)

@@ -17,7 +17,7 @@ import java.io.IOException
  * `app/src/main/java` 与 `app/src/main/resources`。
  *
  * **Kotlin 转换说明**：`outDirs` / `appDir` 在 [init] 里赋值、之后才使用，故用 `lateinit`；
- * `getOutDirs()` 保持返回非空 [OutDirs]，与原 Java 接口一致。
+ * `outDirs` 保持返回非空 [OutDirs]，与原 Java 接口一致。
  */
 class SimpleJavaGradleGenerator(
 	private val root: RootNode,
@@ -25,7 +25,7 @@ class SimpleJavaGradleGenerator(
 	@Suppress("unused") private val resources: List<ResourceFile>,
 ) : IExportGradleGenerator {
 
-	private lateinit var outDirs: OutDirs
+	override lateinit var outDirs: OutDirs
 	private lateinit var appDir: File
 
 	override fun init() {
@@ -64,6 +64,4 @@ class SimpleJavaGradleGenerator(
 		tmpl.setValueSanitizer { str -> security.sanitizeString(str, SanitizeType.GRADLE_KOTLIN) }
 		return tmpl
 	}
-
-	override fun getOutDirs(): OutDirs = outDirs
 }

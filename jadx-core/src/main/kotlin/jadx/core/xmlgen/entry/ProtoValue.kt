@@ -7,39 +7,37 @@ package jadx.core.xmlgen.entry
  * `ProtoValue(...).setName(...).setType(...)` 形式构建值树。
  * 解析产物，按引用标识使用，故为普通类而非 `data class`。
  */
-class ProtoValue(private var value: String? = null) {
-	private var parent: String? = null
-	private var name: String? = null
-	private var type: Int = 0
-	private var namedValues: List<ProtoValue>? = null
+class ProtoValue(val value: String? = null) {
+	private var parentValue: String? = null
+	private var nameValue: String? = null
+	private var typeValue: Int = 0
+	private var namedValuesValue: List<ProtoValue>? = null
 
-	fun getType(): Int = type
+	val type: Int get() = typeValue
 
 	fun setType(type: Int): ProtoValue {
-		this.type = type
+		this.typeValue = type
 		return this
 	}
 
-	fun getValue(): String? = value
-
-	fun getParent(): String? = parent
+	val parent: String? get() = parentValue
 
 	fun setParent(parent: String?): ProtoValue {
-		this.parent = parent
+		this.parentValue = parent
 		return this
 	}
 
 	fun setName(name: String?): ProtoValue {
-		this.name = name
+		this.nameValue = name
 		return this
 	}
 
-	fun getName(): String? = name
+	val name: String? get() = nameValue
 
 	fun setNamedValues(namedValues: List<ProtoValue>?): ProtoValue {
-		this.namedValues = namedValues
+		this.namedValuesValue = namedValues
 		return this
 	}
 
-	fun getNamedValues(): List<ProtoValue>? = namedValues
+	val namedValues: List<ProtoValue>? get() = namedValuesValue
 }

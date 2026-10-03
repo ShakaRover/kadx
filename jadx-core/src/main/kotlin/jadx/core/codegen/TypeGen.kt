@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory
  * 渲染成 `1`、`1L`、`0x1`、`(byte) 1`、`'a'` 等字面量。
  *
  * **Kotlin 转换说明**：原 Java 是不可实例化的静态工具类，
- * 这里保留私有构造器 + `companion object` + `@JvmStatic`，JVM 方法名与调用方式完全不变。
+ * 这里保留私有构造器 + `companion object`，调用方式 `TypeGen.xxx(...)` 完全不变。
  */
 class TypeGen private constructor() {
 
@@ -25,7 +25,6 @@ class TypeGen private constructor() {
 		private val LOG = LoggerFactory.getLogger(TypeGen::class.java)
 
 		/** 生成 JVM 描述符形式的类型签名（如 `[I`、`Ljava/lang/String;`）。 */
-		@JvmStatic
 		fun signature(type: ArgType): String {
 			val stype = type.getPrimitiveType()
 			if (stype == PrimitiveType.OBJECT) {
@@ -37,13 +36,11 @@ class TypeGen private constructor() {
 			return checkNotNull(stype).shortName
 		}
 
-		@JvmStatic
 		fun signatures(types: List<ArgType>): List<String> = Utils.collectionMap(types) { signature(it) }
 
 		/**
 		 * 把字面量寄存器参数转成源码字符串（推荐入口）。
 		 */
-		@JvmStatic
 		fun literalToString(arg: LiteralArg, dexNode: IDexNode, fallback: Boolean): String = literalToString(
 			arg.literal,
 			arg.getType(),
@@ -57,10 +54,8 @@ class TypeGen private constructor() {
 		 *
 		 * @throws JadxRuntimeException 类型或字面量不合法时抛出
 		 */
-		@JvmStatic
 		fun literalToString(lit: Long, type: ArgType?, dexNode: IDexNode, fallback: Boolean): String = literalToString(lit, type, dexNode.root().getStringUtils(), fallback, false)
 
-		@JvmStatic
 		fun literalToString(lit: Long, type: ArgType?, stringUtils: StringUtils, fallback: Boolean, cast: Boolean): String {
 			if (type == null || !type.isTypeKnown()) {
 				val n = lit.toString()
@@ -109,7 +104,6 @@ class TypeGen private constructor() {
 		}
 
 		/** 转成“原始”字符串（不加引号、不加后缀），用于部分代码生成场景。 */
-		@JvmStatic
 		fun literalToRawString(arg: LiteralArg): String? {
 			val type = arg.getType()
 			val lit = arg.literal

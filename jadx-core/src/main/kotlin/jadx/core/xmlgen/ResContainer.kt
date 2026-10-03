@@ -10,14 +10,14 @@ import java.io.File
  * 这是对外的公共 API，被 `ResourcesSaver`、cli、gui 以及 AAB 插件使用。
  * 保留：
  * - 嵌套枚举 [DataType]（Java 以 `ResContainer.DataType.XXX` 访问）；
- * - 静态工厂（companion + `@JvmStatic`，Java 以 `ResContainer.textResource(...)` 调用）；
+ * - 静态工厂（companion，以 `ResContainer.textResource(...)` 调用）；
  * - 基于名称的 [equals]/[hashCode] 与 [compareTo]。
  */
 class ResContainer private constructor(
-	private val name: String,
-	private val subFiles: List<ResContainer>,
+	val name: String,
+	val subFiles: List<ResContainer>,
 	private val data: Any,
-	private val dataType: DataType,
+	val dataType: DataType,
 ) : Comparable<ResContainer> {
 
 	enum class DataType {
@@ -27,19 +27,13 @@ class ResContainer private constructor(
 		RES_TABLE,
 	}
 
-	fun getName(): String = name
+	val fileName: String get() = name.replace('/', File.separatorChar)
 
-	fun getFileName(): String = name.replace('/', File.separatorChar)
+	val text: ICodeInfo get() = data as ICodeInfo
 
-	fun getSubFiles(): List<ResContainer> = subFiles
+	val decodedData: ByteArray get() = data as ByteArray
 
-	fun getDataType(): DataType = dataType
-
-	fun getText(): ICodeInfo = data as ICodeInfo
-
-	fun getDecodedData(): ByteArray = data as ByteArray
-
-	fun getResLink(): ResourceFile = data as ResourceFile
+	val resLink: ResourceFile get() = data as ResourceFile
 
 	override fun compareTo(other: ResContainer): Int = name.compareTo(other.name)
 
@@ -58,16 +52,12 @@ class ResContainer private constructor(
 	override fun toString(): String = "Res{" + name + ", type=" + dataType + ", subFiles=" + subFiles + '}'
 
 	companion object {
-		@JvmStatic
 		fun textResource(name: String, content: ICodeInfo): ResContainer = ResContainer(name, emptyList(), content, DataType.TEXT)
 
-		@JvmStatic
 		fun decodedData(name: String, data: ByteArray): ResContainer = ResContainer(name, emptyList(), data, DataType.DECODED_DATA)
 
-		@JvmStatic
 		fun resourceFileLink(resFile: ResourceFile): ResContainer = ResContainer(resFile.getDeobfName(), emptyList(), resFile, DataType.RES_LINK)
 
-		@JvmStatic
 		fun resourceTable(name: String, subFiles: List<ResContainer>, rootContent: ICodeInfo): ResContainer = ResContainer(name, subFiles, rootContent, DataType.RES_TABLE)
 	}
 }

@@ -24,7 +24,7 @@ open class CommonBinaryParser : ParserConstants() {
 	/** 解析不带类型头的字符串池（类型已在别处读取）。 */
 	@Throws(IOException::class)
 	protected fun parseStringPoolNoType(): BinaryXMLStrings {
-		val start = input.getPos() - 2
+		val start = input.pos - 2
 		val headerSize = input.readInt16()
 		if (headerSize != 0x1c) {
 			LOG.warn("Unexpected string pool header size: 0x{}, expected: 0x1C", Integer.toHexString(headerSize))
@@ -45,8 +45,8 @@ open class CommonBinaryParser : ParserConstants() {
 		input.readInt32() // stylesStart（保留读取以推进位置）
 
 		// Correct the offset of actual strings, as the header is already read.
-		stringsStart = stringsStart - (input.getPos() - start)
-		val buffer = input.readInt8Array((chunkEnd - input.getPos()).toInt())
+		stringsStart = stringsStart - (input.pos - start)
+		val buffer = input.readInt8Array((chunkEnd - input.pos).toInt())
 		input.checkPos(chunkEnd, "Expected strings pool end")
 
 		return BinaryXMLStrings(
@@ -60,7 +60,7 @@ open class CommonBinaryParser : ParserConstants() {
 	/** 抛出带当前偏移量的解码错误。 */
 	@Throws(IOException::class)
 	protected fun die(message: String): Unit = throw IOException(
-		"Decode error: $message, position: 0x" + java.lang.Long.toHexString(input.getPos()),
+		"Decode error: $message, position: 0x" + java.lang.Long.toHexString(input.pos),
 	)
 
 	companion object {

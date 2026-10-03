@@ -99,7 +99,7 @@ class BinaryXMLParser(private val rootNode: RootNode) : CommonBinaryParser() {
 	@Throws(IOException::class)
 	private fun decode() {
 		val size = input.readInt32().toLong()
-		while (input.getPos() < size) {
+		while (input.pos < size) {
 			val type = input.readInt16()
 			when (type) {
 				ParserConstants.RES_NULL_TYPE -> {
@@ -239,7 +239,7 @@ class BinaryXMLParser(private val rootNode: RootNode) : CommonBinaryParser() {
 			die("ELEMENT HEADER SIZE is not 0x10")
 		}
 		// TODO: Check element chunk size
-		val startPos = input.getPos()
+		val startPos = input.pos
 		val elementSize = input.readInt32()
 		val elementBegLineNumber = input.readInt32()
 		val comment = input.readInt32()
@@ -286,7 +286,7 @@ class BinaryXMLParser(private val rootNode: RootNode) : CommonBinaryParser() {
 		for (i in 0 until attributeCount) {
 			parseAttribute(i, attrNewLine, attrCache, attributeSize)
 		}
-		val endPos = input.getPos()
+		val endPos = input.pos
 		if (endPos - startPos + 0x4 < elementSize) {
 			input.skip(elementSize - (endPos - startPos + 0x4))
 		}

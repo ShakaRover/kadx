@@ -19,7 +19,7 @@ class ParserStream(inputStream: InputStream) : InputStream() {
 	private var readPos: Long = 0
 	private var markPos: Long = 0
 
-	fun getPos(): Long = readPos
+	val pos: Long get() = readPos
 
 	@Throws(IOException::class)
 	fun readInt8(): Int {
@@ -117,26 +117,26 @@ class ParserStream(inputStream: InputStream) : InputStream() {
 		error +
 			", expected: 0x" + Integer.toHexString(expected) +
 			", actual: 0x" + Integer.toHexString(actual) +
-			", offset: 0x" + java.lang.Long.toHexString(getPos()),
+			", offset: 0x" + java.lang.Long.toHexString(pos),
 	)
 
 	@Throws(IOException::class)
 	fun checkPos(expectedOffset: Long, error: String) {
-		if (getPos() != expectedOffset) {
+		if (pos != expectedOffset) {
 			throw IOException(
 				error + ", expected offset: 0x" + java.lang.Long.toHexString(expectedOffset) +
-					", actual: 0x" + java.lang.Long.toHexString(getPos()),
+					", actual: 0x" + java.lang.Long.toHexString(pos),
 			)
 		}
 	}
 
 	@Throws(IOException::class)
 	fun skipToPos(expectedOffset: Long, error: String) {
-		val pos = getPos()
+		val pos = this.pos
 		if (pos > expectedOffset) {
 			throw IOException(
 				error + ", expected offset not reachable: 0x" + java.lang.Long.toHexString(expectedOffset) +
-					", actual: 0x" + java.lang.Long.toHexString(getPos()),
+					", actual: 0x" + java.lang.Long.toHexString(pos),
 			)
 		}
 		if (pos < expectedOffset) {
@@ -189,10 +189,8 @@ class ParserStream(inputStream: InputStream) : InputStream() {
 	override fun toString(): String = "pos: 0x" + java.lang.Long.toHexString(readPos)
 
 	companion object {
-		@JvmField
 		val STRING_CHARSET_UTF16: Charset = StandardCharsets.UTF_16LE
 
-		@JvmField
 		val STRING_CHARSET_UTF8: Charset = StandardCharsets.UTF_8
 
 		private val EMPTY_INT_ARRAY = IntArray(0)

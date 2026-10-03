@@ -46,19 +46,15 @@ import org.slf4j.LoggerFactory
  * RESTRUCTURE 强制区域重构，SIMPLE 按基本块顺序输出，FALLBACK 直接 dump 指令。
  *
  * **Kotlin 转换说明**：静态方法（`addFallbackInsns`、`getFallbackMethodGen`、`getLabelName`）
- * 放入 `companion object` + `@JvmStatic`，供 Kotlin（DotGraphUtils / CheckRegions）与 Java 调用。
+ * 放入 `companion object`，供 Kotlin（DotGraphUtils / CheckRegions）以 `MethodGen.xxx(...)` 调用。
  */
 class MethodGen(classGen: ClassGen, mth: MethodNode) {
 	private val mth: MethodNode = mth
-	private val classGen: ClassGen = classGen
-	private val annotationGen: AnnotationGen = classGen.getAnnotationGen()
-	private val nameGen: NameGen = NameGen(mth, classGen)
+	val classGen: ClassGen = classGen
+	private val annotationGen: AnnotationGen = classGen.annotationGen
+	val nameGen: NameGen = NameGen(mth, classGen)
 
-	fun getClassGen(): ClassGen = classGen
-
-	fun getNameGen(): NameGen = nameGen
-
-	fun getMethodNode(): MethodNode = mth
+	val methodNode: MethodNode get() = mth
 
 	/** 渲染方法定义（修饰符、泛型、返回类型、方法名、参数、throws、注解默认值）。 */
 	fun addDefinition(code: ICodeWriter): Boolean {
@@ -121,11 +117,11 @@ class MethodGen(classGen: ClassGen, mth: MethodNode) {
 		}
 		if (ai.isConstructor()) {
 			code.attachDefinition(mth)
-			code.add(classGen.getClassNode().shortName) // constructor
+			code.add(classGen.classNode.shortName) // constructor
 		} else {
 			classGen.useType(code, mth.getReturnType())
 			code.add(' ')
-			val defMth = getMethodForDefinition()
+			val defMth = methodForDefinition
 			code.attachDefinition(defMth)
 			code.add(defMth.getAlias())
 		}
@@ -146,13 +142,14 @@ class MethodGen(classGen: ClassGen, mth: MethodNode) {
 		return true
 	}
 
-	private fun getMethodForDefinition(): MethodNode {
-		val replaceAttr = mth.get(AType.METHOD_REPLACE)
-		if (replaceAttr != null) {
-			return replaceAttr.replaceMth
+	private val methodForDefinition: MethodNode
+		get() {
+			val replaceAttr = mth.get(AType.METHOD_REPLACE)
+			if (replaceAttr != null) {
+				return replaceAttr.replaceMth
+			}
+			return mth
 		}
-		return mth
-	}
 
 	private fun addOverrideAnnotation(code: ICodeWriter, mth: MethodNode) {
 		val overrideAttr = mth.get(AType.METHOD_OVERRIDE)
@@ -196,7 +193,7 @@ class MethodGen(classGen: ClassGen, mth: MethodNode) {
 			val codeVar: CodeVar
 			if (ssaVar == null) {
 				// abstract or interface methods
-				codeVar = CodeVar.fromMthArg(mthArg, classGen.isFallbackMode())
+				codeVar = CodeVar.fromMthArg(mthArg, classGen.isFallbackMode)
 			} else {
 				codeVar = ssaVar.codeVar
 			}
@@ -251,7 +248,7 @@ class MethodGen(classGen: ClassGen, mth: MethodNode) {
 		}
 		when (mode) {
 			DecompilationMode.AUTO -> {
-				if (classGen.isFallbackMode() || mth.region == null) {
+				if (classGen.isFallbackMode || mth.region == null) {
 					// TODO: try simple mode first
 					dumpInstructions(code)
 				} else {
@@ -522,13 +519,11 @@ class MethodGen(classGen: ClassGen, mth: MethodNode) {
 		/**
 		 * 返回 fallback 变体的方法代码生成器（强制 fallback 模式）。
 		 */
-		@JvmStatic
 		fun getFallbackMethodGen(mth: MethodNode): MethodGen {
 			val clsGen = ClassGen(mth.parentClass, null, false, true, true, IntegerFormat.AUTO)
 			return MethodGen(clsGen, mth)
 		}
 
-		@JvmStatic
 		fun addFallbackInsns(code: ICodeWriter, mth: MethodNode, insnArr: Array<InsnNode?>, option: FallbackOption) {
 			val startIndent = code.getIndent()
 			val methodGen = getFallbackMethodGen(mth)
@@ -543,10 +538,8 @@ class MethodGen(classGen: ClassGen, mth: MethodNode) {
 			}
 		}
 
-		@JvmStatic
 		fun getLabelName(block: BlockNode): String = String.format("L%d", block.cid)
 
-		@JvmStatic
 		fun getLabelName(insn: IfNode): String {
 			val thenBlock = insn.getThenBlock()
 			if (thenBlock != null) {
@@ -555,7 +548,6 @@ class MethodGen(classGen: ClassGen, mth: MethodNode) {
 			return getLabelName(insn.getTarget())
 		}
 
-		@JvmStatic
 		fun getLabelName(offset: Int): String {
 			if (offset < 0) {
 				return String.format("LB_%x", -offset)

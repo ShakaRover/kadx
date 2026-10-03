@@ -87,7 +87,7 @@ class ConvertArscFile {
 				if (!loaded) {
 					continue
 				}
-				val singleResMap = checkNotNull(resTableParser.getResStorage()).resourcesNames
+				val singleResMap = checkNotNull(resTableParser.resStorage).resourcesNames
 				mergeResMaps(resMap, singleResMap)
 				LOG.info("{} entries count: {}, after merge: {}", resFile.fileName, singleResMap.size, resMap.size)
 			}

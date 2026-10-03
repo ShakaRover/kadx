@@ -11,7 +11,6 @@ import java.util.Objects
 object StringFormattedCheck {
 
 	/** 是否包含多个非位置参数占位符（`%s` 之类，`%1$s` 视为位置参数）。 */
-	@JvmStatic
 	fun hasMultipleNonPositionalSubstitutions(str: String): Boolean {
 		val tuple = findSubstitutions(str, 4)
 		return tuple.m1.isNotEmpty() && tuple.m1.size + tuple.m2.size > 1

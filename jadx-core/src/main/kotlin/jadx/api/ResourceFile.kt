@@ -54,8 +54,8 @@ open class ResourceFile protected constructor(
 	 */
 	fun setAlias(entry: ResourceEntry, useHeaders: Boolean): Boolean {
 		val sb = StringBuilder()
-		sb.append("res/").append(entry.getTypeName()).append(entry.getConfig())
-		sb.append("/").append(entry.getKeyName())
+		sb.append("res/").append(entry.typeName).append(entry.config)
+		sb.append("/").append(entry.keyName)
 
 		if (useHeaders) {
 			try {

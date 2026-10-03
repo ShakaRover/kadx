@@ -19,22 +19,20 @@ import java.util.regex.Pattern
 /**
  * 代码生成辅助工具：把节点上的“错误 / 注释 / 重命名 / 来源文件”等信息输出为代码注释。
  *
- * **Kotlin 转换说明**：原 Java 全部为静态方法，这里放入 `companion object` 并加 `@JvmStatic`，
- * 保证 Java 调用方（以及同模块 Kotlin）继续以 `CodeGenUtils.xxx(...)` 方式调用。
+ * **Kotlin 转换说明**：原 Java 全部为静态方法，这里放入 `companion object`，
+ * 调用方继续以 `CodeGenUtils.xxx(...)` 方式调用。
  */
 class CodeGenUtils {
 
 	companion object {
 
 		/** 依次输出用户注释与错误信息（原 Java 顺序：先注释后错误）。 */
-		@JvmStatic
 		fun addErrorsAndComments(code: ICodeWriter, node: NotificationAttrNode) {
 			addComments(code, node)
 			addErrors(code, node)
 		}
 
 		/** 输出节点上收集到的反编译错误（去重并按错误文本排序）。 */
-		@JvmStatic
 		fun addErrors(code: ICodeWriter, node: NotificationAttrNode) {
 			if (!node.checkCommentsLevel(CommentsLevel.ERROR)) {
 				return
@@ -48,7 +46,6 @@ class CodeGenUtils {
 		}
 
 		/** 输出单条错误注释，附带异常堆栈（如果有）。 */
-		@JvmStatic
 		fun addError(code: ICodeWriter, errMsg: String, cause: Throwable?) {
 			code.startLine("/*  JADX ERROR: ").add(errMsg)
 			if (cause != null) {
@@ -60,7 +57,6 @@ class CodeGenUtils {
 		}
 
 		/** 输出节点上的 JADX 注释与用户代码注释。 */
-		@JvmStatic
 		fun addComments(code: ICodeWriter, node: NotificationAttrNode) {
 			val commentsAttr = node.get(AType.JADX_COMMENTS)
 			if (commentsAttr != null) {
@@ -71,7 +67,6 @@ class CodeGenUtils {
 		}
 
 		/** 只有父节点允许显示用户注释时才输出。 */
-		@JvmStatic
 		fun addCodeComments(code: ICodeWriter, parent: NotificationAttrNode, node: IAttributeNode?) {
 			if (node == null) {
 				return
@@ -102,7 +97,6 @@ class CodeGenUtils {
 		}
 
 		/** 输出带自定义内容的 JADX 注释（内容由 commentFunc 填充）。 */
-		@JvmStatic
 		fun addJadxNodeComment(
 			code: ICodeWriter,
 			node: NotificationAttrNode,
@@ -119,7 +113,6 @@ class CodeGenUtils {
 		}
 
 		/** 输出一行固定文本的 JADX 注释。 */
-		@JvmStatic
 		fun addJadxComment(code: ICodeWriter, level: CommentsLevel, commentStr: String) {
 			code.startLine()
 			addCommentWithStyle(code, CommentStyle.BLOCK_CONDENSED, "JADX " + level.name + ": " + commentStr)
@@ -159,7 +152,6 @@ class CodeGenUtils {
 		}
 
 		/** 类被重命名时输出“renamed from: 原名”注释。 */
-		@JvmStatic
 		fun addClassRenamedComment(code: ICodeWriter, cls: ClassNode) {
 			val classInfo = cls.classInfo
 			if (classInfo.hasAlias()) {
@@ -168,7 +160,6 @@ class CodeGenUtils {
 		}
 
 		/** 通用重命名注释，可选附带重命名原因。 */
-		@JvmStatic
 		fun addRenamedComment(code: ICodeWriter, node: NotificationAttrNode, origName: String) {
 			addJadxNodeComment(code, node, CommentsLevel.INFO) { commentCode, _ ->
 				commentCode.add("renamed from: ").add(origName)
@@ -180,7 +171,6 @@ class CodeGenUtils {
 		}
 
 		/** 输出源码文件名信息（与顶层类名相同则忽略）。 */
-		@JvmStatic
 		fun addSourceFileInfo(code: ICodeWriter, node: ClassNode) {
 			if (!node.checkCommentsLevel(CommentsLevel.INFO)) {
 				return
@@ -198,7 +188,6 @@ class CodeGenUtils {
 		}
 
 		/** 输出输入文件名信息（内部类与外部类相同则忽略）。 */
-		@JvmStatic
 		fun addInputFileInfo(code: ICodeWriter, cls: ClassNode) {
 			val clsData = cls.getClsData()
 			if (cls.checkCommentsLevel(CommentsLevel.INFO) && clsData != null) {
@@ -216,7 +205,6 @@ class CodeGenUtils {
 		}
 
 		/** 从寄存器参数反查其所属的代码变量（无 SSA 变量时返回 null）。 */
-		@JvmStatic
 		fun getCodeVar(arg: RegisterArg): CodeVar? {
 			val svar = arg.sVar
 			if (svar != null) {

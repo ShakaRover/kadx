@@ -33,7 +33,7 @@ class SimpleModeHelper(private val mth: MethodNode) {
 	/** 预处理基本块并返回按 DFS 排序、去除入口/出口块后的列表。 */
 	fun prepareBlocks(): List<BlockNode> {
 		removeEmptyBlocks()
-		val blocksList = getSortedBlocks()
+		val blocksList = sortedBlocks
 		blocksList.removeIf { b -> b == mth.enterBlock || b == mth.exitBlock }
 		unbindExceptionHandlers()
 		if (blocksList.isEmpty()) {
@@ -139,9 +139,10 @@ class SimpleModeHelper(private val mth: MethodNode) {
 	fun isNeedEndGoto(block: BlockNode): Boolean = endGoto.get(block.getId())
 
 	/** 用 DFS 顺序遍历基本块，减少生成的 `goto` 数量。 */
-	private fun getSortedBlocks(): MutableList<BlockNode> {
-		val list = ArrayList<BlockNode>(checkNotNull(mth.getBasicBlocks()).size)
-		BlockUtils.visitDFS(mth) { list.add(it) }
-		return list
-	}
+	private val sortedBlocks: MutableList<BlockNode>
+		get() {
+			val list = ArrayList<BlockNode>(checkNotNull(mth.getBasicBlocks()).size)
+			BlockUtils.visitDFS(mth) { list.add(it) }
+			return list
+		}
 }

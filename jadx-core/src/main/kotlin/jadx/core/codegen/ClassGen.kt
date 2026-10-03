@@ -49,7 +49,7 @@ import java.util.Objects
  */
 class ClassGen(
 	private val cls: ClassNode,
-	private val parentGen: ClassGen?,
+	private val parentGenRef: ClassGen?,
 	private val useImports: Boolean,
 	private val fallback: Boolean,
 	private val showInconsistentCode: Boolean,
@@ -73,15 +73,15 @@ class ClassGen(
 		parentClsGen.integerFormat,
 	)
 
-	private val annotationGen: AnnotationGen = AnnotationGen(cls, this)
-	private val imports: MutableSet<ClassInfo> = HashSet()
+	val annotationGen: AnnotationGen = AnnotationGen(cls, this)
+	private val importsSet: MutableSet<ClassInfo> = HashSet()
 	private var clsDeclOffset: Int = 0
 
-	private var bodyGenStarted: Boolean = false
+	var isBodyGenStarted: Boolean = false
 
-	private var outerNameGen: NameGen? = null
+	var outerNameGen: NameGen? = null
 
-	fun getClassNode(): ClassNode = cls
+	val classNode: ClassNode get() = cls
 
 	@Throws(CodegenException::class)
 	fun makeClass(): ICodeInfo {
@@ -108,9 +108,9 @@ class ClassGen(
 	}
 
 	private fun addImports(clsCode: ICodeWriter) {
-		val importsCount = imports.size
+		val importsCount = importsSet.size
 		if (importsCount != 0) {
-			val sortedImports = imports.sortedBy { it.aliasFullName }
+			val sortedImports = importsSet.sortedBy { it.aliasFullName }
 			for (classInfo in sortedImports) {
 				clsCode.startLine("import ")
 				val classNode = cls.root().resolveClass(classInfo)
@@ -121,7 +121,7 @@ class ClassGen(
 				clsCode.add(';')
 			}
 			clsCode.newLine()
-			imports.clear()
+			importsSet.clear()
 		}
 	}
 
@@ -270,7 +270,7 @@ class ClassGen(
 		if (printClassName && cls.checkCommentsLevel(CommentsLevel.INFO)) {
 			clsCode.add(" // from class: " + cls.classInfo.fullName)
 		}
-		setBodyGenStarted(true)
+		isBodyGenStarted = true
 		clsDeclOffset = clsCode.getLength()
 		clsCode.incIndent()
 		addFields(clsCode)
@@ -309,23 +309,24 @@ class ClassGen(
 
 	private fun addInnerClass(code: ICodeWriter, innerCls: ClassNode) {
 		try {
-			val inClGen = ClassGen(innerCls, getParentGen())
+			val inClGen = ClassGen(innerCls, parentGen)
 			code.newLine()
 			inClGen.addClassCode(code)
-			imports.addAll(inClGen.getImports())
+			importsSet.addAll(inClGen.imports)
 		} catch (e: Exception) {
 			innerCls.addError("Inner class code generation error", e)
 		}
 	}
 
-	private fun isInnerClassesPresents(): Boolean {
-		for (innerCls in cls.innerClasses) {
-			if (!innerCls.contains(AType.ANONYMOUS_CLASS)) {
-				return true
+	private val isInnerClassesPresents: Boolean
+		get() {
+			for (innerCls in cls.innerClasses) {
+				if (!innerCls.contains(AType.ANONYMOUS_CLASS)) {
+					return true
+				}
 			}
+			return false
 		}
-		return false
-	}
 
 	private fun addMethod(code: ICodeWriter, mth: MethodNode) {
 		if (skipMethod(mth)) {
@@ -378,14 +379,15 @@ class ClassGen(
 		}
 	}
 
-	private fun isMethodsPresents(): Boolean {
-		for (mth in cls.methods) {
-			if (!mth.contains(AFlag.DONT_GENERATE)) {
-				return true
+	private val isMethodsPresents: Boolean
+		get() {
+			for (mth in cls.methods) {
+				if (!mth.contains(AFlag.DONT_GENERATE)) {
+					return true
+				}
 			}
+			return false
 		}
-		return false
-	}
 
 	@Throws(CodegenException::class)
 	fun addMethodCode(code: ICodeWriter, mth: MethodNode) {
@@ -484,14 +486,15 @@ class ClassGen(
 		return TypeGen.literalToString(lit, type, cls, fallback)
 	}
 
-	private fun isFieldsPresents(): Boolean {
-		for (field in cls.fields) {
-			if (!field.contains(AFlag.DONT_GENERATE)) {
-				return true
+	private val isFieldsPresents: Boolean
+		get() {
+			for (field in cls.fields) {
+				if (!field.contains(AFlag.DONT_GENERATE)) {
+					return true
+				}
 			}
+			return false
 		}
-		return false
-	}
 
 	@Throws(CodegenException::class)
 	private fun addEnumFields(code: ICodeWriter) {
@@ -524,12 +527,12 @@ class ClassGen(
 				code.add(',')
 			}
 		}
-		if (isMethodsPresents() || isFieldsPresents() || isInnerClassesPresents()) {
+		if (isMethodsPresents || isFieldsPresents || isInnerClassesPresents) {
 			if (enumFields.fields.isEmpty()) {
 				code.startLine()
 			}
 			code.add(';')
-			if (isFieldsPresents()) {
+			if (isFieldsPresents) {
 				code.newLine()
 			}
 		}
@@ -709,7 +712,7 @@ class ClassGen(
 			}
 			fullName = extClsInfo.aliasNameWithoutPackage
 		}
-		for (importCls in getImports()) {
+		for (importCls in imports) {
 			if (importCls != extClsInfo && importCls.aliasShortName == shortName) {
 				if (extClsInfo.isInner) {
 					val parent = useClassInternal(useCls, checkNotNull(extClsInfo.parentClass))
@@ -753,14 +756,14 @@ class ClassGen(
 	}
 
 	private fun addImport(classInfo: ClassInfo) {
-		if (parentGen != null) {
-			parentGen.addImport(classInfo)
+		if (parentGenRef != null) {
+			parentGenRef.addImport(classInfo)
 		} else {
-			imports.add(classInfo)
+			importsSet.add(classInfo)
 		}
 	}
 
-	fun getImports(): Set<ClassInfo> = parentGen?.getImports() ?: imports
+	val imports: Set<ClassInfo> get() = parentGenRef?.imports ?: importsSet
 
 	companion object {
 		private fun isBothClassesInOneTopClass(useCls: ClassInfo, extClsInfo: ClassInfo): Boolean {
@@ -850,21 +853,7 @@ class ClassGen(
 		}
 	}
 
-	fun getParentGen(): ClassGen = parentGen ?: this
+	val parentGen: ClassGen get() = parentGenRef ?: this
 
-	fun getAnnotationGen(): AnnotationGen = annotationGen
-
-	fun isFallbackMode(): Boolean = fallback
-
-	fun isBodyGenStarted(): Boolean = bodyGenStarted
-
-	fun setBodyGenStarted(bodyGenStarted: Boolean) {
-		this.bodyGenStarted = bodyGenStarted
-	}
-
-	fun getOuterNameGen(): NameGen? = outerNameGen
-
-	fun setOuterNameGen(outerNameGen: NameGen) {
-		this.outerNameGen = outerNameGen
-	}
+	val isFallbackMode: Boolean get() = fallback
 }

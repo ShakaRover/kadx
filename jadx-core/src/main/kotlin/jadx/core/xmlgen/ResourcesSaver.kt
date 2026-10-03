@@ -42,9 +42,9 @@ class ResourcesSaver(
 		if (rc == null) {
 			return
 		}
-		if (rc.getDataType() == ResContainer.DataType.RES_TABLE) {
+		if (rc.dataType == ResContainer.DataType.RES_TABLE) {
 			saveToFile(rc, File(outDir, "res/values/public.xml"))
-			for (subFile in rc.getSubFiles()) {
+			for (subFile in rc.subFiles) {
 				saveResources(subFile)
 			}
 		} else {
@@ -53,7 +53,7 @@ class ResourcesSaver(
 	}
 
 	private fun save(rc: ResContainer, outDir: File) {
-		val outFile = File(outDir, rc.getFileName())
+		val outFile = File(outDir, rc.fileName)
 		if (!security.isInSubDirectory(outDir, outFile)) {
 			LOG.error("Invalid resource name or path traversal attack detected: {}", outFile.path)
 			return
@@ -62,36 +62,36 @@ class ResourcesSaver(
 	}
 
 	private fun saveToFile(rc: ResContainer, outFile: File) {
-		when (rc.getDataType()) {
+		when (rc.dataType) {
 			ResContainer.DataType.TEXT, ResContainer.DataType.RES_TABLE -> {
-				SaveCode.save(rc.getText(), outFile)
+				SaveCode.save(rc.text, outFile)
 				return
 			}
 
 			ResContainer.DataType.DECODED_DATA -> {
-				val data = rc.getDecodedData()
+				val data = rc.decodedData
 				FileUtils.makeDirsForFile(outFile)
 				try {
 					Files.write(outFile.toPath(), data)
 				} catch (e: Exception) {
-					LOG.warn("Resource '{}' not saved, got exception", rc.getName(), e)
+					LOG.warn("Resource '{}' not saved, got exception", rc.name, e)
 				}
 				return
 			}
 
 			ResContainer.DataType.RES_LINK -> {
-				val resFile = rc.getResLink()
+				val resFile = rc.resLink
 				FileUtils.makeDirsForFile(outFile)
 				try {
 					saveResourceFile(resFile, outFile)
 				} catch (e: Exception) {
-					LOG.warn("Resource '{}' not saved, got exception", rc.getName(), e)
+					LOG.warn("Resource '{}' not saved, got exception", rc.name, e)
 				}
 				return
 			}
 
 			else -> {
-				LOG.warn("Resource '{}' not saved, unknown type", rc.getName())
+				LOG.warn("Resource '{}' not saved, unknown type", rc.name)
 			}
 		}
 	}

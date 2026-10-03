@@ -110,8 +110,8 @@ object AndroidResourcesUtils {
 			}
 		}
 		for (resource in resStorage.resources) {
-			val resTypeName = resource.getTypeName()
-			val resName = resource.getKeyName().replace('.', '_')
+			val resTypeName = resource.typeName
+			val resName = resource.keyName.replace('.', '_')
 
 			val typeClsInfo = innerClsMap.getOrPut(resTypeName) {
 				getClassForResType(resCls, rClsExists, resTypeName)
@@ -124,14 +124,14 @@ object AndroidResourcesUtils {
 					rFieldInfo,
 					AccessFlags.PUBLIC or AccessFlags.STATIC or AccessFlags.FINAL,
 				)
-				newResField.addAttr(EncodedValue(EncodedType.ENCODED_INT, resource.getId()))
+				newResField.addAttr(EncodedValue(EncodedType.ENCODED_INT, resource.id))
 				typeCls.addField(newResField)
 				if (rClsExists) {
 					newResField.addInfoComment("Added by JADX")
 				}
 				newResField
 			}
-			val fieldNode = resFieldsMap[resource.getId()]
+			val fieldNode = resFieldsMap[resource.id]
 			if (fieldNode != null &&
 				fieldNode.getName() != resName &&
 				NameMapper.isValidAndPrintable(resName) &&

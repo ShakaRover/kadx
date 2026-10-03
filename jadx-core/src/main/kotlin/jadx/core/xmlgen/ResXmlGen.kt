@@ -30,7 +30,7 @@ class ResXmlGen(
 	fun makeResourcesXml(args: JadxArgs): List<ResContainer> {
 		val contMap = HashMap<String, ICodeWriter>()
 		for (ri in resStorage.resources) {
-			if (SKIP_RES_TYPES.contains(ri.getTypeName())) {
+			if (SKIP_RES_TYPES.contains(ri.typeName)) {
 				continue
 			}
 			val fn = getFileName(ri)
@@ -55,42 +55,42 @@ class ResXmlGen(
 	}
 
 	private fun addValue(cw: ICodeWriter, ri: ResourceEntry) {
-		val protoValue = ri.getProtoValue()
-		val simpleValue = ri.getSimpleValue()
+		val protoValue = ri.protoValue
+		val simpleValue = ri.simpleValue
 		if (protoValue != null) {
-			if (protoValue.getValue() != null && protoValue.getNamedValues() == null) {
-				addSimpleValue(cw, ri.getTypeName(), ri.getTypeName(), "name", ri.getKeyName(), protoValue.getValue())
+			if (protoValue.value != null && protoValue.namedValues == null) {
+				addSimpleValue(cw, ri.typeName, ri.typeName, "name", ri.keyName, protoValue.value)
 			} else {
 				cw.startLine()
-				cw.add('<').add(ri.getTypeName()).add(' ')
+				cw.add('<').add(ri.typeName).add(' ')
 				val itemTag = "item"
-				cw.add("name=\"").add(ri.getKeyName()).add('"')
-				if (ri.getTypeName() == "attr" && protoValue.getValue() != null) {
-					cw.add(" format=\"").add(protoValue.getValue()).add('"')
+				cw.add("name=\"").add(ri.keyName).add('"')
+				if (ri.typeName == "attr" && protoValue.value != null) {
+					cw.add(" format=\"").add(protoValue.value).add('"')
 				}
-				if (protoValue.getParent() != null) {
-					cw.add(" parent=\"").add(protoValue.getParent()).add('"')
+				if (protoValue.parent != null) {
+					cw.add(" parent=\"").add(protoValue.parent).add('"')
 				}
 				cw.add(">")
 
 				cw.incIndent()
-				for (value in checkNotNull(protoValue.getNamedValues())) {
-					addProtoItem(cw, itemTag, ri.getTypeName(), value)
+				for (value in checkNotNull(protoValue.namedValues)) {
+					addProtoItem(cw, itemTag, ri.typeName, value)
 				}
 				cw.decIndent()
-				cw.startLine().add("</").add(ri.getTypeName()).add('>')
+				cw.startLine().add("</").add(ri.typeName).add('>')
 			}
 		} else if (simpleValue != null) {
 			val valueStr = vp.decodeValue(simpleValue)
-			addSimpleValue(cw, ri.getTypeName(), ri.getTypeName(), "name", ri.getKeyName(), valueStr)
+			addSimpleValue(cw, ri.typeName, ri.typeName, "name", ri.keyName, valueStr)
 		} else {
-			val namedValues = checkNotNull(ri.getNamedValues())
+			val namedValues = checkNotNull(ri.namedValues)
 			var skipNamedValues = false
 			cw.startLine()
-			cw.add('<').add(ri.getTypeName()).add(" name=\"")
+			cw.add('<').add(ri.typeName).add(" name=\"")
 			var itemTag = "item"
-			if (ri.getTypeName() == "attr" && namedValues.isNotEmpty()) {
-				cw.add(ri.getKeyName())
+			if (ri.typeName == "attr" && namedValues.isNotEmpty()) {
+				cw.add(ri.keyName)
 				val type = namedValues[0].rawValue.data
 				if ((type and ParserConstants.ATTR_TYPE_ENUM) != 0) {
 					itemTag = "enum"
@@ -110,12 +110,12 @@ class ResXmlGen(
 					}
 				}
 			} else {
-				cw.add(ri.getKeyName())
+				cw.add(ri.keyName)
 			}
-			if (ri.getTypeName() == "style" || ri.getParentRef() != 0) {
+			if (ri.typeName == "style" || ri.parentRef != 0) {
 				cw.add("\" parent=\"")
-				if (ri.getParentRef() != 0) {
-					val parent = vp.decodeValue(ParserConstants.TYPE_REFERENCE, ri.getParentRef())
+				if (ri.parentRef != 0) {
+					val parent = vp.decodeValue(ParserConstants.TYPE_REFERENCE, ri.parentRef)
 					cw.add(checkNotNull(parent))
 				}
 			}
@@ -124,17 +124,17 @@ class ResXmlGen(
 			if (!skipNamedValues) {
 				cw.incIndent()
 				for (value in namedValues) {
-					addItem(cw, itemTag, ri.getTypeName(), value)
+					addItem(cw, itemTag, ri.typeName, value)
 				}
 				cw.decIndent()
 			}
-			cw.startLine().add("</").add(ri.getTypeName()).add('>')
+			cw.startLine().add("</").add(ri.typeName).add('>')
 		}
 	}
 
 	private fun addProtoItem(cw: ICodeWriter, itemTag: String, typeName: String, protoValue: ProtoValue) {
-		val name = protoValue.getName()
-		val value = protoValue.getValue()
+		val name = protoValue.name
+		val value = protoValue.value
 		when (typeName) {
 			"attr" -> if (name != null) {
 				addSimpleValue(cw, typeName, itemTag, name, value, "")
@@ -239,14 +239,14 @@ class ResXmlGen(
 
 	private fun getFileName(ri: ResourceEntry): String {
 		val sb = StringBuilder()
-		val qualifiers = ri.getConfig()
+		val qualifiers = ri.config
 		sb.append("res/values")
 		if (qualifiers.isNotEmpty()) {
 			sb.append(qualifiers)
 		}
 		sb.append('/')
-		sb.append(ri.getTypeName())
-		if (!ri.getTypeName().endsWith("s")) {
+		sb.append(ri.typeName)
+		if (!ri.typeName.endsWith("s")) {
 			sb.append('s')
 		}
 		sb.append(".xml")

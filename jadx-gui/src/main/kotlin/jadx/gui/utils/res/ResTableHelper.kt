@@ -19,13 +19,13 @@ class ResTableHelper private constructor(private val resTableRes: JResource) {
 	private val dirs: MutableMap<String, JResource> = HashMap()
 
 	private fun process(resTable: ResContainer) {
-		for (subFile in resTable.getSubFiles()) {
+		for (subFile in resTable.subFiles) {
 			loadSubNodes(subFile)
 		}
 	}
 
 	private fun loadSubNodes(rc: ResContainer) {
-		val resName = rc.getName()
+		val resName = rc.name
 		val split = resName.lastIndexOf('/')
 		val dir: String?
 		val name: String
@@ -36,12 +36,12 @@ class ResTableHelper private constructor(private val resTableRes: JResource) {
 			dir = resName.substring(0, split)
 			name = resName.substring(split + 1)
 		}
-		val code: ICodeInfo = rc.getText()
+		val code: ICodeInfo = rc.text
 		val fileContent = ResourceFileContent(name, ResourceType.XML, code)
 		val resFile = JSubResource(resTableRes, fileContent, resName, name, JResource.JResType.FILE)
 		addResFile(dir, resFile)
 
-		for (subFile in rc.getSubFiles()) {
+		for (subFile in rc.subFiles) {
 			loadSubNodes(subFile)
 		}
 	}

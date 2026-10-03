@@ -28,35 +28,27 @@ package jadx.core.xmlgen
 object XMLChar {
 
 	/** 合法字符掩码。 */
-	@JvmField
 	val MASK_VALID = 0x01
 
 	/** 空格字符掩码。 */
-	@JvmField
 	val MASK_SPACE = 0x02
 
 	/** 名称起始字符掩码。 */
-	@JvmField
 	val MASK_NAME_START = 0x04
 
 	/** 名称字符掩码。 */
-	@JvmField
 	val MASK_NAME = 0x08
 
 	/** Pubid 字符掩码。 */
-	@JvmField
 	val MASK_PUBID = 0x10
 
 	/** 内容字符掩码（排除可作为标记起始的特殊字符）。 */
-	@JvmField
 	val MASK_CONTENT = 0x20
 
 	/** NCName 起始字符掩码。 */
-	@JvmField
 	val MASK_NCNAME_START = 0x40
 
 	/** NCName 字符掩码。 */
-	@JvmField
 	val MASK_NCNAME = 0x80
 
 	/** 字符属性表：以码点为下标，按位保存属性标志。 */
@@ -689,73 +681,56 @@ object XMLChar {
 	}
 
 	/** 是否是补充平面字符（U+10000..U+10FFFF）。 */
-	@JvmStatic
 	fun isSupplemental(c: Int): Boolean = c >= 0x10000 && c <= 0x10FFFF
 
 	/** 由代理对（高/低代理）合成补充平面码点。 */
-	@JvmStatic
 	fun supplemental(h: Char, l: Char): Int = (h.code - 0xD800) * 0x400 + (l.code - 0xDC00) + 0x10000
 
 	/** 求补充平面码点的高代理。 */
-	@JvmStatic
 	fun highSurrogate(c: Int): Char = (((c - 0x00010000) shr 10) + 0xD800).toChar()
 
 	/** 求补充平面码点的低代理。 */
-	@JvmStatic
 	fun lowSurrogate(c: Int): Char = (((c - 0x00010000) and 0x3FF) + 0xDC00).toChar()
 
 	/** 是否是高代理（U+D800..U+DBFF）。 */
-	@JvmStatic
 	fun isHighSurrogate(c: Int): Boolean = 0xD800 <= c && c <= 0xDBFF
 
 	/** 是否是低代理（U+DC00..U+DFFF）。 */
-	@JvmStatic
 	fun isLowSurrogate(c: Int): Boolean = 0xDC00 <= c && c <= 0xDFFF
 
 	/** 是否是合法 XML 字符（含补充平面范围）。 */
-	@JvmStatic
 	fun isValid(c: Int): Boolean = (c < 0x10000 && (CHARS[c].toInt() and MASK_VALID) != 0) ||
 		(0x10000 <= c && c <= 0x10FFFF)
 
 	/** 是否是非法 XML 字符。 */
-	@JvmStatic
 	fun isInvalid(c: Int): Boolean = !isValid(c)
 
 	/** 是否可视为内容字符（补充平面字符均视为内容）。 */
-	@JvmStatic
 	fun isContent(c: Int): Boolean = (c < 0x10000 && (CHARS[c].toInt() and MASK_CONTENT) != 0) ||
 		(0x10000 <= c && c <= 0x10FFFF)
 
 	/** 是否是标记字符（`<`、`&`、`%`）。 */
-	@JvmStatic
 	fun isMarkup(c: Int): Boolean = c == '<'.code || c == '&'.code || c == '%'.code
 
 	/** 是否是 XML 1.0 定义的空格字符。 */
-	@JvmStatic
 	fun isSpace(c: Int): Boolean = c <= 0x20 && (CHARS[c].toInt() and MASK_SPACE) != 0
 
 	/** 是否是合法名称起始字符（XML 1.0 产生式 [5]）。 */
-	@JvmStatic
 	fun isNameStart(c: Int): Boolean = c < 0x10000 && (CHARS[c].toInt() and MASK_NAME_START) != 0
 
 	/** 是否是合法名称字符（XML 1.0 产生式 [4]）。 */
-	@JvmStatic
 	fun isName(c: Int): Boolean = c < 0x10000 && (CHARS[c].toInt() and MASK_NAME) != 0
 
 	/** 是否是合法 NCName 起始字符。 */
-	@JvmStatic
 	fun isNCNameStart(c: Int): Boolean = c < 0x10000 && (CHARS[c].toInt() and MASK_NCNAME_START) != 0
 
 	/** 是否是合法 NCName 字符。 */
-	@JvmStatic
 	fun isNCName(c: Int): Boolean = c < 0x10000 && (CHARS[c].toInt() and MASK_NCNAME) != 0
 
 	/** 是否是合法 Pubid 字符。 */
-	@JvmStatic
 	fun isPubid(c: Int): Boolean = c < 0x10000 && (CHARS[c].toInt() and MASK_PUBID) != 0
 
 	/** 校验字符串是否是合法 XML Name（产生式 [5]）。 */
-	@JvmStatic
 	fun isValidName(name: String): Boolean {
 		val length = name.length
 		if (length == 0) {
@@ -775,7 +750,6 @@ object XMLChar {
 	}
 
 	/** 校验字符串是否是合法 NCName（XML Namespaces 产生式 [4]）。 */
-	@JvmStatic
 	fun isValidNCName(ncName: String): Boolean {
 		val length = ncName.length
 		if (length == 0) {
@@ -795,7 +769,6 @@ object XMLChar {
 	}
 
 	/** 校验字符串是否是合法 Nmtoken（XML 1.0 产生式 [7]）。 */
-	@JvmStatic
 	fun isValidNmtoken(nmtoken: String): Boolean {
 		val length = nmtoken.length
 		if (length == 0) {
@@ -811,7 +784,6 @@ object XMLChar {
 	}
 
 	/** 校验 IANA 编码名是否合法（只检查字符集，不验证解码器是否存在）。 */
-	@JvmStatic
 	fun isValidIANAEncoding(ianaEncoding: String?): Boolean {
 		if (ianaEncoding != null) {
 			val length = ianaEncoding.length
@@ -834,7 +806,6 @@ object XMLChar {
 	}
 
 	/** 校验 Java 编码名是否合法。 */
-	@JvmStatic
 	fun isValidJavaEncoding(javaEncoding: String?): Boolean {
 		if (javaEncoding != null) {
 			val length = javaEncoding.length
@@ -854,7 +825,6 @@ object XMLChar {
 	}
 
 	/** 按 XML 1.0 产生式 [3] 去除两端的空格字符。 */
-	@JvmStatic
 	fun trim(value: String): String {
 		val lengthMinusOne = value.length - 1
 		var start = 0

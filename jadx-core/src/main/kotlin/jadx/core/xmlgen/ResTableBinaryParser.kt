@@ -31,7 +31,7 @@ import java.util.StringJoiner
  *
  * **Kotlin 转换说明**：
  * - 基类字段 `is` 重命名为 [input]；
- * - 静态工厂 [getBetterName] 保留为 companion + `@JvmStatic`；
+ * - 静态工厂 [getBetterName] 保留为 companion；
  * - 私有嵌套类 [PackageChunk] / [EntryOffset] 保持原结构。
  */
 class ResTableBinaryParser @JvmOverloads constructor(
@@ -44,22 +44,14 @@ class ResTableBinaryParser @JvmOverloads constructor(
 	 * No renaming, pattern checking or name generation. Required for res-map.txt building
 	 */
 	private class PackageChunk(
-		private val id: Int,
-		private val name: String,
-		private val typeStrings: BinaryXMLStrings?,
-		private val keyStrings: BinaryXMLStrings?,
-	) {
-		fun getId(): Int = id
+		val id: Int,
+		val name: String,
+		val typeStrings: BinaryXMLStrings?,
+		val keyStrings: BinaryXMLStrings?,
+	)
 
-		fun getName(): String = name
-
-		fun getTypeStrings(): BinaryXMLStrings? = typeStrings
-
-		fun getKeyStrings(): BinaryXMLStrings? = keyStrings
-	}
-
-	private var resStorage: ResourceStorage? = null
-	private var strings: BinaryXMLStrings? = null
+	override var resStorage: ResourceStorage? = null
+	override var strings: BinaryXMLStrings? = null
 	private var baseFileName = ""
 
 	override fun setBaseFileName(fileName: String) {
@@ -101,8 +93,8 @@ class ResTableBinaryParser @JvmOverloads constructor(
 		val pkgCount = input.readInt32()
 
 		var pkgNum = 0
-		while (input.getPos() < size.toLong()) {
-			val chuckStart = input.getPos()
+		while (input.pos < size.toLong()) {
+			val chuckStart = input.pos
 			val type = input.readInt16()
 			val headerSize = input.readInt16()
 			val chunkSize = input.readUInt32()
@@ -157,8 +149,8 @@ class ResTableBinaryParser @JvmOverloads constructor(
 		val pkg = PackageChunk(id, name, typeStrings, keyStrings)
 		checkNotNull(resStorage).appPackage = name
 
-		while (input.getPos() < pkgChunkEnd) {
-			val chunkStart = input.getPos()
+		while (input.pos < pkgChunkEnd) {
+			val chunkStart = input.pos
 			val type = input.readInt16()
 			LOG.trace("res package chunk start at {} type {}", chunkStart, type)
 			when (type) {
@@ -197,7 +189,7 @@ class ResTableBinaryParser @JvmOverloads constructor(
 		for (i in 0 until entryCount) {
 			val entryFlag = input.readInt32()
 		}
-		if (input.getPos() != expectedEndPos) {
+		if (input.pos != expectedEndPos) {
 			throw IOException(String.format("Error reading type spec chunk at offset 0x%x", chunkStart))
 		}
 	}
@@ -213,11 +205,11 @@ class ResTableBinaryParser @JvmOverloads constructor(
 			val packageId = input.readInt32()
 			val packageName = input.readString16Fixed(128)
 			LOG.info("Found resource shared library {}, pkgId: {}", packageName, packageId)
-			if (input.getPos() > expectedEndPos) {
+			if (input.pos > expectedEndPos) {
 				throw IOException("reading after chunk end")
 			}
 		}
-		if (input.getPos() != expectedEndPos) {
+		if (input.pos != expectedEndPos) {
 			throw IOException(String.format("Error reading library chunk at offset 0x%x", chunkStart))
 		}
 	}
@@ -238,7 +230,7 @@ class ResTableBinaryParser @JvmOverloads constructor(
 		// The type identifier this chunk is holding. Type IDs start at 1 (corresponding
 		// to the value of the type bits in a resource identifier). 0 is invalid.
 		val typeId = input.readInt8()
-		val typeName = checkNotNull(pkg.getTypeStrings()).get(typeId - 1)
+		val typeName = checkNotNull(pkg.typeStrings).get(typeId - 1)
 
 		val flags = input.readInt8()
 		val isSparse = (flags and ParserConstants.FLAG_SPARSE) != 0
@@ -295,7 +287,7 @@ class ResTableBinaryParser @JvmOverloads constructor(
 				// LOG.debug("Pos is after chunk end: {} end {}", entryStartOffset, chunkEnd);
 				continue
 			}
-			if (entryStartOffset < input.getPos()) {
+			if (entryStartOffset < input.pos) {
 				// workaround for issue #2343: if the entryStartOffset is located before our current position
 				input.reset()
 			}
@@ -366,26 +358,26 @@ class ResTableBinaryParser @JvmOverloads constructor(
 		}
 
 		// resourceID as defined in AOSP make_resid()
-		val resId = (pkg.getId() shl 24) or (typeId shl 16) or entryId
-		val typeName = checkNotNull(pkg.getTypeStrings()).get(typeId - 1)
-		val origKeyName = checkNotNull(pkg.getKeyStrings()).get(key)
+		val resId = (pkg.id shl 24) or (typeId shl 16) or entryId
+		val typeName = checkNotNull(pkg.typeStrings).get(typeId - 1)
+		val origKeyName = checkNotNull(pkg.keyStrings).get(key)
 
 		val newResEntry = buildResourceEntry(pkg, config, resId, typeName, origKeyName)
 		if (isCompact) {
 			val dataType = flags shr 8
 			val data = input.readInt32()
-			newResEntry.setSimpleValue(RawValue(dataType, data))
+			newResEntry.simpleValue = RawValue(dataType, data)
 		} else if (isComplex || size == 16) {
 			val parentRef = input.readInt32()
 			val count = input.readInt32()
-			newResEntry.setParentRef(parentRef)
+			newResEntry.parentRef = parentRef
 			val values = ArrayList<RawNamedValue>(count)
 			for (i in 0 until count) {
 				values.add(parseValueMap())
 			}
-			newResEntry.setNamedValues(values)
+			newResEntry.namedValues = values
 		} else {
-			newResEntry.setSimpleValue(parseValue())
+			newResEntry.simpleValue = parseValue()
 		}
 	}
 
@@ -398,14 +390,14 @@ class ResTableBinaryParser @JvmOverloads constructor(
 
 		var newResEntry: ResourceEntry
 		if (useRawResName) {
-			newResEntry = ResourceEntry(resId, pkg.getName(), typeName, origKeyName, config)
+			newResEntry = ResourceEntry(resId, pkg.name, typeName, origKeyName, config)
 		} else {
 			var resName = getResName(resId, origKeyName)
-			newResEntry = ResourceEntry(resId, pkg.getName(), typeName, resName, config)
+			newResEntry = ResourceEntry(resId, pkg.name, typeName, resName, config)
 			val storage = checkNotNull(resStorage)
 			val prevResEntry = storage.searchEntryWithSameName(newResEntry)
 			if (prevResEntry != null) {
-				if (prevResEntry.getId() == newResEntry.getId()) {
+				if (prevResEntry.id == newResEntry.id) {
 					// Check that every resource (identified by its resource ID) is only processed once.
 					// We should not get resource entries with an identical id. This check is just for safety purposes,
 					// otherwise Jadx can accumulate many GB of RAM as described in issue #2775 because resource names
@@ -417,11 +409,11 @@ class ResTableBinaryParser @JvmOverloads constructor(
 
 				// rename also previous entry for consistency
 				val replaceForPrevEntry = prevResEntry.copyWithId(resName)
-				LOG.trace("Resource name collision - renamed to {} and {}", newResEntry.getKeyName(), replaceForPrevEntry.getKeyName())
+				LOG.trace("Resource name collision - renamed to {} and {}", newResEntry.keyName, replaceForPrevEntry.keyName)
 				storage.replace(prevResEntry, replaceForPrevEntry)
 				storage.addRename(replaceForPrevEntry)
 			}
-			if (origKeyName != newResEntry.getKeyName()) {
+			if (origKeyName != newResEntry.keyName) {
 				storage.addRename(newResEntry)
 			}
 		}
@@ -490,7 +482,7 @@ class ResTableBinaryParser @JvmOverloads constructor(
 
 	@Throws(IOException::class)
 	private fun parseConfig(): EntryConfig {
-		val start = input.getPos()
+		val start = input.pos
 		val size = input.readInt32()
 		if (size < 4) {
 			throw IOException("Config size < 4")
@@ -567,16 +559,11 @@ class ResTableBinaryParser @JvmOverloads constructor(
 	@Throws(IOException::class)
 	private fun readScriptOrVariantChar(length: Int): String = readScriptOrVariantChar(length, input)
 
-	override fun getResStorage(): ResourceStorage? = resStorage
-
-	override fun getStrings(): BinaryXMLStrings? = strings
-
 	companion object {
 		private val LOG: Logger = LoggerFactory.getLogger(ResTableBinaryParser::class.java)
 
 		private val STUB_ENTRY = ResourceEntry(-1, "stub", "stub", "stub", "")
 
-		@JvmStatic
 		fun getBetterName(nameSource: ResourceNameSource, resName: String, codeName: String): String = when (nameSource) {
 			ResourceNameSource.AUTO -> BetterName.getBetterResourceName(resName, codeName)
 			ResourceNameSource.RESOURCES -> resName
@@ -586,7 +573,7 @@ class ResTableBinaryParser @JvmOverloads constructor(
 
 		@Throws(IOException::class)
 		private fun readScriptOrVariantChar(length: Int, ps: ParserStream): String {
-			val start = ps.getPos()
+			val start = ps.pos
 			val sb = StringBuilder(16)
 			for (i in 0 until length) {
 				val ch = ps.readInt8().toShort()

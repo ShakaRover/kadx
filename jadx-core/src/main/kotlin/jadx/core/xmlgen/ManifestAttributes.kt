@@ -193,17 +193,17 @@ class ManifestAttributes(private val security: IJadxSecurity) {
 	fun updateAttributes(parser: IResTableParser) {
 		appAttrMap.clear()
 
-		val resStorage = checkNotNull(parser.getResStorage())
-		val vp = ValuesParser(parser.getStrings(), resStorage.resourcesNames)
+		val resStorage = checkNotNull(parser.resStorage)
+		val vp = ValuesParser(parser.strings, resStorage.resourcesNames)
 
 		for (ri in resStorage.resources) {
-			if (ri.getProtoValue() != null) {
+			if (ri.protoValue != null) {
 				// Aapt proto decoder resolves attributes by itself.
 				continue
 			}
 
-			val namedValues = ri.getNamedValues()
-			if (ri.getTypeName() == "attr" && namedValues != null && namedValues.size > 1) {
+			val namedValues = ri.namedValues
+			if (ri.typeName == "attr" && namedValues != null && namedValues.size > 1) {
 				val first = namedValues[0]
 				val attrTyp: MAttrType
 				val attrTypeVal = first.rawValue.data and 0xff0000
@@ -220,7 +220,7 @@ class ManifestAttributes(private val security: IJadxSecurity) {
 					val value = checkNotNull(vp.decodeNameRef(rv.nameRef))
 					attr.addValue(rv.rawValue.data.toLong(), if (value.startsWith("id.")) value.substring(3) else value)
 				}
-				appAttrMap[ri.getKeyName()] = attr
+				appAttrMap[ri.keyName] = attr
 			}
 		}
 	}

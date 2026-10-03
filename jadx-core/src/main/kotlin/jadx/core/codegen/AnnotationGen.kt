@@ -144,7 +144,7 @@ class AnnotationGen(private val cls: ClassNode, private val classGen: ClassGen) 
 			return
 		}
 
-		val stringUtils = getStringUtils()
+		val stringUtils = this.stringUtils
 		val value = encodedValue.value
 		when (encodedValue.type) {
 			EncodedType.ENCODED_NULL -> code.add("null")
@@ -207,5 +207,5 @@ class AnnotationGen(private val cls: ClassNode, private val classGen: ClassGen) 
 		}
 	}
 
-	private fun getStringUtils(): StringUtils = cls.root().getStringUtils()
+	private val stringUtils: StringUtils get() = cls.root().getStringUtils()
 }

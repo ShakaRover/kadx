@@ -13,12 +13,11 @@ import java.util.Locale
 /**
  * XML 生成与资源值解码的通用工具。
  *
- * 全部为静态方法，使用 `object` + `@JvmStatic` 保持 Java 调用 `XmlGenUtils.xxx(...)` 不变。
+ * 全部为静态方法，使用 `object` 单例，调用 `XmlGenUtils.xxx(...)` 不变。
  */
 object XmlGenUtils {
 
 	/** 读取输入流全部字节。 */
-	@JvmStatic
 	@Throws(IOException::class)
 	fun readData(i: InputStream): ByteArray {
 		val buffer = ByteArrayOutputStream()
@@ -34,7 +33,6 @@ object XmlGenUtils {
 	}
 
 	/** 生成 `public.xml` 形式的资源 id 清单。 */
-	@JvmStatic
 	fun makeXmlDump(writer: ICodeWriter, resStorage: ResourceStorage): ICodeInfo {
 		writer.add("<?xml version=\"1.0\" encoding=\"utf-8\"?>")
 		writer.startLine("<resources>")
@@ -42,12 +40,12 @@ object XmlGenUtils {
 
 		val addedValues = HashSet<String>()
 		for (ri in resStorage.resources) {
-			if (addedValues.add(ri.getTypeName() + '.' + ri.getKeyName())) {
+			if (addedValues.add(ri.typeName + '.' + ri.keyName)) {
 				val format = String.format(
 					"<public type=\"%s\" name=\"%s\" id=\"0x%08x\" />",
-					ri.getTypeName(),
-					ri.getKeyName(),
-					ri.getId(),
+					ri.typeName,
+					ri.keyName,
+					ri.id,
 				)
 				writer.startLine(format)
 			}
@@ -63,7 +61,6 @@ object XmlGenUtils {
 	 * 32 位布局：位 0-3 单位、位 4-5 基数（radix）、位 8-31 尾数（带符号）。
 	 * 尾数已在高位，故先与 `MANTISSA_MASK << MANTISSA_SHIFT` 相与，再乘 `RADIX_MULTS[radix]`。
 	 */
-	@JvmStatic
 	fun decodeComplex(data: Int, isFraction: Boolean): String {
 		var value = (
 			data and (ParserConstants.COMPLEX_MANTISSA_MASK shl ParserConstants.COMPLEX_MANTISSA_SHIFT)
@@ -95,7 +92,6 @@ object XmlGenUtils {
 	}
 
 	/** double 转字符串：整数去掉小数，其余最多保留 4 位小数。 */
-	@JvmStatic
 	fun doubleToString(value: Double): String {
 		if (java.lang.Double.compare(value, Math.floor(value)) == 0 &&
 			!java.lang.Double.isInfinite(value)
@@ -109,11 +105,9 @@ object XmlGenUtils {
 		return f.format(value)
 	}
 
-	@JvmStatic
 	fun floatToString(value: Float): String = doubleToString(value.toDouble())
 
 	/** 把 `attr` 的 format 位掩码转成 `reference|string|...` 形式；无匹配返回 null。 */
-	@JvmStatic
 	fun getAttrTypeAsString(type: Int): String? {
 		var s = ""
 		if ((type and ParserConstants.ATTR_TYPE_REFERENCE) != 0) {
