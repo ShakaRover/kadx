@@ -202,7 +202,8 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | G10 | `device/debugger`(+`smali`,`protocol`) | 20 | ✅ 17e3acbb |
 | G11 | `cache/usage` + `cache/code/disk/adapters` | 24 | ✅ 54089ebe（二进制缓存格式已保持） |
 | G12 | `settings` + `settings/data` | 17 | ✅ aa6b9b7d（Gson 配置字段名已 javap 验证） |
-| G13 | `settings/ui*` + `settings/font` | 25 | ⏳ |
+| G13 | `settings/ui*` + `settings/font` | 25 | ✅ 1587ab60 |
+| G14 | `utils/ui` + `utils/{shortcut,pkgs,fileswatcher,rx,tools,res,layout,files,dbg,cache}` | 25 | ⏳ |
 | G03 | `treemodel` | 21 |
 | G04 | `ui/action` | 18 |
 | G05 | `jobs` | 17 |
