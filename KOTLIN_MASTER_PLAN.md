@@ -206,7 +206,8 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | G14 | `utils/ui` + `utils/{shortcut,pkgs,fileswatcher,rx,tools,res,layout,files,dbg,cache}` | 25 | ✅ 1781a9a7 |
 | G15 | `search` + `search/providers` | 14 | ✅ 936e11d9 |
 | G16 | `logs` + `report` + `ui/graphs` | 20 | ✅ 3fc463ca |
-| G17 | `ui/codearea/theme` + `ui/hexviewer`(+`search`,`service`) | 18 | ⏳ |
+| G17 | `ui/codearea/theme` + `ui/hexviewer`(+`search`,`service`) | 18 | ✅ 64be4cf2 |
+| G18 | `plugins/{context,quark,mappings}` + `utils/plugins` | 18 | ⏳ |
 | G03 | `treemodel` | 21 |
 | G04 | `ui/action` | 18 |
 | G05 | `jobs` | 17 |
