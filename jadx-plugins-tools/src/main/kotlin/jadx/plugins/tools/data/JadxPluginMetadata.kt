@@ -26,7 +26,7 @@ class JadxPluginMetadata : Comparable<JadxPluginMetadata> {
 
 	override fun hashCode(): Int = pluginId?.hashCode() ?: 0
 
-	override fun compareTo(other: JadxPluginMetadata): Int = pluginId!!.compareTo(other.pluginId!!)
+	override fun compareTo(other: JadxPluginMetadata): Int = checkNotNull(pluginId).compareTo(checkNotNull(other.pluginId))
 
 	override fun toString(): String = "JadxPluginMetadata{id=$pluginId, name=$name, version=${version ?: "?"}, locationId=$locationId, path=$path}"
 }

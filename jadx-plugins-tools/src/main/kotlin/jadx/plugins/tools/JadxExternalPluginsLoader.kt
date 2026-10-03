@@ -59,7 +59,7 @@ class JadxExternalPluginsLoader : JadxPluginLoader {
 			val plugins = map.values.joinToString(", ") { it.getPluginInfo().getPluginId() }
 			throw JadxRuntimeException("Expect only one plugin per jar: $pluginPath, but found: $loaded - $plugins")
 		}
-		return first(map.values)!!
+		return checkNotNull(first(map.values))
 	}
 
 	private fun loadFromClsLoader(map: MutableMap<String, JadxPlugin>, classLoader: ClassLoader) {

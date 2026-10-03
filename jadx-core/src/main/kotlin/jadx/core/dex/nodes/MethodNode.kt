@@ -143,14 +143,14 @@ class MethodNode(
 				initArguments(argTypes)
 				return
 			}
-			regsCount = codeReader!!.getRegistersCount()
-			argsStartReg = codeReader!!.getArgsStartReg()
+			regsCount = checkNotNull(codeReader).getRegistersCount()
+			argsStartReg = checkNotNull(codeReader).getArgsStartReg()
 			initArguments(argTypes)
 			if (contains(AType.JADX_ERROR)) {
 				instructions = EMPTY_INSN_ARRAY
 			} else {
 				val decoder = InsnDecoder(this)
-				instructions = decoder.process(codeReader!!)
+				instructions = decoder.process(checkNotNull(codeReader))
 			}
 		} catch (e: Exception) {
 			if (!noCode) {
@@ -264,14 +264,14 @@ class MethodNode(
 		if (argsList == null) {
 			throw JadxRuntimeException("Method arg registers not loaded: $this, class status: ${parentClass.getTopParentClass().state}")
 		}
-		return argsList!!
+		return checkNotNull(argsList)
 	}
 
 	fun getAllArgRegs(): List<RegisterArg> {
 		val argRegs = getArgRegs()
 		if (thisArg != null) {
 			val list = ArrayList<RegisterArg>(argRegs.size + 1)
-			list.add(thisArg!!)
+			list.add(checkNotNull(thisArg))
 			list.addAll(argRegs)
 			return list
 		}
@@ -305,9 +305,10 @@ class MethodNode(
 	}
 
 	fun finishBasicBlocks() {
-		blocks = jadx.core.utils.Utils.lockList(blocks!!)
+		val lockedBlocks = jadx.core.utils.Utils.lockList(checkNotNull(blocks))
+		blocks = lockedBlocks
 		loops = jadx.core.utils.Utils.lockList(loops as MutableList<LoopInfo>)
-		for (block in blocks!!) {
+		for (block in lockedBlocks) {
 			block.lock()
 		}
 	}
@@ -321,19 +322,19 @@ class MethodNode(
 	}
 
 	fun updateBlockPositions() {
-		BlockNode.updateBlockPositions(blocks!!)
+		BlockNode.updateBlockPositions(checkNotNull(blocks))
 	}
 
 	fun getNextBlockCId(): Int = blocksMaxCId++
 
-	fun getPreExitBlocks(): List<BlockNode> = exitBlock!!.predecessors
+	fun getPreExitBlocks(): List<BlockNode> = checkNotNull(exitBlock).predecessors
 
 	fun isPreExitBlock(block: BlockNode): Boolean {
 		val successors = block.successors
 		if (successors.size == 1) {
 			return successors[0] == exitBlock
 		}
-		return exitBlock!!.predecessors.contains(block)
+		return checkNotNull(exitBlock).predecessors.contains(block)
 	}
 
 	fun resetLoops() {
@@ -417,13 +418,14 @@ class MethodNode(
 	fun isDefaultConstructor(): Boolean {
 		if (!isConstructor()) return false
 		var defaultArgCount = 0
+		val args = argsList
 		if (parentClass.classInfo.isInner && !parentClass.accessFlags.isStatic()) {
 			val outerCls = parentClass.parentClass
-			if (argsList != null && argsList!!.isNotEmpty() && argsList!![0].getInitType() == outerCls.classInfo.type) {
+			if (args != null && args.isNotEmpty() && args[0].getInitType() == outerCls.classInfo.type) {
 				defaultArgCount = 1
 			}
 		}
-		return argsList == null || argsList!!.size == defaultArgCount
+		return args == null || args.size == defaultArgCount
 	}
 
 	fun getRegsCount(): Int = regsCount
@@ -491,9 +493,9 @@ class MethodNode(
 
 	override fun getMethodInfo(): MethodInfo = mthInfo
 
-	fun getMethodCodeOffset(): Long = if (noCode) 0 else codeReader!!.getCodeOffset().toLong()
+	fun getMethodCodeOffset(): Long = if (noCode) 0 else checkNotNull(codeReader).getCodeOffset().toLong()
 
-	fun getDebugInfo(): IDebugInfo? = if (noCode) null else codeReader!!.getDebugInfo()
+	fun getDebugInfo(): IDebugInfo? = if (noCode) null else checkNotNull(codeReader).getDebugInfo()
 
 	fun ignoreMethod() {
 		add(AFlag.DONT_GENERATE)
@@ -512,12 +514,14 @@ class MethodNode(
 	}
 
 	fun countInsns(): Long {
-		if (instructions != null) {
-			return instructions!!.size.toLong()
+		val insns = instructions
+		if (insns != null) {
+			return insns.size.toLong()
 		}
-		if (blocks != null) {
+		val blks = blocks
+		if (blks != null) {
 			var sum = 0L
-			for (block in blocks!!) {
+			for (block in blks) {
 				sum += block.instructions.size.toLong()
 			}
 			return sum

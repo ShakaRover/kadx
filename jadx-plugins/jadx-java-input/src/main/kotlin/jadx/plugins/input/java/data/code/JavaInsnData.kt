@@ -42,9 +42,11 @@ class JavaInsnData(private val state: CodeDecodeState) : InsnData {
 	@Nullable
 	private var payload: ICustomPayload? = null
 
+	private fun insnInfoOrThrow(): JavaInsnInfo = insnInfo ?: throw NullPointerException("insnInfo is not set")
+
 	override fun decode() {
 		// 原 Java 直接 insnInfo.getDecoder()，insnInfo 为 null 时 NPE；保持等价
-		val decoder: IJavaInsnDecoder? = insnInfo!!.decoder
+		val decoder: IJavaInsnDecoder? = insnInfoOrThrow().decoder
 		if (decoder != null) {
 			decoder.decode(state)
 			state.decoded()
@@ -53,7 +55,7 @@ class JavaInsnData(private val state: CodeDecodeState) : InsnData {
 	}
 
 	fun skip() {
-		val decoder: IJavaInsnDecoder? = insnInfo!!.decoder
+		val decoder: IJavaInsnDecoder? = insnInfoOrThrow().decoder
 		if (decoder != null) {
 			decoder.skip(state)
 		}
@@ -65,7 +67,7 @@ class JavaInsnData(private val state: CodeDecodeState) : InsnData {
 
 	override fun getOpcode(): Opcode {
 		// 接口声明非空；setOpcode 在 decode 前必已执行，提前调用时原 Java 同样 NPE
-		return opcode!!
+		return opcode ?: throw NullPointerException("opcode is not set")
 	}
 
 	fun setOpcode(opcode: Opcode) {
@@ -73,7 +75,7 @@ class JavaInsnData(private val state: CodeDecodeState) : InsnData {
 	}
 
 	// 原 Java 直接 insnInfo.getName()，insnInfo 为 null 时 NPE；保持等价
-	override fun getOpcodeMnemonic(): String? = insnInfo!!.name
+	override fun getOpcodeMnemonic(): String? = insnInfoOrThrow().name
 
 	override fun getByteCode(): ByteArray {
 		val reader = state.reader()
@@ -87,7 +89,7 @@ class JavaInsnData(private val state: CodeDecodeState) : InsnData {
 	}
 
 	// 接口声明非空（调用前 setInsnInfo 必已执行）
-	override fun getIndexType(): InsnIndexType = insnInfo!!.indexType
+	override fun getIndexType(): InsnIndexType = insnInfoOrThrow().indexType
 
 	override fun getRawOpcodeUnit(): Int = opcodeUnit
 
@@ -112,7 +114,7 @@ class JavaInsnData(private val state: CodeDecodeState) : InsnData {
 	override fun getIndexAsString(): String? = constPoolReader().getUtf8(index)
 
 	override fun getIndexAsType(): String? {
-		if (insnInfo!!.opcode == 0xbc) { // newarray
+		if (insnInfoOrThrow().opcode == 0xbc) { // newarray
 			return ArrayType.byValue(index)
 		}
 		return constPoolReader().getClass(index)

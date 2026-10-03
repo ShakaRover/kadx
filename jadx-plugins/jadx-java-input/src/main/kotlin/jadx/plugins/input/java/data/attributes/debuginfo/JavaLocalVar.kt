@@ -32,13 +32,13 @@ class JavaLocalVar(
 	}
 
 	// 接口声明非空；损坏 class 时名字为 null，调用方解引用与原 Java 一样 NPE
-	override fun getName(): String = name!!
+	override fun getName(): String = name ?: throw NullPointerException("name is null")
 
 	override fun getRegNum(): Int = regNum
 
 	// 接口声明非空，但 LocalVariableTypeTable 来源的变量此处运行时为 null（原 Java 同样返回 null）；
 	// 调用方解引用时两边都是 NPE，行为等价
-	override fun getType(): String = type!!
+	override fun getType(): String = type ?: throw NullPointerException("type is null")
 
 	@Nullable
 	override fun getSignature(): String? = sign

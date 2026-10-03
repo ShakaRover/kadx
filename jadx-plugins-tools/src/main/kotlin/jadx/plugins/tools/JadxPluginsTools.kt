@@ -169,7 +169,7 @@ class JadxPluginsTools private constructor() {
 			if (pluginMetadata.disabled) {
 				continue
 			}
-			list.add(INSTALLED_DIR.resolve(pluginMetadata.path!!))
+			list.add(INSTALLED_DIR.resolve(checkNotNull(pluginMetadata.path)))
 		}
 		list.addAll(listFiles(DROPINS_DIR))
 		return list
@@ -189,11 +189,11 @@ class JadxPluginsTools private constructor() {
 	}
 
 	private fun update(plugin: JadxPluginMetadata): JadxPluginMetadata? {
-		val resolver = getResolver(plugin.locationId!!)
+		val resolver = getResolver(checkNotNull(plugin.locationId))
 		if (!resolver.isUpdateSupported()) {
 			return null
 		}
-		val update = resolver.resolve(plugin.locationId!!) ?: return null
+		val update = resolver.resolve(checkNotNull(plugin.locationId)) ?: return null
 		if (update.version == plugin.version) {
 			return null
 		}
@@ -210,11 +210,11 @@ class JadxPluginsTools private constructor() {
 					" is not compatible with current jadx version: ${getVersion()}",
 			)
 		}
-		uninstall(metadata.pluginId!!)
+		uninstall(checkNotNull(metadata.pluginId))
 
 		val version = metadata.version
 		val pluginBaseName = "${metadata.pluginId}${if (notBlank(version)) "-$version" else ""}"
-		val pluginPathStr = metadata.path!!
+		val pluginPathStr = checkNotNull(metadata.path)
 		val pluginPath = getPath(pluginPathStr)
 		if (pluginPathStr.endsWith(".jar")) {
 			val pluginJar = INSTALLED_DIR.resolve("$pluginBaseName.jar")
@@ -241,15 +241,15 @@ class JadxPluginsTools private constructor() {
 
 	private fun fillMetadata(metadata: JadxPluginMetadata) {
 		try {
-			var pluginPath = metadata.path!!
+			var pluginPath = checkNotNull(metadata.path)
 			if (needDownload(pluginPath)) {
 				val ext = jadx.api.plugins.utils.CommonFileUtils.getFileExtension(pluginPath)
-				val tmpJar = createTempFile(metadata.name!!, "plugin.$ext")
+				val tmpJar = createTempFile(checkNotNull(metadata.name), "plugin.$ext")
 				downloadFile(pluginPath, tmpJar)
 				pluginPath = tmpJar.toAbsolutePath().toString()
 			}
 			if (pluginPath.endsWith(".zip")) {
-				val tmpDir = createTempDirectory(metadata.name!!)
+				val tmpDir = createTempDirectory(checkNotNull(metadata.name))
 				unzip(getPath(pluginPath), tmpDir)
 				pluginPath = tmpDir.toAbsolutePath().toString()
 			}
@@ -289,7 +289,7 @@ class JadxPluginsTools private constructor() {
 
 	private fun deletePlugin(plugin: JadxPluginMetadata) {
 		try {
-			val pluginPath = INSTALLED_DIR.resolve(plugin.path!!)
+			val pluginPath = INSTALLED_DIR.resolve(checkNotNull(plugin.path))
 			if (isDirectory(pluginPath)) {
 				deleteDir(pluginPath)
 			} else {

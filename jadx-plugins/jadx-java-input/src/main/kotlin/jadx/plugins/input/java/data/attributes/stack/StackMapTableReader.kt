@@ -39,7 +39,7 @@ class StackMapTableReader : IJavaAttributeReader {
 		}
 		val frameContext = FrameContext(reader, typeData, prevFrame)
 		frameReader(frameContext)
-		return frameContext.frame!! // 原 Java Objects.requireNonNull，同样 NPE
+		return frameContext.frame ?: throw NullPointerException("frame is null") // 原 Java Objects.requireNonNull，同样 NPE
 	}
 
 	companion object {

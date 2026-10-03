@@ -77,7 +77,8 @@ class AttributesReader(
 				val attrType = resolveAttrReader(nameIdx)
 				if (attrType == type) {
 					// 原 Java 直接解引用 getReader()，reader 为 null 时同样 NPE
-					return attrType.reader!!.read(clsData, reader) as T?
+					val attrReader = attrType.reader ?: throw NullPointerException("attr reader is null")
+					return attrReader.read(clsData, reader) as T?
 				}
 			} catch (e: Exception) {
 				LOG.error("Failed to parse attribute: {}", constPool.getUtf8(nameIdx), e)

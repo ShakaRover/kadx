@@ -69,7 +69,7 @@ class CodeDecodeState(
 	}
 
 	fun decoded() {
-		val insn = this.insn!!
+		val insn = checkNotNull(this.insn)
 		if (excHandler && insn.getOpcode() == Opcode.MOVE) {
 			// replace first 'move' in exception handler with 'move-exception'
 			insn.setOpcode(Opcode.MOVE_EXCEPTION)
@@ -77,7 +77,7 @@ class CodeDecodeState(
 		}
 	}
 
-	fun insn(): JavaInsnData = this.insn!!
+	fun insn(): JavaInsnData = checkNotNull(this.insn)
 
 	fun setInsn(insn: JavaInsnData) {
 		this.insn = insn
@@ -88,39 +88,39 @@ class CodeDecodeState(
 	fun clsData(): JavaClassData = clsData
 
 	fun local(arg: Int, local: Int): CodeDecodeState {
-		insn!!.setArgReg(arg, localToReg(local))
+		insn().setArgReg(arg, localToReg(local))
 		return this
 	}
 
 	fun pop(arg: Int): CodeDecodeState {
-		insn!!.setArgReg(arg, stack.pop())
+		insn().setArgReg(arg, stack.pop())
 		return this
 	}
 
 	fun peek(arg: Int): CodeDecodeState {
-		insn!!.setArgReg(arg, stack.peek())
+		insn().setArgReg(arg, stack.peek())
 		return this
 	}
 
 	fun peekType(at: Int): StackValueType = stack.peekTypeAt(at)
 
 	fun peekFrom(pos: Int, arg: Int): CodeDecodeState {
-		insn!!.setArgReg(arg, stack.peekAt(pos))
+		insn().setArgReg(arg, stack.peekAt(pos))
 		return this
 	}
 
 	fun push(arg: Int): CodeDecodeState {
-		insn!!.setArgReg(arg, stack.push(StackValueType.NARROW))
+		insn().setArgReg(arg, stack.push(StackValueType.NARROW))
 		return this
 	}
 
 	fun push(arg: Int, type: StackValueType): CodeDecodeState {
-		insn!!.setArgReg(arg, stack.push(type))
+		insn().setArgReg(arg, stack.push(type))
 		return this
 	}
 
 	fun pushWide(arg: Int): CodeDecodeState {
-		insn!!.setArgReg(arg, stack.push(StackValueType.WIDE))
+		insn().setArgReg(arg, stack.push(StackValueType.WIDE))
 		return this
 	}
 
@@ -147,26 +147,26 @@ class CodeDecodeState(
 
 	/** Must be after all pop and push */
 	fun jump(offset: Int) {
-		val insn = this.insn!!
+		val insn = checkNotNull(this.insn)
 		val jumpOffset = insn.getOffset() + offset
 		insn.setTarget(jumpOffset)
 		registerJump(jumpOffset)
 	}
 
 	fun idx(idx: Int): CodeDecodeState {
-		insn!!.setIndex(idx)
+		insn().setIndex(idx)
 		return this
 	}
 
 	fun lit(lit: Long): CodeDecodeState {
-		insn!!.setLiteral(lit)
+		insn().setLiteral(lit)
 		return this
 	}
 
 	private fun localToReg(local: Int): Int = maxStack + local
 
 	fun fieldType(): StackValueType {
-		val insn = this.insn!!
+		val insn = checkNotNull(this.insn)
 		val type = insn.constPoolReader().getFieldType(insn.getIndex())
 		return getSVType(type)
 	}

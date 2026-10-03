@@ -55,7 +55,7 @@ class JavaFieldData : IFieldData {
 	}
 
 	override fun getAttributes(): List<IJadxAttribute> {
-		val attributes = this.attributes!!
+		val attributes = checkNotNull(this.attributes)
 		val size = attributes.size()
 		if (size == 0) {
 			return emptyList()

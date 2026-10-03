@@ -103,7 +103,7 @@ class BlockNode(
 			// 若相同则直接复用锁定后的 successors，否则单独锁定 cleanSuccessors。
 			val successorsList = successors
 			successors = lockList(successorsList)
-			cleanSuccessors = if (successorsList === cleanSuccessors) successors else lockList(cleanSuccessors!!)
+			cleanSuccessors = if (successorsList === cleanSuccessors) successors else lockList(checkNotNull(cleanSuccessors))
 			predecessors = lockList(predecessors)
 			dominatesOn = lockList(dominatesOn)
 			if (domFrontier == null) {

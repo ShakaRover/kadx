@@ -40,19 +40,19 @@ class JadxPluginsList private constructor() {
 		synchronized(this) {
 			val list = loadedList
 			if (list != null) {
-				consumer(list.list!!)
+				consumer(checkNotNull(list.list))
 				return
 			}
 			var listCache = loadCache()
 			if (listCache != null) {
-				consumer(listCache.list!!)
+				consumer(checkNotNull(listCache.list))
 				loadedList = listCache
 			}
 			val release = fetchLatestRelease()
 			if (listCache == null || listCache.version != release.name) {
 				val updatedList = fetchBundle(release)
 				saveCache(updatedList)
-				consumer(updatedList.list!!)
+				consumer(checkNotNull(updatedList.list))
 				loadedList = updatedList
 			}
 		}
@@ -61,7 +61,7 @@ class JadxPluginsList private constructor() {
 	fun get(): List<JadxPluginListEntry> {
 		val holder = AtomicReference<List<JadxPluginListEntry>>()
 		get(holder::set)
-		return holder.get()!!
+		return checkNotNull(holder.get())
 	}
 
 	private fun loadCache(): JadxPluginListCache? {
@@ -98,10 +98,10 @@ class JadxPluginsList private constructor() {
 	private fun fetchBundle(release: Release): JadxPluginListCache {
 		LOG.debug("Fetching plugins-list bundle: {}", release.name)
 		try {
-			val listAsset = release.assets!![0]
+			val listAsset = checkNotNull(release.assets)[0]
 			val tmpListFile = createTempFile("plugins-list", ".zip")
 			try {
-				downloadFile(listAsset.downloadUrl!!, tmpListFile)
+				downloadFile(checkNotNull(listAsset.downloadUrl), tmpListFile)
 				val listCache = JadxPluginListCache()
 				listCache.version = release.name
 				listCache.list = loadListBundle(tmpListFile)

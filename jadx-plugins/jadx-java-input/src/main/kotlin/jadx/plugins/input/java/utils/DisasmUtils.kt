@@ -53,7 +53,7 @@ object DisasmUtils {
 			return "error"
 		} finally {
 			if (tmpCls != null) {
-				Files.delete(tmpCls!!)
+				Files.delete(tmpCls)
 			}
 		}
 	}

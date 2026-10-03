@@ -286,7 +286,7 @@ class StringUtils(args: JadxArgs) {
 		fun isEmpty(str: String?): Boolean = str == null || str.isEmpty()
 
 		@JvmStatic
-		fun notBlank(str: String?): Boolean = notEmpty(str) && str!!.trim().isNotEmpty()
+		fun notBlank(str: String?): Boolean = !str.isNullOrBlank()
 
 		@JvmStatic
 		fun countMatches(str: String?, subStr: String?): Int {

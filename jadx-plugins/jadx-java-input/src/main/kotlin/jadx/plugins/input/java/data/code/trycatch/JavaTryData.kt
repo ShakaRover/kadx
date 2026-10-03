@@ -20,7 +20,7 @@ class JavaTryData(
 	override fun getCatch(): ICatch {
 		// 接口声明非空；实际调用前 setCatch 必已执行（JavaCodeReader 聚合完子句才交给 core），
 		// 若提前调用，原 Java 返回 null 后调用方解引用同样 NPE，行为等价
-		return catchHandler!!
+		return catchHandler ?: throw NullPointerException("catchHandler is not set")
 	}
 
 	fun setCatch(catchHandler: ICatch) {

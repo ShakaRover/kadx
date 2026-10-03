@@ -54,7 +54,7 @@ public class ResXmlProtoParser(private val rootNode: RootNode) : CommonProtoPars
 
 	private fun decode(e: XmlElement) {
 		var tag = deobfClassName(e.name)
-		tag = getValidTagAttributeName(tag!!) // 原 Java：null 时后续 NPE，保持一致
+		tag = getValidTagAttributeName(tag ?: throw NullPointerException("tag is null")) // 原 Java：null 时后续 NPE，保持一致
 		currentTag = tag
 		writer.startLine('<').add(tag)
 
@@ -65,7 +65,7 @@ public class ResXmlProtoParser(private val rootNode: RootNode) : CommonProtoPars
 			writer.add('>')
 			writer.incIndent()
 			for (i in 0 until e.childCount) {
-				val oldNsMap = HashMap(nsMap!!)
+				val oldNsMap = HashMap(checkNotNull(nsMap))
 				decode(e.getChild(i))
 				nsMap = oldNsMap
 			}
@@ -90,7 +90,7 @@ public class ResXmlProtoParser(private val rootNode: RootNode) : CommonProtoPars
 	private fun decodeNamespace(n: XmlNamespace, newLine: Boolean, isLastElement: Boolean) {
 		val prefix = n.prefix
 		val uri = n.uri
-		nsMap!![uri] = prefix
+		checkNotNull(nsMap)[uri] = prefix
 		writer.add("xmlns:").add(prefix).add("=\"").add(uri).add('"')
 		if (isLastElement) {
 			return

@@ -60,7 +60,7 @@ public object DalvikToJavaBytecodeUtils {
 		var lastArgLvIndex = if (mth.accessFlags.isStatic()) -1 else 0
 		val args = mth.collectArgNodes()
 		if (args.isNotEmpty()) {
-			lastArgLvIndex = getMethodArgLvIndex(args[args.size - 1])!!
+			lastArgLvIndex = checkNotNull(getMethodArgLvIndex(args[args.size - 1]))
 		}
 		return lastArgLvIndex + methodVar.getReg() + if (mth.accessFlags.isStatic()) 0 else 1
 	}
@@ -77,7 +77,7 @@ public object DalvikToJavaBytecodeUtils {
 		val args = mth.getArgRegs()
 		if (args.isNotEmpty()) {
 			val lastArgSv = checkNotNull(args[args.size - 1].sVar) { "SSA var not set for method arg" }
-			lastArgLvIndex = getMethodArgLvIndexViaSsaVars(lastArgSv.regNum, mth)!!
+			lastArgLvIndex = checkNotNull(getMethodArgLvIndexViaSsaVars(lastArgSv.regNum, mth))
 		}
 		return lastArgLvIndex + regNum + if (mth.accessFlags.isStatic()) 0 else 1
 	}
@@ -136,7 +136,7 @@ public object DalvikToJavaBytecodeUtils {
 		lvtIndex += mth.argTypes.size
 
 		// 与原 Java 一致：此处再次调用（结果必为 null），解包时抛 NPE——保留原行为
-		lvtIndex = getMethodArgLvtIndex(methodVarSsaVar, mth)!! + 1
+		lvtIndex = (getMethodArgLvtIndex(methodVarSsaVar, mth) ?: throw NullPointerException("method arg lvt index is null")) + 1
 		ssaVars.subList(0, ssaVars.indexOf(methodVarSsaVar) + 1).clear()
 
 		var lastRegNum = -1

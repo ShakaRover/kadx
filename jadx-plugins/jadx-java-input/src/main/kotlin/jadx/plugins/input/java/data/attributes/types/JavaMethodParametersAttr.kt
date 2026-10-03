@@ -28,7 +28,7 @@ class JavaMethodParametersAttr(list: List<MethodParametersAttr.Info>) :
 				val params = ArrayList<MethodParametersAttr.Info>(count)
 				for (i in 0 until count) {
 					// Info.name 声明非空；损坏 class 时 getUtf8 为 null，原 Java 后续解引用同样 NPE
-					val name = constPool.getUtf8(reader.readU2())!!
+					val name = constPool.getUtf8(reader.readU2()) ?: throw NullPointerException("parameter name is null")
 					val accessFlags = reader.readU2()
 					params.add(MethodParametersAttr.Info(accessFlags, name))
 				}

@@ -45,7 +45,7 @@ class JavaMethodData(
 
 	@Nullable
 	override fun getCodeReader(): ICodeReader? {
-		val codeAttr: CodeAttr? = this.attributes!!.get(JavaAttrType.CODE)
+		val codeAttr: CodeAttr? = checkNotNull(this.attributes).get(JavaAttrType.CODE)
 		if (codeAttr == null) {
 			return null
 		}
@@ -55,7 +55,7 @@ class JavaMethodData(
 	override fun disassembleMethod(): String = ""
 
 	override fun getAttributes(): List<IJadxAttribute> {
-		val attributes = this.attributes!!
+		val attributes = checkNotNull(this.attributes)
 		val size = attributes.size()
 		if (size == 0) {
 			return emptyList()

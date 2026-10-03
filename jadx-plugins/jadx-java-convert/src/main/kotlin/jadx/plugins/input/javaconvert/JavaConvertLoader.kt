@@ -180,7 +180,7 @@ public class JavaConvertLoader(
 
 	private fun convert(path: Path, tempDirectory: Path) {
 		// 与原 Java switch 一致：mode 为 null 时抛 NPE（正常流程中解析阶段已应用默认值 BOTH）
-		when (options.getMode()!!) {
+		when (options.getMode() ?: throw NullPointerException("mode is null")) {
 			JavaConvertOptions.Mode.DX -> try {
 				DxConverter.run(path, tempDirectory)
 			} catch (e: Throwable) {

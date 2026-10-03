@@ -478,7 +478,7 @@ class RootNode private constructor(
 
 	fun resolveParentClass(clsInfo: ClassInfo): ClassNode? {
 		val parentInfo = clsInfo.parentClass
-		var parentNode = resolveClass(parentInfo!!)
+		var parentNode = resolveClass(checkNotNull(parentInfo))
 		if (parentNode == null) {
 			val parClsName = parentInfo.fullName
 			val sep = parClsName.lastIndexOf('.')

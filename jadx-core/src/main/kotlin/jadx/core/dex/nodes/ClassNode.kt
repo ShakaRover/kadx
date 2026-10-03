@@ -154,7 +154,7 @@ class ClassNode(
 	init {
 		if (cls != null) {
 			this.clsData = cls.copy()
-			this.classInfo = ClassInfo.fromType(root, ArgType.`object`(cls.getType()))!!
+			this.classInfo = checkNotNull(ClassInfo.fromType(root, ArgType.`object`(cls.getType())))
 			// 原 Java 在主构造器中先设置 packageNode 再 load，load 过程中可能读取该字段
 			this.packageNode = PackageNode.getForClass(root, classInfo.getPackage(), this)
 			load(this.clsData, false)
@@ -174,7 +174,7 @@ class ClassNode(
 
 	private fun load(cls: IClassData?, reloading: Boolean) {
 		try {
-			addAttrs(cls!!.getAttributes())
+			addAttrs(checkNotNull(cls).getAttributes())
 			accessFlags = AccessInfo(getAccessFlags(cls), AccessInfo.AFType.CLASS)
 			superClass = checkSuperType(cls)
 			interfaces = collectionMap(cls.getInterfacesTypes()) { ArgType.`object`(it) }
@@ -475,7 +475,7 @@ class ClassNode(
 			classInfo.changeShortName(newName)
 			return
 		}
-		val newClsInfo = ClassInfo.fromNameWithoutCache(root, newName, classInfo.isInner)!!
+		val newClsInfo = checkNotNull(ClassInfo.fromNameWithoutCache(root, newName, classInfo.isInner))
 		val newPkg = newClsInfo.getPackage()
 		val newShortName = newClsInfo.shortName
 		if (classInfo.isInner) {
@@ -534,9 +534,10 @@ class ClassNode(
 	fun visitSuperTypes(consumer: (ArgType, ArgType) -> Unit) {
 		val typeUtils = root.typeUtils
 		val thisType = getType()
-		if (superClass != null && superClass != ArgType.OBJECT) {
-			consumer(thisType, superClass!!)
-			typeUtils.visitSuperTypes(superClass!!, consumer)
+		val superCls = superClass
+		if (superCls != null && superCls != ArgType.OBJECT) {
+			consumer(thisType, superCls)
+			typeUtils.visitSuperTypes(superCls, consumer)
 		}
 		for (iface in interfaces) {
 			consumer(thisType, iface)
@@ -636,7 +637,7 @@ class ClassNode(
 			}
 			smali = code.finish().getCodeStr()
 		}
-		return smali!!
+		return checkNotNull(smali)
 	}
 
 	protected fun getDisassembledCode(code: SimpleCodeWriter) {
@@ -646,7 +647,7 @@ class ClassNode(
 		}
 		code.startLine("###### Class $fullName ($rawName)")
 		try {
-			code.startLine(clsData!!.getDisassembledCode())
+			code.startLine(checkNotNull(clsData).getDisassembledCode())
 		} catch (e: Exception) {
 			code.startLine("Failed to disassemble class:")
 			code.startLine(getStackTrace(e))

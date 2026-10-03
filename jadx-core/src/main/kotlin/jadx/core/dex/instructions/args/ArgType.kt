@@ -323,7 +323,7 @@ abstract class ArgType private constructor() {
 			if (type.isObject()) {
 				val wildcardType = type.getWildcardType()
 				if (wildcardType != null) {
-					return WildcardType(tryToResolveClassAlias(root, wildcardType), type.getWildcardBound()!!)
+					return WildcardType(tryToResolveClassAlias(root, wildcardType), checkNotNull(type.getWildcardBound()))
 				}
 				val clsInfo = ClassInfo.fromName(root, type.getObject())
 				val baseType = if (clsInfo.hasAlias()) `object`(clsInfo.aliasFullName) else type
@@ -353,13 +353,13 @@ abstract class ArgType private constructor() {
 		fun isInstanceOf(root: RootNode, type: ArgType, of: ArgType): Boolean {
 			if (type == of) return true
 			if (!type.isObject() || !of.isObject()) return false
-			return root.getClsp()!!.isImplements(type.getObject(), of.getObject())
+			return checkNotNull(root.getClsp()).isImplements(type.getObject(), of.getObject())
 		}
 
 		/** 判断类是否已知 */
 		@JvmStatic
 		fun isClsKnown(root: RootNode, cls: ArgType): Boolean {
-			if (cls.isObject()) return root.getClsp()!!.isClsKnown(cls.getObject())
+			if (cls.isObject()) return checkNotNull(root.getClsp()).isClsKnown(cls.getObject())
 			return false
 		}
 	}

@@ -43,7 +43,7 @@ class JavaClassData(private val clsReader: JavaClassReader) : IClassData {
 	// 接口声明非空；损坏 class 时 getClass 返回 null，调用方解引用与原 Java 一样 NPE
 	override fun getType(): String {
 		val idx = data.absPos(offsets.clsTypeOffset).readU2()
-		return constPoolReader.getClass(idx)!!
+		return constPoolReader.getClass(idx) ?: throw NullPointerException("class type is null")
 	}
 
 	@Nullable
@@ -66,7 +66,7 @@ class JavaClassData(private val clsReader: JavaClassReader) : IClassData {
 
 	override fun visitFieldsAndMethods(fieldsConsumer: ISeqConsumer<IFieldData>, mthConsumer: ISeqConsumer<IMethodData>) {
 		val clsIdx = data.absPos(offsets.clsTypeOffset).readU2()
-		val classType = constPoolReader.getClass(clsIdx)!!
+		val classType = checkNotNull(constPoolReader.getClass(clsIdx))
 		val reader = data.absPos(offsets.fieldsOffset).copy()
 		val fieldsCount = reader.readU2()
 		fieldsConsumer.init(fieldsCount)

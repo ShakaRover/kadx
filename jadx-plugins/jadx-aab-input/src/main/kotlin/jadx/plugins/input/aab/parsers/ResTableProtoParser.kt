@@ -49,16 +49,18 @@ public class ResTableProtoParser(private val root: RootNode) :
 
 	@Synchronized
 	override fun decodeFiles(): ResContainer {
-		val vp = ValuesParser(BinaryXMLStrings(), resStorage!!.resourcesNames)
-		val resGen = ResXmlGen(resStorage!!, vp, root.initManifestAttributes())
-		val content = XmlGenUtils.makeXmlDump(root.makeCodeWriter(), resStorage!!)
+		val storage = checkNotNull(resStorage)
+		val vp = ValuesParser(BinaryXMLStrings(), storage.resourcesNames)
+		val resGen = ResXmlGen(storage, vp, root.initManifestAttributes())
+		val content = XmlGenUtils.makeXmlDump(root.makeCodeWriter(), storage)
 		val xmlFiles = resGen.makeResourcesXml(root.getArgs())
 		return ResContainer.resourceTable(baseFileName, xmlFiles, content)
 	}
 
 	private fun parse(p: Package) {
+		val storage = checkNotNull(resStorage)
 		val packageName = p.packageName
-		resStorage!!.appPackage = packageName
+		storage.appPackage = packageName
 		val types = p.typeList
 
 		for (type in types) {
@@ -69,7 +71,7 @@ public class ResTableProtoParser(private val root: RootNode) :
 				for (configValue in entry.configValueList) {
 					val config = parse(configValue.config)
 					val resEntry = ResourceEntry(id, packageName, typeName, entryName, config)
-					resStorage!!.add(resEntry)
+					storage.add(resEntry)
 
 					val protoValue: ProtoValue
 					if (configValue.value.valueCase == Value.ValueCase.ITEM) {

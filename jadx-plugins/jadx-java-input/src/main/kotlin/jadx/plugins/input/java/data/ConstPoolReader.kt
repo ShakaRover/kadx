@@ -41,7 +41,7 @@ class ConstPoolReader(
 	fun getClass(idx: Int): String? {
 		jumpToData(idx)
 		val nameIdx = data.readU2()
-		return fixType(getUtf8(nameIdx)!!)
+		return fixType(checkNotNull(getUtf8(nameIdx)))
 	}
 
 	fun getFieldRef(idx: Int): IFieldRef {
@@ -66,7 +66,7 @@ class ConstPoolReader(
 		jumpToData(nameTypeIdx)
 		data.skip(2) // name_idx
 		val typeIdx = data.readU2()
-		return getUtf8(typeIdx)!!
+		return checkNotNull(getUtf8(typeIdx))
 	}
 
 	fun getMethodRef(idx: Int): IMethodRef {
@@ -108,7 +108,7 @@ class ConstPoolReader(
 		val values = ArrayList<EncodedValue>(6)
 		values.add(EncodedValue(EncodedType.ENCODED_METHOD_HANDLE, getMethodHandle(rawBootstrapMethod.methodHandleIdx)))
 		values.add(EncodedValue(EncodedType.ENCODED_STRING, getUtf8(nameIdx)))
-		values.add(EncodedValue(EncodedType.ENCODED_METHOD_TYPE, DescriptorParser.parseToMethodProto(getUtf8(descIdx)!!)))
+		values.add(EncodedValue(EncodedType.ENCODED_METHOD_TYPE, DescriptorParser.parseToMethodProto(checkNotNull(getUtf8(descIdx)))))
 		for (argConstIdx in rawBootstrapMethod.args) {
 			values.add(readAsEncodedValue(argConstIdx))
 		}
@@ -194,7 +194,7 @@ class ConstPoolReader(
 			ConstantType.LONG -> EncodedValue(EncodedType.ENCODED_LONG, data.readS8())
 			ConstantType.DOUBLE -> EncodedValue(EncodedType.ENCODED_DOUBLE, java.lang.Double.longBitsToDouble(data.readU8()))
 			ConstantType.CLASS -> EncodedValue(EncodedType.ENCODED_TYPE, getClass(idx))
-			ConstantType.METHOD_TYPE -> EncodedValue(EncodedType.ENCODED_METHOD_TYPE, DescriptorParser.parseToMethodProto(getUtf8(readU2())!!))
+			ConstantType.METHOD_TYPE -> EncodedValue(EncodedType.ENCODED_METHOD_TYPE, DescriptorParser.parseToMethodProto(checkNotNull(getUtf8(readU2()))))
 			ConstantType.METHOD_HANDLE -> EncodedValue(EncodedType.ENCODED_METHOD_HANDLE, getMethodHandle(idx))
 			else -> throw JavaClassParseException("Can't encode constant " + constantType + " as encoded value")
 		}

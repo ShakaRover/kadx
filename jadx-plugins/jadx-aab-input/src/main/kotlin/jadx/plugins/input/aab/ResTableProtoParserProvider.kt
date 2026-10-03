@@ -25,6 +25,6 @@ public class ResTableProtoParserProvider : IResTableParserProvider {
 		if (!fileName.endsWith("resources.pb")) {
 			return null
 		}
-		return ResTableProtoParser(root!!) // 原 Java：init 未调用时 NPE，保持一致
+		return ResTableProtoParser(root ?: throw NullPointerException("root not initialized")) // 原 Java：init 未调用时 NPE，保持一致
 	}
 }

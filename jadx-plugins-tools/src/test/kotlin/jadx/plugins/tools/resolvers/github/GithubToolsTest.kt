@@ -66,7 +66,7 @@ class GithubToolsTest {
 	}
 
 	private fun loadFromResource(resName: String): String {
-		val stream = GithubToolsTest::class.java.getResourceAsStream("/github/$resName")!!
+		val stream = checkNotNull(GithubToolsTest::class.java.getResourceAsStream("/github/$resName"))
 		return try {
 			streamToString(stream)
 		} catch (e: Exception) {

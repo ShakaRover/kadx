@@ -337,9 +337,10 @@ open class InsnNode(
 
 	fun copyWithoutSsa(): InsnNode {
 		val copy = copyWithoutResult<InsnNode>()
-		if (result != null) {
-			if (result!!.sVar == null) {
-				copy.setResult(result!!.duplicate())
+		val res = result
+		if (res != null) {
+			if (res.sVar == null) {
+				copy.setResult(res.duplicate())
 			} else {
 				throw JadxRuntimeException("Can't copy if SSA var is set")
 			}
@@ -369,7 +370,7 @@ open class InsnNode(
 		}
 		for (arg in arguments) {
 			if (arg is RegisterArg) {
-				val ssaVar = arg.sVar!!
+				val ssaVar = checkNotNull(arg.sVar)
 				ssaVar.use(arg)
 				ssaVar.updateUsedInPhiList()
 			} else if (arg is InsnWrapArg) {

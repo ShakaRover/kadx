@@ -18,7 +18,7 @@ open class JavaMethodProto : IMethodProto {
 	protected var argTypesList: List<String?>? = null
 
 	// 接口声明非空；未 load 前实际为 null，调用方解引用时与原 Java 一样 NPE
-	override fun getReturnType(): String = retType!!
+	override fun getReturnType(): String = retType ?: throw NullPointerException("retType is null")
 
 	fun setReturnType(returnType: String?) {
 		retType = returnType
@@ -27,7 +27,7 @@ open class JavaMethodProto : IMethodProto {
 	// argTypesList 元素理论上可空（损坏 class），透传给声明非空的接口类型（擦除后等价）
 	override fun getArgTypes(): List<String> {
 		@Suppress("UNCHECKED_CAST")
-		return argTypesList!! as List<String>
+		return checkNotNull(argTypesList) as List<String>
 	}
 
 	fun setArgTypes(argTypes: List<String?>?) {

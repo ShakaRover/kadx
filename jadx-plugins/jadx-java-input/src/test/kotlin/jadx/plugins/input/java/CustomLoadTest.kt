@@ -113,7 +113,7 @@ class CustomLoadTest {
 	}
 
 	fun getSample(name: String): Path = try {
-		Paths.get(ClassLoader.getSystemResource("samples/" + name)!!.toURI())
+		Paths.get(checkNotNull(ClassLoader.getSystemResource("samples/" + name)).toURI())
 	} catch (e: Exception) {
 		throw AssertionError("Failed to load sample", e) // 原 Java 用 assertj fail(...)，效果同为抛 AssertionError
 	}

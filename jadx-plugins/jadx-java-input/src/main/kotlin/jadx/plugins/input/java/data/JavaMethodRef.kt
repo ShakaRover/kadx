@@ -33,13 +33,13 @@ class JavaMethodRef :
 	}
 
 	// 接口声明非空；实际调用前 setParentClassType/setName 必已执行，提前调用时原 Java 同样 NPE
-	override fun getParentClassType(): String = parentClassType!!
+	override fun getParentClassType(): String = parentClassType ?: throw NullPointerException("parentClassType is null")
 
 	fun setParentClassType(parentClassType: String?) {
 		this.parentClassType = parentClassType
 	}
 
-	override fun getName(): String = name!!
+	override fun getName(): String = name ?: throw NullPointerException("name is null")
 
 	fun setName(name: String?) {
 		this.name = name
@@ -59,7 +59,7 @@ class JavaMethodRef :
 	override fun load() {
 		// 直接查 backing 字段：getter 在未加载时会 NPE，而这里需要 null 判断实现惰性解析
 		if (retType == null) {
-			DescriptorParser.fillMethodProto(descr!!, this)
+			DescriptorParser.fillMethodProto(checkNotNull(descr), this)
 		}
 	}
 

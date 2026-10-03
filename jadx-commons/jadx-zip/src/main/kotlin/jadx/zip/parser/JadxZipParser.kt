@@ -399,7 +399,7 @@ class JadxZipParser(
 				throw RuntimeException("Fallback parser failed to open file: " + zipFile, e)
 			}
 		}
-		return fallbackZipContent!! // Kotlin 对属性赋值后的智能转换不稳定（synchronized 函数内）→ 显式 !!，JVM 行为与 Java 直接读字段一致
+		return checkNotNull(fallbackZipContent) // Kotlin 对属性赋值后的智能转换不稳定（synchronized 函数内）→ 显式 checkNotNull，JVM 行为与 Java 直接读字段一致
 	}
 
 	private fun isEncrypted(entry: JadxZipEntry): Boolean { // 原 Java private boolean isEncrypted(JadxZipEntry)——读 LFH flags 字段的第 0 位判断是否加密包

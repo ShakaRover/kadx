@@ -30,7 +30,8 @@ public class ProtoXmlResContainerFactory : IResContainerFactory {
 		if (!isFromAab) {
 			return null
 		}
-		val content = xmlParser!!.parse(inputStream) // 原 Java：init 未调用时 NPE，保持一致
+		val parser = xmlParser ?: throw NullPointerException("xmlParser not initialized") // 原 Java：init 未调用时 NPE，保持一致
+		val content = parser.parse(inputStream)
 		return ResContainer.textResource(resFile.getDeobfName(), content)
 	}
 }

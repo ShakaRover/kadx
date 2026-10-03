@@ -28,12 +28,12 @@ class InvokeDecoder(
 		val instanceCall: Boolean
 		val mthProto: IMethodProto
 		if (apiOpcode == Opcode.INVOKE_CUSTOM) {
-			val callSite = insn.getIndexAsCallSite()!!
+			val callSite = checkNotNull(insn.getIndexAsCallSite())
 			insn.setPayload(callSite)
 			mthProto = callSite.getValues()[2].value as IMethodProto
 			instanceCall = false // 'this' arg already included in proto args
 		} else {
-			val mthRef = insn.getIndexAsMethod()!!
+			val mthRef = checkNotNull(insn.getIndexAsMethod())
 			mthRef.load()
 			insn.setPayload(mthRef)
 			mthProto = mthRef

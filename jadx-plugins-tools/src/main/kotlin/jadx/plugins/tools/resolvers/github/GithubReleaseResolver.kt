@@ -95,10 +95,10 @@ class GithubReleaseResolver : IJadxPluginResolver {
 
 	private fun buildMetadata(release: Release, info: LocationInfo): JadxPluginMetadata {
 		val assets = release.assets ?: emptyList()
-		var releaseVersion = removePrefix(release.name!!, "v")
+		var releaseVersion = removePrefix(checkNotNull(release.name), "v")
 		val asset = searchPluginAsset(assets, info.artifactPrefix, releaseVersion)
-		if (!asset.name!!.contains(releaseVersion)) {
-			val assetVersion = extractVersion(asset.name!!)
+		if (!checkNotNull(asset.name).contains(releaseVersion)) {
+			val assetVersion = extractVersion(checkNotNull(asset.name))
 			if (assetVersion != null) {
 				releaseVersion = assetVersion
 			}

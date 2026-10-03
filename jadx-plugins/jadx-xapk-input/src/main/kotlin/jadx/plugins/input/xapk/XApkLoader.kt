@@ -63,7 +63,7 @@ public class XApkLoader(private val context: JadxPluginContext) {
 	}
 
 	private fun unpackXApk(xapkFile: File, xApkManifest: XApkManifest, content: ZipContent): XApkData {
-		val declaredApks = xApkManifest.splitApks!!.map { it.file }.toSet()
+		val declaredApks = checkNotNull(xApkManifest.splitApks).map { it.file }.toSet()
 		val apks = ArrayList<Path>(declaredApks.size)
 		val files = ArrayList<Path>(content.getEntries().size)
 		val dirName = FileUtils.md5Sum(xapkFile.absolutePath)

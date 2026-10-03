@@ -4,7 +4,7 @@ class JadxPluginUpdate(
 	val oldVersion: JadxPluginMetadata,
 	val newVersion: JadxPluginMetadata,
 ) {
-	val pluginId: String get() = newVersion.pluginId!!
+	val pluginId: String get() = checkNotNull(newVersion.pluginId)
 	val oldVersionStr: String? get() = oldVersion.version
 	val newVersionStr: String? get() = newVersion.version
 
