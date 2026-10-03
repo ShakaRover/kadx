@@ -229,7 +229,8 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | G18 | `plugins/context`+`quark`+`mappings` + `utils/plugins` | 18 |
 | G19 | `ui`(+`startpage`,`filedialog`,`menu`,`cellrenders`,`export`,`treenodes`) | 23 |
 | G20 | `cache/code`(+`disk`,`manager`) + `events`(+`types`,`services`) + `tree` + 顶层入口 | 15 |
-| G21 | gui test（8 java；`TestJadxUpdate.kt` 已转） | 8 | ⏳ |
+| G21 | gui test（8 java；`TestJadxUpdate.kt` 已转） | 8 | ✅ 4b241c6c（jadx-gui 全 Kotlin） |
+| X01 | `jadx-plugins/jadx-rename-mappings` test 漏网 2 文件 | 2 | ⏳ |
 
 ## 8. 阶段 1 尾巴
 
