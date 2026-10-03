@@ -398,10 +398,8 @@ object Utils {
 			throw IllegalArgumentException("Incorrect arguments count: $len")
 		}
 		val result = HashMap<String, String>(len / 2)
-		var i = 0
-		while (i < len - 1) {
+		for (i in 0 until len - 1 step 2) {
 			result[parameters[i]] = parameters[i + 1]
-			i += 2
 		}
 		return Collections.unmodifiableMap(result)
 	}

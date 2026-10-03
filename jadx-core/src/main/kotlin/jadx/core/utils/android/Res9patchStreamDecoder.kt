@@ -45,17 +45,13 @@ class Res9patchStreamDecoder {
 
 			// 画水平/垂直可拉伸区域（成对出现的 x/y 分割点）
 			val xDivs = np.xDivs
-			var i = 0
-			while (i < xDivs.size - 1) {
+			for (i in 0 until xDivs.size - 1 step 2) {
 				drawHLine(im2, 0, xDivs[i] + 1, xDivs[i + 1])
-				i += 2
 			}
 
 			val yDivs = np.yDivs
-			i = 0
-			while (i < yDivs.size - 1) {
+			for (i in 0 until yDivs.size - 1 step 2) {
 				drawVLine(im2, 0, yDivs[i] + 1, yDivs[i + 1])
-				i += 2
 			}
 
 			ImageIO.write(im2, "png", out)

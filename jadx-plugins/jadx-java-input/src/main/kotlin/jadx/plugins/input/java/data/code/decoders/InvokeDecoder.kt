@@ -61,12 +61,10 @@ class InvokeDecoder(
 			}
 		}
 		insn.setRegsCount(regsCount)
-		var i = regsCount - 1
-		while (i >= 0) {
+		for (i in regsCount - 1 downTo 0) {
 			if (regs[i] == 1) {
 				state.pop(i)
 			}
-			i--
 		}
 		val returnType = mthProto.getReturnType()
 		if (!returnType.equals("V")) {

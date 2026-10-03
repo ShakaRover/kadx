@@ -50,8 +50,7 @@ object HexUtils {
 		}
 
 		val data = ByteArray(len / 2)
-		var i = 0
-		while (i < len) {
+		for (i in 0 until len step 2) {
 			val byteString = cleanS.substring(i, i + 2)
 			try {
 				val intValue = Integer.parseInt(byteString, 16)
@@ -59,7 +58,6 @@ object HexUtils {
 			} catch (e: NumberFormatException) {
 				throw IllegalArgumentException("Input string contains non-hex characters at index $i: $byteString", e)
 			}
-			i += 2
 		}
 		return data
 	}

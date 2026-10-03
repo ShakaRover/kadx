@@ -368,10 +368,8 @@ object JavaInsnsRegister {
 		// dimension count is carried by regsCount
 		insn.setLiteral(0)
 		insn.setRegsCount(dim + 1)
-		var i = dim
-		while (i > 0) {
+		for (i in dim downTo 1) {
 			s.pop(i)
-			i--
 		}
 		s.push(0)
 	}

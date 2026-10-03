@@ -384,18 +384,15 @@ open class InsnGen(
 				val arrayType = (insn as NewArrayNode).getArrayType()
 				code.add("new ")
 				useType(code, arrayType.getArrayRootElement())
-				var k = 0
 				val argsCount = insn.getArgsCount()
-				while (k < argsCount) {
+				for (k in 0 until argsCount) {
 					code.add('[')
 					addArg(code, insn.getArg(k), false)
 					code.add(']')
-					k++
 				}
 				val dim = arrayType.getArrayDimension()
-				while (k < dim) {
+				for (k in argsCount until dim) {
 					code.add("[]")
-					k++
 				}
 			}
 
@@ -578,13 +575,11 @@ open class InsnGen(
 			InsnType.MOVE_MULTI -> {
 				fallbackOnlyInsn(insn)
 				val len = insn.getArgsCount()
-				var i = 0
-				while (i < len - 1) {
+				for (i in 0 until len - 1 step 2) {
 					addArg(code, insn.getArg(i))
 					code.add(" = ")
 					addArg(code, insn.getArg(i + 1))
 					code.add("; ")
-					i += 2
 				}
 			}
 

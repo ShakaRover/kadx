@@ -77,14 +77,12 @@ class DebugLineJavaSyncer(private val from: CodeArea) :
 		if (lineMapping.isEmpty()) {
 			return null
 		}
-		var num = lineNum
 		var sourceLine: Int? = null
-		while (num >= 0) {
+		for (num in lineNum downTo 0) {
 			sourceLine = lineMapping[num]
 			if (sourceLine != null) {
 				break
 			}
-			num--
 		}
 		return sourceLine
 	}
