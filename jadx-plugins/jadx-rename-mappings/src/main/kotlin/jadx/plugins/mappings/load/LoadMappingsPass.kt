@@ -31,7 +31,7 @@ public class LoadMappingsPass(private val options: RenameMappingsOptions) : Jadx
 	private fun loadMapping(args: JadxArgs): MappingTreeView = try {
 		val mappingsPath = checkNotNull(args.userRenamesMappingsPath)
 		val mappingTree = MemoryMappingTree()
-		MappingReader.read(mappingsPath, options.getFormat(), mappingTree)
+		MappingReader.read(mappingsPath, options.format, mappingTree)
 		if (mappingTree.getSrcNamespace() == null) {
 			mappingTree.setSrcNamespace(MappingUtil.NS_SOURCE_FALLBACK)
 		}
@@ -42,7 +42,7 @@ public class LoadMappingsPass(private val options: RenameMappingsOptions) : Jadx
 				"JADX only supports mappings with just one destination namespace! The provided ones have ${mappingTree.getDstNamespaces().size}.",
 			)
 		}
-		if (options.isInvert()) {
+		if (options.isInvert) {
 			val invertedMappingTree = MemoryMappingTree()
 			val dstNamespace = mappingTree.getDstNamespaces()[0]
 			mappingTree.accept(MappingSourceNsSwitch(invertedMappingTree, dstNamespace))

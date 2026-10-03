@@ -12,12 +12,10 @@ import java.nio.file.Path
  */
 public object AsmUtils {
 
-	@JvmStatic
 	public fun getNameFromClassFile(file: Path): String? = Files.newInputStream(file).use { `in` ->
 		getClassFullName(ClassReader(`in`))
 	}
 
-	@JvmStatic
 	public fun getNameFromClassFile(content: ByteArray): String? = getClassFullName(ClassReader(content))
 
 	private fun getClassFullName(classReader: ClassReader): String? = classReader.getClassName()

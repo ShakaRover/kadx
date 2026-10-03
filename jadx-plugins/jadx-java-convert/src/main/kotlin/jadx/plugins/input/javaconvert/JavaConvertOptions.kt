@@ -17,14 +17,14 @@ public class JavaConvertOptions : BasePluginOptionsBuilder() {
 		BOTH,
 	}
 
-	private var mode: Mode? = null
+	private var modeValue: Mode? = null
 	private var d8Desugar = false
 
 	override fun registerOptions() {
 		enumOption(JavaConvertPlugin.PLUGIN_ID + ".mode", Mode.values(), Mode::valueOf)
 			.description("convert mode")
 			.defaultValue(Mode.BOTH)
-			.setter { v -> mode = v }
+			.setter { v -> modeValue = v }
 
 		boolOption(JavaConvertPlugin.PLUGIN_ID + ".d8-desugar")
 			.description("use desugar in d8")
@@ -32,8 +32,8 @@ public class JavaConvertOptions : BasePluginOptionsBuilder() {
 			.setter { v -> d8Desugar = v }
 	}
 
-	public fun getMode(): Mode? = mode
+	public val mode: Mode? get() = modeValue
 
 	// 原 Java 是原始 boolean 的 isXxx() getter，Kotlin 属性会生成 getXxx()，故显式声明保持方法名
-	public fun isD8Desugar(): Boolean = d8Desugar
+	public val isD8Desugar: Boolean get() = d8Desugar
 }

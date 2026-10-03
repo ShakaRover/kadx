@@ -17,7 +17,7 @@ public class RenameMappingsOptions : BasePluginOptionsBuilder() {
 	private var invert = false
 
 	/** null 值表示 'auto' 选项 */
-	private var format: MappingFormat? = null
+	private var formatValue: MappingFormat? = null
 
 	override fun registerOptions() {
 		// 显式指定可空类型参数：format 允许 null（表示 AUTO）
@@ -28,7 +28,7 @@ public class RenameMappingsOptions : BasePluginOptionsBuilder() {
 			.values(ListUtils.concat<MappingFormat>(null, MappingFormat.values()))
 			.defaultValue(null)
 			.flags(OptionFlag.PER_PROJECT, OptionFlag.DISABLE_IN_GUI)
-			.setter { v -> format = v }
+			.setter { v -> formatValue = v }
 
 		boolOption(INVERT_OPT)
 			.description("invert mapping on load")
@@ -37,12 +37,12 @@ public class RenameMappingsOptions : BasePluginOptionsBuilder() {
 			.setter { v -> invert = v }
 	}
 
-	public fun getFormat(): MappingFormat? = format
+	public val format: MappingFormat? get() = formatValue
 
 	// 原 Java 是原始 boolean 的 isXxx() getter，Kotlin 属性会生成 getXxx()，故显式声明保持方法名
-	public fun isInvert(): Boolean = invert
+	public val isInvert: Boolean get() = invert
 
-	public fun getOptionsHashString(): String = "$format:$invert"
+	public val optionsHashString: String get() = "$formatValue:$invert"
 
 	public companion object {
 		const val INVERT_OPT: String = RenameMappingsPlugin.PLUGIN_ID + ".invert"

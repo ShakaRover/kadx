@@ -18,10 +18,8 @@ public class RenameMappingsData(val mappings: MappingTreeView) : IJadxAttribute 
 	public companion object {
 		private val DATA: IJadxAttrType<RenameMappingsData> = IJadxAttrType.create()
 
-		@JvmStatic
 		public fun getData(root: RootNode): RenameMappingsData? = root.getAttributes().get(DATA)
 
-		@JvmStatic
 		public fun getTree(root: RootNode): MappingTreeView? {
 			val data = getData(root)
 			return if (data == null) null else data.mappings

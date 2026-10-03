@@ -17,7 +17,6 @@ public class DxConverter {
 	public companion object {
 		private const val CHARSET_NAME = "UTF-8"
 
-		@JvmStatic
 		public fun run(path: Path, tempDirectory: Path) {
 			var result: Int
 			var dxErrors: String

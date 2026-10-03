@@ -43,7 +43,7 @@ public class RenameMappingsPlugin : JadxPlugin {
 		context.registerInputsHashSupplier { FileUtils.md5Sum(getInputsHashString(mappingsPath)) }
 	}
 
-	private fun getInputsHashString(mappingsPath: Path): String = getFileHashString(mappingsPath) + ':' + options.getOptionsHashString()
+	private fun getInputsHashString(mappingsPath: Path): String = getFileHashString(mappingsPath) + ':' + options.optionsHashString
 
 	public companion object {
 		const val PLUGIN_ID: String = "rename-mappings"

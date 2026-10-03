@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit
  */
 public class SmaliConvert {
 
-	private val dexData: MutableList<IDexData> = mutableListOf()
+	private val dexDataList: MutableList<IDexData> = mutableListOf()
 
 	// 参数用 java.util.List：与 JadxCodeInput.loadFiles 的签名一致，避免调用方转换
 	public fun execute(input: java.util.List<Path>, options: SmaliInputOptions): Boolean {
@@ -30,12 +30,12 @@ public class SmaliConvert {
 		} catch (e: Exception) {
 			LOG.error("Smali process error", e)
 		}
-		return dexData.isNotEmpty()
+		return dexDataList.isNotEmpty()
 	}
 
 	private fun compile(inputFiles: List<Path>, options: SmaliInputOptions) {
 		val smaliOptions = SmaliOptions()
-		smaliOptions.apiLevel = options.getApiLevel()
+		smaliOptions.apiLevel = options.apiLevel
 		smaliOptions.verboseErrors = true
 		smaliOptions.allowOdexOpcodes = false
 		smaliOptions.printTokens = false
@@ -45,19 +45,19 @@ public class SmaliConvert {
 		val start = System.currentTimeMillis()
 		if (threads == 1 || inputFiles.size == 1) {
 			for (inputFile in inputFiles) {
-				assemble(dexData, inputFile, smaliOptions)
+				assemble(dexDataList, inputFile, smaliOptions)
 			}
 		} else {
 			try {
 				val executor = Executors.newFixedThreadPool(threads)
-				val syncList: MutableList<IDexData> = java.util.Collections.synchronizedList(dexData)
+				val syncList: MutableList<IDexData> = java.util.Collections.synchronizedList(dexDataList)
 				for (inputFile in inputFiles) {
 					executor.execute { assemble(syncList, inputFile, smaliOptions) }
 				}
 				executor.shutdown()
 				executor.awaitTermination(1, TimeUnit.HOURS)
 				// IDexData 已转 Kotlin（抽象函数声明），无合成属性，用显式 getter
-				dexData.sortBy { it.getFileName() }
+				dexDataList.sortBy { it.getFileName() }
 			} catch (e: InterruptedException) {
 				LOG.error("Smali compile interrupted", e)
 			}
@@ -82,7 +82,7 @@ public class SmaliConvert {
 		return input.filter { matcher.matches(it) }
 	}
 
-	public fun getDexData(): List<IDexData> = dexData
+	public val dexData: List<IDexData> get() = dexDataList
 
 	public companion object {
 		private val LOG = LoggerFactory.getLogger(SmaliConvert::class.java)

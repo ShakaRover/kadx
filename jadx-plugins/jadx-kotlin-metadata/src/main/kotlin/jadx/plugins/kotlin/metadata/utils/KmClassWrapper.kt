@@ -11,19 +11,19 @@ class KmClassWrapper private constructor(
 	private val kmCls: KmClass,
 ) {
 
-	fun getMethodArgs() = KotlinMetadataUtils.mapMethodArgs(cls, kmCls)
+	val methodArgs get() = KotlinMetadataUtils.mapMethodArgs(cls, kmCls)
 
-	fun getFields() = KotlinMetadataUtils.mapFields(cls, kmCls)
+	val fields get() = KotlinMetadataUtils.mapFields(cls, kmCls)
 
-	fun getCompanion() = KotlinMetadataUtils.mapCompanion(cls, kmCls)
+	val companion get() = KotlinMetadataUtils.mapCompanion(cls, kmCls)
 
-	fun isDataClass() = kmCls.isData
+	val isDataClass get() = kmCls.isData
 
 	// does not require metadata, may be useful for plain java ?
 	fun parseToString() = KotlinUtils.parseToString(cls)
 
 	// does not require metadata, may be useful for plain java ?
-	fun getGetters() = KotlinUtils.findGetters(cls)
+	val getters get() = KotlinUtils.findGetters(cls)
 
 	companion object {
 

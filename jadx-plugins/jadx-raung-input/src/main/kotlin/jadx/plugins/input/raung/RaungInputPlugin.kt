@@ -30,7 +30,7 @@ public class RaungInputPlugin : JadxPlugin {
 				}
 				// loadCodeFiles 的参数是显式 java.util.List（为兼容 Java 实现类），Kotlin List 需桥接转换
 				@Suppress("UNCHECKED_CAST")
-				return javaInput.loadCodeFiles(convert.getFiles() as java.util.List<Path>, convert)
+				return javaInput.loadCodeFiles(convert.files as java.util.List<Path>, convert)
 			}
 		})
 	}

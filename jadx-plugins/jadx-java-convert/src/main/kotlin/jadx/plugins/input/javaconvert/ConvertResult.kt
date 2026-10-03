@@ -13,20 +13,20 @@ import java.nio.file.Path
  */
 public class ConvertResult : java.io.Closeable {
 
-	private val converted = mutableListOf<Path>()
+	private val convertedList = mutableListOf<Path>()
 	private val tmpPaths = mutableListOf<Path>()
 
-	public fun getConverted(): List<Path> = converted
+	public val converted: List<Path> get() = convertedList
 
 	public fun addConvertedFiles(paths: List<Path>) {
-		converted.addAll(paths)
+		convertedList.addAll(paths)
 	}
 
 	public fun addTempPath(path: Path) {
 		tmpPaths.add(path)
 	}
 
-	public fun isEmpty(): Boolean = converted.isEmpty()
+	public val isEmpty: Boolean get() = convertedList.isEmpty()
 
 	override fun close() {
 		for (tmpPath in tmpPaths) {
@@ -38,7 +38,7 @@ public class ConvertResult : java.io.Closeable {
 		}
 	}
 
-	override fun toString(): String = "ConvertResult{converted=$converted, tmpPaths=$tmpPaths}"
+	override fun toString(): String = "ConvertResult{converted=$convertedList, tmpPaths=$tmpPaths}"
 
 	private companion object {
 		private val LOG = LoggerFactory.getLogger(ConvertResult::class.java)

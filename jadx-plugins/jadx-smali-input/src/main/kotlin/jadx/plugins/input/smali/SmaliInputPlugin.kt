@@ -33,7 +33,7 @@ public class SmaliInputPlugin : JadxPlugin {
 				if (!convert.execute(input, options)) {
 					return EmptyCodeLoader.INSTANCE
 				}
-				return dexInput.loadDexData(convert.getDexData())
+				return dexInput.loadDexData(convert.dexData)
 			}
 		})
 	}

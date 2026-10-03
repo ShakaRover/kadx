@@ -13,7 +13,6 @@ import kotlin.metadata.KmClass
 
 object KotlinMetadataUtils {
 
-	@JvmStatic
 	fun getAlias(cls: ClassNode): ClassAliasRename? {
 		val annotation = cls.getMetadata() ?: return null
 		return getClassAlias(cls, annotation)

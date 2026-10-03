@@ -46,7 +46,7 @@ class KotlinMetadataDecompilePass(
 	}
 
 	private fun renameMethodArgs(wrapper: KmClassWrapper) {
-		val args = wrapper.getMethodArgs()
+		val args = wrapper.methodArgs
 		args.forEach { (_, list) ->
 			list.forEach { (rArg, alias) ->
 				// TODO: comment not being added?
@@ -57,7 +57,7 @@ class KotlinMetadataDecompilePass(
 	}
 
 	private fun renameFields(wrapper: KmClassWrapper) {
-		val fields = wrapper.getFields()
+		val fields = wrapper.fields
 		fields.forEach { (field, alias) ->
 			if (AFlag.DONT_RENAME !in field) {
 				RenameReasonAttr.forNode(field).append(METADATA_REASON)
@@ -67,7 +67,7 @@ class KotlinMetadataDecompilePass(
 	}
 
 	private fun renameCompanion(wrapper: KmClassWrapper) {
-		val companion = wrapper.getCompanion()
+		val companion = wrapper.companion
 		companion?.run {
 			if (AFlag.DONT_RENAME !in field) {
 				RenameReasonAttr.forNode(field).append(METADATA_REASON)
@@ -87,7 +87,7 @@ class KotlinMetadataDecompilePass(
 	}
 
 	private fun fixDataClass(wrapper: KmClassWrapper) {
-		val isData = wrapper.isDataClass()
+		val isData = wrapper.isDataClass
 		wrapper.cls.run {
 			if (isData != accessFlags.isData()) {
 				accessFlags = accessFlags.run {
@@ -121,7 +121,7 @@ class KotlinMetadataDecompilePass(
 	}
 
 	private fun renameGetters(wrapper: KmClassWrapper) {
-		val getters = wrapper.getGetters()
+		val getters = wrapper.getters
 		getters.forEach { (mth, alias) ->
 			if (AFlag.DONT_RENAME !in mth) {
 				RenameReasonAttr.forNode(mth).append(GETTER_REASON)

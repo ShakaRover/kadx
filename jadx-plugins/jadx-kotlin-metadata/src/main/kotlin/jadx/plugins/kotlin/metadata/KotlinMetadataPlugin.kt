@@ -14,10 +14,10 @@ class KotlinMetadataPlugin : JadxPlugin {
 
 	override fun init(context: JadxPluginContext) {
 		context.registerOptions(options)
-		if (options.isPreparePassNeeded()) {
+		if (options.isPreparePassNeeded) {
 			context.addPass(KotlinMetadataPreparePass(options))
 		}
-		if (options.isDecompilePassNeeded()) {
+		if (options.isDecompilePassNeeded) {
 			context.addPass(KotlinMetadataDecompilePass(options))
 		}
 	}

@@ -14,7 +14,6 @@ object KotlinSmapUtils {
 
 	val LOG: Logger = LoggerFactory.getLogger(KotlinSmapUtils::class.java)
 
-	@JvmStatic
 	fun getClassAlias(cls: ClassNode): ClassAliasRename? {
 		val annotation = cls.getSourceDebugExtension() ?: return null
 		return getClassAlias(cls, annotation)

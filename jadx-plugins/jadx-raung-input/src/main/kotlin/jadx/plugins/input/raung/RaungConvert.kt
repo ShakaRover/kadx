@@ -49,7 +49,7 @@ public class RaungConvert : java.io.Closeable {
 		return input.filter { matcher.matches(it) }
 	}
 
-	public fun getFiles(): List<Path> {
+	public val files: List<Path> get() {
 		val jar = tmpJar ?: return emptyList()
 		return listOf(jar)
 	}

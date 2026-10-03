@@ -27,7 +27,6 @@ import java.nio.charset.StandardCharsets
  */
 public object SmaliUtils {
 
-	@JvmStatic
 	public fun assemble(smaliFile: File, options: SmaliOptions): ByteArray {
 		val errors = StringBuilder()
 		FileInputStream(smaliFile).use { fis ->

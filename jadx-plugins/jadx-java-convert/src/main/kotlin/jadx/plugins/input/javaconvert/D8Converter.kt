@@ -21,7 +21,6 @@ public class D8Converter {
 	public companion object {
 		private val LOG = LoggerFactory.getLogger(D8Converter::class.java)
 
-		@JvmStatic
 		public fun run(path: Path, tempDirectory: Path, options: JavaConvertOptions) {
 			val d8Command = D8Command.builder(LogHandler())
 				.addProgramFiles(path)
@@ -29,7 +28,7 @@ public class D8Converter {
 				.setMode(CompilationMode.DEBUG)
 				.setMinApiLevel(30)
 				.setIntermediate(true)
-				.setDisableDesugaring(!options.isD8Desugar())
+				.setDisableDesugaring(!options.isD8Desugar)
 				.setEnableVerboseSyntheticNames(true)
 				.setOptimizeMultidexForLinearAlloc(false)
 				.setIncludeClassesChecksum(false)

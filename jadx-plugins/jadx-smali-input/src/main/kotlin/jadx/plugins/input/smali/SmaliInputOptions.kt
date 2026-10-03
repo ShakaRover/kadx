@@ -10,7 +10,7 @@ import jadx.api.plugins.options.impl.BasePluginOptionsBuilder
  */
 public class SmaliInputOptions : BasePluginOptionsBuilder() {
 
-	private var apiLevel = 0
+	private var apiLevelValue = 0
 
 	/** 并行编译 smali 文件的线程数（init 时从全局配置填充） */
 	public var threads: Int = 0
@@ -19,8 +19,8 @@ public class SmaliInputOptions : BasePluginOptionsBuilder() {
 		intOption(SmaliInputPlugin.PLUGIN_ID + ".api-level")
 			.description("Android API level")
 			.defaultValue(27)
-			.setter { v -> apiLevel = v }
+			.setter { v -> apiLevelValue = v }
 	}
 
-	public fun getApiLevel(): Int = apiLevel
+	public val apiLevel: Int get() = apiLevelValue
 }
