@@ -1,4 +1,9 @@
-package jadx.tests.integration.others;
+package jadx.tests.integration.others
+
+object TestDeboxing2Fixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.others;
 
 import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
 
@@ -18,4 +23,6 @@ public class TestDeboxing2Fixture {
 			assertThat(test(7L)).isEqualTo(7L);
 		}
 	}
+}
+"""
 }

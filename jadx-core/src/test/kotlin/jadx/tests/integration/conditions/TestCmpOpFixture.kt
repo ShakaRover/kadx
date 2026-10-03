@@ -1,4 +1,9 @@
-package jadx.tests.integration.conditions;
+package jadx.tests.integration.conditions
+
+object TestCmpOpFixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.conditions;
 
 public class TestCmpOpFixture {
 
@@ -39,4 +44,6 @@ public class TestCmpOpFixture {
 			return 6.5d < i;
 		}
 	}
+}
+"""
 }

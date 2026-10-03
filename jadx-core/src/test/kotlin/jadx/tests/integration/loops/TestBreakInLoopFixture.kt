@@ -1,4 +1,9 @@
-package jadx.tests.integration.loops;
+package jadx.tests.integration.loops
+
+object TestBreakInLoopFixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.loops;
 
 public class TestBreakInLoopFixture {
 
@@ -15,4 +20,6 @@ public class TestBreakInLoopFixture {
 			this.f++;
 		}
 	}
+}
+"""
 }

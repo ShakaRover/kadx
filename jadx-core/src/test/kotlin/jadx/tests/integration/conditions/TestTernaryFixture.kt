@@ -1,4 +1,9 @@
-package jadx.tests.integration.conditions;
+package jadx.tests.integration.conditions
+
+object TestTernaryFixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.conditions;
 
 public class TestTernaryFixture {
 
@@ -18,4 +23,6 @@ public class TestTernaryFixture {
 		private static void checkTrue(boolean v) {
 		}
 	}
+}
+"""
 }

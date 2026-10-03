@@ -1,4 +1,13 @@
-package jadx.tests.integration.generics;
+package jadx.tests.integration.generics
+
+object TestImportGenericMapFixture {
+	class SuperClass {
+		class ToImport
+
+		class NotToImport
+	}
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.generics;
 
 public class TestImportGenericMapFixture {
 
@@ -16,4 +25,6 @@ public class TestImportGenericMapFixture {
 		public <C extends NotToImport> SuperClass(Class1<C> zzf) {
 		}
 	}
+}
+"""
 }

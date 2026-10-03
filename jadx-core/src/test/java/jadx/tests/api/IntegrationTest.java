@@ -4,6 +4,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -24,8 +25,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -199,7 +201,11 @@ public abstract class IntegrationTest extends TestUtils {
 	public List<ClassNode> getClassNodes(Class<?>... classes) {
 		try {
 			assertThat(classes).as("Class list is empty").isNotEmpty();
-			List<File> srcFiles = Stream.of(classes).map(this::getSourceFileForClass).collect(Collectors.toList());
+			List<File> srcFiles = new ArrayList<>();
+			for (Class<?> cls : classes) {
+				String embeddedSource = findEmbeddedJavaSource(cls);
+				srcFiles.add(embeddedSource != null ? writeJavaSource(embeddedSource) : getSourceFileForClass(cls));
+			}
 			List<File> clsFiles = compileSourceFiles(srcFiles);
 			assertThat(clsFiles).as("Class files list is empty").isNotEmpty();
 			return decompileFiles(clsFiles);
@@ -555,8 +561,14 @@ public abstract class IntegrationTest extends TestUtils {
 	}
 
 	private List<File> compileClass(Class<?> cls) throws IOException {
-		File sourceFile = getSourceFileForClass(cls);
-		List<File> clsFiles = compileSourceFiles(Collections.singletonList(sourceFile));
+		String embeddedSource = findEmbeddedJavaSource(cls);
+		List<File> clsFiles;
+		if (embeddedSource != null) {
+			clsFiles = compileJavaSource(embeddedSource);
+		} else {
+			File sourceFile = getSourceFileForClass(cls);
+			clsFiles = compileSourceFiles(Collections.singletonList(sourceFile));
+		}
 		if (removeParentClassOnInput) {
 			// remove classes which are parents for test class
 			String clsFullName = cls.getName();
@@ -580,6 +592,55 @@ public abstract class IntegrationTest extends TestUtils {
 			return file2;
 		}
 		throw new JadxRuntimeException("Test source not found for class: " + clsFullName);
+	}
+
+	private static final String JAVA_SOURCE_FIELD_NAME = "JAVA_SOURCE";
+	private static final Pattern ROOT_CLASS_PATTERN = Pattern.compile("(?m)^\\s*(?:public\\s+)?(?:final\\s+|abstract\\s+)?class\\s+(\\w+)");
+
+	/**
+	 * Search for embedded Java source in the class itself or any enclosing class.
+	 * Fixtures converted to Kotlin store the original Java source in a static
+	 * {@code JAVA_SOURCE} field, so the driver classes can stay unchanged.
+	 */
+	private @Nullable String findEmbeddedJavaSource(Class<?> cls) {
+		for (Class<?> c = cls; c != null; c = c.getEnclosingClass()) {
+			Field field;
+			try {
+				field = c.getDeclaredField(JAVA_SOURCE_FIELD_NAME);
+			} catch (NoSuchFieldException e) {
+				continue;
+			}
+			if (field.getType() != String.class || !Modifier.isStatic(field.getModifiers())) {
+				continue;
+			}
+			try {
+				field.setAccessible(true);
+				return (String) field.get(null);
+			} catch (IllegalAccessException e) {
+				throw new JadxRuntimeException("Failed to access JAVA_SOURCE field in " + c.getName(), e);
+			}
+		}
+		return null;
+	}
+
+	private List<File> compileJavaSource(String source) throws IOException {
+		return compileSourceFiles(Collections.singletonList(writeJavaSource(source)));
+	}
+
+	private File writeJavaSource(String source) throws IOException {
+		String rootClsName = parseRootClassName(source);
+		Path srcDir = Files.createTempDirectory(testDir, "jadx-tmp-src");
+		Path sourceFile = srcDir.resolve(rootClsName + ".java");
+		Files.writeString(sourceFile, source);
+		return sourceFile.toFile();
+	}
+
+	private String parseRootClassName(String source) {
+		Matcher matcher = ROOT_CLASS_PATTERN.matcher(source);
+		if (!matcher.find()) {
+			throw new JadxRuntimeException("Failed to find root class name in embedded Java source");
+		}
+		return matcher.group(1);
 	}
 
 	private List<File> compileSourceFiles(List<File> compileFileList) throws IOException {

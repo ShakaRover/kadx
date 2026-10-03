@@ -1,4 +1,7 @@
-package jadx.tests.integration.inner;
+package jadx.tests.integration.inner
+
+object TestInnerClassSyntheticConstructorFixture {
+	const val JAVA_SOURCE = """package jadx.tests.integration.inner;
 
 public class TestInnerClassSyntheticConstructorFixture {
 
@@ -11,4 +14,6 @@ public class TestInnerClassSyntheticConstructorFixture {
 	public int call() {
 		return new TestCls().mth();
 	}
+}
+"""
 }
