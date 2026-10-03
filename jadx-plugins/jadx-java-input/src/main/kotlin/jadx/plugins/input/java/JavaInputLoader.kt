@@ -130,7 +130,7 @@ class JavaInputLoader(
 		val result = ArrayList<JavaClassReader>()
 		try {
 			zipReader.open(file).use { zip ->
-				for (entry in zip.getEntries()) {
+				for (entry in zip.entries) {
 					if (entry.isDirectory()) {
 						continue
 					}

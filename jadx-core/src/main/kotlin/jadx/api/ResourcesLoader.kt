@@ -170,7 +170,7 @@ class ResourcesLoader internal constructor(
 				val zipContent = decompiler.getZipReader().open(file)
 				// 现在不要关闭 zip，条目内容稍后才会读取
 				decompiler.addCloseable(zipContent)
-				for (entry in zipContent.getEntries()) {
+				for (entry in zipContent.entries) {
 					addEntry(list, file, entry, subDir)
 				}
 			} catch (e: Exception) {

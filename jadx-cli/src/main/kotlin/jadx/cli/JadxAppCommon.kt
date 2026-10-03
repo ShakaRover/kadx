@@ -16,7 +16,7 @@ import jadx.zip.security.JadxZipSecurity
  * 决定启用哪些 [JadxSecurityFlag] 以及 zip 安全检查参数。
  *
  * **为什么这样写**：原 Java 是纯静态工具方法，Java 调用方（jadx-gui 的 `JadxWrapper`）
- * 以 `JadxAppCommon.applyEnvVars(...)` 静态调用，因此放进 `companion object` 并加 `@JvmStatic`。
+ * 以 `JadxAppCommon.applyEnvVars(...)` 调用，因此放进 `companion object`。
  */
 class JadxAppCommon {
 
@@ -26,7 +26,6 @@ class JadxAppCommon {
 		 *
 		 * @param jadxArgs 需要写入安全配置的 jadx 参数对象
 		 */
-		@JvmStatic
 		fun applyEnvVars(jadxArgs: JadxArgs) {
 			val zipSecurity: IJadxZipSecurity
 			// 注意：JadxSecurityFlag.all()/none() 返回只读 Set，这里转成可变集合后再增删

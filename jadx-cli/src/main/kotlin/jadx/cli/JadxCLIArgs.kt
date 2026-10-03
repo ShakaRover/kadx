@@ -43,8 +43,8 @@ import java.util.Locale
  * 默认落在该字段上，因此解析与配置文件格式都保持不变。布尔字段的原 getter 是 `isXxx()`，
  * 用 `@get:JvmName("isXxx")` 保留 JVM 方法名。
  *
- * 注意：`logLevel` 与 `useSourceNameAsClassNameAlias` 需要 `@JvmField`，
- * 前者是 jadx-gui 的 Java 子类会直接读写字段，后者是 getter 带自定义逻辑（不能与属性访问器共存）。
+ * 注意：`useSourceNameAsClassNameAlias` 需要 `@JvmField`，
+ * 因为它的 getter 带自定义逻辑（不能与属性访问器共存），且字段本身参与 Gson 序列化。
  */
 open class JadxCLIArgs : IJadxConfig {
 
@@ -329,13 +329,12 @@ open class JadxCLIArgs : IJadxConfig {
 	)
 	var commentsLevel: CommentsLevel = CommentsLevel.INFO
 
-	@JvmField
 	@Parameter(
 		names = ["--log-level"],
 		description = "set log level, values: quiet, progress, error, warn, info, debug",
 		converter = LogLevelConverter::class,
 	)
-	protected var logLevel: LogHelper.LogLevelEnum = LogHelper.LogLevelEnum.PROGRESS
+	var logLevel: LogHelper.LogLevelEnum = LogHelper.LogLevelEnum.PROGRESS
 
 	@JadxConfigExclude
 	@Parameter(names = ["-v", "--verbose"], description = "verbose output (set --log-level to DEBUG)")
@@ -489,13 +488,6 @@ open class JadxCLIArgs : IJadxConfig {
 		return set
 	}
 
-	/** `logLevel` 字段是 `@JvmField`，这里显式提供与原 Java 同名的 getter/setter。 */
-	fun getLogLevel(): LogHelper.LogLevelEnum = logLevel
-
-	fun setLogLevel(logLevel: LogHelper.LogLevelEnum) {
-		this.logLevel = logLevel
-	}
-
 	/**
 	 * 获取“源码名作为类别名”的策略。
 	 * 优先使用新参数，其次回退到已废弃的布尔参数，最后用默认值。
@@ -524,11 +516,11 @@ open class JadxCLIArgs : IJadxConfig {
 	@Deprecated("Use getUseSourceNameAsClassNameAlias() instead.")
 	fun isDeobfuscationUseSourceNameAsAlias(): Boolean = getUseSourceNameAsClassNameAlias().toBoolean()
 
-	fun isRenameCaseSensitive(): Boolean = renameFlags.contains(RenameEnum.CASE)
+	val isRenameCaseSensitive: Boolean get() = renameFlags.contains(RenameEnum.CASE)
 
-	fun isRenameValid(): Boolean = renameFlags.contains(RenameEnum.VALID)
+	val isRenameValid: Boolean get() = renameFlags.contains(RenameEnum.VALID)
 
-	fun isRenamePrintable(): Boolean = renameFlags.contains(RenameEnum.PRINTABLE)
+	val isRenamePrintable: Boolean get() = renameFlags.contains(RenameEnum.PRINTABLE)
 
 	/** `--rename-flags` 的转换器：把逗号分隔的字符串转为 [RenameEnum] 集合。 */
 	internal class RenameConverter(private val paramName: String) : IStringConverter<Set<RenameEnum>> {
@@ -650,7 +642,6 @@ open class JadxCLIArgs : IJadxConfig {
 		 *
 		 * @return 处理后的参数对象；需要提前退出（--help/--version/保存配置等）时返回 null
 		 */
-		@JvmStatic
 		fun <T : JadxCLIArgs> processArgs(args: Array<String>, argsObj: T, configAdapter: JadxConfigAdapter<T>?): T? {
 			val jcw = JCommanderWrapper(argsObj)
 			if (!jcw.parse(args)) {
@@ -718,7 +709,6 @@ open class JadxCLIArgs : IJadxConfig {
 		}
 
 		/** 把枚举值数组拼成 `case, valid, printable` 形式。 */
-		@JvmStatic
 		fun enumValuesString(values: Array<out Enum<*>>): String = values.joinToString(", ") { it.name.replace('_', '-').lowercase(Locale.ROOT) }
 	}
 }

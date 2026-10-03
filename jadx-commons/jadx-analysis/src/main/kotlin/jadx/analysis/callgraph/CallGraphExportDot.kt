@@ -60,7 +60,7 @@ class CallGraphExportDot(
 		// 收集所有节点（去重）
 		val nodeMap = mutableMapOf<Int, Node>()
 		for (edge in callGraph.edges()) {
-			addNode(edge.getFrom(), nodeMap)
+			addNode(edge.from, nodeMap)
 			addNode(edge.to(), nodeMap)
 		}
 
@@ -83,9 +83,9 @@ class CallGraphExportDot(
 		// 输出所有边定义
 		for (edge in callGraph.edges()) {
 			cw.startLine()
-			addNodeName(cw, edge.getFrom().getId())
+			addNodeName(cw, edge.from.id)
 			cw.add(" -> ")
-			addNodeName(cw, edge.to().getId())
+			addNodeName(cw, edge.to().id)
 			cw.add(';')
 		}
 
@@ -111,10 +111,10 @@ class CallGraphExportDot(
 	 * @param nodeMap 节点映射表
 	 */
 	private fun addNode(cgNode: ICallGraphNode, nodeMap: MutableMap<Int, Node>) {
-		nodeMap.computeIfAbsent(cgNode.getId()) { id ->
+		nodeMap.computeIfAbsent(cgNode.id) { id ->
 			val node = Node()
 			node.id = id
-			node.method = cgNode.getMethodInfo().rawFullId
+			node.method = cgNode.methodInfo.rawFullId
 			node
 		}
 	}

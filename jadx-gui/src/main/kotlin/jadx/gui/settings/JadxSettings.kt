@@ -446,7 +446,7 @@ class JadxSettings(private val configAdapter: JadxConfigAdapter<JadxSettingsData
 		settingsData.restoreSwitchOverString = restoreSwitchOverString
 	}
 
-	fun isRenamePrintable(): Boolean = settingsData.isRenamePrintable()
+	fun isRenamePrintable(): Boolean = settingsData.isRenamePrintable
 
 	fun getUserRenamesMappingsMode(): UserRenamesMappingsMode = settingsData.userRenamesMappingsMode
 
@@ -466,7 +466,7 @@ class JadxSettings(private val configAdapter: JadxConfigAdapter<JadxSettingsData
 		settingsData.respectBytecodeAccessModifiers = respectBytecodeAccessModifiers
 	}
 
-	fun isRenameCaseSensitive(): Boolean = settingsData.isRenameCaseSensitive()
+	fun isRenameCaseSensitive(): Boolean = settingsData.isRenameCaseSensitive
 
 	fun getDecompilationMode(): DecompilationMode = settingsData.decompilationMode
 
@@ -498,7 +498,7 @@ class JadxSettings(private val configAdapter: JadxConfigAdapter<JadxSettingsData
 		settingsData.sourceNameRepeatLimit = sourceNameRepeatLimit
 	}
 
-	fun isRenameValid(): Boolean = settingsData.isRenameValid()
+	fun isRenameValid(): Boolean = settingsData.isRenameValid
 
 	fun isSkipXmlPrettyPrint(): Boolean = settingsData.skipXmlPrettyPrint
 

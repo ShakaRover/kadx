@@ -83,12 +83,12 @@ class CommandPlugins : ICommand {
 			return
 		}
 		uninstall?.let {
-			val uninstalled = JadxPluginsTools.getInstance().uninstall(it)
+			val uninstalled = JadxPluginsTools.instance.uninstall(it)
 			println(if (uninstalled) "Uninstalled" else "Plugin not found")
 			return
 		}
 		if (update) {
-			val updates = JadxPluginsTools.getInstance().updateAll()
+			val updates = JadxPluginsTools.instance.updateAll()
 			if (updates.isEmpty()) {
 				println("No updates")
 			} else {
@@ -100,7 +100,7 @@ class CommandPlugins : ICommand {
 			return
 		}
 		if (list) {
-			printPlugins(JadxPluginsTools.getInstance().getInstalled())
+			printPlugins(JadxPluginsTools.instance.getInstalled())
 			return
 		}
 		if (listAll) {
@@ -112,7 +112,7 @@ class CommandPlugins : ICommand {
 			return
 		}
 		if (available) {
-			val availableList = JadxPluginsList.getInstance().get()
+			val availableList = JadxPluginsList.instance.get()
 			println("Available plugins: " + availableList.size)
 			for (plugin in availableList) {
 				println(" - " + plugin.name + ": " + plugin.description + " (" + plugin.locationId + ")")
@@ -121,7 +121,7 @@ class CommandPlugins : ICommand {
 		}
 
 		disable?.let {
-			if (JadxPluginsTools.getInstance().changeDisabledStatus(it, true)) {
+			if (JadxPluginsTools.instance.changeDisabledStatus(it, true)) {
 				println("Plugin '$it' disabled.")
 			} else {
 				println("Plugin '$it' already disabled.")
@@ -129,7 +129,7 @@ class CommandPlugins : ICommand {
 			return
 		}
 		enable?.let {
-			if (JadxPluginsTools.getInstance().changeDisabledStatus(it, false)) {
+			if (JadxPluginsTools.instance.changeDisabledStatus(it, false)) {
 				println("Plugin '$it' enabled.")
 			} else {
 				println("Plugin '$it' already enabled.")
@@ -147,7 +147,7 @@ class CommandPlugins : ICommand {
 			if (version != null) {
 				sb.append(" (").append(version).append(')')
 			}
-			if (plugin.isDisabled()) {
+			if (plugin.isDisabled) {
 				sb.append(" (disabled)")
 			}
 			sb.append(" - ").append(plugin.name)
@@ -158,7 +158,7 @@ class CommandPlugins : ICommand {
 
 	private fun printVersions(locationId: String, limit: Int) {
 		println("Loading ...")
-		val versions = JadxPluginsTools.getInstance().getVersionsByLocation(locationId, 1, limit)
+		val versions = JadxPluginsTools.instance.getVersionsByLocation(locationId, 1, limit)
 		if (versions.isEmpty()) {
 			println("No versions found")
 			return
@@ -177,11 +177,11 @@ class CommandPlugins : ICommand {
 	}
 
 	private fun printAllPlugins() {
-		val installed = JadxPluginsTools.getInstance().getInstalled()
+		val installed = JadxPluginsTools.instance.getInstalled()
 		printPlugins(installed)
 		val installedSet = installed.map { it.pluginId }.toSet()
 
-		val plugins = JadxPluginsTools.getInstance().getAllPluginsInfo()
+		val plugins = JadxPluginsTools.instance.getAllPluginsInfo()
 		println("Other plugins: " + plugins.size)
 		for (plugin in plugins) {
 			if (plugin.getPluginId() !in installedSet) {
@@ -209,7 +209,7 @@ class CommandPlugins : ICommand {
 	}
 
 	private fun installPlugin(locationId: String) {
-		val plugin = JadxPluginsTools.getInstance().install(locationId)
+		val plugin = JadxPluginsTools.instance.install(locationId)
 		println("Plugin installed: " + plugin.pluginId + ":" + plugin.version)
 	}
 }

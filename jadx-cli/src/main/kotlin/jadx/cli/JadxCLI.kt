@@ -24,7 +24,7 @@ import java.util.function.Function
  * 同时处理单类模式、调用图导出与错误退出码。
  *
  * **为什么这样写**：原 Java 全是静态方法且 `main` 是 JVM 入口点，因此放入 `companion object`
- * 并对 `main`/`execute` 加 `@JvmStatic`，保证 `jadx.cli.JadxCLI.main` 静态入口不变。
+ * 并对 `main` 加 `@JvmStatic`，保证 `jadx.cli.JadxCLI.main` 静态入口不变。
  */
 class JadxCLI {
 
@@ -42,10 +42,8 @@ class JadxCLI {
 			}
 		}
 
-		@JvmStatic
 		fun execute(args: Array<String>): Int = execute(args, null)
 
-		@JvmStatic
 		fun execute(args: Array<String>, argsMod: ((JadxArgs) -> Unit)?): Int {
 			return try {
 				val cliArgs = JadxCLIArgs.processArgs(
@@ -129,7 +127,7 @@ class JadxCLI {
 		}
 
 		private fun save(jadx: JadxDecompiler) {
-			if (LogHelper.getLogLevel() == LogHelper.LogLevelEnum.QUIET) {
+			if (LogHelper.logLevel == LogHelper.LogLevelEnum.QUIET) {
 				jadx.save()
 			} else {
 				LOG.info("processing ...")

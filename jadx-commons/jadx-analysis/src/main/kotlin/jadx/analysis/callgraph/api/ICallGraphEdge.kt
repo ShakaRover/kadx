@@ -15,7 +15,7 @@ interface ICallGraphEdge {
 	 *
 	 * @return 发起调用的方法对应的节点
 	 */
-	fun getFrom(): ICallGraphNode
+	val from: ICallGraphNode
 
 	/**
 	 * 获取调用边的目标节点（被调用者）
@@ -33,7 +33,7 @@ interface ICallGraphEdge {
 	 *
 	 * @return true=已解析到具体目标，false=未完全解析
 	 */
-	fun isResolved(): Boolean
+	val isResolved: Boolean
 
 	/**
 	 * 获取附加的属性信息

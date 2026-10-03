@@ -36,9 +36,8 @@ enum class ZipReaderFlags {
 	;
 
 	companion object {
-		// @JvmStatic：Java 代码仍可按 ZipReaderFlags.none() 静态调用。
 		// 注意：EnumSet.noneOf 是 Java 泛型工厂方法（平台类型），Kotlin 的期望类型匹配对它有 quirk，
 		// 直接当表达式返回会报 "Return type mismatch"，需要显式 cast 到 Set
-		@JvmStatic fun none(): Set<ZipReaderFlags> = EnumSet.noneOf(ZipReaderFlags::class.java) as Set<ZipReaderFlags>
+		fun none(): Set<ZipReaderFlags> = EnumSet.noneOf(ZipReaderFlags::class.java) as Set<ZipReaderFlags>
 	}
 }

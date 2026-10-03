@@ -110,7 +110,7 @@ internal class PluginSettingsGroup(
 	}
 
 	private fun applyData(listModel: DefaultListModel<BasePluginListNode>) {
-		val installed = JadxPluginsTools.getInstance().getInstalled()
+		val installed = JadxPluginsTools.instance.getInstalled()
 		val nodes = ArrayList<BasePluginListNode>(installed.size + collectedPlugins.getList().size)
 		val installedSet = HashSet<String?>(installed.size)
 		for (pluginMetadata in installed) {
@@ -149,7 +149,7 @@ internal class PluginSettingsGroup(
 	) {
 		mainWindow.getBackgroundExecutor().execute(NLS.str("preferences.plugins.task.downloading_list")) {
 			try {
-				JadxPluginsList.getInstance().get { availablePlugins ->
+				JadxPluginsList.instance.get { availablePlugins ->
 					val availableNodes = availablePlugins
 						.filter { !installedSet.contains(it.pluginId) }
 						.map { AvailablePluginNode(it) }

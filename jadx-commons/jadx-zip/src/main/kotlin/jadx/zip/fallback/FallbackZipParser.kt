@@ -32,7 +32,7 @@ class FallbackZipParser(file: File, options: ZipReaderOptions) : IZipParser {
 	// 对应的 zip 文件（构造参数 file 在 init 块中赋给这个字段，注意 Kotlin 里构造参数会"遮蔽"同名字段）
 	private lateinit var file: File
 
-	private lateinit var zipFile: ZipFile // JDK 的 ZipFile 句柄，close() 时释放
+	private lateinit var zipFileHandle: ZipFile // JDK 的 ZipFile 句柄，close() 时释放
 
 	private lateinit var zipSecurity: IJadxZipSecurity
 
@@ -41,7 +41,7 @@ class FallbackZipParser(file: File, options: ZipReaderOptions) : IZipParser {
 	init {
 		try {
 			this.file = file // this.file 是字段；裸 file 指构造参数（Kotlin 名称遮蔽规则）
-			zipFile = ZipFile(file) // new ZipFile(...) → Kotlin 直接构造调用，语义相同
+			zipFileHandle = ZipFile(file) // new ZipFile(...) → Kotlin 直接构造调用，语义相同
 			zipSecurity = options.zipSecurity // 从配置里取出安全策略
 			useLimitedDataStream = zipSecurity.useLimitedDataStream() // 是否给条目流套上限额 InputStream
 		} catch (e: Exception) {
@@ -58,7 +58,7 @@ class FallbackZipParser(file: File, options: ZipReaderOptions) : IZipParser {
 			}
 			// 原 Java 写的是 List<IZipEntry> list = new ArrayList<>()；Kotlin 里可变列表用 MutableList 声明，add() 才可用
 			val list: MutableList<IZipEntry> = ArrayList()
-			val entries = zipFile.entries() // JDK ZipFile 的条目枚举
+			val entries = zipFileHandle.entries() // JDK ZipFile 的条目枚举
 			while (entries.hasMoreElements()) {
 				val zipEntry = FallbackZipEntry(this, entries.nextElement())
 				if (isValidEntry(zipEntry)) {
@@ -108,7 +108,7 @@ class FallbackZipParser(file: File, options: ZipReaderOptions) : IZipParser {
 	}
 
 	private fun getEntryStream(entry: FallbackZipEntry): InputStream {
-		val entryStream = zipFile.getInputStream(entry.getZipEntry()) // 取 JDK ZipEntry 的原始数据流
+		val entryStream = zipFileHandle.getInputStream(entry.zipEntry) // 取 JDK ZipEntry 的原始数据流
 		val stream: InputStream = if (useLimitedDataStream) {
 			LimitedInputStream(entryStream, entry.getUncompressedSize()) // 套上限额流，防 zip bomb
 		} else {
@@ -117,12 +117,12 @@ class FallbackZipParser(file: File, options: ZipReaderOptions) : IZipParser {
 		return BufferedInputStream(stream) // 统一加一层缓冲提升读取性能
 	}
 
-	fun getZipFile(): File = file // 返回持有的 zip 文件（与原来 Java 同名同签名）
+	val zipFile: File get() = file // 返回持有的 zip 文件（与原来 Java 同名同签名）
 
 	@Throws(IOException::class)
 	override fun close() {
-		if (zipFile != null) { // lateinit 字段构造后必然已赋值，此判空与原 Java 保持字面一致
-			zipFile.close()
+		if (zipFileHandle != null) { // lateinit 字段构造后必然已赋值，此判空与原 Java 保持字面一致
+			zipFileHandle.close()
 		}
 	}
 }

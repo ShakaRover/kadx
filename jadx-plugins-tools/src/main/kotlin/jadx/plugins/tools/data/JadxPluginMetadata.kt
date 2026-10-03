@@ -16,7 +16,7 @@ class JadxPluginMetadata : Comparable<JadxPluginMetadata> {
 
 	var disabled: Boolean = false
 
-	fun isDisabled(): Boolean = disabled
+	val isDisabled: Boolean get() = disabled
 
 	override fun equals(other: Any?): Boolean {
 		if (this === other) return true

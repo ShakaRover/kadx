@@ -16,18 +16,11 @@ import jadx.core.dex.attributes.IAttributeNode
  * @property attrNode 该边的属性容器
  */
 class CallGraphEdge(
-	private val from: ICallGraphNode,
+	override val from: ICallGraphNode,
 	private val to: ICallGraphNode,
 ) : ICallGraphEdge {
 	// 每条边都有独立的属性节点，用于存储调用相关的元数据
 	private val attrNode = CallGraphAttrNode()
-
-	/**
-	 * 获取调用者节点
-	 *
-	 * @return 发起调用的方法对应的节点
-	 */
-	override fun getFrom(): ICallGraphNode = from
 
 	/**
 	 * 获取被调用者节点
@@ -43,7 +36,7 @@ class CallGraphEdge(
 	 *
 	 * @return true=已解析，false=未完全解析
 	 */
-	override fun isResolved(): Boolean = to.isResolved()
+	override val isResolved: Boolean get() = to.isResolved
 
 	/**
 	 * 获取属性节点

@@ -54,8 +54,8 @@ class JadxCallGraphTest {
 				.build()
 
 			for (edge in callGraph.edges()) {
-				if (edge.isResolved()) {
-					println("Edge from '${edge.getFrom()}' to '${edge.to()}'")
+				if (edge.isResolved) {
+					println("Edge from '${edge.from}' to '${edge.to()}'")
 				}
 			}
 			callGraph.writeDot(Path.of("test.dot"))
@@ -85,7 +85,7 @@ class JadxCallGraphTest {
 			assertThat(callGraph.edges()).hasSize(1)
 
 			for (edge in callGraph.edges()) {
-				println("Edge from ${edge.getFrom()} to ${edge.to()}")
+				println("Edge from ${edge.from} to ${edge.to()}")
 			}
 
 			// 导出为 DOT 字符串并打印

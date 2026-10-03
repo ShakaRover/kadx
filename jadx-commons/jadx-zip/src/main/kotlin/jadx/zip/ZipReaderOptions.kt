@@ -13,7 +13,6 @@ import java.util.Set
 class ZipReaderOptions(val zipSecurity: IJadxZipSecurity, val flags: Set<ZipReaderFlags>) {
 	companion object {
 		/** Returns default options (built-in JadxZipSecurity security strategy + empty flag set) */
-		@JvmStatic
 		fun getDefault(): ZipReaderOptions = ZipReaderOptions(JadxZipSecurity(), ZipReaderFlags.none())
 	}
 }

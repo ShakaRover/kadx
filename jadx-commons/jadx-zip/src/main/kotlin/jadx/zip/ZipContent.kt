@@ -10,7 +10,7 @@ import java.util.HashMap
  *
  * 持有创建它的 [zipParser]，close() 时一并释放解析器资源（实现 Closeable）。
  */
-class ZipContent(private val zipParser: IZipParser, private val entries: List<IZipEntry>) : Closeable {
+class ZipContent(private val zipParser: IZipParser, val entries: List<IZipEntry>) : Closeable {
 
 	companion object {
 		private val LOG: Logger = LoggerFactory.getLogger(ZipContent::class.java)
@@ -34,8 +34,6 @@ class ZipContent(private val zipParser: IZipParser, private val entries: List<IZ
 	init {
 		entriesMap = buildNameMap(zipParser, entries)
 	}
-
-	fun getEntries(): List<IZipEntry> = entries // 与原来 Java 的同名 getter JVM 签名保持一致（非 override，原类自己声明的普通方法）
 
 	fun searchEntry(fileName: String): IZipEntry? = entriesMap[fileName] // 找不到返回 null（对应原 @Nullable）
 

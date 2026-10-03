@@ -17,8 +17,8 @@ import java.util.EnumSet
  * **做什么**：加载输入文件（只做类结构解析，关闭去混淆/重命名等耗时 Pass），
  * 构建 [ClsSet] 并保存为 `.jcst`。
  *
- * **为什么这样写**：带 `main` 的命令行工具，保留静态入口与签名，
- * 全部放进 `companion object` 并加 `@JvmStatic`。
+ * **为什么这样写**：带 `main` 的命令行工具，`main` 加 `@JvmStatic` 保留静态入口，
+ * 其余方法放进 `companion object`。
  */
 class ConvertToClsSet {
 
@@ -26,7 +26,6 @@ class ConvertToClsSet {
 		private val LOG: Logger = LoggerFactory.getLogger(ConvertToClsSet::class.java)
 
 		/** 打印用法说明。 */
-		@JvmStatic
 		fun usage() {
 			LOG.info("<android API level (number)> <output .jcst file> <several input dex or jar files> ")
 			LOG.info(

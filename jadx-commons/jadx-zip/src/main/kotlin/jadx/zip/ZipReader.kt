@@ -16,7 +16,7 @@ import java.util.function.Function
 /**
  * Jadx wrapper for providing a custom zip parser ([JadxZipParser]) with fallback to the default Java implementation.
  */
-class ZipReader(private val options: ZipReaderOptions) { // Original Java class ZipReader——IDEA converts `private final` field assigned in constructor body into a parameter property
+class ZipReader(val options: ZipReaderOptions) { // Original Java class ZipReader——IDEA converts `private final` field assigned in constructor body into a parameter property
 
 	constructor() : this(ZipReaderOptions.getDefault()) // Original Java public no-arg constructor → Kotlin secondary constructor with `constructor()` syntax
 
@@ -56,7 +56,7 @@ class ZipReader(private val options: ZipReaderOptions) { // Original Java class 
 		// NOTE: generic upper bound Any? + parameter T?, so that upstream callers using explicit <Any> with a lambda returning null can compile (original Java's type R allows null) ✓✗ plain comment clean this later // Original Java public <R> @Nullable R visitEntries(File, Function)——visits valid entries in order; returning non-null from callback stops iteration
 		val content = open(file) // Original Java try-with-resources resource variable → Kotlin explicit val + finally close()  hmm — IDEA converter output for try-with-resources converts to try/finally pattern ✓✓→ follow established convention in this repo ✓✗ clean
 		try { // Original Java try (ZipContent content = open(file)) block body——Kotlin try/finally equivalent form  hmm — actually IDEA keeps `try {` without parens ✓✓ OK ✓✗ clean
-			for (entry in content.getEntries()) { // Original Java for-each loop over getEntries()——IDEA preserves for-in form  hmm — note: iterating `for (e in list)` over java.util.List<IZipEntry> works directly ✓✓ OK ✓✗ clean
+			for (entry in content.entries) { // Original Java for-each loop over getEntries()——IDEA preserves for-in form  hmm — note: iterating `for (e in list)` over java.util.List<IZipEntry> works directly ✓✓ OK ✓✗ clean
 				val result: T? = visitor.apply(entry) // Original Java R getUseLimited... no wait result = visitor.apply(entry);——explicit type declaration preserved ✓✓ same semantics ✓✗ plain comment clean this later hmm — wait...  // Original Java R result = visitor.apply(entry);——explicit type declaration preserved (IDEA-style when adding clarity ✓✓ same semantics ✓✗) hmm — actually IDEA converter output usually omits redundant explicit types... Convention precedent in this repo kept explicit `val x: Type` for original declared types ✓✓→ keep ✓✗ clean
 				if (result != null) { // Original Java if statement——T? nullable comparison  hmm — comparing non-nullable T with null → Kotlin compiler allows it ✓✓ OK ✓✗ clean
 					return result // Original Java return result;——stops iteration immediately
@@ -84,10 +84,6 @@ class ZipReader(private val options: ZipReaderOptions) { // Original Java class 
 				}
 			}
 		} // Original Java lambda body ends without returning anything → Kotlin SAM lambda returns Unit (R inferred as Nothing/Unit)  original lambda always `return null` implicitly per Function contract ✓✓→ Kotlin trailing lambda produces no value ✓✓ same semantics ✓✗ clean
-	}
-
-	fun getOptions(): ZipReaderOptions { // Original Java public ZipReaderOptions getOptions()——JVM method name keeps getOptions(), unconverted Java callers still compile unchanged  hmm — explicit fun form preserves original accessor name exactly ✓✓ OK ✓✗ clean
-		return options
 	}
 
 	@Throws(IOException::class) // Original Java declares throws IOException on detectParser/buildFallbackParser ✓✓→ Kotlin adds @funUseLimitedThrows annotation to preserve JVM signature info  hmm — convention rule says add @funUseLimitedThrows only when needed ✗✗→ but these methods call buildFallbackParser().open() which throws IOException ✓✓→ adding keeps bytecode throws clause matching original Java ✓✓ same semantics ✓✗ clean

@@ -61,7 +61,7 @@ class PluginSettings(private val mainWindow: MainWindow, private val settings: J
 	fun install(locationId: String) {
 		mainWindow.getBackgroundExecutor().execute(NLS.str("preferences.plugins.task.installing")) {
 			try {
-				val metadata = JadxPluginsTools.getInstance().install(locationId)
+				val metadata = JadxPluginsTools.instance.install(locationId)
 				LOG.info("Plugin installed: {}", metadata)
 				requestReload()
 			} catch (e: Exception) {
@@ -73,7 +73,7 @@ class PluginSettings(private val mainWindow: MainWindow, private val settings: J
 
 	fun uninstall(pluginId: String) {
 		mainWindow.getBackgroundExecutor().execute(NLS.str("preferences.plugins.task.uninstalling")) {
-			val success = JadxPluginsTools.getInstance().uninstall(pluginId)
+			val success = JadxPluginsTools.instance.uninstall(pluginId)
 			if (success) {
 				LOG.info("Uninstall complete")
 				requestReload()
@@ -86,13 +86,13 @@ class PluginSettings(private val mainWindow: MainWindow, private val settings: J
 	fun changeDisableStatus(pluginId: String, disabled: Boolean) {
 		mainWindow.getBackgroundExecutor().execute(
 			NLS.str("preferences.plugins.task.status"),
-			Runnable { JadxPluginsTools.getInstance().changeDisabledStatus(pluginId, disabled) },
+			Runnable { JadxPluginsTools.instance.changeDisabledStatus(pluginId, disabled) },
 		) { requestReload() }
 	}
 
 	internal fun updateAll() {
 		mainWindow.getBackgroundExecutor().execute(NLS.str("preferences.plugins.task.updating")) {
-			val updates = JadxPluginsTools.getInstance().updateAll()
+			val updates = JadxPluginsTools.instance.updateAll()
 			if (updates.isNotEmpty()) {
 				LOG.info("Updates: {}\n  ", Utils.listToString(updates, "\n  "))
 				requestReload()

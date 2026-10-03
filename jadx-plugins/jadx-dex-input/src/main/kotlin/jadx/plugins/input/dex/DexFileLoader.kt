@@ -148,7 +148,7 @@ public class DexFileLoader(private val options: DexInputOptions) {
 		val result = ArrayList<DexReader>()
 		val zip = zipReader.open(file)
 		try {
-			for (entry in zip.getEntries()) {
+			for (entry in zip.entries) {
 				if (entry.isDirectory()) {
 					continue
 				}

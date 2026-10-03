@@ -11,8 +11,8 @@ import org.slf4j.LoggerFactory
  * **做什么**：把命令行参数（`--quiet` / `--verbose` / `--log-level`）映射到 logback 的
  * [Level]，并允许对特定类/包单独设置级别（例如显示进度时把控制类调到 INFO）。
  *
- * **为什么这样写**：原 Java 全是静态方法，Java 调用方（jadx-gui 等）以 `LogHelper.xxx(...)`
- * 静态调用，因此统一放进 `companion object` 并加 `@JvmStatic`。
+ * **为什么这样写**：原 Java 全是静态方法，调用方（jadx-gui 等）以 `LogHelper.xxx(...)`
+ * 调用，因此统一放进 `companion object`。
  */
 class LogHelper {
 
@@ -37,7 +37,6 @@ class LogHelper {
 		private var logLevelValue: LogLevelEnum? = null
 
 		/** 根据命令行参数初始化日志级别。 */
-		@JvmStatic
 		fun initLogLevel(args: JadxCLIArgs) {
 			logLevelValue = getLogLevelFromArgs(args)
 		}
@@ -47,22 +46,20 @@ class LogHelper {
 				return null
 			}
 			if (args.quiet) {
-				args.setLogLevel(LogLevelEnum.QUIET)
+				args.logLevel = LogLevelEnum.QUIET
 			} else if (args.verbose) {
-				args.setLogLevel(LogLevelEnum.DEBUG)
+				args.logLevel = LogLevelEnum.DEBUG
 			}
-			return args.getLogLevel()
+			return args.logLevel
 		}
 
 		/** 设置并立即应用日志级别。 */
-		@JvmStatic
 		fun setLogLevel(newLogLevel: LogLevelEnum) {
 			logLevelValue = newLogLevel
 			applyLogLevel(newLogLevel)
 		}
 
 		/** 重新应用当前日志级别（例如初始化完成后调用）。 */
-		@JvmStatic
 		fun applyLogLevels() {
 			val level = logLevelValue ?: return
 			applyLogLevel(level)
@@ -89,17 +86,14 @@ class LogHelper {
 		}
 
 		/** 返回当前日志级别；自定义 logback 配置时为 null。 */
-		@JvmStatic
-		fun getLogLevel(): LogLevelEnum? = logLevelValue
+		val logLevel: LogLevelEnum? get() = logLevelValue
 
 		/** 为指定类单独设置日志级别。 */
-		@JvmStatic
 		fun setLevelForClass(cls: Class<*>, level: Level) {
 			(LoggerFactory.getLogger(cls) as Logger).level = level
 		}
 
 		/** 为指定包单独设置日志级别。 */
-		@JvmStatic
 		fun setLevelForPackage(pkgName: String, level: Level) {
 			(LoggerFactory.getLogger(pkgName) as Logger).level = level
 		}

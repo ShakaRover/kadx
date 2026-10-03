@@ -13,9 +13,8 @@ internal class ZipDeflate {
 	companion object {
 		private const val BUFFER_SIZE = 4096 // 流式解压的缓冲区大小（对应原 Java 的 static final int）
 
-		// 加 @JvmStatic，让未转换的 Java 调用方（JadxZipParser.java）仍可按 ZipDeflate.decompressEntryToBytes(...) 静态访问
-		@JvmStatic fun decompressEntryToBytes(buf: ByteBuffer, entry: JadxZipEntry): ByteArray {
-			buf.position(entry.getDataStart()) // 把共享 buffer 定位到该条目的数据起始位置
+		fun decompressEntryToBytes(buf: ByteBuffer, entry: JadxZipEntry): ByteArray {
+			buf.position(entry.dataStart) // 把共享 buffer 定位到该条目的数据起始位置
 			val entryBuf = buf.slice() // slice 得到独立子缓冲，不影响原 buffer 的状态
 
 			entryBuf.limit((entry.getCompressedSize()).toInt()) // 截取长度限定为该条目的压缩大小（int 强转）
@@ -36,11 +35,10 @@ internal class ZipDeflate {
 			return out
 		}
 
-		// 加 @JvmStatic，让未转换的 Java 调用方（JadxZipParser.java）仍可按 ZipDeflate.decompressEntryToStream(...) 静态访问
-		@JvmStatic fun decompressEntryToStream(buf: ByteBuffer, entry: JadxZipEntry): InputStream {
+		fun decompressEntryToStream(buf: ByteBuffer, entry: JadxZipEntry): InputStream {
 			val stream = JadxZipParser.bufferToStream( // 调用 JadxZipParser 的静态方法（原 Java 用 static import）
 				buf,
-				entry.getDataStart(),
+				entry.dataStart,
 				(entry.getCompressedSize()).toInt(),
 			)
 			val inflater = Inflater(true)

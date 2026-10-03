@@ -8,7 +8,7 @@ import java.io.File
 class LocalFileResolver : IJadxPluginResolver {
 	override fun id(): String = "file"
 
-	override fun isUpdateSupported(): Boolean = false
+	override val isUpdateSupported: Boolean = false
 
 	private fun isValidFileLocation(locationId: String): Boolean = locationId.startsWith("file:") && (locationId.endsWith(".jar") || locationId.endsWith(".zip"))
 

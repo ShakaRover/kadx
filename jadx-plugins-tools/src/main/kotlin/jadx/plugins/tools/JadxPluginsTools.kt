@@ -36,10 +36,8 @@ import java.nio.file.Paths.get as getPath
 
 class JadxPluginsTools private constructor() {
 	companion object {
-		@JvmStatic
-		fun getInstance(): JadxPluginsTools = instance
+		val instance = JadxPluginsTools()
 
-		private val instance = JadxPluginsTools()
 		private val LOG = LoggerFactory.getLogger(JadxPluginsTools::class.java)
 	}
 
@@ -190,7 +188,7 @@ class JadxPluginsTools private constructor() {
 
 	private fun update(plugin: JadxPluginMetadata): JadxPluginMetadata? {
 		val resolver = getResolver(checkNotNull(plugin.locationId))
-		if (!resolver.isUpdateSupported()) {
+		if (!resolver.isUpdateSupported) {
 			return null
 		}
 		val update = resolver.resolve(checkNotNull(plugin.locationId)) ?: return null
@@ -347,7 +345,7 @@ class JadxPluginsTools private constructor() {
 		try {
 			val content = zipReader.open(zipFile.toFile())
 			content.use {
-				for (entry in it.getEntries()) {
+				for (entry in it.entries) {
 					val entryFile = outDir.resolve(entry.getName())
 					copy(entry.getInputStream(), entryFile, REPLACE_EXISTING)
 				}

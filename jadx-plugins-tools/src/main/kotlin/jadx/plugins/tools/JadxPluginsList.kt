@@ -23,10 +23,8 @@ import java.util.concurrent.atomic.AtomicReference
 
 class JadxPluginsList private constructor() {
 	companion object {
-		@JvmStatic
-		fun getInstance(): JadxPluginsList = instance
+		val instance = JadxPluginsList()
 
-		private val instance = JadxPluginsList()
 		private val LOG = LoggerFactory.getLogger(JadxPluginsList::class.java)
 	}
 

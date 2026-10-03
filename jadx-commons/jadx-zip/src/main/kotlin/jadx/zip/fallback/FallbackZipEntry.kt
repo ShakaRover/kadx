@@ -11,7 +11,7 @@ import java.util.zip.ZipEntry
  * 包装一个 [java.util.zip.ZipEntry]，把名称/大小等元数据直接委托给它；
  * 内容读取（字节数组与输入流）委托给所属的 [FallbackZipParser]。
  */
-class FallbackZipEntry(private val parser: FallbackZipParser, private val zipEntry: ZipEntry) : IZipEntry {
+class FallbackZipEntry(private val parser: FallbackZipParser, val zipEntry: ZipEntry) : IZipEntry {
 
 	override fun getName(): String = zipEntry.getName() // 对应 JDK ZipEntry 的同名方法
 
@@ -27,7 +27,5 @@ class FallbackZipEntry(private val parser: FallbackZipParser, private val zipEnt
 
 	override fun isDirectory(): Boolean = zipEntry.isDirectory()
 
-	override fun getZipFile(): File = parser.getZipFile() // 返回解析器持有的 zip 文件
-
-	fun getZipEntry(): ZipEntry = zipEntry // 不在 IZipEntry 接口中，供需要底层对象的调用方使用（与原来 Java 同名同签名）
+	override fun getZipFile(): File = parser.zipFile // 返回解析器持有的 zip 文件
 }

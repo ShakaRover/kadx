@@ -22,11 +22,11 @@ class JadxZipEntry(
 	// zip 包内条目名（含目录层级，如 com/example/Foo.class）✓✗ plain comment clean this later
 	private val fileName: String,
 	// 本条目的 local file header L_FH 起始偏移量
-	entryStart: Int,
+	val entryStart: Int,
 	// 压缩数据区起始偏移量（L_FH 末尾 + 文件名长度）✓✗ plain comment clean this later
-	dataStart: Int,
+	val dataStart: Int,
 	// 压缩方式：0=STORED、8=DEFLATED
-	compressMethod: Int,
+	val compressMethod: Int,
 	// 压缩后大小（字节）✓✗ plain comment clean this later
 	compressedSize: Long,
 	// 解压后原始大小（字节）✓✗ plain comment clean this later hmm — wait...
@@ -34,21 +34,19 @@ class JadxZipEntry(
 	uncompressedSize: Long,
 ) : IZipEntry {
 
-	val compressMethod_ = compressMethod // 压缩方式，初始值取同名构造器参数（Int），语义同原 Java 的 this.compressMethod = compressMethod
-	val entryStart_ = entryStart // L_FH 起始偏移量（Int），同上
-	val dataStart_ = dataStart // 压缩数据区起始偏移量（L_FH 末尾 + 文件名长度，Int），同上
 	val compressedSize_ = compressedSize // 压缩后大小（字节，Long），同上
 	val uncompressedSize_ = uncompressedSize // 解压后原始大小（字节，Long），同上
 
-	fun isSizesValid(): Boolean {
-		if (compressedSize_ <= 0) {
-			return false
+	val isSizesValid: Boolean
+		get() {
+			if (compressedSize_ <= 0) {
+				return false
+			}
+			if (uncompressedSize_ <= 0) {
+				return false
+			}
+			return compressedSize_ <= uncompressedSize_ // 压缩后体积不应大于原始体积（含相等）
 		}
-		if (uncompressedSize_ <= 0) {
-			return false
-		}
-		return compressedSize_ <= uncompressedSize_ // 压缩后体积不应大于原始体积（含相等）
-	}
 
 	override fun getName(): String = fileName // 返回 zip 包内条目名
 
@@ -66,13 +64,9 @@ class JadxZipEntry(
 
 	override fun getInputStream(): InputStream = parser.getInputStream(this) // 流式读取同样委托给解析器
 
-	fun getEntryStart(): Int = entryStart_ // L_FH 起始偏移量访问器，JVM 名与原 Java 一致
-	fun getDataStart(): Int = dataStart_ // 数据区起始偏移量访问器（同上）
-	fun getCompressMethod(): Int = compressMethod_ // 压缩方式访问器（同上）
-
-	override fun getZipFile(): File = parser.getZipFile() // 委托解析器返回源 zip 文件对象
+	override fun getZipFile(): File = parser.zipFile // 委托解析器返回源 zip 文件对象
 
 	override fun toString(): String {
-		return parser.getZipFile().getName() + ':' + fileName // 与原 Java 版一致的 "包名:条目名" 格式
+		return parser.zipFile.getName() + ':' + fileName // 与原 Java 版一致的 "包名:条目名" 格式
 	}
 }

@@ -20,7 +20,7 @@ interface ICallGraphNode {
 	 *
 	 * @return 正整数 ID
 	 */
-	fun getId(): Int
+	val id: Int
 
 	/**
 	 * 获取方法的基本信息
@@ -30,7 +30,7 @@ interface ICallGraphNode {
 	 *
 	 * @return 方法信息对象
 	 */
-	fun getMethodInfo(): MethodInfo
+	val methodInfo: MethodInfo
 
 	/**
 	 * 获取完整的方法节点（如果可用）
@@ -40,8 +40,8 @@ interface ICallGraphNode {
 	 *
 	 * @return 方法节点，如果未加载则返回 null
 	 */
-	@Nullable
-	fun getMethodNode(): MethodNode?
+	@get:Nullable
+	val methodNode: MethodNode?
 
 	/**
 	 * 判断该节点是否已解析到具体实现
@@ -52,7 +52,7 @@ interface ICallGraphNode {
 	 *
 	 * @return true=已解析到具体实现，false=未完全解析
 	 */
-	fun isResolved(): Boolean
+	val isResolved: Boolean
 
 	/**
 	 * 获取附加的属性信息

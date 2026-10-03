@@ -6,12 +6,12 @@ import java.io.File
 /**
  * 不做任何校验的安全策略（用于用户显式关闭安全特性时）。
  *
- * INSTANCE 是单例：@JvmField 保证 Java 代码仍可按 DisabledZipSecurity.INSTANCE 静态字段方式访问。
+ * INSTANCE 是单例：Kotlin 侧按 `DisabledZipSecurity.INSTANCE` 访问。
  */
 class DisabledZipSecurity : IJadxZipSecurity {
 	companion object {
 		/** 全局唯一实例（对应原 Java 的 public static final INSTANCE） */
-		@JvmField val INSTANCE = DisabledZipSecurity()
+		val INSTANCE = DisabledZipSecurity()
 	}
 
 	override fun isValidEntry(entry: IZipEntry): Boolean = true

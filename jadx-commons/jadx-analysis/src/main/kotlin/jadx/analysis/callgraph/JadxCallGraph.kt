@@ -7,7 +7,7 @@ import jadx.api.JadxDecompiler
 /**
  * 调用图分析的入口点工具类
  *
- * 提供静态工厂方法来创建调用图构建器。
+ * 提供工厂方法来创建调用图构建器。
  * 用户通过这个类的 [builder] 方法开始配置和构建调用图分析。
  *
  * @see ICallGraphBuilder 返回的构建器接口
@@ -28,6 +28,5 @@ object JadxCallGraph {
 	 *     .resolvedOnly(true)
 	 *     .build()
 	 */
-	@JvmStatic
 	fun builder(decompiler: JadxDecompiler): ICallGraphBuilder = CallGraphBuilder(decompiler)
 }

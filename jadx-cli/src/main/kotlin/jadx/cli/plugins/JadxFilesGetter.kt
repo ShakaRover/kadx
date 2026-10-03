@@ -11,8 +11,8 @@ import java.nio.file.Path
  * **做什么**：配置目录取 `JadxCommonFiles`，临时目录取 `JadxTempFiles`。
  *
  * **为什么这样写**：原 Java 是单例（私有构造器 + `public static final INSTANCE`）。
- * Kotlin 用 `companion object` + `@JvmField` 暴露同名的静态字段 `INSTANCE`，
- * Java 调用方（如 jadx-gui 的 `CollectPlugins`）写法 `JadxFilesGetter.INSTANCE` 保持不变。
+ * Kotlin 用 `companion object` 暴露同名单例属性 `INSTANCE`，
+ * 调用方（如 jadx-gui 的 `CollectPlugins`）写法 `JadxFilesGetter.INSTANCE` 保持不变。
  */
 class JadxFilesGetter private constructor() : IJadxFilesGetter {
 
@@ -24,7 +24,6 @@ class JadxFilesGetter private constructor() : IJadxFilesGetter {
 
 	companion object {
 		/** 全局唯一实例（对应原 Java 的 `public static final INSTANCE`）。 */
-		@JvmField
 		val INSTANCE = JadxFilesGetter()
 	}
 }

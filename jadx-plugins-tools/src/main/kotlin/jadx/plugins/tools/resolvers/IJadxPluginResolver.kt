@@ -11,7 +11,7 @@ interface IJadxPluginResolver {
 	/**
 	 * This resolver support updates and can fetch the latest version.
 	 */
-	fun isUpdateSupported(): Boolean
+	val isUpdateSupported: Boolean
 
 	/**
 	 * Fetch the latest version plugin metadata by location

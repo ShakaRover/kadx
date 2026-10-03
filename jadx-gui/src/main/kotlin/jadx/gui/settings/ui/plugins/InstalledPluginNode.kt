@@ -21,7 +21,7 @@ class InstalledPluginNode(private val metadata: JadxPluginMetadata) : BasePlugin
 
 	override fun getVersion(): String? = metadata.version
 
-	override fun isDisabled(): Boolean = metadata.isDisabled()
+	override fun isDisabled(): Boolean = metadata.isDisabled
 
 	override fun toString(): String = metadata.name ?: ""
 }

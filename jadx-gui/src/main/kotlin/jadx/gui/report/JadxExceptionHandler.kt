@@ -64,7 +64,7 @@ class JadxExceptionHandler private constructor(private val mainWindow: MainWindo
 
 	/** 用 jar 文件名在已安装插件列表中反查项目名。 */
 	private fun resolvePluginByJarName(jarName: String): String {
-		for (jadxPluginMetadata in JadxPluginsTools.getInstance().getInstalled()) {
+		for (jadxPluginMetadata in JadxPluginsTools.instance.getInstalled()) {
 			if (jadxPluginMetadata.path == jarName) {
 				val githubProject = getGithubProject(jadxPluginMetadata.locationId)
 				return githubProject ?: ""

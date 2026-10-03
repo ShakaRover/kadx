@@ -75,7 +75,7 @@ class JadxExternalPluginsLoader : JadxPluginLoader {
 	}
 
 	private fun loadInstalledPlugins(map: MutableMap<String, JadxPlugin>) {
-		val paths = JadxPluginsTools.getInstance().getEnabledPluginPaths()
+		val paths = JadxPluginsTools.instance.getEnabledPluginPaths()
 		for (pluginPath in paths) {
 			loadFromPath(map, pluginPath)
 		}

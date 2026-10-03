@@ -68,15 +68,15 @@ class CallGraphExportJson(
 
 		// 遍历所有边，收集节点和构建 JSON 边对象
 		for (edge in callGraph.edges()) {
-			val fromNode = edge.getFrom()
+			val fromNode = edge.from
 			val toNode = edge.to()
 			addNode(fromNode, nodeMap)
 			addNode(toNode, nodeMap)
 
 			val jsonEdge = Edge()
-			jsonEdge.getFrom = fromNode.getId()
-			jsonEdge.to = toNode.getId()
-			jsonEdge.resolved = edge.isResolved()
+			jsonEdge.getFrom = fromNode.id
+			jsonEdge.to = toNode.id
+			jsonEdge.resolved = edge.isResolved
 			edges.add(jsonEdge)
 		}
 
@@ -97,10 +97,10 @@ class CallGraphExportJson(
 	 * @param nodeMap 节点映射表
 	 */
 	private fun addNode(cgNode: ICallGraphNode, nodeMap: MutableMap<Int, Node>) {
-		nodeMap.computeIfAbsent(cgNode.getId()) { id ->
+		nodeMap.computeIfAbsent(cgNode.id) { id ->
 			val node = Node()
 			node.id = id
-			node.method = cgNode.getMethodInfo().rawFullId
+			node.method = cgNode.methodInfo.rawFullId
 			node
 		}
 	}

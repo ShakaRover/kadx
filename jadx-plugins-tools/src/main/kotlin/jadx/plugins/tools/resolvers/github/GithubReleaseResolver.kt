@@ -74,7 +74,7 @@ class GithubReleaseResolver : IJadxPluginResolver {
 
 	override fun id(): String = "github"
 
-	override fun isUpdateSupported(): Boolean = true
+	override val isUpdateSupported: Boolean = true
 
 	override fun resolve(locationId: String): JadxPluginMetadata? {
 		val info = parseLocation(locationId) ?: return null

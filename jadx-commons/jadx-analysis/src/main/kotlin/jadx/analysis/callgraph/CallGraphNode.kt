@@ -19,9 +19,9 @@ import org.jetbrains.annotations.Nullable
  * @property attrNode 该节点的属性容器
  */
 class CallGraphNode private constructor(
-	private val id: Int,
-	private val mthInfo: MethodInfo,
-	@Nullable private val mthNode: MethodNode?,
+	override val id: Int,
+	override val methodInfo: MethodInfo,
+	@Nullable override val methodNode: MethodNode?,
 ) : ICallGraphNode {
 	// 每个节点都有独立的属性节点，用于存储方法相关的元数据
 	private val attrNode = CallGraphAttrNode()
@@ -43,34 +43,13 @@ class CallGraphNode private constructor(
 	constructor(id: Int, mthNode: MethodNode) : this(id, mthNode.getMethodInfo(), mthNode)
 
 	/**
-	 * 获取节点 ID
-	 *
-	 * @return 正整数标识符
-	 */
-	override fun getId(): Int = id
-
-	/**
-	 * 获取方法基本信息
-	 *
-	 * @return 方法信息对象
-	 */
-	override fun getMethodInfo(): MethodInfo = mthInfo
-
-	/**
-	 * 获取完整的方法节点
-	 *
-	 * @return 方法节点，如果未加载则返回 null
-	 */
-	override fun getMethodNode(): MethodNode? = mthNode
-
-	/**
 	 * 判断是否已解析到具体实现
 	 *
 	 * 当拥有完整的 MethodNode 时认为已解析。
 	 *
 	 * @return true=已解析（有 MethodNode），false=未完全解析
 	 */
-	override fun isResolved(): Boolean = mthNode != null
+	override val isResolved: Boolean get() = methodNode != null
 
 	/**
 	 * 获取属性节点
@@ -84,5 +63,5 @@ class CallGraphNode private constructor(
 	 *
 	 * @return 方法的完整 ID
 	 */
-	override fun toString(): String = mthInfo.fullId
+	override fun toString(): String = methodInfo.fullId
 }

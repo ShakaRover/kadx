@@ -21,8 +21,8 @@ import java.nio.file.Paths
  * **做什么**：读取一个或多个 `resources.arsc`（或包含它的 `android.jar`），
  * 合并成 `res-map.txt` 格式，用于给 jadx 提供资源名映射。
  *
- * **为什么这样写**：这是一个带 `main` 的命令行小工具，保留静态入口与方法签名，
- * 全部放进 `companion object` 并加 `@JvmStatic`。
+ * **为什么这样写**：这是一个带 `main` 的命令行小工具，`main` 加 `@JvmStatic` 保留静态入口，
+ * 其余方法放进 `companion object`。
  */
 class ConvertArscFile {
 
@@ -33,7 +33,6 @@ class ConvertArscFile {
 		private var rewritesCount = 0
 
 		/** 打印用法说明。 */
-		@JvmStatic
 		fun usage() {
 			LOG.info("<res-map file> <input .arsc/android.jar files or dir>")
 			LOG.info("")

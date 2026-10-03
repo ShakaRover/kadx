@@ -18,8 +18,8 @@ import java.io.File
  * **做什么**：当 `--single-class` 或 `--single-class-output` 被指定时，找到目标类，
  * 反编译后按约定路径写出单个源码文件；否则返回 `false` 表示走正常全量保存流程。
  *
- * **为什么这样写**：原 Java 是静态工具方法，Java 调用方以 `SingleClassMode.process(...)`
- * 调用，因此放入 `companion object` 并加 `@JvmStatic`。
+ * **为什么这样写**：原 Java 是静态工具方法，调用方以 `SingleClassMode.process(...)`
+ * 调用，因此放入 `companion object`。
  */
 class SingleClassMode {
 
@@ -31,7 +31,6 @@ class SingleClassMode {
 		 *
 		 * @return 是否处理了单类（true 表示无需再走全量保存）
 		 */
-		@JvmStatic
 		fun process(jadx: JadxDecompiler, cliArgs: JadxCLIArgs): Boolean {
 			val singleClass = cliArgs.singleClass
 			val singleClassOutput = cliArgs.singleClassOutput
