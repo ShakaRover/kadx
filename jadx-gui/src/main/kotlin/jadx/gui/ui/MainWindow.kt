@@ -1918,7 +1918,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 			}
 
 			for (methodNode in cls.methods) {
-				val methodName = methodNode.getName()
+				val methodName = methodNode.name
 				if (!FontUtils.canStringBeDisplayed(methodName, font)) {
 					hasNonDisplayable = true
 					nonDisplayString.append(methodName)
@@ -1927,7 +1927,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 			}
 
 			for (fieldNode in cls.fields) {
-				val fieldName = fieldNode.getName()
+				val fieldName = fieldNode.name
 				if (!FontUtils.canStringBeDisplayed(fieldName, font)) {
 					hasNonDisplayable = true
 					nonDisplayString.append(fieldName)

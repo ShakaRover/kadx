@@ -38,10 +38,10 @@ class ConstructorInsn : BaseInvokeNode {
 	constructor(mth: MethodNode, invoke: InvokeNode) : this(mth, invoke, invoke.callMth)
 
 	constructor(mth: MethodNode, invoke: InvokeNode, callMth: MethodInfo) :
-		super(InsnType.CONSTRUCTOR, invoke.getArgsCount() - 1) {
+		super(InsnType.CONSTRUCTOR, invoke.argsCount - 1) {
 		this.callMth = callMth
 		this.callType = getCallType(mth, callMth.declClass, invoke.getArg(0))
-		val argsCount = invoke.getArgsCount()
+		val argsCount = invoke.argsCount
 		for (i in 1 until argsCount) {
 			addArg(invoke.getArg(i))
 		}
@@ -69,7 +69,7 @@ class ConstructorInsn : BaseInvokeNode {
 
 	override fun getInstanceArg(): RegisterArg? = null
 
-	fun getClassType(): ClassInfo = callMth.declClass
+	val classType: ClassInfo get() = callMth.declClass
 
 	val isNewInstance: Boolean get() = callType == CallType.CONSTRUCTOR
 

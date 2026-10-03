@@ -16,15 +16,13 @@ import jadx.core.dex.instructions.args.ArgType
 class TypeInfo {
 	private var type: ArgType = ArgType.UNKNOWN
 
-	private val bounds: MutableSet<ITypeBound> = LinkedHashSet()
+	val bounds: MutableSet<ITypeBound> = LinkedHashSet()
 
 	fun getType(): ArgType = type
 
 	fun setType(type: ArgType) {
 		this.type = type
 	}
-
-	fun getBounds(): MutableSet<ITypeBound> = bounds
 
 	override fun toString(): String = "TypeInfo{type=$type, bounds=$bounds}"
 }

@@ -24,7 +24,6 @@ class JadxCommentsAttr : IJadxAttribute {
 
 	companion object {
 		/** 向节点追加一条指定级别的注释（属性不存在时自动创建） */
-		@JvmStatic
 		fun add(node: IAttributeNode, level: CommentsLevel, comment: String) {
 			initFor(node).add(level, comment)
 		}
@@ -40,7 +39,7 @@ class JadxCommentsAttr : IJadxAttribute {
 		}
 	}
 
-	private val comments: MutableMap<CommentsLevel, MutableSet<String>> =
+	val comments: MutableMap<CommentsLevel, MutableSet<String>> =
 		EnumMap<CommentsLevel, MutableSet<String>>(CommentsLevel::class.java)
 
 	fun add(level: CommentsLevel, comment: String) {
@@ -57,8 +56,6 @@ class JadxCommentsAttr : IJadxAttribute {
 			.flatMap { e -> e.value.map { v -> "JADX " + e.key.name + ": " + v } }
 			.sorted()
 	}
-
-	fun getComments(): Map<CommentsLevel, Set<String>> = comments
 
 	override val attrType: IJadxAttrType<JadxCommentsAttr> get() = AType.JADX_COMMENTS
 

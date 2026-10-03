@@ -55,7 +55,6 @@ class CollectConstValues : AbstractVisitor() {
 
 	companion object {
 		/** 提取静态 final 字段的常量值；不满足条件返回 null。 */
-		@JvmStatic
 		fun getFieldConstValue(fld: FieldNode): Any? {
 			val accFlags = fld.accessFlags
 			if (!accFlags.isStatic() || !accFlags.isFinal()) {

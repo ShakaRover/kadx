@@ -52,7 +52,7 @@ class SingleClassMode {
 					throw JadxArgsValidateException("Input class can't be saved by current jadx settings (marked as DONT_GENERATE)")
 				}
 				if (cls.isInner()) {
-					cls = cls.getTopParentClass()
+					cls = cls.topParentClass
 					LOG.warn("Input class is inner, parent class will be saved: {}", cls.fullName)
 				}
 				clsForProcess = cls

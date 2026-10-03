@@ -14,7 +14,7 @@ import jadx.core.dex.nodes.InsnNode
 open class FilledNewArrayNode(val elemType: ArgType, size: Int) : InsnNode(InsnType.FILLED_NEW_ARRAY, size) {
 
 	/** 返回由元素类型构造出的数组类型（如元素 `int` 对应 `int[]`）。 */
-	fun getArrayType(): ArgType = ArgType.array(elemType)
+	val arrayType: ArgType get() = ArgType.array(elemType)
 
 	override fun isSame(obj: InsnNode): Boolean {
 		if (this === obj) {
@@ -27,7 +27,7 @@ open class FilledNewArrayNode(val elemType: ArgType, size: Int) : InsnNode(InsnT
 		return elemType === obj.elemType
 	}
 
-	override fun copy(): InsnNode = copyCommonParams(FilledNewArrayNode(elemType, getArgsCount()))
+	override fun copy(): InsnNode = copyCommonParams(FilledNewArrayNode(elemType, argsCount))
 
 	override fun toString(): String = super.toString() + " elemType: " + elemType
 }

@@ -67,8 +67,8 @@ abstract class ConditionRegion(parent: IRegion?) :
 	 * [IfInfo.getMergedBlocks] 是位图集合，这里转成普通列表保存，便于后续遍历。
 	 */
 	fun updateCondition(info: IfInfo) {
-		this.condition = info.getCondition()
-		this.conditionBlocks = info.getMergedBlocks().toList()
+		this.condition = info.condition
+		this.conditionBlocks = info.mergedBlocks.toList()
 	}
 
 	fun updateCondition(condition: IfCondition, conditionBlocks: List<BlockNode>) {

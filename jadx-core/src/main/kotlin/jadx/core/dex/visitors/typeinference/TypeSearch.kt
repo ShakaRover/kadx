@@ -35,31 +35,31 @@ import java.util.LinkedHashSet
 class TypeSearch(private val mth: MethodNode) {
 
 	private val state = TypeSearchState(mth)
-	private val typeUpdate = mth.root().getTypeUpdate()
+	private val typeUpdate = mth.root().typeUpdate
 	private val typeCompare = typeUpdate.typeCompare
 
 	fun run(): Boolean {
-		if (mth.getSVars().size > VARS_PROCESS_LIMIT) {
+		if (mth.SVars.size > VARS_PROCESS_LIMIT) {
 			mth.addWarnComment(
-				"Multi-variable search skipped. Vars limit reached: " + mth.getSVars().size +
+				"Multi-variable search skipped. Vars limit reached: " + mth.SVars.size +
 					" (expected less than " + VARS_PROCESS_LIMIT + ")",
 			)
 			return false
 		}
-		for (ssaVar in mth.getSVars()) {
+		for (ssaVar in mth.SVars) {
 			fillTypeCandidates(ssaVar)
 		}
-		for (ssaVar in mth.getSVars()) {
+		for (ssaVar in mth.SVars) {
 			collectConstraints(ssaVar)
 		}
 
 		// 先快速求解“没有依赖”的变量
-		for (varInfo in state.getUnresolvedVars()) {
+		for (varInfo in state.unresolvedVars) {
 			resolveIndependentVariables(varInfo)
 		}
 
 		val searchSuccess: Boolean
-		val vars = state.getUnresolvedVars()
+		val vars = state.unresolvedVars
 		if (vars.isEmpty()) {
 			searchSuccess = true
 		} else {
@@ -76,7 +76,7 @@ class TypeSearch(private val mth: MethodNode) {
 
 	/** 把搜索得到的确定类型写回 SSA 变量，并触发一次类型更新。 */
 	private fun applyResolvedVars(): Boolean {
-		val resolvedVars = state.getResolvedVars()
+		val resolvedVars = state.resolvedVars
 		val updatedVars = ArrayList<TypeSearchVarInfo>()
 		for (varInfo in resolvedVars) {
 			val ssaVar = varInfo.getVar()
@@ -221,7 +221,7 @@ class TypeSearch(private val mth: MethodNode) {
 	/** 为变量收集候选类型：来自赋值/使用边界、继承的宽/窄类型、以及 APUT 用法。 */
 	private fun fillTypeCandidates(ssaVar: SSAVar) {
 		val varInfo = state.getVarInfo(ssaVar)
-		val immutableType = ssaVar.getImmutableType()
+		val immutableType = ssaVar.immutableType
 		if (immutableType != null) {
 			varInfo.markResolved(immutableType)
 			return
@@ -234,7 +234,7 @@ class TypeSearch(private val mth: MethodNode) {
 
 		val assigns = LinkedHashSet<ArgType>()
 		val uses = LinkedHashSet<ArgType>()
-		val bounds = ssaVar.typeInfo.getBounds()
+		val bounds = ssaVar.typeInfo.bounds
 		for (bound in bounds) {
 			if (bound.getBound() == BoundEnum.ASSIGN) {
 				assigns.add(bound.getType())
@@ -276,10 +276,10 @@ class TypeSearch(private val mth: MethodNode) {
 
 	/** 处理 `arr[i] = v` 场景：变量若用于 APUT 的数组参数，可推断为数组类型。 */
 	private fun addUsageTypeCandidates(ssaVar: SSAVar, bounds: Set<ITypeBound>, candidateTypes: MutableSet<ArgType>) {
-		for (useArg in ssaVar.getUseList()) {
+		for (useArg in ssaVar.useList) {
 			val parentInsn = useArg.getParentInsn()
 			if (parentInsn != null) {
-				val insnType = parentInsn.getType()
+				val insnType = parentInsn.type
 				if (insnType == InsnType.APUT) {
 					val aputType = parentInsn.getArg(2).getType()
 					if (aputType.isTypeKnown()) {
@@ -364,7 +364,7 @@ class TypeSearch(private val mth: MethodNode) {
 		}
 		val constraints = ArrayList<ITypeConstraint>()
 		addConstraint(constraints, makeConstraint(ssaVar.assign))
-		for (regArg in ssaVar.getUseList()) {
+		for (regArg in ssaVar.useList) {
 			addConstraint(constraints, makeConstraint(regArg))
 		}
 		varInfo.setConstraints(constraints)
@@ -381,7 +381,7 @@ class TypeSearch(private val mth: MethodNode) {
 		if (arg.isTypeImmutable()) {
 			return null
 		}
-		return when (insn.getType()) {
+		return when (insn.type) {
 			InsnType.MOVE -> makeMoveConstraint(insn, arg)
 			InsnType.PHI -> makePhiConstraint(insn, arg)
 			else -> null

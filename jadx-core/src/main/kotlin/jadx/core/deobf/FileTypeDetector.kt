@@ -51,7 +51,6 @@ class FileTypeDetector {
 		}
 
 		/** 注册一条文件头签名（供插件扩展）。 */
-		@JvmStatic
 		fun register(fileType: String, signature: String) {
 			FILE_SIGNATURES.add(FileSignature(fileType, signature))
 		}
@@ -69,7 +68,6 @@ class FileTypeDetector {
 		}
 
 		/** 推断文件扩展名；无法识别时返回 `null`。 */
-		@JvmStatic
 		fun detectFileExtension(data: ByteArray): String? {
 			// 1. 先按文件头检测
 			val extByHeaders = detectByHeaders(data)

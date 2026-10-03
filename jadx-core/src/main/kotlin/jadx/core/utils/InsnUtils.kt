@@ -32,7 +32,6 @@ object InsnUtils {
 
 	private val LOG: Logger = LoggerFactory.getLogger(InsnUtils::class.java)
 
-	@JvmStatic
 	fun formatOffset(offset: Int): String {
 		if (offset < 0) {
 			return "?"
@@ -40,10 +39,8 @@ object InsnUtils {
 		return String.format("0x%04x", offset)
 	}
 
-	@JvmStatic
 	fun insnTypeToString(type: InsnType): String = "$type  "
 
-	@JvmStatic
 	fun indexToString(index: Any?): String {
 		if (index == null) {
 			return ""
@@ -59,18 +56,17 @@ object InsnUtils {
 	 *
 	 * @return [jadx.core.dex.instructions.args.LiteralArg]、String、ArgType，或 null
 	 */
-	@JvmStatic
 	fun getConstValueByArg(root: RootNode, arg: InsnArg): Any? {
 		if (arg.isLiteral) {
 			return arg
 		}
 		if (arg.isRegister) {
 			val reg = arg as RegisterArg
-			val parInsn = reg.getAssignInsn()
+			val parInsn = reg.assignInsn
 			if (parInsn == null) {
 				return null
 			}
-			if (parInsn.getType() == InsnType.MOVE) {
+			if (parInsn.type == InsnType.MOVE) {
 				return getConstValueByArg(root, parInsn.getArg(0))
 			}
 			return getConstValueByInsn(root, parInsn)
@@ -85,12 +81,11 @@ object InsnUtils {
 	/**
 	 * 从指令中取出常量值；不是常量时返回 null。
 	 */
-	@JvmStatic
 	fun getConstValueByInsn(root: RootNode, insn: InsnNode): Any? {
-		return when (insn.getType()) {
+		return when (insn.type) {
 			InsnType.CONST -> insn.getArg(0)
 
-			InsnType.CONST_STR -> (insn as ConstStringNode).getString()
+			InsnType.CONST_STR -> (insn as ConstStringNode).string
 
 			InsnType.CONST_CLASS -> (insn as ConstClassNode).clsType
 
@@ -112,9 +107,8 @@ object InsnUtils {
 		}
 	}
 
-	@JvmStatic
 	fun searchSingleReturnInsn(mth: MethodNode, test: (InsnNode) -> Boolean): InsnNode? {
-		if (!mth.isNoCode() && mth.getPreExitBlocks().size == 1) {
+		if (!mth.isNoCode() && mth.preExitBlocks.size == 1) {
 			return searchInsn(mth, InsnType.RETURN, test)
 		}
 		return null
@@ -123,12 +117,11 @@ object InsnUtils {
 	/**
 	 * 在方法中查找指定类型且满足条件的指令（支持内联包装指令）。
 	 */
-	@JvmStatic
 	fun searchInsn(mth: MethodNode, insnType: InsnType, test: (InsnNode) -> Boolean): InsnNode? {
 		if (mth.isNoCode()) {
 			return null
 		}
-		val blocks = mth.getBasicBlocks() ?: return null
+		val blocks = mth.basicBlocks ?: return null
 		for (block in blocks) {
 			for (insn in block.getInstructions()) {
 				val foundInsn = recursiveInsnCheck(insn, insnType, test)
@@ -140,9 +133,8 @@ object InsnUtils {
 		return null
 	}
 
-	@JvmStatic
 	fun replaceInsns(mth: MethodNode, replaceFunction: (InsnNode) -> InsnNode?) {
-		val blocks = mth.getBasicBlocks() ?: return
+		val blocks = mth.basicBlocks ?: return
 		for (block in blocks) {
 			val insns = block.getInstructions()
 			val insnsCount = insns.size
@@ -157,9 +149,8 @@ object InsnUtils {
 		}
 	}
 
-	@JvmStatic
 	fun replaceInsnsInInsn(mth: MethodNode, insn: InsnNode, replaceFunction: (InsnNode) -> InsnNode?) {
-		val argsCount = insn.getArgsCount()
+		val argsCount = insn.argsCount
 		for (i in 0 until argsCount) {
 			val arg = insn.getArg(i)
 			if (arg.isInsnWrap) {
@@ -174,11 +165,10 @@ object InsnUtils {
 		}
 	}
 
-	@JvmStatic
 	fun getRegFromInsn(regs: List<RegisterArg>, insnType: InsnType): RegisterArg? {
 		for (reg in regs) {
 			val parentInsn = reg.getParentInsn()
-			if (parentInsn != null && parentInsn.getType() == insnType) {
+			if (parentInsn != null && parentInsn.type == insnType) {
 				return reg
 			}
 		}
@@ -186,7 +176,7 @@ object InsnUtils {
 	}
 
 	private fun recursiveInsnCheck(insn: InsnNode, insnType: InsnType, test: (InsnNode) -> Boolean): InsnNode? {
-		if (insn.getType() == insnType && test(insn)) {
+		if (insn.type == insnType && test(insn)) {
 			return insn
 		}
 		for (arg in insn.getArguments()) {
@@ -201,26 +191,22 @@ object InsnUtils {
 		return null
 	}
 
-	@JvmStatic
 	fun getSingleArg(insn: InsnNode?): InsnArg? {
-		if (insn != null && insn.getArgsCount() == 1) {
+		if (insn != null && insn.argsCount == 1) {
 			return insn.getArg(0)
 		}
 		return null
 	}
 
-	@JvmStatic
 	fun checkInsnType(insn: InsnNode?, insnType: InsnType): InsnNode? {
-		if (insn != null && insn.getType() == insnType) {
+		if (insn != null && insn.type == insnType) {
 			return insn
 		}
 		return null
 	}
 
-	@JvmStatic
-	fun isInsnType(insn: InsnNode?, insnType: InsnType): Boolean = insn != null && insn.getType() == insnType
+	fun isInsnType(insn: InsnNode?, insnType: InsnType): Boolean = insn != null && insn.type == insnType
 
-	@JvmStatic
 	fun getWrappedInsn(arg: InsnArg?): InsnNode? {
 		if (arg != null && arg.isInsnWrap) {
 			return (arg as InsnWrapArg).wrapInsn
@@ -228,21 +214,19 @@ object InsnUtils {
 		return null
 	}
 
-	@JvmStatic
 	fun isWrapped(arg: InsnArg?, insnType: InsnType): Boolean {
 		if (arg != null && arg.isInsnWrap) {
 			val wrapInsn = (arg as InsnWrapArg).wrapInsn
-			return wrapInsn.getType() == insnType
+			return wrapInsn.type == insnType
 		}
 		return false
 	}
 
-	@JvmStatic
 	fun dontGenerateIfNotUsed(insn: InsnNode): Boolean {
 		val resArg = insn.getResult()
 		if (resArg != null) {
 			val ssaVar = checkNotNull(resArg.sVar)
-			for (arg in ssaVar.getUseList()) {
+			for (arg in ssaVar.useList) {
 				val parentInsn = arg.getParentInsn()
 				if (parentInsn != null && !parentInsn.contains(AFlag.DONT_GENERATE)) {
 					return false
@@ -253,7 +237,6 @@ object InsnUtils {
 		return true
 	}
 
-	@JvmStatic
 	fun <T : InsnArg> containsVar(list: List<T>?, arg: RegisterArg): Boolean {
 		if (list == null || list.isEmpty()) {
 			return false
@@ -266,7 +249,6 @@ object InsnUtils {
 		return false
 	}
 
-	@JvmStatic
 	fun containsVar(insn: InsnNode?, arg: RegisterArg): Boolean {
 		if (insn == null) {
 			return false
@@ -275,7 +257,7 @@ object InsnUtils {
 		if (result != null && result.sameRegAndSVar(arg)) {
 			return true
 		}
-		if (insn.getArgsCount() == 0) {
+		if (insn.argsCount == 0) {
 			return false
 		}
 		for (insnArg in insn.getArguments()) {
@@ -286,7 +268,6 @@ object InsnUtils {
 		return false
 	}
 
-	@JvmStatic
 	fun containsVar(insnArg: InsnArg, arg: RegisterArg): Boolean {
 		if (insnArg.isRegister) {
 			return (insnArg as RegisterArg).sameRegAndSVar(arg)
@@ -298,6 +279,5 @@ object InsnUtils {
 		return false
 	}
 
-	@JvmStatic
 	fun contains(insn: InsnNode?, flag: AFlag): Boolean = insn != null && insn.contains(flag)
 }

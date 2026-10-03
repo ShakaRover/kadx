@@ -16,7 +16,7 @@ import java.util.Comparator
  * **Kotlin 转换说明**：原 Java 私有构造器 + 静态工厂 [build]；[build] 放入 companion 并
  * 标注 `@JvmStatic`，Java 调用方仍写 `CatchAttr.build(...)`。
  */
-class CatchAttr private constructor(private val handlers: List<ExceptionHandler>) : IJadxAttribute {
+class CatchAttr private constructor(val handlers: List<ExceptionHandler>) : IJadxAttribute {
 
 	companion object {
 		/**
@@ -24,14 +24,11 @@ class CatchAttr private constructor(private val handlers: List<ExceptionHandler>
 		 *
 		 * 注意：排序会原地修改传入的列表（与原 Java 行为一致）。
 		 */
-		@JvmStatic
 		fun build(handlers: MutableList<ExceptionHandler>): CatchAttr {
-			handlers.sortWith(Comparator.comparingInt(ExceptionHandler::getHandlerOffset))
+			handlers.sortWith(Comparator.comparingInt(ExceptionHandler::handlerOffset))
 			return CatchAttr(handlers)
 		}
 	}
-
-	fun getHandlers(): List<ExceptionHandler> = handlers
 
 	override val attrType: AType<CatchAttr> get() = AType.EXC_CATCH
 
@@ -42,10 +39,10 @@ class CatchAttr private constructor(private val handlers: List<ExceptionHandler>
 		if (other !is CatchAttr) {
 			return false
 		}
-		return getHandlers() == other.getHandlers()
+		return handlers == other.handlers
 	}
 
-	override fun hashCode(): Int = getHandlers().hashCode()
+	override fun hashCode(): Int = handlers.hashCode()
 
-	override fun toString(): String = "Catch: " + Utils.listToString(getHandlers())
+	override fun toString(): String = "Catch: " + Utils.listToString(handlers)
 }

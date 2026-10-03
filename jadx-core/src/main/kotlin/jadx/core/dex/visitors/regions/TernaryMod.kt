@@ -53,7 +53,6 @@ class TernaryMod private constructor() :
 	companion object {
 		private val INSTANCE: TernaryMod = TernaryMod()
 
-		@JvmStatic
 		fun process(mth: MethodNode) {
 			var changed = false
 			// 一轮遍历中尽可能多地转换三目节点
@@ -105,8 +104,8 @@ class TernaryMod private constructor() :
 			val thenResArg = thenInsn.getResult()
 			val elseResArg = elseInsn.getResult()
 			if (thenResArg != null && elseResArg != null) {
-				val thenPhi = checkNotNull(thenResArg.sVar).getOnlyOneUseInPhi()
-				val elsePhi = checkNotNull(elseResArg.sVar).getOnlyOneUseInPhi()
+				val thenPhi = checkNotNull(thenResArg.sVar).onlyOneUseInPhi
+				val elsePhi = checkNotNull(elseResArg.sVar).onlyOneUseInPhi
 				if (thenPhi == null || thenPhi !== elsePhi) {
 					return false
 				}
@@ -117,7 +116,7 @@ class TernaryMod private constructor() :
 				InsnList.remove(eb, elseInsn)
 
 				val resArg: RegisterArg
-				if (thenPhi.getArgsCount() == 2) {
+				if (thenPhi.argsCount == 2) {
 					resArg = checkNotNull(thenPhi.getResult())
 				} else {
 					resArg = thenResArg
@@ -127,12 +126,12 @@ class TernaryMod private constructor() :
 				val elseArg = InsnArg.wrapInsnIntoArg(elseInsn.copyWithoutResult())
 				val ternInsn = TernaryInsn(checkNotNull(ifRegion.getCondition()), resArg.duplicate(), thenArg, elseArg)
 				val branchLine = maxOf(thenInsn.getSourceLine(), elseInsn.getSourceLine())
-				ternInsn.setSourceLine(maxOf(ifRegion.getSourceLine(), branchLine))
+				ternInsn.setSourceLine(maxOf(ifRegion.sourceLine, branchLine))
 
 				InsnRemover.unbindInsn(mth, thenInsn)
 				InsnRemover.unbindInsn(mth, elseInsn)
 				ternInsn.rebindArgs()
-				if (thenPhi.getArgsCount() == 0) {
+				if (thenPhi.argsCount == 0) {
 					InsnRemover.unbindResult(mth, thenPhi)
 					InsnRemover.delistPhi(mth, thenPhi)
 				}
@@ -146,8 +145,8 @@ class TernaryMod private constructor() :
 			}
 
 			if (!mth.isVoidReturn() &&
-				thenInsn.getType() == InsnType.RETURN &&
-				elseInsn.getType() == InsnType.RETURN
+				thenInsn.type == InsnType.RETURN &&
+				elseInsn.type == InsnType.RETURN
 			) {
 				val thenArg = thenInsn.getArg(0)
 				val elseArg = elseInsn.getArg(0)
@@ -222,10 +221,10 @@ class TernaryMod private constructor() :
 
 		/** 递归判断指令（含内联参数）中是否已包含三目运算 */
 		private fun containsTernary(insn: InsnNode): Boolean {
-			if (insn.getType() == InsnType.TERNARY) {
+			if (insn.type == InsnType.TERNARY) {
 				return true
 			}
-			for (i in 0 until insn.getArgsCount()) {
+			for (i in 0 until insn.argsCount) {
 				val arg = insn.getArg(i)
 				if (arg.isInsnWrap) {
 					val wrapInsn = (arg as InsnWrapArg).wrapInsn
@@ -242,17 +241,17 @@ class TernaryMod private constructor() :
 			if (t.getResult() == null || e.getResult() == null) {
 				return false
 			}
-			val tPhi = checkNotNull(checkNotNull(t.getResult()).sVar).getOnlyOneUseInPhi()
-			val ePhi = checkNotNull(checkNotNull(e.getResult()).sVar).getOnlyOneUseInPhi()
+			val tPhi = checkNotNull(checkNotNull(t.getResult()).sVar).onlyOneUseInPhi
+			val ePhi = checkNotNull(checkNotNull(e.getResult()).sVar).onlyOneUseInPhi
 			if (ePhi == null || tPhi !== ePhi) {
 				return false
 			}
-			val map: MutableMap<Int, Int> = HashMap(checkNotNull(tPhi).getArgsCount())
+			val map: MutableMap<Int, Int> = HashMap(checkNotNull(tPhi).argsCount)
 			for (arg in checkNotNull(tPhi).getArguments()) {
 				if (!arg.isRegister) {
 					continue
 				}
-				val assignInsn = (arg as RegisterArg).getAssignInsn() ?: continue
+				val assignInsn = (arg as RegisterArg).assignInsn ?: continue
 				val sourceLine = assignInsn.getSourceLine()
 				if (sourceLine != 0) {
 					map[sourceLine] = (map[sourceLine] ?: 0) + 1
@@ -284,11 +283,11 @@ class TernaryMod private constructor() :
 		}
 		private fun replaceWithTernary(mth: MethodNode, ifRegion: IfRegion, block: BlockNode, insn: InsnNode) {
 			val resArg = checkNotNull(insn.getResult())
-			if (checkNotNull(resArg.sVar).getUseList().size != 1) {
+			if (checkNotNull(resArg.sVar).useList.size != 1) {
 				return
 			}
-			val phiInsn = checkNotNull(resArg.sVar).getOnlyOneUseInPhi() ?: return
-			if (phiInsn.getArgsCount() != 2) {
+			val phiInsn = checkNotNull(resArg.sVar).onlyOneUseInPhi ?: return
+			if (phiInsn.argsCount != 2) {
 				return
 			}
 			var otherArg: RegisterArg? = null
@@ -299,7 +298,7 @@ class TernaryMod private constructor() :
 				}
 			}
 			val other = otherArg ?: return
-			val elseAssign = other.getAssignInsn()
+			val elseAssign = other.assignInsn
 			val forceInline = mth.isConstructor() || (mth.parentClass.isEnum() && mth.getMethodInfo().isClassInit())
 			if (!forceInline) {
 				if (elseAssign != null && elseAssign.isConstInsn()) {
@@ -324,7 +323,7 @@ class TernaryMod private constructor() :
 				// 内联常量
 				elseArg = InsnArg.wrapInsnIntoArg(elseAssign.copyWithoutResult())
 				val elseVar = checkNotNull(checkNotNull(elseAssign.getResult()).sVar)
-				if (elseVar.getUseCount() == 1 && elseVar.getOnlyOneUseInPhi() === phiInsn) {
+				if (elseVar.useCount == 1 && elseVar.onlyOneUseInPhi === phiInsn) {
 					InsnRemover.remove(mth, elseAssign)
 				}
 			} else {

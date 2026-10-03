@@ -34,7 +34,6 @@ class CustomStringConcat {
 	companion object {
 
 		/** 判断是否为 `StringConcatFactory.makeConcatWithConstants` 调用。 */
-		@JvmStatic
 		fun isStringConcat(values: List<EncodedValue>): Boolean {
 			if (values.size < 4) {
 				return false
@@ -57,7 +56,6 @@ class CustomStringConcat {
 		}
 
 		/** 解析 recipe 并构建 STR_CONCAT 指令；失败时返回带 JADX_ERROR 的 NOP 指令。 */
-		@JvmStatic
 		fun buildStringConcat(insn: InsnData, isRange: Boolean, values: List<EncodedValue>): InsnNode {
 			try {
 				val argsCount = values.size - 3 + insn.regsCount

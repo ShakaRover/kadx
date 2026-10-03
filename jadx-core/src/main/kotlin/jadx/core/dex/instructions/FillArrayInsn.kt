@@ -42,9 +42,9 @@ class FillArrayInsn(arg: InsnArg, val target: Int) : InsnNode(InsnType.FILL_ARRA
 
 	override fun toString(): String = super.toString() + ", data: " + arrayData
 
-	fun getSize(): Int = checkNotNull(arrayData).size
+	val size: Int get() = checkNotNull(arrayData).size
 
-	fun getElementType(): ArgType = checkNotNull(arrayData).getElementType()
+	val elementType: ArgType get() = checkNotNull(arrayData).elementType
 
 	fun getLiteralArgs(elType: ArgType): List<LiteralArg> = checkNotNull(arrayData).getLiteralArgs(elType)
 

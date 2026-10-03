@@ -24,5 +24,5 @@ abstract class AbstractActivePathTraverserHandler(private val comparatorState: T
 	fun process(): List<TraverserActivePathState> = handle()
 
 	/** 返回本处理器所基于的活动路径状态。 */
-	fun getComparator(): TraverserActivePathState = comparatorState
+	val comparator: TraverserActivePathState get() = comparatorState
 }

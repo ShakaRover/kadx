@@ -247,7 +247,7 @@ abstract class IntegrationTest : TestUtils() {
 			assertThat(clsName).isEqualTo(clsNode.classInfo.fullName)
 		} else {
 			LOG.info("Convert back to top level: {}", clsNode)
-			clsNode.getTopParentClass().decompile() // 保持正确的处理顺序
+			clsNode.topParentClass.decompile() // 保持正确的处理顺序
 			clsNode.notInner()
 		}
 		decompileAndCheck(clsNode)
@@ -338,7 +338,7 @@ abstract class IntegrationTest : TestUtils() {
 
 	private fun printDisasm(cls: ClassNode) {
 		println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-		println(cls.getDisassembledCode())
+		println(cls.disassembledCode)
 		println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 	}
 
@@ -513,7 +513,7 @@ abstract class IntegrationTest : TestUtils() {
 
 	protected fun getMethod(cls: ClassNode, methodName: String): MethodNode {
 		for (mth in cls.methods) {
-			if (mth.getName() == methodName) {
+			if (mth.name == methodName) {
 				return mth
 			}
 		}
@@ -522,7 +522,7 @@ abstract class IntegrationTest : TestUtils() {
 
 	protected fun getField(cls: ClassNode, fieldName: String): FieldNode {
 		for (fld in cls.fields) {
-			if (fld.getName() == fieldName) {
+			if (fld.name == fieldName) {
 				return fld
 			}
 		}

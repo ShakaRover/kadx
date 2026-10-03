@@ -16,19 +16,13 @@ import jadx.core.utils.exceptions.CodegenException
  *
  * 同样属于区域树节点，保持普通 class（身份语义）。
  */
-class SynchronizedRegion(parent: IRegion?, private val enterInsn: InsnNode) : AbstractRegion(parent) {
+class SynchronizedRegion(parent: IRegion?, val enterInsn: InsnNode) : AbstractRegion(parent) {
 
 	/** monitor-exit 指令列表（可能多条） */
-	private val exitInsns: MutableList<InsnNode> = ArrayList()
+	val exitInsns: MutableList<InsnNode> = ArrayList()
 
 	/** 被 synchronized 保护的代码体 */
-	private val region: Region = Region(this)
-
-	fun getEnterInsn(): InsnNode = enterInsn
-
-	fun getExitInsns(): MutableList<InsnNode> = exitInsns
-
-	fun getRegion(): Region = region
+	val region: Region = Region(this)
 
 	override fun getSubBlocks(): List<IContainer> = region.getSubBlocks()
 

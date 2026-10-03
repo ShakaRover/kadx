@@ -44,7 +44,6 @@ open class AttributeStorage {
 		private val EMPTY_ATTRIBUTES: MutableMap<IJadxAttrType<*>, IJadxAttribute> = Collections.emptyMap()
 
 		/** 从属性列表构造一个存储（Java 调用方写 `AttributeStorage.fromList(...)`） */
-		@JvmStatic
 		fun fromList(list: List<IJadxAttribute>): AttributeStorage {
 			val storage = AttributeStorage()
 			storage.add(list)

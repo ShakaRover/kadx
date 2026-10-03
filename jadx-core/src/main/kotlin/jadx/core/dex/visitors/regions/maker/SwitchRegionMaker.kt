@@ -158,7 +158,7 @@ class SwitchRegionMaker(private val mth: MethodNode, private val regionMaker: Re
 		if (mth.getReturnType() == ArgType.VOID) {
 			for (pred in preds) {
 				val insn = BlockUtils.getLastInsn(pred)
-				if (insn == null || insn.getType() != InsnType.RETURN) {
+				if (insn == null || insn.type != InsnType.RETURN) {
 					return exitBlock
 				}
 			}
@@ -166,7 +166,7 @@ class SwitchRegionMaker(private val mth: MethodNode, private val regionMaker: Re
 			val returnArgs = ArrayList<InsnArg>()
 			for (pred in preds) {
 				val insn = BlockUtils.getLastInsn(pred)
-				if (insn == null || insn.getType() != InsnType.RETURN) {
+				if (insn == null || insn.type != InsnType.RETURN) {
 					return exitBlock
 				}
 				returnArgs.add(insn.getArg(0))
@@ -207,7 +207,7 @@ class SwitchRegionMaker(private val mth: MethodNode, private val regionMaker: Re
 			// 识别 fall-through case
 			val caseBlocks = BlockUtils.blocksToBitSet(mth, blocksMap.keys)
 			caseBlocks.clear(out.pos)
-			for (successor in sw.getHeader().getSuccessors()) {
+			for (successor in sw.header.getSuccessors()) {
 				val df = successor.domFrontier
 				if (df != null && df.intersects(caseBlocks)) {
 					val fallThroughBlock = getOneIntersectionBlock(out, caseBlocks, df)
@@ -260,19 +260,19 @@ class SwitchRegionMaker(private val mth: MethodNode, private val regionMaker: Re
 		if (defCase == null) {
 			defaultCaseIsEmpty = true
 		} else {
-			defaultCaseIsEmpty = sw.getCases().any { c ->
+			defaultCaseIsEmpty = sw.cases.any { c ->
 				c.keys.contains(SwitchRegion.DEFAULT_CASE_KEY) && canRemove(c.container, outBlock)
 			}
 		}
 		if (defaultCaseIsEmpty) {
-			val cases = ArrayList(sw.getCases())
+			val cases = ArrayList(sw.cases)
 			for (caseInfo in cases) {
 				if (canRemove(caseInfo.container, outBlock)) {
 					val keys = caseInfo.keys
 					if (keys.contains(SwitchRegion.DEFAULT_CASE_KEY) || insn.isPacked()) {
 						// 删除 case，并把所有块标记为不生成
 						RegionUtils.addToAll(mth, caseInfo.container, AFlag.DONT_GENERATE)
-						sw.getCases().remove(caseInfo)
+						sw.cases.remove(caseInfo)
 					}
 				}
 			}
@@ -396,17 +396,14 @@ class SwitchRegionMaker(private val mth: MethodNode, private val regionMaker: Re
 		 * 在 [jadx.core.dex.visitors.regions.PostProcessRegions] 中 try/catch 包裹之后执行，
 		 * 以便处理所有块。
 		 */
-		@JvmStatic
 		fun insertBreaks(mth: MethodNode, sw: SwitchRegion) {
-			for (caseInfo in sw.getCases()) {
+			for (caseInfo in sw.cases) {
 				insertBreaksForCase(mth, sw, caseInfo.container)
 			}
 		}
 
-		@JvmStatic
 		fun canAppendBreak(region: IRegion): Boolean = !region.contains(AFlag.FALL_THROUGH) && !RegionUtils.hasExitBlock(region)
 
-		@JvmStatic
 		fun buildBreakContainer(switchRegion: SwitchRegion): InsnContainer {
 			val breakInsn = InsnNode(InsnType.BREAK, 0)
 			breakInsn.add(AFlag.SYNTHETIC)

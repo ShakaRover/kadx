@@ -27,9 +27,9 @@ class TypeBoundFieldGetAssign(
 
 	override fun getBound(): BoundEnum = BoundEnum.ASSIGN
 
-	override fun getType(updateInfo: TypeUpdateInfo): ArgType = getResultType(updateInfo.getType(getInstanceArg()))
+	override fun getType(updateInfo: TypeUpdateInfo): ArgType = getResultType(updateInfo.getType(instanceArg))
 
-	override fun getType(): ArgType = getResultType(getInstanceArg().getType())
+	override fun getType(): ArgType = getResultType(instanceArg.getType())
 
 	private fun getResultType(instanceType: ArgType): ArgType {
 		val resultGeneric = root.getTypeUtils().replaceClassGenerics(instanceType, initType)
@@ -40,7 +40,7 @@ class TypeBoundFieldGetAssign(
 		return initType
 	}
 
-	private fun getInstanceArg(): InsnArg = getNode.getArg(0)
+	private val instanceArg: InsnArg get() = getNode.getArg(0)
 
 	override fun getArg(): RegisterArg? = getNode.getResult()
 
@@ -57,5 +57,5 @@ class TypeBoundFieldGetAssign(
 
 	override fun hashCode(): Int = getNode.hashCode()
 
-	override fun toString(): String = "FieldGetAssign{" + fieldInfo + ", type=" + getType() + ", instanceArg=" + getInstanceArg() + '}'
+	override fun toString(): String = "FieldGetAssign{" + fieldInfo + ", type=" + getType() + ", instanceArg=" + instanceArg + '}'
 }

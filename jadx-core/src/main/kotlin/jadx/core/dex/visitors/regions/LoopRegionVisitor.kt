@@ -96,34 +96,34 @@ class LoopRegionVisitor :
 
 		/** 识别“索引式 for 循环”：循环变量在 phi 中合并，末尾自增。 */
 		private fun checkForIndexedLoop(mth: MethodNode, loopRegion: LoopRegion, condition: IfCondition): Boolean {
-			val loopEndBlock = loopRegion.getInfo().end
+			val loopEndBlock = loopRegion.info.end
 			val incrInsn = BlockUtils.getLastInsn(BlockUtils.skipSyntheticPredecessor(loopEndBlock)) ?: return false
 			val incrArg = incrInsn.getResult() ?: return false
 			val incrSVar = incrArg.sVar ?: return false
 			if (!incrSVar.isUsedInPhi()) {
 				return false
 			}
-			val phiInsnList = incrSVar.getUsedInPhi()
+			val phiInsnList = incrSVar.usedInPhi
 			if (phiInsnList.size != 1) {
 				return false
 			}
 			val phiInsn = phiInsnList[0]
-			if (phiInsn.getArgsCount() != 2 ||
+			if (phiInsn.argsCount != 2 ||
 				!phiInsn.containsVar(incrArg) ||
-				incrSVar.getUseCount() != 1
+				incrSVar.useCount != 1
 			) {
 				return false
 			}
 			val arg = phiInsn.getResult() ?: return false
-			val condArgs = condition.getRegisterArgs()
+			val condArgs = condition.registerArgs
 			if (!condArgs.contains(arg) || checkNotNull(arg.sVar).isUsedInPhi()) {
 				return false
 			}
 			val initArg = phiInsn.getArg(0)
-			val initInsn = initArg.getAssignInsn()
+			val initInsn = initArg.assignInsn
 			if (initInsn == null ||
 				initInsn.contains(AFlag.DONT_GENERATE) ||
-				checkNotNull(initArg.sVar).getUseCount() != 1
+				checkNotNull(initArg.sVar).useCount != 1
 			) {
 				return false
 			}
@@ -170,7 +170,7 @@ class LoopRegionVisitor :
 			if (!lit.isLiteral || (lit as LiteralArg).literal != 1L) {
 				return null
 			}
-			if (initInsn.getType() != InsnType.CONST ||
+			if (initInsn.type != InsnType.CONST ||
 				!initInsn.getArg(0).isLiteral ||
 				(initInsn.getArg(0) as LiteralArg).literal != 0L
 			) {
@@ -182,7 +182,7 @@ class LoopRegionVisitor :
 				return null
 			}
 			val sVar = checkNotNull((condArg as RegisterArg).sVar)
-			val args = sVar.getUseList()
+			val args = sVar.useList
 			if (args.size != 3) {
 				return null
 			}
@@ -195,20 +195,20 @@ class LoopRegionVisitor :
 			if (!condition.isCompare()) {
 				return null
 			}
-			val compare = checkNotNull(condition.getCompare())
-			if (compare.getOp() != IfOp.LT || compare.getA() !== condArg) {
+			val compare = checkNotNull(condition.compare)
+			if (compare.op != IfOp.LT || compare.a !== condArg) {
 				return null
 			}
 			val len: InsnNode
-			val bCondArg = compare.getB()
+			val bCondArg = compare.b
 			if (bCondArg.isInsnWrap) {
 				len = (bCondArg as InsnWrapArg).wrapInsn
 			} else if (bCondArg.isRegister) {
-				len = (bCondArg as RegisterArg).getAssignInsn() ?: return null
+				len = (bCondArg as RegisterArg).assignInsn ?: return null
 			} else {
 				return null
 			}
-			if (len.getType() != InsnType.ARRAY_LENGTH) {
+			if (len.type != InsnType.ARRAY_LENGTH) {
 				return null
 			}
 			val arrayArg = len.getArg(0)
@@ -241,7 +241,7 @@ class LoopRegionVisitor :
 			condArg.add(AFlag.DONT_GENERATE)
 			bCondArg.add(AFlag.DONT_GENERATE)
 			arrGetInsn.add(AFlag.DONT_GENERATE)
-			compare.getInsn().add(AFlag.DONT_GENERATE)
+			compare.insn.add(AFlag.DONT_GENERATE)
 
 			val forEachLoop = ForEachLoop(checkNotNull(iterVar), len.getArg(0))
 			forEachLoop.injectFakeInsns(loopRegion)
@@ -254,7 +254,7 @@ class LoopRegionVisitor :
 
 		/** 识别“可迭代对象 for-each”：`iterator()` / `hasNext()` / `next()` 调用模式 */
 		private fun checkIterableForEach(mth: MethodNode, loopRegion: LoopRegion, condition: IfCondition): Boolean {
-			val condArgs = condition.getRegisterArgs()
+			val condArgs = condition.registerArgs
 			if (condArgs.size != 1) {
 				return false
 			}
@@ -263,8 +263,8 @@ class LoopRegionVisitor :
 			if (sVar == null || sVar.isUsedInPhi()) {
 				return false
 			}
-			val itUseList = sVar.getUseList()
-			val assignInsn = iteratorArg.getAssignInsn()
+			val itUseList = sVar.useList
+			val assignInsn = iteratorArg.assignInsn
 			if (itUseList.size != 2) {
 				return false
 			}
@@ -289,7 +289,7 @@ class LoopRegionVisitor :
 					if (!RegionUtils.isRegionContainsBlock(loopRegion, block)) {
 						return false
 					}
-					if (parentInsn.getType() == InsnType.CHECK_CAST) {
+					if (parentInsn.type == InsnType.CHECK_CAST) {
 						val res = parentInsn.getResult() ?: return false
 						if (!fixIterableType(mth, iterableArg, res)) {
 							return false
@@ -379,7 +379,7 @@ class LoopRegionVisitor :
 			}
 			val genericType = ArgType.generic(iterableType.getObject(), varType)
 			if (iterableArg.isRegister) {
-				val immutableType = (iterableArg as RegisterArg).getImmutableType()
+				val immutableType = (iterableArg as RegisterArg).immutableType
 				if (immutableType != null && immutableType != genericType) {
 					// 类型不可变；只允许对 Object 变量遍历非泛型集合
 					return varType == ArgType.OBJECT
@@ -394,7 +394,7 @@ class LoopRegionVisitor :
 			if (insn == null) {
 				return false
 			}
-			if (insn.getType() == InsnType.INVOKE) {
+			if (insn.type == InsnType.INVOKE) {
 				val inv = insn as InvokeNode
 				val callMth = inv.callMth
 				if ((inv.invokeType == InvokeType.INTERFACE || inv.invokeType == InvokeType.VIRTUAL) &&
@@ -411,7 +411,7 @@ class LoopRegionVisitor :
 
 		/** 判断变量的赋值是否都发生在循环内部 */
 		private fun assignOnlyInLoop(mth: MethodNode, loopRegion: LoopRegion, arg: RegisterArg): Boolean {
-			val assignInsn = arg.getAssignInsn() ?: return true
+			val assignInsn = arg.assignInsn ?: return true
 			if (!argInLoop(mth, loopRegion, checkNotNull(assignInsn.getResult()))) {
 				return false
 			}
@@ -427,7 +427,7 @@ class LoopRegionVisitor :
 
 		/** 判断变量的使用是否都发生在循环内部 */
 		private fun usedOnlyInLoop(mth: MethodNode, loopRegion: LoopRegion, arg: RegisterArg): Boolean {
-			val useList = checkNotNull(arg.sVar).getUseList()
+			val useList = checkNotNull(arg.sVar).useList
 			for (useArg in useList) {
 				if (!argInLoop(mth, loopRegion, useArg)) {
 					return false

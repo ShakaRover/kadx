@@ -22,7 +22,6 @@ import jadx.api.plugins.input.insns.custom.ICustomPayload
 object InsnDataUtils {
 
 	/** 若当前指令是 invoke-custom（索引类型 CALL_SITE），返回其 call-site，否则返回 null。 */
-	@JvmStatic
 	fun getCallSite(insnData: InsnData): ICallSite? {
 		if (insnData.indexType !== InsnIndexType.CALL_SITE) {
 			return null
@@ -35,7 +34,6 @@ object InsnDataUtils {
 	}
 
 	/** 若当前指令是方法引用（索引类型 METHOD_REF），返回其方法引用，否则返回 null。 */
-	@JvmStatic
 	fun getMethodRef(insnData: InsnData): IMethodRef? {
 		if (insnData.indexType !== InsnIndexType.METHOD_REF) {
 			return null
@@ -53,7 +51,6 @@ object InsnDataUtils {
 	 * @param callSite 目标 call-site（可为 null，此时直接返回 null）
 	 * @param argNum   参数下标
 	 */
-	@JvmStatic
 	fun getMethodHandleAt(callSite: ICallSite?, argNum: Int): IMethodHandle? {
 		if (callSite == null) {
 			return null

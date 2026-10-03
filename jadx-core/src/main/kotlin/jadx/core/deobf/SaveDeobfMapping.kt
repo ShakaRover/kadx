@@ -44,7 +44,7 @@ class SaveDeobfMapping : AbstractVisitor() {
 			return
 		}
 		val mapping = DeobfPresets.build(root)
-		val deobfMapFile: Path = mapping.getDeobfMapFile()
+		val deobfMapFile: Path = mapping.deobfMapFile
 		if (mode == GeneratedRenamesMappingFileMode.READ_OR_SAVE && Files.exists(deobfMapFile)) {
 			return
 		}

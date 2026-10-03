@@ -35,9 +35,8 @@ class InitCodeVariables : AbstractVisitor() {
 
 	companion object {
 		/** 重置后重新初始化（类型推导迭代时会调用）。 */
-		@JvmStatic
 		fun rerun(mth: MethodNode) {
-			for (sVar in mth.getSVars()) {
+			for (sVar in mth.SVars) {
 				sVar.resetTypeAndCodeVar()
 			}
 			initCodeVars(mth)
@@ -48,15 +47,14 @@ class InitCodeVariables : AbstractVisitor() {
 			if (thisArg != null) {
 				initCodeVar(mth, thisArg)
 			}
-			for (mthArg in mth.getArgRegs()) {
+			for (mthArg in mth.argRegs) {
 				initCodeVar(mth, mthArg)
 			}
-			for (ssaVar in mth.getSVars()) {
+			for (ssaVar in mth.SVars) {
 				initCodeVar(ssaVar)
 			}
 		}
 
-		@JvmStatic
 		fun initCodeVar(mth: MethodNode, regArg: RegisterArg) {
 			var ssaVar = regArg.sVar
 			if (ssaVar == null) {
@@ -65,7 +63,6 @@ class InitCodeVariables : AbstractVisitor() {
 			initCodeVar(ssaVar)
 		}
 
-		@JvmStatic
 		fun initCodeVar(ssaVar: SSAVar) {
 			if (ssaVar.isCodeVarSet()) {
 				return
@@ -84,7 +81,7 @@ class InitCodeVariables : AbstractVisitor() {
 		}
 
 		private fun setCodeVar(ssaVar: SSAVar, codeVar: CodeVar) {
-			val phiList = ssaVar.getPhiList()
+			val phiList = ssaVar.phiList
 			if (phiList.isNotEmpty()) {
 				val vars = LinkedHashSet<SSAVar>()
 				vars.add(ssaVar)
@@ -106,7 +103,7 @@ class InitCodeVariables : AbstractVisitor() {
 				// 收集所有“不可变且已知”的类型，去重（保持插入顺序，便于稳定报错信息）
 				val imTypes = ArrayList<ArgType>()
 				for (v in vars) {
-					val imType = v.getImmutableType() ?: continue
+					val imType = v.immutableType ?: continue
 					if (!imType.isTypeKnown()) {
 						continue
 					}
@@ -130,12 +127,12 @@ class InitCodeVariables : AbstractVisitor() {
 			for (phiInsn in phiInsnList) {
 				val resultVar = checkNotNull(phiInsn.getResult()).sVar
 				if (resultVar != null && vars.add(resultVar)) {
-					collectConnectedVars(resultVar.getPhiList(), vars)
+					collectConnectedVars(resultVar.phiList, vars)
 				}
 				for (arg in phiInsn.getArguments()) {
 					val sVar = (arg as RegisterArg).sVar
 					if (sVar != null && vars.add(sVar)) {
-						collectConnectedVars(sVar.getPhiList(), vars)
+						collectConnectedVars(sVar.phiList, vars)
 					}
 				}
 			}

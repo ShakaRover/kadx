@@ -35,7 +35,7 @@ class LiveVarAnalysis(private val mth: MethodNode) {
 	private lateinit var assignBlocks: Array<BitSet>
 
 	fun runAnalysis() {
-		val bbCount = checkNotNull(mth.getBasicBlocks()).size
+		val bbCount = checkNotNull(mth.basicBlocks).size
 		val regsCount = mth.getRegsCount()
 		this.uses = initBitSetArray(bbCount, regsCount)
 		this.defs = initBitSetArray(bbCount, regsCount)
@@ -64,7 +64,7 @@ class LiveVarAnalysis(private val mth: MethodNode) {
 	 * 遇到结果寄存器时记入 [defs]，并把该块加入该寄存器的赋值块集合。
 	 */
 	private fun fillBasicBlockInfo() {
-		for (block in checkNotNull(mth.getBasicBlocks())) {
+		for (block in checkNotNull(mth.basicBlocks)) {
 			val blockId = block.pos
 			val gen = uses[blockId]
 			val kill = defs[blockId]
@@ -94,10 +94,10 @@ class LiveVarAnalysis(private val mth: MethodNode) {
 	 * 为避免不收敛，设置迭代上限 `块数 * 10`。
 	 */
 	private fun processLiveInfo() {
-		val bbCount = checkNotNull(mth.getBasicBlocks()).size
+		val bbCount = checkNotNull(mth.basicBlocks).size
 		val regsCount = mth.getRegsCount()
 		val liveInBlocks = initBitSetArray(bbCount, regsCount)
-		val blocks = checkNotNull(mth.getBasicBlocks())
+		val blocks = checkNotNull(mth.basicBlocks)
 		val blocksCount = blocks.size
 		val iterationsLimit = blocksCount * 10
 		var changed: Boolean

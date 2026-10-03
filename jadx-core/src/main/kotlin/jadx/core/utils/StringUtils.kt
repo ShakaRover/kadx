@@ -20,9 +20,7 @@ import java.util.Date
 class StringUtils(args: JadxArgs) {
 
 	private val escapeUnicode: Boolean = args.isEscapeUnicode
-	private val integerFormat: IntegerFormat = args.integerFormat
-
-	fun getIntegerFormat(): IntegerFormat = integerFormat
+	val integerFormat: IntegerFormat = args.integerFormat
 
 	/**
 	 * 把字符串转成带双引号的 Java 字面量形式（处理转义）。
@@ -169,13 +167,11 @@ class StringUtils(args: JadxArgs) {
 		private const val WHITES = " \t\r\n\u000c\b"
 		private const val WORD_SEPARATORS = WHITES + "(\")<,>{}=+-*/|[]\\:;'.`~!#^&"
 
-		@JvmStatic
-		fun getInstance(): StringUtils = DEFAULT_INSTANCE
+		val instance: StringUtils get() = DEFAULT_INSTANCE
 
 		/**
 		 * 按 Unicode 码点遍历字符串（正确处理代理对）。
 		 */
-		@JvmStatic
 		fun visitCodePoints(str: String, visitor: (Int) -> Unit) {
 			val len = str.length
 			var offset = 0
@@ -186,7 +182,6 @@ class StringUtils(args: JadxArgs) {
 			}
 		}
 
-		@JvmStatic
 		fun escape(str: String): String {
 			val len = str.length
 			val sb = StringBuilder(len)
@@ -202,7 +197,6 @@ class StringUtils(args: JadxArgs) {
 			return sb.toString()
 		}
 
-		@JvmStatic
 		fun escapeXML(str: String): String {
 			val len = str.length
 			val sb = StringBuilder(len)
@@ -218,7 +212,6 @@ class StringUtils(args: JadxArgs) {
 			return sb.toString()
 		}
 
-		@JvmStatic
 		fun escapeResValue(str: String): String {
 			val len = str.length
 			val sb = StringBuilder(len)
@@ -228,7 +221,6 @@ class StringUtils(args: JadxArgs) {
 			return sb.toString()
 		}
 
-		@JvmStatic
 		fun escapeResStrValue(str: String): String {
 			val len = str.length
 			val sb = StringBuilder(len)
@@ -279,16 +271,12 @@ class StringUtils(args: JadxArgs) {
 			}
 		}
 
-		@JvmStatic
 		fun notEmpty(str: String?): Boolean = str != null && str.isNotEmpty()
 
-		@JvmStatic
 		fun isEmpty(str: String?): Boolean = str == null || str.isEmpty()
 
-		@JvmStatic
 		fun notBlank(str: String?): Boolean = !str.isNullOrBlank()
 
-		@JvmStatic
 		fun countMatches(str: String?, subStr: String?): Int {
 			if (str == null || str.isEmpty() || subStr == null || subStr.isEmpty()) {
 				return 0
@@ -307,10 +295,8 @@ class StringUtils(args: JadxArgs) {
 			return count
 		}
 
-		@JvmStatic
 		fun containsChar(str: String, ch: Char): Boolean = str.indexOf(ch) != -1
 
-		@JvmStatic
 		fun removeChar(str: String, ch: Char): String {
 			val pos = str.indexOf(ch)
 			if (pos == -1) {
@@ -334,7 +320,6 @@ class StringUtils(args: JadxArgs) {
 		/**
 		 * 返回 content 中从 start 到 pos 之间有多少个换行符。
 		 */
-		@JvmStatic
 		fun countLinesByPos(content: String, pos: Int, start: Int): Int {
 			if (start >= pos) {
 				return 0
@@ -358,7 +343,6 @@ class StringUtils(args: JadxArgs) {
 		/**
 		 * 返回包含 pos 的整行；end 不为 -1 时定位到该位置的所在行。
 		 */
-		@JvmStatic
 		fun getLine(content: String, pos: Int, end0: Int): String {
 			if (pos >= content.length) {
 				return ""
@@ -384,13 +368,10 @@ class StringUtils(args: JadxArgs) {
 			return content.substring(headPos, endPos)
 		}
 
-		@JvmStatic
 		fun isWhite(chr: Char): Boolean = WHITES.indexOf(chr) != -1
 
-		@JvmStatic
 		fun isWordSeparator(chr: Char): Boolean = WORD_SEPARATORS.indexOf(chr) != -1
 
-		@JvmStatic
 		fun splitByFixedString(content: String?, splitStr: String): List<String> {
 			if (isEmpty(content)) {
 				return Collections.emptyList()
@@ -410,7 +391,6 @@ class StringUtils(args: JadxArgs) {
 			}
 		}
 
-		@JvmStatic
 		fun removeSuffix(str: String, suffix: String): String {
 			if (str.endsWith(suffix)) {
 				return str.substring(0, str.length - suffix.length)
@@ -418,7 +398,6 @@ class StringUtils(args: JadxArgs) {
 			return str
 		}
 
-		@JvmStatic
 		fun getPrefix(str: String, delim: String): String? {
 			val idx = str.indexOf(delim)
 			if (idx != -1) {
@@ -427,10 +406,8 @@ class StringUtils(args: JadxArgs) {
 			return null
 		}
 
-		@JvmStatic
-		fun getDateText(): String = SimpleDateFormat("HH:mm:ss").format(Date())
+		val dateText: String get() = SimpleDateFormat("HH:mm:ss").format(Date())
 
-		@JvmStatic
 		fun formatDouble(d: Double): String {
 			if (d.isNaN()) {
 				return "Double.NaN"
@@ -453,7 +430,6 @@ class StringUtils(args: JadxArgs) {
 			return d.toString() + 'd'
 		}
 
-		@JvmStatic
 		fun formatFloat(f: Float): String {
 			if (f.isNaN()) {
 				return "Float.NaN"
@@ -476,7 +452,6 @@ class StringUtils(args: JadxArgs) {
 			return f.toString() + 'f'
 		}
 
-		@JvmStatic
 		fun capitalizeFirstChar(str: String): String {
 			if (isEmpty(str)) {
 				return str

@@ -11,9 +11,7 @@ import jadx.core.dex.nodes.BlockNode
  * **Kotlin 转换说明**：原 Java 的 `Set<BlockNode>` 直接改为 Kotlin `Set`（JVM 擦除一致），
  * 构造器由 Java 侧以 `new GlobalTraverserSourceState(new HashSet<>(...))` 调用，签名不变。
  */
-class GlobalTraverserSourceState(private val containedBlocks: Set<BlockNode>) {
+class GlobalTraverserSourceState(val containedBlocks: Set<BlockNode>) {
 
 	fun isBlockContained(block: BlockNode): Boolean = containedBlocks.contains(block)
-
-	fun getContainedBlocks(): Set<BlockNode> = containedBlocks
 }

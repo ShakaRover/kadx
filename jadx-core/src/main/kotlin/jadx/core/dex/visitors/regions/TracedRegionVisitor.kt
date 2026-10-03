@@ -20,7 +20,7 @@ import java.util.Deque
 abstract class TracedRegionVisitor : IRegionVisitor {
 
 	/** 当前遍历路径上的区域栈，栈顶是最近进入、尚未离开的区域 */
-	private val regionStack: Deque<IRegion> = ArrayDeque()
+	val regionStack: Deque<IRegion> = ArrayDeque()
 
 	/** 进入区域时压栈 */
 	override fun enterRegion(mth: MethodNode, region: IRegion): Boolean {
@@ -46,6 +46,4 @@ abstract class TracedRegionVisitor : IRegionVisitor {
 	override fun leaveRegion(mth: MethodNode, region: IRegion) {
 		regionStack.pop()
 	}
-
-	fun getRegionStack(): Deque<IRegion> = regionStack
 }

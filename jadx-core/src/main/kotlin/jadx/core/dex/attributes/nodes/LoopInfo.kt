@@ -38,7 +38,7 @@ class LoopInfo(
 	 * 出口边定义：源块在循环内、目标块在循环外。注意这里故意使用 [BlockNode.getSuccessors]
 	 * 而非 clean successors，以便把异常处理器等特殊边也算进来（与原 Java 行为一致）。
 	 */
-	fun getExitNodes(): Set<BlockNode> {
+	val exitNodes: Set<BlockNode> get() {
 		val nodes = HashSet<BlockNode>()
 		val blocks = loopBlocks
 		for (block in blocks) {
@@ -59,7 +59,7 @@ class LoopInfo(
 	 * [BlockUtils.isExceptionHandlerPath] 排除异常处理路径。同样使用完整 successors
 	 * 以包含回边。
 	 */
-	fun getExitEdges(): List<Edge> {
+	val exitEdges: List<Edge> get() {
 		val edges = ArrayList<Edge>()
 		val blocks = loopBlocks
 		for (block in blocks) {
@@ -73,7 +73,7 @@ class LoopInfo(
 	}
 
 	/** 取循环的前置头块（pre-header）：循环头的前驱中不是循环自身的那个块 */
-	fun getPreHeader(): BlockNode = BlockUtils.selectOther(end, start.getPredecessors())
+	val preHeader: BlockNode get() = BlockUtils.selectOther(end, start.getPredecessors())
 
 	/**
 	 * 判断 [searchLoop] 是否为本循环的某一层祖先循环。

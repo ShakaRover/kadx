@@ -15,25 +15,23 @@ import jadx.core.dex.visitors.finaly.traverser.handlers.PredecessorMergeActivePa
  */
 class UnknownAdvanceStrategyTraverserState(
 	state: TraverserActivePathState,
-	private val centralityState: CentralityState,
-	private val nextBlocks: List<BlockNode>,
+	private val centralityStateValue: CentralityState,
+	val nextBlocks: List<BlockNode>,
 ) : TraverserState(state) {
 
-	override fun getNextHandler(): AbstractActivePathTraverserHandler = PredecessorMergeActivePathTraverserHandler(getComparatorState())
+	override fun getNextHandler(): AbstractActivePathTraverserHandler = PredecessorMergeActivePathTraverserHandler(comparatorState)
 
 	override fun getCompareState(): ComparisonState = ComparisonState.READY_TO_COMPARE
 
 	override fun isTerminal(): Boolean = false
 
-	override fun getUnderlyingCentralityState(): CentralityState = centralityState
+	override fun getUnderlyingCentralityState(): CentralityState = centralityStateValue
 
 	override fun getUnderlyingBlockInsnInfo(): TraverserBlockInfo? = null
 
 	override fun duplicateInternalState(comparatorState: TraverserActivePathState): TraverserState {
-		val dCentralityState = centralityState.duplicate()
+		val dCentralityState = centralityStateValue.duplicate()
 		val dNextBlocks = ArrayList(nextBlocks)
 		return UnknownAdvanceStrategyTraverserState(comparatorState, dCentralityState, dNextBlocks)
 	}
-
-	fun getNextBlocks(): List<BlockNode> = nextBlocks
 }

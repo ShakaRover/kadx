@@ -61,7 +61,7 @@ class MethodInvokeVisitor : AbstractVisitor() {
 		if (mth.isNoCode()) {
 			return
 		}
-		for (block in checkNotNull(mth.getBasicBlocks())) {
+		for (block in checkNotNull(mth.basicBlocks)) {
 			if (block.contains(AFlag.DONT_GENERATE)) {
 				continue
 			}
@@ -170,7 +170,7 @@ class MethodInvokeVisitor : AbstractVisitor() {
 		if (instanceArg != null) {
 			return instanceArg.getType()
 		}
-		if (invokeInsn.getType() == InsnType.CONSTRUCTOR && invokeInsn.getResult() != null) {
+		if (invokeInsn.type == InsnType.CONSTRUCTOR && invokeInsn.getResult() != null) {
 			return checkNotNull(invokeInsn.getResult()).getType()
 		}
 		return declClsType
@@ -182,7 +182,7 @@ class MethodInvokeVisitor : AbstractVisitor() {
 		compilerVarTypes: List<ArgType>,
 		castTypes: List<ArgType>,
 	) {
-		val argsCount = invokeInsn.getArgsCount()
+		val argsCount = invokeInsn.argsCount
 		for (i in argsOffset until argsCount) {
 			val arg = invokeInsn.getArg(i)
 			val origPos = i - argsOffset
@@ -211,7 +211,7 @@ class MethodInvokeVisitor : AbstractVisitor() {
 					// 保护已存在的 cast
 					if (arg.isInsnWrap) {
 						val wrapInsn = (arg as InsnWrapArg).wrapInsn
-						if (wrapInsn.getType() == InsnType.CHECK_CAST) {
+						if (wrapInsn.type == InsnType.CHECK_CAST) {
 							wrapInsn.add(AFlag.EXPLICIT_CAST)
 						}
 					}
@@ -329,7 +329,7 @@ class MethodInvokeVisitor : AbstractVisitor() {
 	 * 尽可能使用带泛型的类型
 	 */
 	private fun expandTypes(parentMth: MethodNode, methodDetails: IMethodDetails, castTypes: List<ArgType>): List<ArgType> {
-		val typeCompare: TypeCompare = parentMth.root().getTypeCompare()
+		val typeCompare: TypeCompare = parentMth.root().typeCompare
 		val mthArgTypes = methodDetails.getArgTypes()
 		val argsCount = castTypes.size
 		val list = ArrayList<ArgType>(argsCount)
@@ -394,7 +394,7 @@ class MethodInvokeVisitor : AbstractVisitor() {
 		if (argCount != types.size) {
 			return false
 		}
-		val typeCompare: TypeCompare = root.getTypeCompare()
+		val typeCompare: TypeCompare = root.typeCompare
 		for (i in 0 until argCount) {
 			val mthType = mthTypes[i]
 			val argType = types[i]
@@ -407,7 +407,7 @@ class MethodInvokeVisitor : AbstractVisitor() {
 	}
 
 	private fun collectCompilerVarTypes(insn: BaseInvokeNode, argOffset: Int): List<ArgType> {
-		val argsCount = insn.getArgsCount()
+		val argsCount = insn.argsCount
 		val result = ArrayList<ArgType>(argsCount)
 		for (i in argOffset until argsCount) {
 			val arg = insn.getArg(i)
@@ -442,8 +442,8 @@ class MethodInvokeVisitor : AbstractVisitor() {
 		throw JadxRuntimeException("Unknown var type for: $arg")
 	}
 
-	private fun getInsnCompilerType(arg: InsnArg, insn: InsnNode): ArgType = when (insn.getType()) {
-		InsnType.CAST, InsnType.CHECK_CAST -> (insn as IndexInsnNode).getIndexAsType()
+	private fun getInsnCompilerType(arg: InsnArg, insn: InsnNode): ArgType = when (insn.type) {
+		InsnType.CAST, InsnType.CHECK_CAST -> (insn as IndexInsnNode).indexAsType
 
 		else -> {
 			if (insn.getResult() != null) {

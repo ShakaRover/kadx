@@ -74,7 +74,7 @@ class TryEdge(
 
 	fun isNotHandlerExit(): Boolean = !isHandlerExit()
 
-	fun getExceptionHandler(): ExceptionHandler {
+	val exceptionHandler: ExceptionHandler get() {
 		if (!isHandlerExit()) {
 			throw JadxRuntimeException("Attempted to get the exception handler of a non-handler edge type")
 		}

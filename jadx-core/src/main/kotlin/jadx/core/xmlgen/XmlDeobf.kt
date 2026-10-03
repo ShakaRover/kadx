@@ -26,7 +26,7 @@ object XmlDeobf {
 			className = packageName + className
 		}
 		val clsType = ArgType.`object`(className)
-		val classInfo = root.getInfoStorage().getCls(clsType)
+		val classInfo = root.infoStorage.getCls(clsType)
 		if (classInfo == null) {
 			// unknown class reference
 			return null

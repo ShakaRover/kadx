@@ -99,7 +99,7 @@ object KotlinMetadataUtils {
 				val paramCount = kmFunction.valueParameters.size
 				if (argCount == paramCount) {
 					// requires arg registers to be loaded, is this necessary ?
-					val aliasList = node.getArgRegs().zip(kmFunction.valueParameters).map { (rArg, kmValueParameter) ->
+					val aliasList = node.argRegs.zip(kmFunction.valueParameters).map { (rArg, kmValueParameter) ->
 						MethodArgRename(rArg = rArg, alias = checkNotNull(kmValueParameter.name))
 					}
 					put(node, aliasList)
@@ -119,7 +119,7 @@ object KotlinMetadataUtils {
 	fun mapCompanion(cls: ClassNode, kmCls: KmClass): CompanionRename? {
 		val compName = kmCls.companionObject ?: return null
 		val compField = cls.fields.firstOrNull {
-			it.getName() == compName && it.accessFlags.run { isStatic() && isFinal() && isPublic() }
+			it.name == compName && it.accessFlags.run { isStatic() && isFinal() && isPublic() }
 		} ?: return null
 
 		if (compField.type.isObject()) {

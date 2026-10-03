@@ -24,7 +24,6 @@ import jadx.core.utils.ListUtils
  */
 object FixMultiEntryLoops {
 
-	@JvmStatic
 	fun process(mth: MethodNode): Boolean {
 		try {
 			detectSpecialEdges(mth)
@@ -119,7 +118,7 @@ object FixMultiEntryLoops {
 	}
 
 	private fun detectSpecialEdges(mth: MethodNode) {
-		val colors = Array(checkNotNull(mth.getBasicBlocks()).size) { BlockColor.WHITE }
+		val colors = Array(checkNotNull(mth.basicBlocks).size) { BlockColor.WHITE }
 		colorDFS(mth, colors, checkNotNull(mth.enterBlock))
 	}
 

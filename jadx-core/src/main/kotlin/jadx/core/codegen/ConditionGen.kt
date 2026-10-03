@@ -52,12 +52,12 @@ open class ConditionGen(insnGen: InsnGen) : InsnGen(insnGen.mgen, insnGen.fallba
 	@Throws(CodegenException::class)
 	private fun add(code: ICodeWriter, stack: CondStack, condition: IfCondition) {
 		stack.push(condition)
-		when (condition.getMode()) {
-			Mode.COMPARE -> addCompare(code, stack, checkNotNull(condition.getCompare()))
+		when (condition.mode) {
+			Mode.COMPARE -> addCompare(code, stack, checkNotNull(condition.compare))
 			Mode.TERNARY -> addTernary(code, stack, condition)
 			Mode.NOT -> addNot(code, stack, condition)
 			Mode.AND, Mode.OR -> addAndOr(code, stack, condition)
-			else -> throw JadxRuntimeException("Unknown condition mode: " + condition.getMode())
+			else -> throw JadxRuntimeException("Unknown condition mode: " + condition.mode)
 		}
 		stack.pop()
 	}
@@ -88,9 +88,9 @@ open class ConditionGen(insnGen: InsnGen) : InsnGen(insnGen.mgen, insnGen.fallba
 
 	@Throws(CodegenException::class)
 	private fun addCompare(code: ICodeWriter, stack: CondStack, compare: Compare) {
-		var op = compare.getOp()
-		val firstArg = compare.getA()
-		val secondArg = compare.getB()
+		var op = compare.op
+		val firstArg = compare.a
+		val secondArg = compare.b
 		if (firstArg.getType() == ArgType.BOOLEAN &&
 			secondArg.isLiteral &&
 			secondArg.getType() == ArgType.BOOLEAN
@@ -133,13 +133,13 @@ open class ConditionGen(insnGen: InsnGen) : InsnGen(insnGen.mgen, insnGen.fallba
 	@Throws(CodegenException::class)
 	private fun addNot(code: ICodeWriter, stack: CondStack, condition: IfCondition) {
 		code.add('!')
-		wrap(code, stack, condition.getArgs()[0])
+		wrap(code, stack, condition.args[0])
 	}
 
 	@Throws(CodegenException::class)
 	private fun addAndOr(code: ICodeWriter, stack: CondStack, condition: IfCondition) {
-		val mode = if (condition.getMode() == Mode.AND) " && " else " || "
-		val it = condition.getArgs().iterator()
+		val mode = if (condition.mode == Mode.AND) " && " else " || "
+		val it = condition.args.iterator()
 		while (it.hasNext()) {
 			wrap(code, stack, it.next())
 			if (it.hasNext()) {
@@ -152,7 +152,7 @@ open class ConditionGen(insnGen: InsnGen) : InsnGen(insnGen.mgen, insnGen.fallba
 		if (condition.isCompare() || condition.contains(AFlag.DONT_WRAP)) {
 			return false
 		}
-		return condition.getMode() != Mode.NOT
+		return condition.mode != Mode.NOT
 	}
 
 	companion object {
@@ -162,7 +162,7 @@ open class ConditionGen(insnGen: InsnGen) : InsnGen(insnGen.mgen, insnGen.fallba
 				return false
 			}
 			val insn: InsnNode = (arg as InsnWrapArg).wrapInsn
-			val insnType = insn.getType()
+			val insnType = insn.type
 			if (insnType == InsnType.ARITH) {
 				return when ((insn as ArithNode).op) {
 					ArithOp.ADD,

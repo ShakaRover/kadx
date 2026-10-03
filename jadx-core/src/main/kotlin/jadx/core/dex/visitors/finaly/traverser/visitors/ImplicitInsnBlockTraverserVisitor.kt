@@ -20,7 +20,7 @@ class ImplicitInsnBlockTraverserVisitor(state: TraverserState) : AbstractBlockTr
 
 	override fun visit(block: BlockNode): TraverserState {
 		val insnInfo: TraverserBlockInfo = checkNotNull(getState().getBlockInsnInfo())
-		val insns: List<InsnNode> = insnInfo.getInsnsSlice()
+		val insns: List<InsnNode> = insnInfo.insnsSlice
 		val insnsIterator = insns.listIterator(insns.size)
 
 		// 统计块尾被识别为“隐式指令”的数量。
@@ -34,7 +34,7 @@ class ImplicitInsnBlockTraverserVisitor(state: TraverserState) : AbstractBlockTr
 		}
 		// 把游标向上移动，并累计隐式指令数（后者用于后续判断是否整块都已匹配）。
 		insnInfo.bottomOffset = insnInfo.bottomOffset + bottomDelta
-		insnInfo.setBottomImplicitOffset(insnInfo.getBottomImplicitCount() + bottomDelta)
+		insnInfo.setBottomImplicitOffset(insnInfo.bottomImplicitCount + bottomDelta)
 		return getState()
 	}
 
@@ -44,11 +44,10 @@ class ImplicitInsnBlockTraverserVisitor(state: TraverserState) : AbstractBlockTr
 		 *
 		 * 目前仅把 GOTO 视为隐式：它的跳转语义已经编码在块图里。
 		 */
-		@JvmStatic
 		fun isInstructionImplicit(node: InsnNode): Boolean {
 			// 原 Java 注释：反向遍历比较时，若指令可以安全跳过，则称其为隐式指令。
 			// GOTO 的存在应反映在块图结构中，因此这里跳过它。
-			return node.getType() == InsnType.GOTO
+			return node.type == InsnType.GOTO
 		}
 	}
 }

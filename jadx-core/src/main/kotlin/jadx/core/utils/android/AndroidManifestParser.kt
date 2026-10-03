@@ -67,7 +67,7 @@ class AndroidManifestParser {
 		val usesSdk = manifest().getElementsByTagName("uses-sdk").item(0) as Element?
 
 		if (parseAttrs.contains(AppAttribute.APPLICATION_LABEL)) {
-			appParams.applicationLabel = getApplicationLabel()
+			appParams.applicationLabel = applicationLabel
 		}
 		if (usesSdk != null) {
 			if (parseAttrs.contains(AppAttribute.MIN_SDK_VERSION)) {
@@ -105,12 +105,12 @@ class AndroidManifestParser {
 			appParams.mainActivity = getMainActivityName()
 		}
 		if (parseAttrs.contains(AppAttribute.APPLICATION)) {
-			appParams.application = getApplicationName()
+			appParams.application = applicationName
 		}
 		return appParams
 	}
 
-	private fun getApplicationLabel(): String {
+	private val applicationLabel: String get() {
 		val application = manifest().getElementsByTagName("application").item(0) as Element
 		if (application.hasAttribute("android:label")) {
 			var appLabelName = application.getAttribute("android:label")
@@ -138,14 +138,14 @@ class AndroidManifestParser {
 	}
 
 	private fun getMainActivityName(): String? {
-		var mainActivityName = getMainActivityNameThroughActivityTag()
+		var mainActivityName = mainActivityNameThroughActivityTag
 		if (mainActivityName == null) {
-			mainActivityName = getMainActivityNameThroughActivityAliasTag()
+			mainActivityName = mainActivityNameThroughActivityAliasTag
 		}
 		return mainActivityName
 	}
 
-	private fun getApplicationName(): String? {
+	private val applicationName: String? get() {
 		val application = manifest().getElementsByTagName("application").item(0) as Element
 		if (application.hasAttribute("android:name")) {
 			return application.getAttribute("android:name")
@@ -153,7 +153,7 @@ class AndroidManifestParser {
 		return null
 	}
 
-	private fun getMainActivityNameThroughActivityAliasTag(): String? {
+	private val mainActivityNameThroughActivityAliasTag: String? get() {
 		val activityAliasNodes = manifest().getElementsByTagName("activity-alias")
 		for (i in 0 until activityAliasNodes.getLength()) {
 			val activityElement = activityAliasNodes.item(i) as Element
@@ -164,7 +164,7 @@ class AndroidManifestParser {
 		return null
 	}
 
-	private fun getMainActivityNameThroughActivityTag(): String? {
+	private val mainActivityNameThroughActivityTag: String? get() {
 		val activityNodes = manifest().getElementsByTagName("activity")
 		for (i in 0 until activityNodes.getLength()) {
 			val activityElement = activityNodes.item(i) as Element
@@ -241,7 +241,6 @@ class AndroidManifestParser {
 
 	companion object {
 		/** 在资源列表中查找 AndroidManifest.xml；找不到返回 null。 */
-		@JvmStatic
 		fun getAndroidManifest(resources: List<ResourceFile>): ResourceFile? = resources
 			.firstOrNull { resourceFile -> resourceFile.getType() === ResourceType.MANIFEST }
 	}

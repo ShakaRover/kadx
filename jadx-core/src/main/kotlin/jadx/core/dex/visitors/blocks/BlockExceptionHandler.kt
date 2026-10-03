@@ -58,7 +58,6 @@ object BlockExceptionHandler {
 
 	private val LOG = LoggerFactory.getLogger(BlockExceptionHandler::class.java)
 
-	@JvmStatic
 	fun process(mth: MethodNode): Boolean {
 		if (mth.isNoExceptionHandlers()) {
 			return false
@@ -72,7 +71,7 @@ object BlockExceptionHandler {
 		val tryBlocks = prepareTryBlocks(mth)
 		connectExcHandlers(mth, tryBlocks)
 		mth.addAttr(AType.TRY_BLOCKS_LIST, tryBlocks)
-		for (block in checkNotNull(mth.getBasicBlocks())) {
+		for (block in checkNotNull(mth.basicBlocks)) {
 			block.updateCleanSuccessors()
 		}
 
@@ -116,14 +115,14 @@ object BlockExceptionHandler {
 	 * 2. 若块内所有指令的 catch 属性相同，则把该属性提升到整个块上。
 	 */
 	private fun processCatchAttr(mth: MethodNode) {
-		for (block in checkNotNull(mth.getBasicBlocks())) {
+		for (block in checkNotNull(mth.basicBlocks)) {
 			for (insn in block.getInstructions()) {
 				if (insn.contains(AType.EXC_CATCH) && !insn.canThrowException()) {
 					insn.remove(AType.EXC_CATCH)
 				}
 			}
 		}
-		for (block in checkNotNull(mth.getBasicBlocks())) {
+		for (block in checkNotNull(mth.basicBlocks)) {
 			val commonCatchAttr = getCommonCatchAttr(block)
 			if (commonCatchAttr != null) {
 				block.addAttr(commonCatchAttr)
@@ -161,7 +160,7 @@ object BlockExceptionHandler {
 	 * 收集其支配范围内的所有块；若块已有前驱（已被连接过），则新建一个空的处理器块。
 	 */
 	private fun initExcHandlers(mth: MethodNode) {
-		val blocks = checkNotNull(mth.getBasicBlocks())
+		val blocks = checkNotNull(mth.basicBlocks)
 		val blocksCount = blocks.size
 		for (i in 0 until blocksCount) { // 循环中会向列表末尾追加新块
 			val block = blocks[i]
@@ -170,7 +169,7 @@ object BlockExceptionHandler {
 			firstInsn.remove(AType.EXC_HANDLER)
 			removeTmpConnection(block)
 
-			val excHandler = excHandlerAttr.getHandler()
+			val excHandler = excHandlerAttr.handler
 			if (block.getPredecessors().isEmpty()) {
 				excHandler.setHandlerBlock(block)
 				block.addAttr(excHandlerAttr)
@@ -205,10 +204,10 @@ object BlockExceptionHandler {
 	 */
 	private fun prepareTryBlocks(mth: MethodNode): List<TryCatchBlockAttr> {
 		val blocksByHandler = HashMap<ExceptionHandler, MutableList<BlockNode>>()
-		for (block in checkNotNull(mth.getBasicBlocks())) {
+		for (block in checkNotNull(mth.basicBlocks)) {
 			val catchAttr = block.get(AType.EXC_CATCH)
 			if (catchAttr != null) {
-				for (eh in catchAttr.getHandlers()) {
+				for (eh in catchAttr.handlers) {
 					blocksByHandler.computeIfAbsent(eh) { ArrayList() }.add(block)
 				}
 			}
@@ -216,7 +215,7 @@ object BlockExceptionHandler {
 		if (Consts.DEBUG_EXC_HANDLERS) {
 			LOG.debug("Input exception handlers:")
 			blocksByHandler.forEach { (eh, blocks) ->
-				LOG.debug(" {}, throw blocks: {}, handler blocks: {}", eh, blocks, eh.getBlocks())
+				LOG.debug(" {}, throw blocks: {}, handler blocks: {}", eh, blocks, eh.blocks)
 			}
 		}
 		if (blocksByHandler.isEmpty()) {
@@ -240,7 +239,7 @@ object BlockExceptionHandler {
 
 		blocksByHandler.forEach { (eh, blocks) ->
 			// 移除同一处理器自身的块
-			blocks.removeAll(eh.getBlocks())
+			blocks.removeAll(eh.blocks)
 		}
 
 		val tryBlocks = ArrayList<TryCatchBlockAttr>()
@@ -273,7 +272,7 @@ object BlockExceptionHandler {
 		tryBlocks.forEach { tc ->
 			(tc.getBlocks() as MutableList<BlockNode>).removeIf { b -> b.contains(AFlag.REMOVE) }
 		}
-		tryBlocks.removeIf { tb -> tb.getBlocks().isEmpty() || tb.getHandlers().isEmpty() }
+		tryBlocks.removeIf { tb -> tb.getBlocks().isEmpty() || tb.handlers.isEmpty() }
 		mth.clearExceptionHandlers()
 		BlockSplitter.detachMarkedBlocks(mth)
 	}
@@ -299,7 +298,7 @@ object BlockExceptionHandler {
 	): Boolean {
 		if (outerTryBlock.getBlocks() == innerTryBlock.getBlocks()) {
 			// 相同的 try 块 -> 合并处理器
-			val handlers = Utils.concatDistinct(outerTryBlock.getHandlers(), innerTryBlock.getHandlers())
+			val handlers = Utils.concatDistinct(outerTryBlock.handlers, innerTryBlock.handlers)
 			tryBlocks.add(TryCatchBlockAttr(tryBlocks.size, handlers, outerTryBlock.getBlocks() as MutableList<BlockNode>))
 			tryBlocks.remove(outerTryBlock)
 			tryBlocks.remove(innerTryBlock)
@@ -307,8 +306,8 @@ object BlockExceptionHandler {
 		}
 
 		val handlerBlocks = HashSet<BlockNode>()
-		for (eh in innerTryBlock.getHandlers()) {
-			handlerBlocks.addAll(eh.getBlocks())
+		for (eh in innerTryBlock.handlers) {
+			handlerBlocks.addAll(eh.blocks)
 		}
 		var catchInHandler = false
 		for (b in handlerBlocks) {
@@ -335,17 +334,17 @@ object BlockExceptionHandler {
 		if (catchInHandler && (catchInTry || blocksOutsideHandler)) {
 			// 转换为内层 try
 			val mergedBlocks = Utils.concatDistinct(outerTryBlock.getBlocks(), innerTryBlock.getBlocks())
-			(innerTryBlock.getHandlers() as MutableList<ExceptionHandler>).removeAll(outerTryBlock.getHandlers())
+			(innerTryBlock.handlers as MutableList<ExceptionHandler>).removeAll(outerTryBlock.handlers)
 			innerTryBlock.setOuterTryBlock(outerTryBlock)
 			outerTryBlock.addInnerTryBlock(innerTryBlock)
 			outerTryBlock.setBlocks(mergedBlocks)
 			return false
 		}
-		val innerHandlerSet = HashSet(innerTryBlock.getHandlers())
-		if (innerHandlerSet.containsAll(outerTryBlock.getHandlers())) {
+		val innerHandlerSet = HashSet(innerTryBlock.handlers)
+		if (innerHandlerSet.containsAll(outerTryBlock.handlers)) {
 			// 合并
 			val mergedBlocks = Utils.concatDistinct(outerTryBlock.getBlocks(), innerTryBlock.getBlocks())
-			val handlers = Utils.concatDistinct(outerTryBlock.getHandlers(), innerTryBlock.getHandlers())
+			val handlers = Utils.concatDistinct(outerTryBlock.handlers, innerTryBlock.handlers)
 			tryBlocks.add(TryCatchBlockAttr(tryBlocks.size, handlers, mergedBlocks))
 			tryBlocks.remove(outerTryBlock)
 			tryBlocks.remove(innerTryBlock)
@@ -356,7 +355,7 @@ object BlockExceptionHandler {
 
 	private fun isHandlersIntersects(outerTryBlock: TryCatchBlockAttr, block: BlockNode): Boolean {
 		val catchAttr = block.get(AType.EXC_CATCH)
-		return catchAttr != null && Objects.equals(catchAttr.getHandlers(), outerTryBlock.getHandlers())
+		return catchAttr != null && Objects.equals(catchAttr.handlers, outerTryBlock.handlers)
 	}
 
 	private fun removeExcHandler(mth: MethodNode, excHandler: ExceptionHandler) {
@@ -396,8 +395,8 @@ object BlockExceptionHandler {
 		topSplitterBlock.add(AFlag.SYNTHETIC)
 
 		var totalHandlerBlocks = 0
-		for (eh in tryCatchBlock.getHandlers()) {
-			totalHandlerBlocks += eh.getBlocks().size
+		for (eh in tryCatchBlock.handlers) {
+			totalHandlerBlocks += eh.blocks.size
 		}
 
 		val bottomSplitterBlock: BlockNode?
@@ -413,9 +412,9 @@ object BlockExceptionHandler {
 			if (splitReturn != null) {
 				// 把处理器重定向到原始 return 块，避免合成块自环
 				val bottomPreds = BlockSet.from(mth, bottom.getPredecessors())
-				for (handler in tryCatchBlock.getHandlers()) {
-					if (bottomPreds.intersects(handler.getBlocks())) {
-						val lastBlock = bottomPreds.intersect(handler.getBlocks()).getOne()
+				for (handler in tryCatchBlock.handlers) {
+					if (bottomPreds.intersects(handler.blocks)) {
+						val lastBlock = bottomPreds.intersect(handler.blocks).one
 						if (lastBlock != null) {
 							BlockSplitter.replaceConnection(lastBlock, bottom, splitReturn)
 						}
@@ -552,7 +551,7 @@ object BlockExceptionHandler {
 		topSplitterBlock: BlockNode,
 		bottomSplitterBlock: BlockNode?,
 	) {
-		for (handler in tryCatchBlock.getHandlers()) {
+		for (handler in tryCatchBlock.handlers) {
 			val handlerBlock = checkNotNull(handler.getHandlerBlock())
 			BlockSplitter.connect(topSplitterBlock, handlerBlock)
 			if (bottomSplitterBlock != null) {
@@ -566,10 +565,10 @@ object BlockExceptionHandler {
 	}
 
 	private fun fixMoveExceptionInsn(block: BlockNode, excHandlerAttr: ExcHandlerAttr) {
-		val excHandler = excHandlerAttr.getHandler()
-		val argType = excHandler.getArgType()
+		val excHandler = excHandlerAttr.handler
+		val argType = excHandler.argType
 		val me = BlockUtils.getLastInsn(block)
-		if (me != null && me.getType() == InsnType.MOVE_EXCEPTION) {
+		if (me != null && me.type == InsnType.MOVE_EXCEPTION) {
 			// 为 move-exception 设置正确的异常类型
 			val resArg = InsnArg.reg(checkNotNull(me.getResult()).regNum, argType)
 			resArg.copyAttributesFrom(me)
@@ -586,13 +585,13 @@ object BlockExceptionHandler {
 
 	/** 删除异常处理器中 MONITOR_ENTER 之前的所有 MONITOR_EXIT（避免重复解锁）。 */
 	private fun removeMonitorExitFromExcHandler(mth: MethodNode, excHandler: ExceptionHandler) {
-		for (excBlock in excHandler.getBlocks()) {
+		for (excBlock in excHandler.blocks) {
 			val remover = InsnRemover(mth, excBlock)
 			for (insn in excBlock.getInstructions()) {
-				if (insn.getType() == InsnType.MONITOR_ENTER) {
+				if (insn.type == InsnType.MONITOR_ENTER) {
 					break
 				}
-				if (insn.getType() == InsnType.MONITOR_EXIT) {
+				if (insn.type == InsnType.MONITOR_EXIT) {
 					remover.addAndUnbind(insn)
 				}
 			}
@@ -618,11 +617,11 @@ object BlockExceptionHandler {
 	 * 条件：每个处理器只有一个块、块内只有一条 move-exception、且都跳到同一个后继块。
 	 */
 	private fun mergeMultiCatch(mth: MethodNode, tryCatch: TryCatchBlockAttr): Boolean {
-		if (tryCatch.getHandlers().size < 2) {
+		if (tryCatch.handlers.size < 2) {
 			return false
 		}
-		for (handler in tryCatch.getHandlers()) {
-			if (handler.getBlocks().size != 1) {
+		for (handler in tryCatch.handlers) {
+			if (handler.blocks.size != 1) {
 				return false
 			}
 			val block = checkNotNull(handler.getHandlerBlock())
@@ -632,8 +631,8 @@ object BlockExceptionHandler {
 				return false
 			}
 		}
-		val handlerBlocks = ArrayList<BlockNode>(tryCatch.getHandlers().size)
-		for (handler in tryCatch.getHandlers()) {
+		val handlerBlocks = ArrayList<BlockNode>(tryCatch.handlers.size)
+		for (handler in tryCatch.handlers) {
 			handlerBlocks.add(checkNotNull(handler.getHandlerBlock()))
 		}
 		val successorBlocks = ArrayList<BlockNode>()
@@ -652,7 +651,7 @@ object BlockExceptionHandler {
 			return false
 		}
 		val regs = ArrayList<RegisterArg?>()
-		for (h in tryCatch.getHandlers()) {
+		for (h in tryCatch.handlers) {
 			val result = checkNotNull(BlockUtils.getLastInsn(h.getHandlerBlock())).getResult()
 			if (!regs.contains(result)) {
 				regs.add(result)
@@ -663,12 +662,12 @@ object BlockExceptionHandler {
 		}
 
 		// 确认可合并：只保留第一个处理器，其余移除
-		val resultHandler = tryCatch.getHandlers()[0]
-		(tryCatch.getHandlers() as MutableList<ExceptionHandler>).removeIf { handler ->
+		val resultHandler = tryCatch.handlers[0]
+		(tryCatch.handlers as MutableList<ExceptionHandler>).removeIf { handler ->
 			if (handler === resultHandler) {
 				false
 			} else {
-				resultHandler.addCatchTypes(mth, handler.getCatchTypes())
+				resultHandler.addCatchTypes(mth, handler.catchTypes)
 				handler.markForRemove()
 				true
 			}
@@ -678,12 +677,12 @@ object BlockExceptionHandler {
 
 	/** 按异常类型（以及同名冲突时的类名）对处理器排序。 */
 	private fun sortHandlers(mth: MethodNode, tryBlocks: List<TryCatchBlockAttr>) {
-		val typeCompare = mth.root().getTypeCompare()
+		val typeCompare = mth.root().typeCompare
 		val comparator = typeCompare.reversedComparator
 		val catchTypesComparator = Comparator<ClassInfo> { first, second -> compareByTypeAndName(comparator, first, second) }
 		for (tryBlock in tryBlocks) {
-			for (handler in tryBlock.getHandlers()) {
-				Collections.sort(handler.getCatchTypes(), catchTypesComparator)
+			for (handler in tryBlock.handlers) {
+				Collections.sort(handler.catchTypes, catchTypesComparator)
 			}
 			val handlerComparator = Comparator<ExceptionHandler> { first, second ->
 				if (first == second) {
@@ -696,12 +695,12 @@ object BlockExceptionHandler {
 				} else {
 					compareByTypeAndName(
 						comparator,
-						ListUtils.first(first.getCatchTypes()),
-						ListUtils.first(second.getCatchTypes()),
+						ListUtils.first(first.catchTypes),
+						ListUtils.first(second.catchTypes),
 					)
 				}
 			}
-			Collections.sort(tryBlock.getHandlers(), handlerComparator)
+			Collections.sort(tryBlock.handlers, handlerComparator)
 		}
 	}
 
@@ -726,7 +725,7 @@ object BlockExceptionHandler {
 				continue
 			}
 			for (tcb in tryBlocks) {
-				if (tcb.getHandlers().contains(eh)) {
+				if (tcb.handlers.contains(eh)) {
 					notProcessed = false
 					break
 				}

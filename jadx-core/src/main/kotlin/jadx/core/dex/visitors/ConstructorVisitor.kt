@@ -55,12 +55,12 @@ class ConstructorVisitor : AbstractVisitor() {
 		private fun replaceInvoke(mth: MethodNode): Boolean {
 			var replaced = false
 			val remover = InsnRemover(mth)
-			for (block in checkNotNull(mth.getBasicBlocks())) {
+			for (block in checkNotNull(mth.basicBlocks)) {
 				remover.setBlock(block)
 				val size = block.getInstructions().size
 				for (i in 0 until size) {
 					val insn = block.getInstructions()[i]
-					if (insn.getType() == InsnType.INVOKE) {
+					if (insn.type == InsnType.INVOKE) {
 						// 注意：不能用 || 短路，processInvoke 必须每次都执行
 						if (processInvoke(mth, block, i, remover)) {
 							replaced = true
@@ -93,9 +93,9 @@ class ConstructorVisitor : AbstractVisitor() {
 			var instanceArg = inv.getArg(0) as RegisterArg
 			checkNotNull(instanceArg.sVar).removeUse(instanceArg)
 			if (co.isNewInstance) {
-				val assignInsn = instanceArg.getAssignInsn()
+				val assignInsn = instanceArg.assignInsn
 				if (assignInsn != null) {
-					if (assignInsn.getType() == InsnType.CONSTRUCTOR) {
+					if (assignInsn.type == InsnType.CONSTRUCTOR) {
 						// 该参数已用于另一条构造器指令
 						// 插入新的 PHI 指令合并分支构造器的结果
 						instanceArg = insertPhiInsn(mth, block, instanceArg, assignInsn as ConstructorInsn)
@@ -128,10 +128,10 @@ class ConstructorVisitor : AbstractVisitor() {
 				return null
 			}
 			val assignInsn = checkNotNull((instanceArg as RegisterArg).sVar).assignInsn
-			if (assignInsn == null || assignInsn.getType() != InsnType.NEW_INSTANCE) {
+			if (assignInsn == null || assignInsn.type != InsnType.NEW_INSTANCE) {
 				return null
 			}
-			return (assignInsn as IndexInsnNode).getIndexAsType()
+			return (assignInsn as IndexInsnNode).indexAsType
 		}
 
 		private fun insertPhiInsn(
@@ -148,7 +148,7 @@ class ConstructorVisitor : AbstractVisitor() {
 				// 在当前路径的使用点上换用新的 SSA 变量
 				val newResArg = instArg.duplicateWithNewSSAVar(mth)
 				val pathBlocks = BlockUtils.collectAllSuccessors(mth, curBlock, true)
-				for (useReg in checkNotNull(instArg.sVar).getUseList()) {
+				for (useReg in checkNotNull(instArg.sVar).useList) {
 					val parentInsn = useReg.getParentInsn()
 					if (parentInsn != null) {
 						val useBlock = BlockUtils.getBlockByInsn(mth, parentInsn, pathBlocks)
@@ -176,10 +176,10 @@ class ConstructorVisitor : AbstractVisitor() {
 
 		private fun canRemoveConstructor(mth: MethodNode, co: ConstructorInsn): Boolean {
 			val parentClass = mth.parentClass
-			if (co.isSuper && co.getArgsCount() == 0) {
+			if (co.isSuper && co.argsCount == 0) {
 				return true
 			}
-			if (co.isThis && co.getArgsCount() == 0) {
+			if (co.isThis && co.argsCount == 0) {
 				val defCo = parentClass.searchMethodByShortId(co.callMth.shortId)
 				if (defCo == null || defCo.isNoCode()) {
 					// 默认构造器未实现
@@ -238,7 +238,7 @@ class ConstructorVisitor : AbstractVisitor() {
 			if (insn == null) {
 				return null
 			}
-			val type = insn.getType()
+			val type = insn.type
 			if (type == insnType) {
 				return insn
 			}
@@ -249,7 +249,7 @@ class ConstructorVisitor : AbstractVisitor() {
 			}
 			if (type == InsnType.MOVE) {
 				val arg = insn.getArg(0) as RegisterArg
-				return removeAssignChain(mth, arg.getAssignInsn(), remover, insnType)
+				return removeAssignChain(mth, arg.assignInsn, remover, insnType)
 			}
 			return null
 		}

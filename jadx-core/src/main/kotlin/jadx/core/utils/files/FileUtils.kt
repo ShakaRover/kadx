@@ -67,7 +67,6 @@ object FileUtils {
 	 *
 	 * 原 Java 为 `synchronized static`，Kotlin 用 `@Synchronized` 保留互斥语义。
 	 */
-	@JvmStatic
 	@Synchronized
 	fun updateTempRootDir(newTempRootDir: Path): Path {
 		try {
@@ -92,7 +91,6 @@ object FileUtils {
 	}
 
 	/** 列出目录下的直接子项。 */
-	@JvmStatic
 	fun listFiles(dir: Path): List<Path> {
 		try {
 			Files.list(dir).use { files ->
@@ -104,7 +102,6 @@ object FileUtils {
 	}
 
 	/** 列出目录下满足 [filter] 的直接子项。 */
-	@JvmStatic
 	fun listFiles(dir: Path, filter: (Path) -> Boolean): List<Path> {
 		try {
 			Files.list(dir).use { files ->
@@ -116,7 +113,6 @@ object FileUtils {
 	}
 
 	/** 把目录展开为其下的全部普通文件（跟随符号链接）；普通文件原样保留。 */
-	@JvmStatic
 	fun expandDirs(paths: List<Path>): List<Path> {
 		val files = ArrayList<Path>(paths.size)
 		for (path in paths) {
@@ -140,7 +136,6 @@ object FileUtils {
 	}
 
 	/** 把 [source] 文件以 [entryName] 写入 zip/jar 输出流。 */
-	@JvmStatic
 	@Throws(IOException::class)
 	fun addFileToJar(jar: JarOutputStream, source: File, entryName: String) {
 		BufferedInputStream(FileInputStream(source)).use { input ->
@@ -154,14 +149,12 @@ object FileUtils {
 	}
 
 	/** 为文件路径的父目录创建目录（路径可空）。 */
-	@JvmStatic
 	fun makeDirsForFile(path: Path?) {
 		if (path != null) {
 			makeDirs(path.toAbsolutePath().parent.toFile())
 		}
 	}
 
-	@JvmStatic
 	fun makeDirsForFile(file: File?) {
 		if (file != null) {
 			makeDirs(file.parentFile)
@@ -172,7 +165,6 @@ object FileUtils {
 	private val MKDIR_SYNC: Any = Any()
 
 	/** 递归创建目录；目录已存在且不是目录时抛出异常。 */
-	@JvmStatic
 	fun makeDirs(dir: File?) {
 		if (dir != null) {
 			synchronized(MKDIR_SYNC) {
@@ -183,32 +175,27 @@ object FileUtils {
 		}
 	}
 
-	@JvmStatic
 	fun makeDirs(dir: Path?) {
 		if (dir != null) {
 			makeDirs(dir.toFile())
 		}
 	}
 
-	@JvmStatic
 	@Throws(IOException::class)
 	fun deleteFileIfExists(filePath: Path) {
 		Files.deleteIfExists(filePath)
 	}
 
 	/** 删除目录（总是返回 true，保留原 API 语义）。 */
-	@JvmStatic
 	fun deleteDir(dir: File): Boolean {
 		deleteDir(dir.toPath())
 		return true
 	}
 
-	@JvmStatic
 	fun deleteDir(dir: Path) {
 		deleteDir(dir, false)
 	}
 
-	@JvmStatic
 	fun deleteDirIfExists(dir: Path) {
 		if (Files.exists(dir)) {
 			try {
@@ -271,7 +258,6 @@ object FileUtils {
 		}
 	}
 
-	@JvmStatic
 	fun clearTempRootDir() {
 		if (Files.isDirectory(tempRootDir)) {
 			clearDir(tempRootDir)
@@ -279,7 +265,6 @@ object FileUtils {
 	}
 
 	/** 清空目录内容但保留目录本身。 */
-	@JvmStatic
 	fun clearDir(dir: Path) {
 		try {
 			deleteDir(dir, true)
@@ -293,7 +278,6 @@ object FileUtils {
 	 * 请改用 jadx args 中的 [IJadxFilesGetter] 获取临时目录。
 	 */
 	@Deprecated("Migrate to IJadxFilesGetter from jadx args to get temp dir")
-	@JvmStatic
 	fun createTempDir(prefix: String): Path {
 		try {
 			val dir = Files.createTempDirectory(tempRootDir, prefix)
@@ -309,7 +293,6 @@ object FileUtils {
 	 * 请改用 jadx args 中的 [IJadxFilesGetter] 获取临时目录。
 	 */
 	@Deprecated("Migrate to IJadxFilesGetter from jadx args to get temp dir")
-	@JvmStatic
 	fun createTempFile(suffix: String): Path {
 		try {
 			val path = Files.createTempFile(tempRootDir, JADX_TMP_PREFIX, suffix)
@@ -325,7 +308,6 @@ object FileUtils {
 	 * 请改用 jadx args 中的 [IJadxFilesGetter] 获取临时目录。
 	 */
 	@Deprecated("Migrate to IJadxFilesGetter from jadx args to get temp dir")
-	@JvmStatic
 	fun createTempFileNoDelete(suffix: String): Path {
 		try {
 			return Files.createTempFile(Files.createTempDirectory("jadx-persist"), "jadx-", suffix)
@@ -339,7 +321,6 @@ object FileUtils {
 	 * 请改用 jadx args 中的 [IJadxFilesGetter] 获取临时目录。
 	 */
 	@Deprecated("Migrate to IJadxFilesGetter from jadx args to get temp dir")
-	@JvmStatic
 	fun createTempFileNonPrefixed(fileName: String): Path {
 		try {
 			val path = Files.createFile(tempRootDir.resolve(fileName))
@@ -351,7 +332,6 @@ object FileUtils {
 	}
 
 	/** 循环拷贝整个输入流到输出流。 */
-	@JvmStatic
 	@Throws(IOException::class)
 	fun copyStream(input: InputStream, output: OutputStream) {
 		val buffer = ByteArray(READ_BUFFER_SIZE)
@@ -364,16 +344,13 @@ object FileUtils {
 		}
 	}
 
-	@JvmStatic
 	@Throws(IOException::class)
 	fun streamToByteArray(input: InputStream): ByteArray = input.readAllBytes()
 
-	@JvmStatic
 	@Throws(IOException::class)
 	fun streamToString(input: InputStream): String = String(streamToByteArray(input), StandardCharsets.UTF_8)
 
 	/** 安静地关闭资源（失败只记日志）。 */
-	@JvmStatic
 	fun close(c: Closeable?) {
 		if (c == null) {
 			return
@@ -385,7 +362,6 @@ object FileUtils {
 		}
 	}
 
-	@JvmStatic
 	@Throws(IOException::class)
 	fun writeFile(file: Path, data: String) {
 		makeDirsForFile(file)
@@ -399,26 +375,22 @@ object FileUtils {
 		)
 	}
 
-	@JvmStatic
 	@Throws(IOException::class)
 	fun writeFile(file: Path, data: ByteArray) {
 		makeDirsForFile(file)
 		Files.write(file, data, StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
 	}
 
-	@JvmStatic
 	@Throws(IOException::class)
 	fun writeFile(file: Path, inputStream: InputStream) {
 		makeDirsForFile(file)
 		Files.copy(inputStream, file, StandardCopyOption.REPLACE_EXISTING)
 	}
 
-	@JvmStatic
 	@Throws(IOException::class)
 	fun readFile(textFile: Path): String = Files.readString(textFile)
 
 	/** 移动/重命名文件；失败时记录日志并返回 false。 */
-	@JvmStatic
 	fun renameFile(sourcePath: Path, targetPath: Path): Boolean {
 		try {
 			Files.move(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING)
@@ -434,7 +406,6 @@ object FileUtils {
 	}
 
 	/** 返回可安全写入的文件（超长文件名会被裁剪，并确保父目录存在）。 */
-	@JvmStatic
 	fun prepareFile(file: File): File {
 		val saveFile = cutFileName(file)
 		makeDirsForFile(saveFile)
@@ -442,7 +413,6 @@ object FileUtils {
 	}
 
 	/** 文件名过长时截断中段，并附上原文件名的哈希前缀作为唯一标识。 */
-	@JvmStatic
 	fun cutFileName(file: File): File {
 		var name = file.getName()
 		if (name.length <= MAX_FILENAME_LENGTH) {
@@ -467,7 +437,6 @@ object FileUtils {
 	private val HEX_ARRAY: ByteArray = "0123456789abcdef".toByteArray(StandardCharsets.US_ASCII)
 
 	/** 字节数组 → 小写十六进制字符串；null/空数组返回空串。 */
-	@JvmStatic
 	fun bytesToHex(bytes: ByteArray?): String {
 		if (bytes == null || bytes.isEmpty()) {
 			return ""
@@ -482,7 +451,6 @@ object FileUtils {
 	}
 
 	/** 单字节 → 固定 2 位的零填充十六进制字符串。 */
-	@JvmStatic
 	fun byteToHex(value: Int): String {
 		val v = value and 0xFF
 		val hexChars = byteArrayOf(HEX_ARRAY[v ushr 4], HEX_ARRAY[v and 0x0F])
@@ -490,7 +458,6 @@ object FileUtils {
 	}
 
 	/** int → 固定 8 位的零填充十六进制字符串（高位在前）。 */
-	@JvmStatic
 	fun intToHex(value: Int): String {
 		val hexChars = ByteArray(8)
 		var v = value
@@ -504,7 +471,6 @@ object FileUtils {
 	private val ZIP_FILE_MAGIC: ByteArray = byteArrayOf(0x50, 0x4B, 0x03, 0x04)
 
 	/** 通过文件头魔数 `PK\x03\x04` 判断是否为 zip。 */
-	@JvmStatic
 	fun isZipFile(file: File): Boolean {
 		try {
 			FileInputStream(file).use { input ->
@@ -520,7 +486,6 @@ object FileUtils {
 	}
 
 	/** 去掉最后一个扩展名后的文件名（不含目录）。 */
-	@JvmStatic
 	fun getPathBaseName(file: Path): String {
 		val fileName = file.getFileName().toString()
 		val extEndIndex = fileName.lastIndexOf('.')
@@ -531,13 +496,11 @@ object FileUtils {
 	}
 
 	/** 判断路径是否以给定扩展名结尾（忽略大小写，按默认区域转小写，与原 Java `toLowerCase()` 一致）。 */
-	@JvmStatic
 	fun hasExtension(path: Path, extension: String): Boolean {
 		val fileName = path.getFileName().toString()
 		return fileName.lowercase(Locale.getDefault()).endsWith(extension)
 	}
 
-	@JvmStatic
 	fun toFile(path: String?): File? {
 		if (path == null) {
 			return null
@@ -545,31 +508,22 @@ object FileUtils {
 		return File(path)
 	}
 
-	@JvmStatic
 	fun toPaths(files: List<File>): List<Path> = files.map { it.toPath() }
 
-	@JvmStatic
 	fun toPaths(files: Array<File>): List<Path> = files.map { it.toPath() }
 
-	@JvmStatic
 	fun toPathsWithTrim(files: Array<File>): List<Path> = files.map { toPathWithTrim(it) }
 
-	@JvmStatic
 	fun toPathWithTrim(file: File): Path = toPathWithTrim(file.getPath())
 
-	@JvmStatic
 	fun toPathWithTrim(file: String): Path = Path.of(file.trim())
 
-	@JvmStatic
 	fun fileNamesToPaths(fileNames: List<String>): List<Path> = fileNames.map { Paths.get(it) }
 
-	@JvmStatic
 	fun toFiles(paths: List<Path>): List<File> = paths.map { it.toFile() }
 
-	@JvmStatic
 	fun md5Sum(str: String): String = md5Sum(str.toByteArray(StandardCharsets.UTF_8))
 
-	@JvmStatic
 	fun md5Sum(data: ByteArray): String {
 		try {
 			val md = MessageDigest.getInstance("MD5")
@@ -581,7 +535,6 @@ object FileUtils {
 	}
 
 	/** 对输入文件的最后修改时间戳做哈希，用于判断输入是否变化。 */
-	@JvmStatic
 	fun buildInputsHash(inputPaths: List<Path>): String {
 		try {
 			ByteArrayOutputStream().use { bout ->

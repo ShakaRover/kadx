@@ -19,23 +19,19 @@ import java.util.Collections
  *
  * 同样属于区域树节点，保持普通 class（身份语义）。
  */
-class SwitchRegion(parent: IRegion?, private val header: BlockNode) :
+class SwitchRegion(parent: IRegion?, val header: BlockNode) :
 	AbstractRegion(parent),
 	IBranchRegion {
 
 	/** 所有 case 分支，按出现顺序保存 */
-	private val cases: MutableList<CaseInfo> = ArrayList()
-
-	fun getHeader(): BlockNode = header
+	val cases: MutableList<CaseInfo> = ArrayList()
 
 	fun addCase(keysList: List<Any>, c: IContainer) {
 		cases.add(CaseInfo(keysList, c))
 	}
 
-	fun getCases(): MutableList<CaseInfo> = cases
-
 	/** 只取各 case 的代码容器（去掉 key） */
-	fun getCaseContainers(): List<IContainer> = Utils.collectionMap(cases) { it.container }
+	val caseContainers: List<IContainer> get() = Utils.collectionMap(cases) { it.container }
 
 	override fun getSubBlocks(): List<IContainer> {
 		val all = ArrayList<IContainer>(cases.size + 1)
@@ -46,7 +42,7 @@ class SwitchRegion(parent: IRegion?, private val header: BlockNode) :
 		return Collections.unmodifiableList(all)
 	}
 
-	override fun getBranches(): List<IContainer?> = Collections.unmodifiableList(getCaseContainers())
+	override fun getBranches(): List<IContainer?> = Collections.unmodifiableList(caseContainers)
 
 	@Throws(CodegenException::class)
 	override fun generate(regionGen: RegionGen, code: ICodeWriter) {

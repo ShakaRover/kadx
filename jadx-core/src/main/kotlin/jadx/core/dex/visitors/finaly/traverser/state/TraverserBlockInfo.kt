@@ -45,7 +45,7 @@ class TraverserBlockInfo(
 
 	fun duplicate(): TraverserBlockInfo = TraverserBlockInfo(block, bottomOffset, topOffset, bottomImplicitCountValue)
 
-	fun getBottomImplicitCount(): Int = bottomImplicitCountValue
+	val bottomImplicitCount: Int get() = bottomImplicitCountValue
 
 	fun setBottomImplicitOffset(bottomImplicitCount: Int) {
 		this.bottomImplicitCountValue = bottomImplicitCount
@@ -57,7 +57,7 @@ class TraverserBlockInfo(
 	 * 起点是 [topOffset]，终点是 `size - bottomOffset`；若跳过数量超过块内指令数则抛出越界异常，
 	 * 与原 Java 行为一致。
 	 */
-	fun getInsnsSlice(): List<InsnNode> {
+	val insnsSlice: List<InsnNode> get() {
 		val insns = block.getInstructions()
 		val totalSkippedCount = bottomOffset + topOffset
 		if (totalSkippedCount > insns.size) {

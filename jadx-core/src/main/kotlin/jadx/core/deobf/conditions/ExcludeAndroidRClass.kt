@@ -25,7 +25,7 @@ import jadx.core.dex.nodes.MethodNode
 class ExcludeAndroidRClass : AbstractDeobfCondition() {
 
 	override fun check(cls: ClassNode): Action {
-		if (isR(cls.getTopParentClass())) {
+		if (isR(cls.topParentClass)) {
 			return Action.FORBID_RENAME
 		}
 		return Action.NO_ACTION

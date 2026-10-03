@@ -25,7 +25,7 @@ public object VariablesUtils {
 	}
 
 	public fun collect(mth: MethodNode): List<VarInfo> {
-		val codeInfo = mth.getTopParentClass().getCode()
+		val codeInfo = mth.topParentClass.getCode()
 		val mthDefPos = mth.getDefPosition()
 		val mthLineEndPos = CodeUtils.getLineEndForPos(codeInfo.getCodeStr(), mthDefPos)
 		val codeVisitor = CodeVisitor(mth)

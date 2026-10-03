@@ -108,7 +108,7 @@ class AnnotationGen(private val cls: ClassNode, private val classGen: ClassGen) 
 			// TODO: save value type and search using signature
 			val mth = annCls.searchMethodByShortName(paramName)
 			if (mth != null) {
-				return mth.getAlias()
+				return mth.alias
 			}
 		}
 		return paramName
@@ -207,5 +207,5 @@ class AnnotationGen(private val cls: ClassNode, private val classGen: ClassGen) 
 		}
 	}
 
-	private val stringUtils: StringUtils get() = cls.root().getStringUtils()
+	private val stringUtils: StringUtils get() = cls.root().stringUtils
 }

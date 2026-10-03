@@ -23,10 +23,10 @@ import jadx.core.dex.visitors.JadxVisitor
 class FinishTypeInference : AbstractVisitor() {
 
 	override fun visit(mth: MethodNode) {
-		if (mth.isNoCode() || mth.getSVars().isEmpty()) {
+		if (mth.isNoCode() || mth.SVars.isEmpty()) {
 			return
 		}
-		for (ssaVar in mth.getSVars()) {
+		for (ssaVar in mth.SVars) {
 			val type = ssaVar.typeInfo.getType()
 			if (!type.isTypeKnown()) {
 				mth.addWarnComment("Type inference failed for: " + ssaVar.getDetailedVarInfo(mth))

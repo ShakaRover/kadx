@@ -24,10 +24,9 @@ class PackageInfo private constructor(
 
 	companion object {
 		/** 按完整包名获取（或创建）[PackageInfo]，并递归创建父包。 */
-		@JvmStatic
 		@Synchronized
 		fun fromFullPkg(root: RootNode, fullPkg: String): PackageInfo {
-			val existPkg = root.getInfoStorage().getPkg(fullPkg)
+			val existPkg = root.infoStorage.getPkg(fullPkg)
 			if (existPkg != null) {
 				return existPkg
 			}
@@ -40,21 +39,20 @@ class PackageInfo private constructor(
 				val parentPkg = fromFullPkg(root, fullPkg.substring(0, lastDot))
 				newPkg = PackageInfo(fullPkg, parentPkg, fullPkg.substring(lastDot + 1))
 			}
-			root.getInfoStorage().putPkg(newPkg)
+			root.infoStorage.putPkg(newPkg)
 			return newPkg
 		}
 
 		/** 按父包 + 短名获取（或创建）[PackageInfo]。 */
-		@JvmStatic
 		@Synchronized
 		fun fromShortName(root: RootNode, parent: PackageInfo?, shortName: String): PackageInfo {
 			val fullPkg = if (parent == null) shortName else parent.fullName + '.' + shortName
-			val existPkg = root.getInfoStorage().getPkg(fullPkg)
+			val existPkg = root.infoStorage.getPkg(fullPkg)
 			if (existPkg != null) {
 				return existPkg
 			}
 			val newPkg = PackageInfo(fullPkg, parent, shortName)
-			root.getInfoStorage().putPkg(newPkg)
+			root.infoStorage.putPkg(newPkg)
 			return newPkg
 		}
 	}

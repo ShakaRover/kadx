@@ -20,14 +20,12 @@ class PackageNode(
 	ICodeNodeRef,
 	Comparable<PackageNode> {
 	companion object {
-		@JvmStatic
 		fun getForClass(root: RootNode, fullPkg: String, cls: ClassNode): PackageNode {
 			val pkg = getOrBuild(root, fullPkg)
 			pkg.classes.add(cls)
 			return pkg
 		}
 
-		@JvmStatic
 		fun getOrBuild(root: RootNode, fullPkg: String): PackageNode {
 			val existPkg = root.resolvePackage(fullPkg)
 			if (existPkg != null) return existPkg
@@ -87,7 +85,7 @@ class PackageNode(
 		if (pkgInfo.name == alias) {
 			this.aliasPkgInfo = pkgInfo
 		} else {
-			this.aliasPkgInfo = PackageInfo.fromShortName(root, getParentAliasPkgInfo(), alias)
+			this.aliasPkgInfo = PackageInfo.fromShortName(root, parentAliasPkgInfo, alias)
 		}
 		if (runUpdates) {
 			updatePackages(this)
@@ -106,7 +104,7 @@ class PackageNode(
 	}
 
 	override fun onParentPackageUpdate(updatedPkg: PackageNode) {
-		aliasPkgInfo = PackageInfo.fromShortName(root, getParentAliasPkgInfo(), aliasPkgInfo.name)
+		aliasPkgInfo = PackageInfo.fromShortName(root, parentAliasPkgInfo, aliasPkgInfo.name)
 		updatePackages(updatedPkg)
 	}
 
@@ -123,9 +121,9 @@ class PackageNode(
 		}
 	}
 
-	fun getName(): String = pkgInfo.name
+	val name: String get() = pkgInfo.name
 
-	fun getFullName(): String = pkgInfo.fullName
+	val fullName: String get() = pkgInfo.fullName
 
 	fun getPkgInfo(): PackageInfo = pkgInfo
 
@@ -147,7 +145,7 @@ class PackageNode(
 
 	fun getParentPkg(): PackageNode? = parentPkg
 
-	fun getParentAliasPkgInfo(): PackageInfo? = parentPkg?.aliasPkgInfo
+	val parentAliasPkgInfo: PackageInfo? get() = parentPkg?.aliasPkgInfo
 
 	fun isRoot(): Boolean = parentPkg == null
 
@@ -159,7 +157,7 @@ class PackageNode(
 
 	fun getClasses(): List<ClassNode> = classes
 
-	fun getClassesNoDup(): List<ClassNode> {
+	val classesNoDup: List<ClassNode> get() {
 		val set = HashSet<ClassInfo>()
 		for (cls in classes) {
 			set.add(cls.classInfo)

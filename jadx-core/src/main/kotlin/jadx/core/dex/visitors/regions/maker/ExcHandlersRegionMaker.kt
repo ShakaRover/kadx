@@ -41,9 +41,9 @@ class ExcHandlersRegionMaker(private val mth: MethodNode, private val regionMake
 	private fun collectHandlerRegions(): IRegion? {
 		val tcs = mth.getAll(AType.TRY_BLOCKS_LIST)
 		for (tc in tcs) {
-			val blocks = ArrayList<BlockNode>(tc.getHandlersCount())
+			val blocks = ArrayList<BlockNode>(tc.handlersCount)
 			val splitters: MutableSet<BlockNode> = HashSet()
-			for (handler in tc.getHandlers()) {
+			for (handler in tc.handlers) {
 				val handlerBlock = handler.getHandlerBlock()
 				if (handlerBlock != null) {
 					blocks.add(handlerBlock)
@@ -70,7 +70,7 @@ class ExcHandlersRegionMaker(private val mth: MethodNode, private val regionMake
 					}
 				}
 			}
-			for (handler in tc.getHandlers()) {
+			for (handler in tc.handlers) {
 				processExcHandler(handler, exits)
 			}
 		}
@@ -84,7 +84,7 @@ class ExcHandlersRegionMaker(private val mth: MethodNode, private val regionMake
 
 		val successorBlocks: MutableSet<IBlock> = HashSet()
 		for (tc in tcs) {
-			for (handler in tc.getHandlers()) {
+			for (handler in tc.handlers) {
 				val region = handler.getHandlerRegion()
 				if (region != null) {
 					val lastBlock = RegionUtils.getLastBlock(region)
@@ -99,7 +99,7 @@ class ExcHandlersRegionMaker(private val mth: MethodNode, private val regionMake
 		if (successorBlocks.isEmpty()) {
 			return null
 		}
-		val stack = regionMaker.getStack()
+		val stack = regionMaker.stack
 		val excOutRegion = Region(mth.region)
 		for (block in successorBlocks) {
 			if (block is BlockNode) {
@@ -113,7 +113,7 @@ class ExcHandlersRegionMaker(private val mth: MethodNode, private val regionMake
 
 	private fun processExcHandler(handler: ExceptionHandler, exits: Set<BlockNode>) {
 		val start = handler.getHandlerBlock() ?: return
-		val stack = regionMaker.getStack().clear()
+		val stack = regionMaker.stack.clear()
 		val dom: BlockNode
 		if (handler.isFinally()) {
 			dom = BlockUtils.getTopSplitterForHandler(start)

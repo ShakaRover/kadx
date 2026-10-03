@@ -125,7 +125,7 @@ class ProcessClass(
 
 	/** 生成类的代码：先处理其依赖，再处理自身并生成。 */
 	fun generateCode(cls: ClassNode): ICodeInfo {
-		val topParentClass = cls.getTopParentClass()
+		val topParentClass = cls.topParentClass
 		if (topParentClass !== cls) {
 			return generateCode(topParentClass)
 		}
@@ -157,7 +157,7 @@ class ProcessClass(
 
 	/** 只加载并处理类本身，不处理其依赖。 */
 	fun forceProcess(cls: ClassNode) {
-		val topParentClass = cls.getTopParentClass()
+		val topParentClass = cls.topParentClass
 		if (topParentClass !== cls) {
 			forceProcess(topParentClass)
 			return
@@ -200,7 +200,7 @@ class ProcessClass(
 
 	/** 按模式构造 Pass 链：FALLBACK 与 SIMPLE 使用各自链，其余模式不支持。 */
 	private fun getPassesForMode(baseArgs: JadxArgs, mode: DecompilationMode): MutableList<IDexTreeVisitor> = when (mode) {
-		DecompilationMode.FALLBACK -> Jadx.getFallbackPassesList()
+		DecompilationMode.FALLBACK -> Jadx.fallbackPassesList
 
 		DecompilationMode.SIMPLE -> {
 			// 复制必要属性到新的 args（与 Jadx.getSimpleModePasses 中的用法保持一致）
@@ -243,7 +243,7 @@ class ProcessClass(
 
 	/** 重新加载方法并处理到指定 visitor；到达目标后返回 true。 */
 	fun processMethodToVisitor(mth: MethodNode, lastPassToProcess: IDexTreeVisitor): Boolean {
-		synchronized(mth.getTopParentClass().classInfo) {
+		synchronized(mth.topParentClass.classInfo) {
 			try {
 				mth.unload()
 				mth.load()
@@ -261,5 +261,5 @@ class ProcessClass(
 	}
 
 	// TODO: make passes list private and not visible
-	fun getPasses(): MutableList<IDexTreeVisitor> = passesList
+	val passes: MutableList<IDexTreeVisitor> get() = passesList
 }

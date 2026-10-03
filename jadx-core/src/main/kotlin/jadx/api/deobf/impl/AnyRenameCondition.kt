@@ -29,7 +29,7 @@ class AnyRenameCondition(private val predicate: BiPredicate<String, IDexNode>) :
 
 	override fun shouldRename(cls: ClassNode): Boolean = predicate.test(cls.alias, cls)
 
-	override fun shouldRename(fld: FieldNode): Boolean = predicate.test(fld.getAlias(), fld)
+	override fun shouldRename(fld: FieldNode): Boolean = predicate.test(fld.alias, fld)
 
-	override fun shouldRename(mth: MethodNode): Boolean = predicate.test(mth.getAlias(), mth)
+	override fun shouldRename(mth: MethodNode): Boolean = predicate.test(mth.alias, mth)
 }

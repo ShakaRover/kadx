@@ -56,9 +56,9 @@ class FixSwitchOverEnum : AbstractVisitor() {
 			return
 		}
 		var changed = false
-		for (block in checkNotNull(mth.getBasicBlocks())) {
+		for (block in checkNotNull(mth.basicBlocks)) {
 			for (insn in block.getInstructions()) {
-				if (insn.getType() == InsnType.SWITCH && !insn.contains(AFlag.REMOVE)) {
+				if (insn.type == InsnType.SWITCH && !insn.contains(AFlag.REMOVE)) {
 					if (processEnumSwitch(mth, insn as SwitchInsn)) {
 						changed = true
 					}
@@ -78,7 +78,7 @@ class FixSwitchOverEnum : AbstractVisitor() {
 				return false
 			}
 			val wrapInsn = (arg as InsnWrapArg).wrapInsn
-			when (wrapInsn.getType()) {
+			when (wrapInsn.type) {
 				InsnType.AGET -> return processRemappedEnumSwitch(mth, insn, wrapInsn, arg)
 				InsnType.INVOKE -> return processDirectEnumSwitch(mth, insn, wrapInsn as InvokeNode, arg)
 				else -> {}
@@ -105,7 +105,7 @@ class FixSwitchOverEnum : AbstractVisitor() {
 				replaceMap[key] = replaceObj
 			}
 			val region = regionRefAttr.region as SwitchRegion
-			for (caseInfo in region.getCases()) {
+			for (caseInfo in region.cases) {
 				val keys = caseInfo.keys as MutableList<Any>
 				for (j in keys.indices) {
 					val k = keys[j]
@@ -171,15 +171,15 @@ class FixSwitchOverEnum : AbstractVisitor() {
 		}
 
 		private fun initClsEnumMap(enumCls: ClassNode) {
-			val clsInitMth = enumCls.getClassInitMth()
+			val clsInitMth = enumCls.classInitMth
 			if (clsInitMth == null || clsInitMth.isNoCode()) {
 				return
 			}
-			val blocks = clsInitMth.getBasicBlocks() ?: return
+			val blocks = clsInitMth.basicBlocks ?: return
 			val mapAttr = EnumMapAttr()
 			for (block in blocks) {
 				for (insn in block.getInstructions()) {
-					if (insn.getType() == InsnType.APUT) {
+					if (insn.type == InsnType.APUT) {
 						addToEnumMap(enumCls.root(), mapAttr, insn)
 					}
 				}
@@ -227,7 +227,7 @@ class FixSwitchOverEnum : AbstractVisitor() {
 			}
 			val invInsn = (invArg as InsnWrapArg).wrapInsn
 			val sgetInsn = (sgetArg as InsnWrapArg).wrapInsn
-			if (invInsn.getType() != InsnType.INVOKE || sgetInsn.getType() != InsnType.SGET) {
+			if (invInsn.type != InsnType.INVOKE || sgetInsn.type != InsnType.SGET) {
 				return null
 			}
 			val inv = invInsn as InvokeNode

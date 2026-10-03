@@ -43,7 +43,7 @@ class ClspMethod(
 	fun containsGenericArgs(): Boolean = argTypes != methodInfo.argumentsTypes
 
 	/** 参数个数 */
-	fun getArgsCount(): Int = argTypes.size
+	val argsCount: Int get() = argTypes.size
 
 	override fun getTypeParameters(): List<ArgType> = typeParameters
 

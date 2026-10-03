@@ -32,7 +32,7 @@ class JadxClassNodeAssertions(cls: ClassNode) : AbstractObjectAssert<JadxClassNo
 
 	fun disasmCode(): JadxCodeAssertions {
 		isNotNull()
-		val disasmCode = actual.getDisassembledCode()
+		val disasmCode = actual.disassembledCode
 		assertThat(disasmCode).isNotNull().isNotBlank()
 		return JadxCodeAssertions(disasmCode)
 	}

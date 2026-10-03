@@ -37,7 +37,6 @@ class PostProcessRegions private constructor() : AbstractRegionVisitor() {
 	companion object {
 		private val INSTANCE: IRegionVisitor = PostProcessRegions()
 
-		@JvmStatic
 		fun process(mth: MethodNode) {
 			DepthRegionTraversal.traverse(mth, INSTANCE)
 		}

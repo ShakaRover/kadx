@@ -47,8 +47,8 @@ class CheckCode : AbstractVisitor() {
 			return true
 		}
 		for (insn in insns) {
-			if (insn != null && insn.getType() != InsnType.NOP) {
-				if (insn.getType() == InsnType.RETURN && insn.getArgsCount() == 0) {
+			if (insn != null && insn.type != InsnType.NOP) {
+				if (insn.type == InsnType.RETURN && insn.argsCount == 0) {
 					// 忽略 void 返回
 				} else {
 					// 发现有用指令

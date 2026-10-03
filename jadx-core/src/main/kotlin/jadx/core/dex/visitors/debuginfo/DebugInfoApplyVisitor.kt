@@ -74,7 +74,7 @@ class DebugInfoApplyVisitor : AbstractVisitor() {
 				return
 			}
 			var i = 0
-			for (mthArg in mth.getArgRegs()) {
+			for (mthArg in mth.argRegs) {
 				val paramInfo = params[i++]
 				val name = paramInfo.name
 				if (NameMapper.isValidAndPrintable(name)) {
@@ -97,7 +97,7 @@ class DebugInfoApplyVisitor : AbstractVisitor() {
 			if (Consts.DEBUG_TYPE_INFERENCE) {
 				LOG.info("Apply debug info for method: {}", mth)
 			}
-			for (ssaVar in mth.getSVars()) {
+			for (ssaVar in mth.SVars) {
 				searchAndApplyVarDebugInfo(mth, ssaVar)
 			}
 
@@ -109,7 +109,7 @@ class DebugInfoApplyVisitor : AbstractVisitor() {
 			if (applyDebugInfo(mth, ssaVar, ssaVar.assign)) {
 				return
 			}
-			for (useArg in ssaVar.getUseList()) {
+			for (useArg in ssaVar.useList) {
 				if (applyDebugInfo(mth, ssaVar, useArg)) {
 					return
 				}
@@ -119,7 +119,7 @@ class DebugInfoApplyVisitor : AbstractVisitor() {
 
 		private fun searchDebugInfoByOffset(mth: MethodNode, ssaVar: SSAVar) {
 			val debugInfoAttr = mth.get(AType.LOCAL_VARS_DEBUG_INFO) ?: return
-			val useList = ssaVar.getUseList()
+			val useList = ssaVar.useList
 			if (useList.isEmpty()) {
 				return
 			}
@@ -161,15 +161,13 @@ class DebugInfoApplyVisitor : AbstractVisitor() {
 			return -1
 		}
 
-		@JvmStatic
 		fun applyDebugInfo(mth: MethodNode, ssaVar: SSAVar, arg: RegisterArg): Boolean {
 			val debugInfoAttr = arg.get(AType.REG_DEBUG_INFO) ?: return false
 			return applyDebugInfo(mth, ssaVar, debugInfoAttr.regType, debugInfoAttr.name)
 		}
 
-		@JvmStatic
 		fun applyDebugInfo(mth: MethodNode, ssaVar: SSAVar, type: ArgType, varName: String?): Boolean {
-			val result = mth.root().getTypeUpdate().applyDebugInfo(mth, ssaVar, type)
+			val result = mth.root().typeUpdate.applyDebugInfo(mth, ssaVar, type)
 			if (result == TypeUpdateResult.REJECT) {
 				if (Consts.DEBUG_TYPE_INFERENCE) {
 					LOG.debug("Reject debug info of type: {} and name: '{}' for {}, mth: {}", type, varName, ssaVar, mth)
@@ -188,8 +186,8 @@ class DebugInfoApplyVisitor : AbstractVisitor() {
 				return
 			}
 			var origReturn: InsnNode? = null
-			val newReturns = ArrayList<InsnNode>(mth.getPreExitBlocks().size)
-			for (exit in mth.getPreExitBlocks()) {
+			val newReturns = ArrayList<InsnNode>(mth.preExitBlocks.size)
+			for (exit in mth.preExitBlocks) {
 				val ret = BlockUtils.getLastInsn(exit)
 				if (ret != null) {
 					if (ret.contains(AFlag.ORIG_RETURN)) {
@@ -215,9 +213,9 @@ class DebugInfoApplyVisitor : AbstractVisitor() {
 		}
 
 		private fun fixNamesForPhiInsns(mth: MethodNode) {
-			for (ssaVar in mth.getSVars()) {
-				for (phiInsn in ssaVar.getUsedInPhi()) {
-					val names = HashSet<String>(1 + phiInsn.getArgsCount())
+			for (ssaVar in mth.SVars) {
+				for (phiInsn in ssaVar.usedInPhi) {
+					val names = HashSet<String>(1 + phiInsn.argsCount)
 					addArgName(phiInsn.getResult(), names)
 					for (arg in phiInsn.getArguments()) {
 						addArgName(arg, names)

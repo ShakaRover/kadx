@@ -28,7 +28,7 @@ object KotlinUtils {
 				?: return@mapNotNull null
 			MethodRename(
 				mth = mth,
-				alias = getGetterAlias(field.getAlias()),
+				alias = getGetterAlias(field.alias),
 			)
 		}
 	}
@@ -37,8 +37,8 @@ object KotlinUtils {
 		it.getReturnType() == field.type &&
 			it.argTypes.isEmpty() &&
 			it.insnsCount == 3 &&
-			it.getSVars().size == 2 &&
-			(it.getSVars()[1].assignInsn as? IndexInsnNode)?.index == field
+			it.SVars.size == 2 &&
+			(it.SVars[1].assignInsn as? IndexInsnNode)?.index == field
 	}
 
 	private fun getGetterAlias(fieldAlias: String): String {
@@ -62,7 +62,7 @@ object KotlinUtils {
 		val insnList = possibleMthList.filter {
 			val exit = it.exitBlock ?: return@filter false
 			val dom = exit.idom ?: return@filter false
-			if (dom.getInstructions().firstOrNull()?.getType() != InsnType.RETURN) {
+			if (dom.getInstructions().firstOrNull()?.type != InsnType.RETURN) {
 				return@filter false
 			}
 			val dom2 = dom.idom ?: return@filter false
@@ -78,7 +78,7 @@ object KotlinUtils {
 		return remapped.map { (defaultMethod, originalMethod) ->
 			MethodRename(
 				mth = defaultMethod,
-				alias = getDefaultMethodAlias(originalMethod.getAlias()),
+				alias = getDefaultMethodAlias(originalMethod.alias),
 			)
 		}
 	}

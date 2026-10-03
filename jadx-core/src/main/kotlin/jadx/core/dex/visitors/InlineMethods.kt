@@ -47,9 +47,9 @@ class InlineMethods : AbstractVisitor() {
 		if (mth.isNoCode()) {
 			return
 		}
-		for (block in checkNotNull(mth.getBasicBlocks())) {
+		for (block in checkNotNull(mth.basicBlocks)) {
 			for (insn in block.getInstructions()) {
-				if (insn.getType() == InsnType.INVOKE) {
+				if (insn.type == InsnType.INVOKE) {
 					processInvokeInsn(mth, block, insn as InvokeNode)
 				}
 			}
@@ -91,7 +91,7 @@ class InlineMethods : AbstractVisitor() {
 		block: BlockNode,
 		insn: InvokeNode,
 	) {
-		val inlCopy = checkNotNull(mia.getInsn()).copyWithoutResult<InsnNode>()
+		val inlCopy = checkNotNull(mia.insn).copyWithoutResult<InsnNode>()
 		if (replaceRegs(mth, callMth, mia, insn, inlCopy)) {
 			val methodDetailsAttr = inlCopy.get(AType.METHOD_DETAILS)
 			// replaceInsn 会一并替换属性，需确保保留 METHOD_DETAILS
@@ -99,7 +99,7 @@ class InlineMethods : AbstractVisitor() {
 				if (methodDetailsAttr != null) {
 					inlCopy.addAttr(methodDetailsAttr)
 				}
-				updateUsageInfo(mth, callMth, mia.getInsn())
+				updateUsageInfo(mth, callMth, mia.insn)
 				return
 			}
 		}
@@ -120,7 +120,7 @@ class InlineMethods : AbstractVisitor() {
 			if (callMth.getMethodInfo().argumentsTypes.isNotEmpty()) {
 				// 重映射参数
 				val regs = arrayOfNulls<InsnArg>(callMth.getRegsCount())
-				val regNums = checkNotNull(mia.getArgsRegNums())
+				val regNums = checkNotNull(mia.argsRegNums)
 				for (i in regNums.indices) {
 					val arg = insn.getArg(i)
 					regs[regNums[i]] = arg
@@ -148,7 +148,7 @@ class InlineMethods : AbstractVisitor() {
 			val resultArg = insn.getResult()
 			if (resultArg != null) {
 				inlCopy.setResult(resultArg.duplicate())
-			} else if (isAssignNeeded(mia.getInsn(), insn, callMth)) {
+			} else if (isAssignNeeded(mia.insn, insn, callMth)) {
 				// 添加伪结果以生成正确的 java 表达式（见测试 TestGetterInlineNegative）
 				inlCopy.setResult(mth.makeSyntheticRegArg(callMth.getReturnType(), "unused"))
 			}
@@ -166,7 +166,7 @@ class InlineMethods : AbstractVisitor() {
 		if (parentInsn.contains(AFlag.WRAPPED)) {
 			return false
 		}
-		if (inlineInsn != null && inlineInsn.getType() == InsnType.IPUT) {
+		if (inlineInsn != null && inlineInsn.type == InsnType.IPUT) {
 			return false
 		}
 		return !callMthNode.isVoidReturn()
@@ -179,7 +179,7 @@ class InlineMethods : AbstractVisitor() {
 		insn?.visitInsns(
 			{ innerInsn ->
 				// TODO: 与 UsageInfoVisitor 共享代码
-				when (innerInsn.getType()) {
+				when (innerInsn.type) {
 					InsnType.INVOKE, InsnType.CONSTRUCTOR -> {
 						val callMth: MethodInfo = (innerInsn as BaseInvokeNode).callMth
 						val callMthNode = mth.root().resolveMethod(callMth)

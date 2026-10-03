@@ -1,7 +1,7 @@
 package jadx.plugins.tools
 
 import jadx.api.plugins.JadxPlugin
-import jadx.core.Jadx.getVersion
+import jadx.core.Jadx.version
 import jadx.core.plugins.versions.VerifyRequiredVersion
 import jadx.core.utils.StringUtils.Companion.notBlank
 import jadx.core.utils.Utils.getOrElse
@@ -75,7 +75,7 @@ class JadxPluginsTools private constructor() {
 		}
 		throw JadxRuntimeException(
 			"Can't find compatible version to install" +
-				", current jadx version: ${verifyRequiredVersion.getJadxVersion()}" +
+				", current jadx version: ${verifyRequiredVersion.jadxVersion}" +
 				"\nrejected plugin versions:\n" +
 				rejectedVersions.joinToString("\n"),
 		)
@@ -205,7 +205,7 @@ class JadxPluginsTools private constructor() {
 		if (!VerifyRequiredVersion.isJadxCompatible(reqVersionStr)) {
 			throw JadxRuntimeException(
 				"Can't install plugin, required version: \"$reqVersionStr\"" +
-					" is not compatible with current jadx version: ${getVersion()}",
+					" is not compatible with current jadx version: $version",
 			)
 		}
 		uninstall(checkNotNull(metadata.pluginId))

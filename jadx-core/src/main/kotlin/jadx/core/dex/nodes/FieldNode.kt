@@ -52,9 +52,9 @@ class FieldNode(
 
 	fun isInstance(): Boolean = !accFlags.isStatic()
 
-	fun getName(): String = fieldInfo.name
+	val name: String get() = fieldInfo.name
 
-	fun getAlias(): String = fieldInfo.alias
+	val alias: String get() = fieldInfo.alias
 
 	override fun rename(alias: String) {
 		fieldInfo.alias = alias
@@ -62,7 +62,7 @@ class FieldNode(
 
 	override fun getDeclaringClass(): ClassNode? = parentClass
 
-	fun getTopParentClass(): ClassNode = parentClass.getTopParentClass()
+	val topParentClass: ClassNode get() = parentClass.topParentClass
 
 	// 协变返回类型：保留 Java 原 API 的 List<MethodNode>
 	override fun getUseIn(): List<MethodNode> = useIn

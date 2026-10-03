@@ -51,24 +51,21 @@ class ClassInfo private constructor(
 
 	companion object {
 		/** 从 [ArgType] 获取（或创建）[ClassInfo]，并写入缓存。 */
-		@JvmStatic
 		fun fromType(root: RootNode, type: ArgType): ClassInfo {
 			val clsType = checkClassType(type)
-			val cls = root.getInfoStorage().getCls(clsType)
+			val cls = root.infoStorage.getCls(clsType)
 			if (cls != null) {
 				return cls
 			}
 			val canBeInner = root.getArgs().isMoveInnerClasses
 			val newClsInfo = ClassInfo(root, clsType, canBeInner)
-			return root.getInfoStorage().putCls(newClsInfo)
+			return root.infoStorage.putCls(newClsInfo)
 		}
 
 		/** 按完整类名获取（或创建）[ClassInfo]。 */
-		@JvmStatic
 		fun fromName(root: RootNode, clsName: String): ClassInfo = fromType(root, ArgType.`object`(clsName))
 
 		/** 不走缓存，直接构造一个新的 [ClassInfo]（用于重命名等场景）。 */
-		@JvmStatic
 		fun fromNameWithoutCache(root: RootNode, fullClsName: String, canBeInner: Boolean): ClassInfo = ClassInfo(root, ArgType.`object`(fullClsName), canBeInner)
 
 		/** 校验并规范化类类型：数组退化为 Object，泛型对象去掉泛型参数。 */

@@ -32,8 +32,8 @@ import jadx.core.utils.exceptions.CodegenException
  */
 class LoopRegion(
 	parent: IRegion?,
-	private val info: LoopInfo,
-	private val header: BlockNode?,
+	val info: LoopInfo,
+	val header: BlockNode?,
 	private val conditionAtEnd: Boolean,
 ) : ConditionRegion(parent) {
 
@@ -49,10 +49,6 @@ class LoopRegion(
 			updateCondition(header)
 		}
 	}
-
-	fun getInfo(): LoopInfo = info
-
-	fun getHeader(): BlockNode? = header
 
 	/** 没有条件头块 => 无限循环 `while (true)` */
 	fun isEndless(): Boolean = header == null
@@ -84,7 +80,7 @@ class LoopRegion(
 			return true
 		}
 		val condition = getCondition() ?: return false
-		val conditionArgs = condition.getRegisterArgs()
+		val conditionArgs = condition.registerArgs
 		if (conditionArgs.isEmpty()) {
 			return false
 		}
@@ -92,7 +88,7 @@ class LoopRegion(
 		for (i in 0 until size) {
 			val insn = insns[i]
 			val res = insn.getResult() ?: return false
-			if (checkNotNull(res.sVar).getUseCount() > 1) {
+			if (checkNotNull(res.sVar).useCount > 1) {
 				return false
 			}
 			var found = false
@@ -134,7 +130,7 @@ class LoopRegion(
 		}
 	}
 
-	fun getSourceLine(): Int {
+	val sourceLine: Int get() {
 		val lastInsn = BlockUtils.getLastInsn(header)
 		val headerLine = lastInsn?.getSourceLine() ?: 0
 		if (headerLine != 0) {

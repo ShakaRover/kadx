@@ -58,7 +58,6 @@ class TerminalTraverserState(
 	override fun duplicateInternalState(comparatorState: TraverserActivePathState): TraverserState = TerminalTraverserState(comparatorState, terminationReason)
 
 	companion object {
-		@JvmStatic
 		fun getFactory(terminationReason: TerminationReason): TraverserStateFactory<TerminalTraverserState> = TerminalStateFactory(terminationReason)
 	}
 

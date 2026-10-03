@@ -27,8 +27,8 @@ import java.util.IdentityHashMap
  * - `stream().sorted()` 改为 [getSortedUpdates] 普通排序。
  */
 class TypeUpdateInfo(
-	private val mth: MethodNode,
-	private val flags: TypeUpdateFlags,
+	val mth: MethodNode,
+	val flags: TypeUpdateFlags,
 	args: JadxArgs,
 ) {
 	private val updateMap: MutableMap<InsnArg, TypeUpdateEntry> = IdentityHashMap()
@@ -42,7 +42,7 @@ class TypeUpdateInfo(
 	}
 
 	fun saveCallback(request: TypeUpdateRequest) {
-		if (request.getCallback() != null) {
+		if (request.callback != null) {
 			callbackQueue.add(request)
 		}
 	}
@@ -57,7 +57,7 @@ class TypeUpdateInfo(
 		if (prev != null) {
 			throw JadxRuntimeException(
 				"Unexpected type update override for arg: " + arg +
-					" types: prev=" + prev.getType() + ", new=" + changeType +
+					" types: prev=" + prev.type + ", new=" + changeType +
 					", insn: " + arg.getParentInsn(),
 			)
 		}
@@ -77,10 +77,10 @@ class TypeUpdateInfo(
 	fun rollbackUpdate(arg: InsnArg) {
 		val removed = updateMap.remove(arg)
 		if (removed != null) {
-			val seq = removed.getSeq()
+			val seq = removed.seq
 			val iter = updateMap.values.iterator()
 			while (iter.hasNext()) {
-				if (iter.next().getSeq() > seq) {
+				if (iter.next().seq > seq) {
 					iter.remove()
 				}
 			}
@@ -89,8 +89,8 @@ class TypeUpdateInfo(
 
 	/** 按 seq 升序把记录的更新真正写回各参数类型。 */
 	fun applyUpdates() {
-		for (upd in getSortedUpdates()) {
-			upd.getArg().setType(upd.getType())
+		for (upd in sortedUpdates) {
+			upd.arg.setType(upd.type)
 		}
 	}
 
@@ -99,7 +99,7 @@ class TypeUpdateInfo(
 	fun hasUpdateWithType(arg: InsnArg, type: ArgType): Boolean {
 		val updateEntry = updateMap[arg]
 		if (updateEntry != null) {
-			return updateEntry.getType() == type
+			return updateEntry.type == type
 		}
 		return false
 	}
@@ -107,18 +107,14 @@ class TypeUpdateInfo(
 	fun getType(arg: InsnArg): ArgType {
 		val updateEntry = updateMap[arg]
 		if (updateEntry != null) {
-			return updateEntry.getType()
+			return updateEntry.type
 		}
 		return arg.getType()
 	}
 
-	fun getMth(): MethodNode = mth
-
 	fun isEmpty(): Boolean = updateMap.isEmpty()
 
-	fun getSortedUpdates(): List<TypeUpdateEntry> = updateMap.values.sorted()
+	val sortedUpdates: List<TypeUpdateEntry> get() = updateMap.values.sorted()
 
-	fun getFlags(): TypeUpdateFlags = flags
-
-	override fun toString(): String = "TypeUpdateInfo{$flags ${getSortedUpdates()}}"
+	override fun toString(): String = "TypeUpdateInfo{$flags $sortedUpdates}"
 }

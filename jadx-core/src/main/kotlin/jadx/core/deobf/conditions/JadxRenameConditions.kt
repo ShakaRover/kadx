@@ -26,7 +26,6 @@ class JadxRenameConditions {
 		 * 调用方拿到列表后可以增删条件，再交给
 		 * [CombineDeobfConditions.combine] 组合。
 		 */
-		@JvmStatic
 		fun buildDefaultDeobfConditions(): List<IDeobfCondition> {
 			val list = ArrayList<IDeobfCondition>()
 			list.add(BaseDeobfCondition())
@@ -39,7 +38,6 @@ class JadxRenameConditions {
 		}
 
 		/** 用默认条件列表构建 jadx 默认的 [IRenameCondition]。 */
-		@JvmStatic
 		fun buildDefault(): IRenameCondition = CombineDeobfConditions.combine(buildDefaultDeobfConditions())
 	}
 }

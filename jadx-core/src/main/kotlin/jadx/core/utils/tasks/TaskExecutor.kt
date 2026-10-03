@@ -256,7 +256,6 @@ class TaskExecutor : ITaskExecutor {
 		private val LOG: Logger = LoggerFactory.getLogger(TaskExecutor::class.java)
 
 		/** 阻塞等待线程池结束；超时（10 天）则抛出 [JadxRuntimeException]。 */
-		@JvmStatic
 		fun awaitExecutorTermination(executor: ExecutorService) {
 			try {
 				val complete = executor.awaitTermination(10, TimeUnit.DAYS)

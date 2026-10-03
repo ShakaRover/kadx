@@ -21,7 +21,6 @@ object LogUtils {
 	 */
 	private val REPLACE_PATTERN: Pattern = Pattern.compile("[^\\w\\.:;, -]")
 
-	@JvmStatic
 	fun escape(input: String?): String {
 		if (input == null) {
 			return "null"
@@ -29,7 +28,6 @@ object LogUtils {
 		return REPLACE_PATTERN.matcher(input).replaceAll(".")
 	}
 
-	@JvmStatic
 	fun escape(input: ByteArray?): String {
 		if (input == null) {
 			return "null"

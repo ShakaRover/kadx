@@ -103,7 +103,7 @@ class UsageInfoVisitor : AbstractVisitor() {
 			for (interfaceType in cls.interfaces) {
 				usageInfo.clsUse(cls, interfaceType)
 			}
-			for (genericTypeParameter in cls.getGenericTypeParameters()) {
+			for (genericTypeParameter in cls.genericTypeParameters) {
 				usageInfo.clsUse(cls, genericTypeParameter)
 			}
 			for (fieldNode in cls.fields) {
@@ -135,7 +135,7 @@ class UsageInfoVisitor : AbstractVisitor() {
 			if (mth.isNoCode()) {
 				return
 			}
-			val codeReader: ICodeReader = mth.getCodeReader() ?: return
+			val codeReader: ICodeReader = mth.codeReader ?: return
 			val root = mth.root()
 			codeReader.visitInstructions { insnData ->
 				try {
@@ -266,7 +266,6 @@ class UsageInfoVisitor : AbstractVisitor() {
 			}
 		}
 
-		@JvmStatic
 		fun replaceMethodUsage(mergeIntoMth: MethodNode, sourceMth: MethodNode) {
 			val mergedUsage = ArrayList(ListUtils.distinctMergeSortedLists(mergeIntoMth.getUseIn(), sourceMth.getUseIn()))
 			mergedUsage.remove(sourceMth)

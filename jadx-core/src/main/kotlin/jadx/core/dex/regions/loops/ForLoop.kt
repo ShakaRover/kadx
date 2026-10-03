@@ -8,9 +8,4 @@ import jadx.core.dex.nodes.InsnNode
  * 保存初始化指令 [initInsn] 与自增指令 [incrInsn]，供 codegen 生成
  * `for (init; cond; incr)` 的三段式头部。
  */
-class ForLoop(private val initInsn: InsnNode, private val incrInsn: InsnNode) : LoopType() {
-
-	fun getInitInsn(): InsnNode = initInsn
-
-	fun getIncrInsn(): InsnNode = incrInsn
-}
+class ForLoop(val initInsn: InsnNode, val incrInsn: InsnNode) : LoopType()

@@ -25,9 +25,9 @@ class TypeBoundInvokeAssign(
 
 	override fun getBound(): BoundEnum = BoundEnum.ASSIGN
 
-	override fun getType(updateInfo: TypeUpdateInfo): ArgType = getReturnType(updateInfo.getType(getInstanceArg()))
+	override fun getType(updateInfo: TypeUpdateInfo): ArgType = getReturnType(updateInfo.getType(instanceArg))
 
-	override fun getType(): ArgType = getReturnType(getInstanceArg().getType())
+	override fun getType(): ArgType = getReturnType(instanceArg.getType())
 
 	private fun getReturnType(instanceType: ArgType): ArgType {
 		val mthDeclType: ArgType
@@ -56,7 +56,7 @@ class TypeBoundInvokeAssign(
 		return resultGeneric.getWildcardType()
 	}
 
-	private fun getInstanceArg(): InsnArg = invokeNode.getArg(0)
+	private val instanceArg: InsnArg get() = invokeNode.getArg(0)
 
 	override fun getArg(): RegisterArg? = invokeNode.getResult()
 
@@ -76,6 +76,6 @@ class TypeBoundInvokeAssign(
 	override fun toString(): String = "InvokeAssign{" + invokeNode.callMth.shortId +
 		", returnType=" + genericReturnType +
 		", currentType=" + getType() +
-		", instanceArg=" + getInstanceArg() +
+		", instanceArg=" + instanceArg +
 		'}'
 }

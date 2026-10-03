@@ -24,9 +24,8 @@ class SkipMethodArgsAttr private constructor(mth: MethodNode) : PinnedAttribute(
 
 	companion object {
 		/** 按寄存器引用定位参数下标并标记跳过；找不到参数时抛异常 */
-		@JvmStatic
 		fun skipArg(mth: MethodNode, arg: RegisterArg) {
-			val argNum = Utils.indexInListByRef(mth.getArgRegs(), arg)
+			val argNum = Utils.indexInListByRef(mth.argRegs, arg)
 			if (argNum == -1) {
 				throw JadxRuntimeException("Arg not found: $arg")
 			}
@@ -34,7 +33,6 @@ class SkipMethodArgsAttr private constructor(mth: MethodNode) : PinnedAttribute(
 		}
 
 		/** 按参数下标标记跳过（属性不存在时先创建） */
-		@JvmStatic
 		fun skipArg(mth: MethodNode, argNum: Int) {
 			var attr = mth.get(AType.SKIP_MTH_ARGS)
 			if (attr == null) {
@@ -50,7 +48,6 @@ class SkipMethodArgsAttr private constructor(mth: MethodNode) : PinnedAttribute(
 		 * 除本属性外，还会识别 [AFlag.SKIP_FIRST_ARG]（下标 0 的特殊跳过标记）。
 		 * [mth] 为 null 时直接返回 false（对应原 Java 的 @Nullable 参数）。
 		 */
-		@JvmStatic
 		fun isSkip(mth: MethodNode?, argNum: Int): Boolean {
 			if (mth == null) {
 				return false
@@ -75,7 +72,7 @@ class SkipMethodArgsAttr private constructor(mth: MethodNode) : PinnedAttribute(
 	fun isSkip(argNum: Int): Boolean = skipArgs.get(argNum)
 
 	/** 被跳过的参数总数 */
-	fun getSkipCount(): Int = skipArgs.cardinality()
+	val skipCount: Int get() = skipArgs.cardinality()
 
 	override val attrType: AType<SkipMethodArgsAttr> get() = AType.SKIP_MTH_ARGS
 

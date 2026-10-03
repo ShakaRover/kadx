@@ -135,7 +135,7 @@ class MarkFinallyVisitor : AbstractVisitor() {
 			}
 			// 找出 catch-all 处理器。
 			var allHandler: ExceptionHandler? = null
-			for (excHandler in tryBlock.getHandlers()) {
+			for (excHandler in tryBlock.handlers) {
 				if (excHandler.isCatchAll()) {
 					allHandler = excHandler
 					break
@@ -182,7 +182,7 @@ class MarkFinallyVisitor : AbstractVisitor() {
 			val handlerBlocks = tryInfo.handlerScopes.getBlocksForHandler(handler) ?: return null
 
 			val handlerFinalInsn = BlockUtils.getFirstInsn(handlerBlock)
-			if (handlerFinalInsn != null && handlerFinalInsn.getType() == InsnType.MOVE_EXCEPTION) {
+			if (handlerFinalInsn != null && handlerFinalInsn.type == InsnType.MOVE_EXCEPTION) {
 				if (handlerBlock != null) {
 					handlerBlocks.remove(handlerBlock) // 排除带有 'move-exception' 的块
 				}
@@ -203,8 +203,8 @@ class MarkFinallyVisitor : AbstractVisitor() {
 				val bottomBlockLastInsn = BlockUtils.getLastInsn(pathExit)
 				val isValidPathExit = bottomBlockLastInsn != null &&
 					handlerFinalInsn != null &&
-					bottomBlockLastInsn.getType() == InsnType.THROW &&
-					bottomBlockLastInsn.getArgsCount() > 0 &&
+					bottomBlockLastInsn.type == InsnType.THROW &&
+					bottomBlockLastInsn.argsCount > 0 &&
 					bottomBlockLastInsn.getArg(0) == handlerFinalInsn.getResult()
 				if (!isValidPathExit) {
 					return handlerBlocks
@@ -282,14 +282,14 @@ class MarkFinallyVisitor : AbstractVisitor() {
 
 			// 若某个作用域已与 try 的贯穿分支合并，则不要合并内部 try；否则合并。
 			val mergedFallthroughScope =
-				ListUtils.anyMatch(tryInfo.scopeGroups.getMergedScopes()) { scopePair -> scopePair.first.isNotHandlerExit() }
+				ListUtils.anyMatch(tryInfo.scopeGroups.mergedScopes) { scopePair -> scopePair.first.isNotHandlerExit() }
 			val mergeInnerTryBlocks = hasInnerBlocks && !mergedFallthroughScope
 
 			tryInfo.finallyHandler.setFinally(true)
 			if (mergeInnerTryBlocks) {
 				val innerTryBlocks = tryInfo.tryBlock.getInnerTryBlocks()
 				for (innerTryBlock in innerTryBlocks) {
-					asMutableList(tryInfo.tryBlock.getHandlers()).addAll(innerTryBlock.getHandlers())
+					asMutableList(tryInfo.tryBlock.handlers).addAll(innerTryBlock.handlers)
 					asMutableList(tryInfo.tryBlock.getBlocks()).addAll(innerTryBlock.getBlocks())
 					innerTryBlock.setMerged(true)
 				}
@@ -305,13 +305,13 @@ class MarkFinallyVisitor : AbstractVisitor() {
 		private fun getHandlersForTryCatch(tryBlock: TryCatchBlockAttr): List<ExceptionHandler> {
 			val hasInnerBlocks = tryBlock.getInnerTryBlocks().isNotEmpty()
 			if (hasInnerBlocks) {
-				val handlers = ArrayList(tryBlock.getHandlers())
+				val handlers = ArrayList(tryBlock.handlers)
 				for (innerTryBlock in tryBlock.getInnerTryBlocks()) {
 					handlers.addAll(getHandlersForTryCatch(innerTryBlock))
 				}
 				return handlers
 			}
-			return tryBlock.getHandlers()
+			return tryBlock.handlers
 		}
 
 		/** 把只读 `List` 视图转回可变列表（原 Java 直接修改内部列表）。 */
@@ -327,7 +327,7 @@ class MarkFinallyVisitor : AbstractVisitor() {
 			val finallyScopeTerminus = getTerminusForHandler(tryInfo.finallyHandler, tryInfo) ?: return null
 			val matchingInsns = HashMap<InsnNode, MutableList<InsnNode>>()
 			for (edge in tryInfo.handlerScopes.keys) {
-				if (edge.isHandlerExit() && edge.getExceptionHandler() === tryInfo.finallyHandler) {
+				if (edge.isHandlerExit() && edge.exceptionHandler === tryInfo.finallyHandler) {
 					continue
 				}
 				val handlerBlocks = checkNotNull(tryInfo.handlerScopes[edge])
@@ -361,14 +361,14 @@ class MarkFinallyVisitor : AbstractVisitor() {
 				val completeFinally = HashSet<BlockNode>()
 				val completeCandidate = HashSet<BlockNode>()
 				for (pathResult in pathResults) {
-					for (matchingInsnPair in pathResult.getMatchedInsns()) {
+					for (matchingInsnPair in pathResult.matchedInsns) {
 						val finallyInsn = matchingInsnPair.first
 						val candidateInsn = matchingInsnPair.second
 						val candidateInsnsList = matchingInsns.getOrPut(finallyInsn) { LinkedList() }
 						candidateInsnsList.add(candidateInsn)
 					}
-					completeFinally.addAll(pathResult.getAllFullyMatchedFinallyBlocks())
-					completeCandidate.addAll(pathResult.getAllFullyMatchedCandidateBlocks())
+					completeFinally.addAll(pathResult.allFullyMatchedFinallyBlocks)
+					completeCandidate.addAll(pathResult.allFullyMatchedCandidateBlocks)
 				}
 				if (tryInfo.completeFinallyBlocks == null) {
 					tryInfo.completeFinallyBlocks = completeFinally
@@ -398,7 +398,7 @@ class MarkFinallyVisitor : AbstractVisitor() {
 		/** 把 [fromInsn] 的代码变量信息复制到 [toInsn]（结果与各参数）。 */
 		private fun copyCodeVars(fromInsn: InsnNode, toInsn: InsnNode) {
 			copyCodeVars(fromInsn.getResult(), toInsn.getResult())
-			val argsCount = fromInsn.getArgsCount()
+			val argsCount = fromInsn.argsCount
 			for (i in 0 until argsCount) {
 				copyCodeVars(fromInsn.getArg(i), toInsn.getArg(i))
 			}
@@ -432,7 +432,7 @@ class MarkFinallyVisitor : AbstractVisitor() {
 					if (edge.isNotHandlerExit()) {
 						continue
 					}
-					if (edge.getExceptionHandler() == handler) {
+					if (edge.exceptionHandler == handler) {
 						return terminus
 					}
 				}

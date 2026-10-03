@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory
 class ProcessVariables : AbstractVisitor() {
 
 	override fun visit(mth: MethodNode) {
-		if (mth.isNoCode() || mth.getSVars().isEmpty()) {
+		if (mth.isNoCode() || mth.SVars.isEmpty()) {
 			return
 		}
 		removeUnusedResults(mth)
@@ -56,7 +56,7 @@ class ProcessVariables : AbstractVisitor() {
 		// 收集所有变量使用情况
 		val usageCollector = CollectUsageRegionVisitor()
 		DepthRegionTraversal.traverse(mth, usageCollector)
-		val ssaUsageMap = usageCollector.getUsageMap()
+		val ssaUsageMap = usageCollector.usageMap
 		if (ssaUsageMap.isEmpty()) {
 			return
 		}
@@ -91,7 +91,7 @@ class ProcessVariables : AbstractVisitor() {
 								insn.setResult(null)
 								val sv = checkNotNull(ssaVar)
 								mth.removeSVar(sv)
-								for (arg in sv.getUseList()) {
+								for (arg in sv.useList) {
 									arg.resetSSAVar()
 								}
 							}
@@ -104,7 +104,7 @@ class ProcessVariables : AbstractVisitor() {
 					if (insn.isConstInsn()) {
 						return true
 					}
-					return when (insn.getType()) {
+					return when (insn.type) {
 						InsnType.CAST, InsnType.CHECK_CAST -> true
 						else -> false
 					}
@@ -114,7 +114,7 @@ class ProcessVariables : AbstractVisitor() {
 					if (ssaVar == null) {
 						return true
 					}
-					val useList = ssaVar.getUseList()
+					val useList = ssaVar.useList
 					if (useList.isEmpty()) {
 						return true
 					}
@@ -131,13 +131,13 @@ class ProcessVariables : AbstractVisitor() {
 					// 检查构造器中已被删除的参数
 					val parentInsn = arg.getParentInsn()
 					if (parentInsn != null &&
-						parentInsn.getType() == InsnType.CONSTRUCTOR &&
+						parentInsn.type == InsnType.CONSTRUCTOR &&
 						parentInsn.contains(AType.METHOD_DETAILS)
 					) {
 						val resolveMth = mth.root().getMethodUtils().resolveMethod(parentInsn as ConstructorInsn)
 						if (resolveMth != null && resolveMth.contains(AType.SKIP_MTH_ARGS)) {
 							val insnPos = parentInsn.getArgIndex(arg)
-							val mthArgs = resolveMth.getArgRegs()
+							val mthArgs = resolveMth.argRegs
 							if (0 <= insnPos && insnPos < mthArgs.size) {
 								val mthArg = mthArgs[insnPos]
 								if (mthArg.contains(AFlag.REMOVE) && arg.sameType(mthArg)) {
@@ -163,9 +163,9 @@ class ProcessVariables : AbstractVisitor() {
 				unknownTypesCount++
 			} else {
 				for (ssaVar in codeVar.ssaVars) {
-					val ssaType = ssaVar.getImmutableType()
+					val ssaType = ssaVar.immutableType
 					if (ssaType != null && ssaType.isTypeKnown()) {
-						val comparator = mth.root().getTypeUpdate().typeCompare
+						val comparator = mth.root().typeUpdate.typeCompare
 						val result = comparator.compareTypes(ssaType, codeVarType)
 						if (result == TypeCompareEnum.CONFLICT || result.isNarrow()) {
 							mth.addWarn(
@@ -191,10 +191,10 @@ class ProcessVariables : AbstractVisitor() {
 
 		val mergedUsage = VarUsage(null)
 		for (varUsage in usageList) {
-			mergedUsage.getAssigns().addAll(varUsage.getAssigns())
-			mergedUsage.getUses().addAll(varUsage.getUses())
+			mergedUsage.assigns.addAll(varUsage.assigns)
+			mergedUsage.uses.addAll(varUsage.uses)
 		}
-		if (mergedUsage.getAssigns().isEmpty() && mergedUsage.getUses().isEmpty()) {
+		if (mergedUsage.assigns.isEmpty() && mergedUsage.uses.isEmpty()) {
 			return
 		}
 
@@ -210,7 +210,7 @@ class ProcessVariables : AbstractVisitor() {
 	/** 把同一源码变量的多个 SSA 变量归并到一个 CodeVar */
 	private fun collectCodeVars(mth: MethodNode): List<CodeVar> {
 		val codeVars: MutableMap<CodeVar, MutableList<SSAVar>> = LinkedHashMap()
-		for (ssaVar in mth.getSVars()) {
+		for (ssaVar in mth.SVars) {
 			if (ssaVar.codeVar.isThis) {
 				continue
 			}
@@ -249,11 +249,11 @@ class ProcessVariables : AbstractVisitor() {
 		return codeVarUsage
 	}
 	private fun checkDeclareAtAssign(list: List<VarUsage>, mergedUsage: VarUsage): Boolean {
-		if (mergedUsage.getAssigns().isEmpty()) {
+		if (mergedUsage.assigns.isEmpty()) {
 			return false
 		}
 		for (u in list) {
-			for (assign in u.getAssigns()) {
+			for (assign in u.assigns) {
 				if (canDeclareAt(mergedUsage, assign)) {
 					return checkDeclareAtAssign(checkNotNull(u.getVar()))
 				}
@@ -266,7 +266,7 @@ class ProcessVariables : AbstractVisitor() {
 		val region = usePlace.region
 		// 处理变量在多个循环中使用的场景
 		if (region is LoopRegion) {
-			for (use in usage.getAssigns()) {
+			for (use in usage.assigns) {
 				if (!RegionUtils.isRegionContainsRegion(region, use.region)) {
 					return false
 				}
@@ -276,8 +276,8 @@ class ProcessVariables : AbstractVisitor() {
 		if (region.contains(AFlag.ELSE_IF_CHAIN)) {
 			return false
 		}
-		return isAllUseAfter(usePlace, usage.getAssigns()) &&
-			isAllUseAfter(usePlace, usage.getUses())
+		return isAllUseAfter(usePlace, usage.assigns) &&
+			isAllUseAfter(usePlace, usage.uses)
 	}
 
 	/** 检查是否所有 [usePlaces] 都在 [checkPlace] 之后 */
@@ -316,7 +316,7 @@ class ProcessVariables : AbstractVisitor() {
 		val parentInsn = arg.getParentInsn()
 		if (parentInsn == null ||
 			parentInsn.contains(AFlag.WRAPPED) ||
-			parentInsn.getType() == InsnType.PHI
+			parentInsn.type == InsnType.PHI
 		) {
 			return false
 		}

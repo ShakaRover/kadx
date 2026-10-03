@@ -43,7 +43,7 @@ open class InvokeNode(
 		}
 		for (arg in mth.argumentsTypes) {
 			addReg(if (isRange) k else insn.getReg(k), arg)
-			k += arg.getRegCount()
+			k += arg.regCount
 		}
 		val resReg = insn.resultReg
 		if (resReg != -1) {
@@ -52,7 +52,7 @@ open class InvokeNode(
 	}
 
 	override fun getInstanceArg(): InsnArg? {
-		if (invokeType != InvokeType.STATIC && getArgsCount() > 0) {
+		if (invokeType != InvokeType.STATIC && argsCount > 0) {
 			return getArg(0)
 		}
 		return null
@@ -76,7 +76,7 @@ open class InvokeNode(
 
 	override fun getFirstArgOffset(): Int = if (invokeType == InvokeType.STATIC) 0 else 1
 
-	override fun copy(): InsnNode = copyCommonParams(InvokeNode(callMth, invokeType, getArgsCount()))
+	override fun copy(): InsnNode = copyCommonParams(InvokeNode(callMth, invokeType, argsCount))
 
 	override fun isSame(obj: InsnNode): Boolean {
 		if (this === obj) {

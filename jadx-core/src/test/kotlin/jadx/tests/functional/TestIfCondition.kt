@@ -22,10 +22,10 @@ class TestIfCondition {
 		val c = makeCondition(IfOp.NE, a, LiteralArg.litFalse())
 		val simp = IfCondition.simplify(c)
 
-		assertThat(simp.getMode()).isEqualTo(Mode.COMPARE)
-		val compare = checkNotNull(simp.getCompare())
-		assertThat(compare.getA()).isEqualTo(a)
-		assertThat(compare.getB()).isEqualTo(LiteralArg.litTrue())
+		assertThat(simp.mode).isEqualTo(Mode.COMPARE)
+		val compare = checkNotNull(simp.compare)
+		assertThat(compare.a).isEqualTo(a)
+		assertThat(compare.b).isEqualTo(LiteralArg.litTrue())
 	}
 
 	@Test
@@ -34,7 +34,7 @@ class TestIfCondition {
 		val b = makeSimpleCondition()
 		val c = IfCondition.merge(Mode.OR, a, b)
 
-		assertThat(c.getMode()).isEqualTo(Mode.OR)
+		assertThat(c.mode).isEqualTo(Mode.OR)
 		assertThat(c.first()).isEqualTo(a)
 		assertThat(c.second()).isEqualTo(b)
 	}
@@ -61,7 +61,7 @@ class TestIfCondition {
 		val c = IfCondition.not(IfCondition.merge(Mode.OR, IfCondition.not(a), IfCondition.not(b)))
 		val simp = IfCondition.simplify(c)
 
-		assertThat(simp.getMode()).isEqualTo(Mode.AND)
+		assertThat(simp.mode).isEqualTo(Mode.AND)
 		assertThat(simp.first()).isEqualTo(a)
 		assertThat(simp.second()).isEqualTo(b)
 	}
@@ -75,10 +75,10 @@ class TestIfCondition {
 		val cond = IfCondition.merge(Mode.AND, IfCondition.merge(Mode.OR, IfCondition.not(a), IfCondition.not(b)), IfCondition.not(c))
 		val simp = IfCondition.simplify(cond)
 
-		assertThat(simp.getMode()).isEqualTo(Mode.NOT)
+		assertThat(simp.mode).isEqualTo(Mode.NOT)
 		val f = simp.first()
-		assertThat(f.getMode()).isEqualTo(Mode.OR)
-		assertThat(f.first().getMode()).isEqualTo(Mode.AND)
+		assertThat(f.mode).isEqualTo(Mode.OR)
+		assertThat(f.first().mode).isEqualTo(Mode.AND)
 		assertThat(f.first().first()).isEqualTo(a)
 		assertThat(f.first().second()).isEqualTo(b)
 		assertThat(f.second()).isEqualTo(c)

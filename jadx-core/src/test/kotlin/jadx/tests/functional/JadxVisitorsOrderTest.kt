@@ -17,8 +17,8 @@ class JadxVisitorsOrderTest {
 	@Test
 	fun testOrder() {
 		checkPassList(Jadx.getPassesList(JadxArgs()))
-		checkPassList(Jadx.getPreDecompilePassesList())
-		checkPassList(Jadx.getFallbackPassesList())
+		checkPassList(Jadx.preDecompilePassesList)
+		checkPassList(Jadx.fallbackPassesList)
 	}
 
 	private fun checkPassList(passes: List<IDexTreeVisitor>) {

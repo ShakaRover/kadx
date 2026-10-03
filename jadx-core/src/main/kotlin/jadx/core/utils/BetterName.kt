@@ -27,13 +27,11 @@ object BetterName {
 	/**
 	 * 比较两个类名并返回“更好”的一个；若同样好则返回 [firstName]。
 	 */
-	@JvmStatic
 	fun getBetterClassName(firstName: String, secondName: String): String = getBetterName(firstName, secondName)
 
 	/**
 	 * 比较两个资源名并返回“更好”的一个；若同样好则返回 [firstName]。
 	 */
-	@JvmStatic
 	fun getBetterResourceName(firstName: String, secondName: String): String = getBetterName(firstName, secondName)
 
 	private fun getBetterName(firstName: String, secondName: String): String {
@@ -81,7 +79,6 @@ object BetterName {
 	}
 
 	@Deprecated("Use getBetterClassName or getBetterResourceName instead")
-	@JvmStatic
 	fun compareAndGet(first: String, second: String): String {
 		if (Objects.equals(first, second)) {
 			return first
@@ -100,7 +97,6 @@ object BetterName {
 	}
 
 	@Deprecated("Implementation detail of compareAndGet; should not be used outside tests")
-	@JvmStatic
 	fun calcRating(str: String): Int {
 		var rating = str.length * 3
 		rating += differentCharsCount(str) * 20

@@ -59,7 +59,6 @@ class IfRegionVisitor : AbstractVisitor() {
 		private val REMOVE_REDUNDANT_ELSE_VISITOR: IRegionIterativeVisitor = RemoveRedundantElseVisitor()
 
 		/** 若方法被标记为需要重新优化 if 区域，则执行一次并清除标记 */
-		@JvmStatic
 		fun processIfRequested(mth: MethodNode) {
 			if (mth.contains(AFlag.REQUEST_IF_REGION_OPTIMIZE)) {
 				try {
@@ -103,7 +102,7 @@ class IfRegionVisitor : AbstractVisitor() {
 			}
 			if (ifRegion.simplifyCondition()) {
 				val condition = ifRegion.getCondition()
-				if (condition != null && condition.getMode() == IfCondition.Mode.NOT) {
+				if (condition != null && condition.mode == IfCondition.Mode.NOT) {
 					invertIfRegion(ifRegion)
 				}
 			}

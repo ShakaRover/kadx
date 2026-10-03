@@ -23,13 +23,12 @@ import java.util.BitSet
  */
 object PostDominatorTree {
 
-	@JvmStatic
 	fun compute(mth: MethodNode) {
 		if (!mth.contains(AFlag.COMPUTE_POST_DOM)) {
 			return
 		}
 		try {
-			val mthBlocksCount = checkNotNull(mth.getBasicBlocks()).size
+			val mthBlocksCount = checkNotNull(mth.basicBlocks).size
 			val sorted = ArrayList<BlockNode>(mthBlocksCount)
 			BlockUtils.visitReverseDFS(mth) { b -> sorted.add(b) }
 			// 临时把块位置改成“逆后序”下标，并保存旧位置用于稍后重映射
@@ -68,7 +67,7 @@ object PostDominatorTree {
 			val blocksDelta = mthBlocksCount - blocksCount
 			if (blocksDelta != 0) {
 				var insnsCount = 0
-				for (block in checkNotNull(mth.getBasicBlocks())) {
+				for (block in checkNotNull(mth.basicBlocks)) {
 					if (block.postDoms == null) {
 						block.postDoms = EmptyBitSet.EMPTY
 						block.iPostDom = null

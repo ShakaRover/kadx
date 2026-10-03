@@ -78,7 +78,6 @@ open class ArithNode(val op: ArithOp, res: RegisterArg?, a: InsnArg, b: InsnArg)
 	}
 
 	companion object {
-		@JvmStatic
 		fun build(insn: InsnData, op: ArithOp, type: ArgType): ArithNode {
 			val resArg = InsnArg.reg(insn, 0, fixResultType(op, type))
 			val argType = fixArgType(op, type)
@@ -89,7 +88,6 @@ open class ArithNode(val op: ArithOp, res: RegisterArg?, a: InsnArg, b: InsnArg)
 			}
 		}
 
-		@JvmStatic
 		fun buildLit(insn: InsnData, op: ArithOp, type: ArgType): ArithNode {
 			val resArg = InsnArg.reg(insn, 0, fixResultType(op, type))
 			val argType = fixArgType(op, type)
@@ -106,7 +104,6 @@ open class ArithNode(val op: ArithOp, res: RegisterArg?, a: InsnArg, b: InsnArg)
 		 *
 		 * @param res 被修改的参数
 		 */
-		@JvmStatic
 		fun oneArgOp(op: ArithOp, res: InsnArg, a: InsnArg): ArithNode {
 			val insn = ArithNode(op, null, res, a)
 			insn.add(AFlag.ARITH_ONEARG)

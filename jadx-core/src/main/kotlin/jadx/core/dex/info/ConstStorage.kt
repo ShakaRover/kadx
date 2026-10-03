@@ -33,10 +33,8 @@ class ConstStorage(args: JadxArgs) {
 
 	/** 某个类的常量表：维护值→字段映射，并记录重复值。 */
 	private class ValueStorage {
-		private val values: MutableMap<Any, IFieldInfoRef> = ConcurrentHashMap()
+		val values: MutableMap<Any, IFieldInfoRef> = ConcurrentHashMap()
 		private val duplicates: MutableSet<Any> = HashSet()
-
-		fun getValues(): MutableMap<Any, IFieldInfoRef> = values
 
 		fun get(key: Any): IFieldInfoRef? = values[key]
 
@@ -188,9 +186,9 @@ class ConstStorage(args: JadxArgs) {
 		this.resourcesNamesMap = resourcesNames
 	}
 
-	fun getResourcesNames(): Map<Int, String> = resourcesNamesMap
+	val resourcesNames: Map<Int, String> get() = resourcesNamesMap
 
-	fun getGlobalConstFields(): MutableMap<Any, IFieldInfoRef> = globalValues.getValues()
+	val globalConstFields: MutableMap<Any, IFieldInfoRef> get() = globalValues.values
 
 	fun isReplaceEnabled(): Boolean = replaceEnabled
 }

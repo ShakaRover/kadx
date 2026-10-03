@@ -64,9 +64,9 @@ class JsonMappingGen private constructor() {
 				jsonCls.name = classInfo.rawName
 				jsonCls.alias = classInfo.aliasFullName
 				jsonCls.setInner(classInfo.isInner)
-				jsonCls.json = cls.getTopParentClass().classInfo.aliasFullPath + ".json"
+				jsonCls.json = cls.topParentClass.classInfo.aliasFullPath + ".json"
 				if (classInfo.isInner) {
-					jsonCls.topClass = cls.getTopParentClass().classInfo.fullName
+					jsonCls.topClass = cls.topParentClass.classInfo.fullName
 				}
 				addFields(cls, jsonCls)
 				addMethods(cls, jsonCls)
@@ -87,7 +87,7 @@ class JsonMappingGen private constructor() {
 				jsonMethod.signature = methodInfo.shortId
 				jsonMethod.name = methodInfo.name
 				jsonMethod.alias = methodInfo.alias
-				jsonMethod.offset = "0x" + java.lang.Long.toHexString(method.getMethodCodeOffset())
+				jsonMethod.offset = "0x" + java.lang.Long.toHexString(method.methodCodeOffset)
 				mthMappings.add(jsonMethod)
 			}
 		}
@@ -101,8 +101,8 @@ class JsonMappingGen private constructor() {
 			jsonCls.fields = fldMappings
 			for (field in fields) {
 				val jsonField = JsonFieldMapping()
-				jsonField.name = field.getName()
-				jsonField.alias = field.getAlias()
+				jsonField.name = field.name
+				jsonField.alias = field.alias
 				fldMappings.add(jsonField)
 			}
 		}

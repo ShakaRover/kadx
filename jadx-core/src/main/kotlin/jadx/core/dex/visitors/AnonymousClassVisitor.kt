@@ -77,7 +77,7 @@ class AnonymousClassVisitor : AbstractVisitor() {
 		private fun getArgsToFieldsMapping(mth: MethodNode, usedInsns: MutableList<InsnNode>): Map<InsnArg, FieldNode> {
 			val callMth: MethodInfo = mth.getMethodInfo()
 			val cls = mth.parentClass
-			val argList = mth.getArgRegs()
+			val argList = mth.argRegs
 			val outerCls = mth.getUseIn()[0].parentClass
 			var startArg = 0
 			if (callMth.argsCount != 0 && callMth.argumentsTypes[0] == outerCls.classInfo.type) {
@@ -88,7 +88,7 @@ class AnonymousClassVisitor : AbstractVisitor() {
 			for (i in startArg until argsCount) {
 				val arg = argList[i]
 				val useInsn = getParentInsnSkipMove(arg) ?: return Collections.emptyMap()
-				when (useInsn.getType()) {
+				when (useInsn.type) {
 					InsnType.IPUT -> {
 						val fieldNode = cls.searchField((useInsn as IndexInsnNode).index as FieldInfo)
 						if (fieldNode == null || !fieldNode.accessFlags.isSynthetic()) {
@@ -114,12 +114,12 @@ class AnonymousClassVisitor : AbstractVisitor() {
 
 		private fun getParentInsnSkipMove(arg: RegisterArg): InsnNode? {
 			val sVar = checkNotNull(arg.sVar)
-			if (sVar.getUseCount() != 1) {
+			if (sVar.useCount != 1) {
 				return null
 			}
-			val useArg = sVar.getUseList()[0]
+			val useArg = sVar.useList[0]
 			val parentInsn = useArg.getParentInsn() ?: return null
-			if (parentInsn.getType() == InsnType.MOVE) {
+			if (parentInsn.type == InsnType.MOVE) {
 				return getParentInsnSkipMove(checkNotNull(parentInsn.getResult()))
 			}
 			return parentInsn

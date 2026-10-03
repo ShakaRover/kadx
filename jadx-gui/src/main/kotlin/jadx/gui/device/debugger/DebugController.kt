@@ -580,8 +580,8 @@ class DebugController :
 			val nodes = ArrayList<FieldTreeNode>(flds.size)
 			for (fld in flds) {
 				val fldNode = FieldTreeNode(fld, thisID)
-				fldNodes.firstOrNull { f -> f.getName() == fldNode.getName() }
-					?.let { smaliFld -> fldNode.setAlias(smaliFld.getAlias()) }
+				fldNodes.firstOrNull { f -> f.name == fldNode.getName() }
+					?.let { smaliFld -> fldNode.setAlias(smaliFld.alias) }
 				nodes.add(fldNode)
 			}
 			debuggerPanel.updateThisFieldNodes(nodes)

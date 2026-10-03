@@ -39,11 +39,11 @@ class TernaryInsn : InsnNode {
 
 	private constructor() : super(InsnType.TERNARY, 2)
 
-	fun getCondition(): IfCondition = conditionRef
+	val condition: IfCondition get() = conditionRef
 
 	fun simplifyCondition() {
 		conditionRef = IfCondition.simplify(conditionRef)
-		if (conditionRef.getMode() == IfCondition.Mode.NOT) {
+		if (conditionRef.mode == IfCondition.Mode.NOT) {
 			invert()
 		}
 	}
@@ -57,7 +57,7 @@ class TernaryInsn : InsnNode {
 
 	override fun getRegisterArgs(list: MutableCollection<RegisterArg>) {
 		super.getRegisterArgs(list)
-		list.addAll(conditionRef.getRegisterArgs())
+		list.addAll(conditionRef.registerArgs)
 	}
 
 	override fun replaceArg(from: InsnArg, to: InsnArg): Boolean {
@@ -90,7 +90,7 @@ class TernaryInsn : InsnNode {
 
 	override fun rebindArgs() {
 		super.rebindArgs()
-		for (reg in conditionRef.getRegisterArgs()) {
+		for (reg in conditionRef.registerArgs) {
 			val parentInsn = reg.getParentInsn()
 			if (parentInsn != null) {
 				parentInsn.rebindArgs()

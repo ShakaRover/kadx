@@ -31,7 +31,7 @@ enum class PrimitiveType(
 	/**
 	 * 对应的包装类 ArgType（用于自动装箱场景）。
 	 */
-	fun getBoxType(): ArgType = when (this) {
+	val boxType: ArgType get() = when (this) {
 		BOOLEAN -> ArgType.`object`("java.lang.Boolean")
 		CHAR -> ArgType.`object`("java.lang.Character")
 		BYTE -> ArgType.`object`("java.lang.Byte")

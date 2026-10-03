@@ -16,9 +16,7 @@ import jadx.core.utils.Utils
  */
 class DeclareVariablesAttr : IJadxAttribute {
 
-	private val vars: MutableList<CodeVar> = ArrayList()
-
-	fun getVars(): Iterable<CodeVar> = vars
+	val vars: MutableList<CodeVar> = ArrayList()
 
 	fun addVar(arg: CodeVar) {
 		vars.add(arg)

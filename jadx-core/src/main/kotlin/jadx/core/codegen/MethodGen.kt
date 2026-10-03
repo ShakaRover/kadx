@@ -88,7 +88,7 @@ class MethodGen(classGen: ClassGen, mth: MethodNode) {
 			ai = ai.remove(AccessFlags.PUBLIC)
 		}
 		if (mth.getMethodInfo().hasAlias() && !ai.isConstructor()) {
-			CodeGenUtils.addRenamedComment(code, mth, mth.getName())
+			CodeGenUtils.addRenamedComment(code, mth, mth.name)
 		}
 		if (mth.contains(AFlag.INCONSISTENT_CODE) && mth.checkCommentsLevel(CommentsLevel.ERROR)) {
 			code.startLine("/*")
@@ -123,7 +123,7 @@ class MethodGen(classGen: ClassGen, mth: MethodNode) {
 			code.add(' ')
 			val defMth = methodForDefinition
 			code.attachDefinition(defMth)
-			code.add(defMth.getAlias())
+			code.add(defMth.alias)
 		}
 		code.add('(')
 		addMethodArguments(code)
@@ -174,7 +174,7 @@ class MethodGen(classGen: ClassGen, mth: MethodNode) {
 	}
 
 	private fun addMethodArguments(code: ICodeWriter) {
-		val args = mth.getArgRegs()
+		val args = mth.argRegs
 		val paramsAnnotation = mth.get(JadxAttrType.ANNOTATION_MTH_PARAMETERS)
 		var argNum = -1
 		val lastArgNum = args.size - 1
@@ -239,7 +239,7 @@ class MethodGen(classGen: ClassGen, mth: MethodNode) {
 	@Throws(CodegenException::class)
 	fun addInstructions(code: ICodeWriter) {
 		val args: JadxArgs = mth.root().getArgs()
-		val modeOverrideAttr = mth.getTopParentClass().get(AType.DECOMPILE_MODE_OVERRIDE)
+		val modeOverrideAttr = mth.topParentClass.get(AType.DECOMPILE_MODE_OVERRIDE)
 		val mode: DecompilationMode
 		if (modeOverrideAttr != null) {
 			mode = modeOverrideAttr.mode
@@ -278,7 +278,7 @@ class MethodGen(classGen: ClassGen, mth: MethodNode) {
 			CodeGenUtils.addErrors(code, mth)
 			dumpInstructions(code)
 		} catch (e: Exception) {
-			if (mth.parentClass.getTopParentClass().contains(AFlag.RESTART_CODEGEN)) {
+			if (mth.parentClass.topParentClass.contains(AFlag.RESTART_CODEGEN)) {
 				throw e
 			}
 			mth.addError("Method code generation error", e)
@@ -288,7 +288,7 @@ class MethodGen(classGen: ClassGen, mth: MethodNode) {
 	}
 
 	private fun addSimpleMethodCode(code: ICodeWriter) {
-		if (mth.getBasicBlocks() == null) {
+		if (mth.basicBlocks == null) {
 			code.startLine("// Blocks not ready for simple mode, using fallback")
 			addFallbackMethodCode(code, FallbackOption.FALLBACK_MODE)
 			return
@@ -350,7 +350,7 @@ class MethodGen(classGen: ClassGen, mth: MethodNode) {
 		code.startLine("throw new UnsupportedOperationException(\"Method not decompiled: ")
 			.add(mth.parentClass.classInfo.aliasFullName)
 			.add('.')
-			.add(mth.getAlias())
+			.add(mth.alias)
 			.add('(')
 			.add(Utils.listToString(mth.getMethodInfo().argumentsTypes))
 			.add("):")
@@ -379,7 +379,7 @@ class MethodGen(classGen: ClassGen, mth: MethodNode) {
 				// load original instructions
 				mth.unload()
 				mth.load()
-				for (visitor in Jadx.getFallbackPassesList()) {
+				for (visitor in Jadx.fallbackPassesList) {
 					DepthTraversal.visit(visitor, mth)
 				}
 			} catch (e: Exception) {
@@ -429,7 +429,7 @@ class MethodGen(classGen: ClassGen, mth: MethodNode) {
 			code.startLine(getLabelName(insn.getOffset()) + ':')
 			code.incIndent()
 		}
-		if (insn.getType() == InsnType.NOP) {
+		if (insn.type == InsnType.NOP) {
 			return true
 		}
 		try {
@@ -470,12 +470,12 @@ class MethodGen(classGen: ClassGen, mth: MethodNode) {
 			return
 		}
 		code.add("     // Catch:")
-		for (handler in catchAttr.getHandlers()) {
+		for (handler in catchAttr.handlers) {
 			code.add(' ')
-			classGen.useClass(code, handler.getArgType())
+			classGen.useClass(code, handler.argType)
 			code.add(" -> ")
 			if (raw) {
-				code.add(getLabelName(handler.getHandlerOffset()))
+				code.add(getLabelName(handler.handlerOffset))
 			} else {
 				code.add(getLabelName(checkNotNull(handler.getHandlerBlock())))
 			}
@@ -484,8 +484,8 @@ class MethodGen(classGen: ClassGen, mth: MethodNode) {
 
 	private fun isCommentEscapeNeeded(insn: InsnNode, option: FallbackOption): Boolean {
 		if (option == FallbackOption.COMMENTED_DUMP) {
-			if (insn.getType() == InsnType.CONST_STR) {
-				val str = (insn as ConstStringNode).getString()
+			if (insn.type == InsnType.CONST_STR) {
+				val str = (insn as ConstStringNode).string
 				return checkNotNull(str).contains("*/")
 			}
 		}
@@ -498,7 +498,7 @@ class MethodGen(classGen: ClassGen, mth: MethodNode) {
 		}
 		if (insn.contains(AType.JUMP)) {
 			// don't add label for ifs else branch
-			if (prevInsn != null && prevInsn.getType() == InsnType.IF) {
+			if (prevInsn != null && prevInsn.type == InsnType.IF) {
 				val jumps = insn.getAll(AType.JUMP)
 				if (jumps.size == 1) {
 					val jump = jumps[0]

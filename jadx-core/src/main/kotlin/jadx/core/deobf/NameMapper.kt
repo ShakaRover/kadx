@@ -89,10 +89,8 @@ class NameMapper private constructor() {
 			"while",
 		)
 
-		@JvmStatic
 		fun isReserved(str: String): Boolean = RESERVED_NAMES.contains(str)
 
-		@JvmStatic
 		fun isValidIdentifier(str: String?): Boolean {
 			if (!StringUtils.notEmpty(str)) {
 				return false
@@ -101,7 +99,6 @@ class NameMapper private constructor() {
 			return !isReserved(name) && VALID_JAVA_IDENTIFIER.matcher(name).matches()
 		}
 
-		@JvmStatic
 		fun isValidFullIdentifier(str: String?): Boolean {
 			if (!StringUtils.notEmpty(str)) {
 				return false
@@ -110,7 +107,6 @@ class NameMapper private constructor() {
 			return !isReserved(name) && VALID_JAVA_FULL_IDENTIFIER.matcher(name).matches()
 		}
 
-		@JvmStatic
 		fun isValidAndPrintable(str: String?): Boolean {
 			if (!isValidIdentifier(str)) {
 				return false
@@ -118,19 +114,14 @@ class NameMapper private constructor() {
 			return isAllCharsPrintable(checkNotNull(str))
 		}
 
-		@JvmStatic
 		fun isValidIdentifierStart(codePoint: Int): Boolean = Character.isJavaIdentifierStart(codePoint)
 
-		@JvmStatic
 		fun isValidIdentifierPart(codePoint: Int): Boolean = Character.isJavaIdentifierPart(codePoint)
 
-		@JvmStatic
 		fun isPrintableChar(c: Char): Boolean = 32 <= c.code && c.code <= 126
 
-		@JvmStatic
 		fun isPrintableAsciiCodePoint(c: Int): Boolean = 32 <= c && c <= 126
 
-		@JvmStatic
 		fun isPrintableCodePoint(codePoint: Int): Boolean {
 			if (Character.isISOControl(codePoint)) {
 				return false
@@ -150,7 +141,6 @@ class NameMapper private constructor() {
 			return true
 		}
 
-		@JvmStatic
 		fun isAllCharsPrintable(str: String): Boolean {
 			val len = str.length
 			var offset = 0
@@ -174,7 +164,6 @@ class NameMapper private constructor() {
 		 * 注意：本方法用于“已带前缀”的名字，因此**不检查首字符是否合法**（允许数字开头），
 		 * 也不检查保留字。
 		 */
-		@JvmStatic
 		fun removeInvalidCharsMiddle(name: String): String {
 			if (isValidIdentifier(name) && isAllCharsPrintable(name)) {
 				return name
@@ -194,7 +183,6 @@ class NameMapper private constructor() {
 		 *
 		 * 参见 [removeInvalidCharsMiddle]。
 		 */
-		@JvmStatic
 		fun removeInvalidChars(name: String, prefix: String): String {
 			val result = removeInvalidCharsMiddle(name)
 			if (result.isNotEmpty()) {
@@ -207,7 +195,6 @@ class NameMapper private constructor() {
 		}
 
 		/** 仅删除不可打印字符，保留其余字符（用于日志/展示场景）。 */
-		@JvmStatic
 		fun removeNonPrintableCharacters(name: String): String {
 			val sb = StringBuilder(name.length)
 			StringUtils.visitCodePoints(name) { codePoint ->

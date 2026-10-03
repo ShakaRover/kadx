@@ -37,7 +37,6 @@ import java.util.Collections
  */
 object RegionUtils {
 
-	@JvmStatic
 	fun hasExitEdge(container: IContainer): Boolean {
 		if (container is IBlock) {
 			return BlockUtils.containsExitInsn(container)
@@ -58,7 +57,6 @@ object RegionUtils {
 		throw JadxRuntimeException(unknownContainerType(container))
 	}
 
-	@JvmStatic
 	fun getFirstInsn(container: IContainer): InsnNode? {
 		if (container is IBlock) {
 			val insnList = container.getInstructions()
@@ -79,7 +77,6 @@ object RegionUtils {
 		}
 	}
 
-	@JvmStatic
 	fun getFirstBlock(container: IContainer?): IBlock? {
 		if (container == null) {
 			return null
@@ -99,7 +96,6 @@ object RegionUtils {
 		}
 	}
 
-	@JvmStatic
 	fun getFirstBlockNode(container: IContainer): BlockNode? {
 		if (container is IBlock) {
 			if (container is BlockNode) {
@@ -111,10 +107,10 @@ object RegionUtils {
 			return ListUtils.firstOrNull(container.getConditionBlocks())
 		}
 		if (container is TryCatchRegion) {
-			return getFirstBlockNode(container.getTryRegion())
+			return getFirstBlockNode(container.tryRegion)
 		}
 		if (container is SwitchRegion) {
-			return container.getHeader()
+			return container.header
 		}
 		if (container is IRegion) {
 			return getFirstBlockNode(container.getSubBlocks())
@@ -132,7 +128,6 @@ object RegionUtils {
 		return null
 	}
 
-	@JvmStatic
 	fun getFirstSourceLine(container: IContainer): Int {
 		if (container is IBlock) {
 			return BlockUtils.getFirstSourceLine(container)
@@ -164,7 +159,6 @@ object RegionUtils {
 		return 0
 	}
 
-	@JvmStatic
 	fun getLastInsn(container: IContainer): InsnNode? {
 		if (container is IBlock) {
 			val insnList = container.getInstructions()
@@ -185,7 +179,6 @@ object RegionUtils {
 		}
 	}
 
-	@JvmStatic
 	fun getLastInsnWithBlock(container: IContainer): BlockInsnPair? {
 		if (container is IBlock) {
 			val lastInsn = ListUtils.last(container.getInstructions())
@@ -218,7 +211,6 @@ object RegionUtils {
 		throw JadxRuntimeException(unknownContainerType(container))
 	}
 
-	@JvmStatic
 	fun getLastBlock(container: IContainer): IBlock? {
 		if (container is IBlock) {
 			return container
@@ -235,7 +227,6 @@ object RegionUtils {
 		}
 	}
 
-	@JvmStatic
 	fun isExitBlock(mth: MethodNode, container: IContainer): Boolean {
 		if (container is BlockNode) {
 			return BlockUtils.isExitBlock(mth, container)
@@ -246,7 +237,6 @@ object RegionUtils {
 	/**
 	 * 区域内最后一个块没有后继、或跳出了区域（return/break）时返回 true。
 	 */
-	@JvmStatic
 	fun hasExitBlock(container: IContainer?): Boolean {
 		if (container == null) {
 			return false
@@ -276,7 +266,7 @@ object RegionUtils {
 
 	private fun isInsnExitContainer(rootContainer: IContainer, block: IBlock): Boolean {
 		val lastInsn = BlockUtils.getLastInsn(block) ?: return false
-		val insnType = lastInsn.getType()
+		val insnType = lastInsn.type
 		if (insnType == InsnType.RETURN) {
 			return true
 		}
@@ -284,7 +274,7 @@ object RegionUtils {
 			// 检查 throw 之后是否还能在当前容器内继续执行（有匹配的 handler）
 			val catchAttr = lastInsn.get(AType.EXC_CATCH)
 			if (catchAttr != null) {
-				for (handler in catchAttr.getHandlers()) {
+				for (handler in catchAttr.handlers) {
 					if (isRegionContainsBlock(rootContainer, handler.getHandlerBlock())) {
 						return false
 					}
@@ -311,7 +301,6 @@ object RegionUtils {
 		return false
 	}
 
-	@JvmStatic
 	fun hasBreakInsn(container: IContainer): Boolean {
 		if (container is IBlock) {
 			return BlockUtils.checkLastInsnType(container, InsnType.BREAK)
@@ -323,7 +312,6 @@ object RegionUtils {
 		}
 	}
 
-	@JvmStatic
 	fun insnsCount(container: IContainer): Int {
 		if (container is IBlock) {
 			val insnList = container.getInstructions()
@@ -346,17 +334,14 @@ object RegionUtils {
 		throw JadxRuntimeException(unknownContainerType(container))
 	}
 
-	@JvmStatic
 	fun collectInsns(mth: MethodNode, container: IContainer): List<InsnNode> {
 		val list = ArrayList<InsnNode>()
 		visitBlocks(mth, container) { block -> list.addAll(block.getInstructions()) }
 		return list
 	}
 
-	@JvmStatic
 	fun isEmpty(container: IContainer?): Boolean = !notEmpty(container)
 
-	@JvmStatic
 	fun notEmpty(container: IContainer?): Boolean {
 		if (container == null) {
 			return false
@@ -384,7 +369,6 @@ object RegionUtils {
 		throw JadxRuntimeException(unknownContainerType(container))
 	}
 
-	@JvmStatic
 	fun getAllRegionBlocks(container: IContainer, blocks: MutableSet<IBlock>) {
 		if (container is IBlock) {
 			blocks.add(container)
@@ -397,7 +381,6 @@ object RegionUtils {
 		}
 	}
 
-	@JvmStatic
 	fun isRegionContainsBlock(container: IContainer, block: BlockNode?): Boolean {
 		if (container is IBlock) {
 			return container === block
@@ -413,7 +396,6 @@ object RegionUtils {
 		}
 	}
 
-	@JvmStatic
 	fun getSingleSubBlock(container: IContainer): IContainer? {
 		if (container is Region) {
 			val subBlocks = container.getSubBlocks()
@@ -439,12 +421,11 @@ object RegionUtils {
 		}
 	}
 
-	@JvmStatic
 	fun getExcHandlersForRegion(region: IContainer): List<IContainer> {
 		val tb: TryCatchBlockAttr? = region.get(AType.TRY_BLOCK)
 		if (tb != null) {
-			val list = ArrayList<IContainer>(tb.getHandlersCount())
-			for (eh in tb.getHandlers()) {
+			val list = ArrayList<IContainer>(tb.handlersCount)
+			for (eh in tb.handlers) {
 				list.add(checkNotNull(eh.getHandlerRegion()))
 			}
 			return list
@@ -452,7 +433,6 @@ object RegionUtils {
 		return Collections.emptyList()
 	}
 
-	@JvmStatic
 	fun getLoopsStartInRegion(mth: MethodNode, r: IRegion): List<LoopInfo> {
 		val loops = ArrayList<LoopInfo>()
 		visitBlocks(mth, r) { b ->
@@ -473,7 +453,7 @@ object RegionUtils {
 				// 处理 try 块
 				val tb: TryCatchBlockAttr? = b.get(AType.TRY_BLOCK)
 				if (tb != null && b is IRegion) {
-					for (eh in tb.getHandlers()) {
+					for (eh in tb.handlers) {
 						if (isRegionContainsRegion(checkNotNull(eh.getHandlerRegion()), region)) {
 							return true
 						}
@@ -493,7 +473,6 @@ object RegionUtils {
 	 * 简单区域（非异常处理区域）只需向上查父链；异常处理区域可能有多个父节点，
 	 * 因此需要递归查找。
 	 */
-	@JvmStatic
 	fun isRegionContainsRegion(container: IContainer, region0: IRegion?): Boolean {
 		if (container === region0) {
 			return true
@@ -516,7 +495,6 @@ object RegionUtils {
 		return true
 	}
 
-	@JvmStatic
 	fun getBlockContainer(container: IContainer, block: IBlock): IContainer? {
 		if (container is IBlock) {
 			return if (container === block) container else null
@@ -536,7 +514,6 @@ object RegionUtils {
 	/**
 	 * 判断两个块是否在同一层的同一区域内。
 	 */
-	@JvmStatic
 	fun isBlocksInSameRegion(mth: MethodNode, firstBlock: BlockNode, secondBlock: BlockNode): Boolean {
 		val region = mth.region ?: return false
 		val firstContainer = getBlockContainer(region, firstBlock)
@@ -550,7 +527,6 @@ object RegionUtils {
 		return false
 	}
 
-	@JvmStatic
 	fun isDominatedBy(dom: BlockNode, cont: IContainer): Boolean {
 		if (dom === cont) {
 			return true
@@ -571,7 +547,6 @@ object RegionUtils {
 		}
 	}
 
-	@JvmStatic
 	fun hasPathThroughBlock(block: BlockNode, cont: IContainer): Boolean {
 		if (block === cont) {
 			return true
@@ -596,7 +571,6 @@ object RegionUtils {
 	/**
 	 * 判断从 block 到 container 起点是否存在路径；block 在 container 内部时返回 false。
 	 */
-	@JvmStatic
 	fun isPathExists(block: BlockNode, container: IContainer): Boolean {
 		val firstBlock = getFirstBlockNode(container)
 		if (firstBlock != null) {
@@ -605,7 +579,6 @@ object RegionUtils {
 		return false
 	}
 
-	@JvmStatic
 	fun unknownContainerType(container: IContainer?): String {
 		if (container == null) {
 			return "Null container variable"
@@ -613,7 +586,6 @@ object RegionUtils {
 		return "Unknown container type: " + container.javaClass
 	}
 
-	@JvmStatic
 	fun visitBlocks(mth: MethodNode, container: IContainer, visitor: (IBlock) -> Unit) {
 		DepthRegionTraversal.traverse(
 			mth,
@@ -626,7 +598,6 @@ object RegionUtils {
 		)
 	}
 
-	@JvmStatic
 	fun visitBlockNodes(mth: MethodNode, container: IContainer, visitor: (BlockNode) -> Unit) {
 		DepthRegionTraversal.traverse(
 			mth,
@@ -641,7 +612,6 @@ object RegionUtils {
 		)
 	}
 
-	@JvmStatic
 	fun visitRegions(mth: MethodNode, container: IContainer, visitor: (IRegion) -> Boolean) {
 		DepthRegionTraversal.traverse(
 			mth,
@@ -652,7 +622,6 @@ object RegionUtils {
 		)
 	}
 
-	@JvmStatic
 	fun getNextContainer(mth: MethodNode, region: IRegion): IContainer? {
 		val parent = checkNotNull(region.parent)
 		val subBlocks = parent.getSubBlocks()
@@ -664,7 +633,6 @@ object RegionUtils {
 	}
 
 	/** 给区域内所有块打上指定标记。 */
-	@JvmStatic
 	fun addToAll(mth: MethodNode, container: IContainer, flag: AFlag) {
 		visitBlocks(mth, container) { t -> t.add(flag) }
 	}

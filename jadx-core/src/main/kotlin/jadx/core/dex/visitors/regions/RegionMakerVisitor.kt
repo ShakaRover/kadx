@@ -32,7 +32,7 @@ import jadx.core.dex.visitors.shrink.CodeShrinkVisitor
 class RegionMakerVisitor : AbstractVisitor() {
 
 	override fun visit(mth: MethodNode) {
-		if (mth.isNoCode() || checkNotNull(mth.getBasicBlocks()).isEmpty()) {
+		if (mth.isNoCode() || checkNotNull(mth.basicBlocks).isEmpty()) {
 			return
 		}
 		val rm = RegionMaker(mth)
@@ -52,7 +52,7 @@ class RegionMakerVisitor : AbstractVisitor() {
 	/** 若存在“强制赋值内联”标记，则运行一次代码收缩（shrink） */
 	private fun processForceInlineInsns(mth: MethodNode) {
 		var needShrink = false
-		for (block in checkNotNull(mth.getBasicBlocks())) {
+		for (block in checkNotNull(mth.basicBlocks)) {
 			for (insn in block.getInstructions()) {
 				if (insn.contains(AFlag.FORCE_ASSIGN_INLINE)) {
 					needShrink = true

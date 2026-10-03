@@ -52,7 +52,7 @@ class DecompilerScheduler : IDecompileScheduler {
 		val result = ArrayList<List<JavaClass>>()
 		var mergedBatch = ArrayList<JavaClass>(MERGED_BATCH_SIZE)
 		for (depInfo in deps) {
-			val cls = depInfo.getCls()
+			val cls = depInfo.cls
 			if (!added.add(cls)) {
 				continue
 			}
@@ -106,14 +106,14 @@ class DecompilerScheduler : IDecompileScheduler {
 		}
 
 		private fun buildFallback(classes: List<JavaClass>): List<List<JavaClass>> = classes
-			.sortedBy { c: JavaClass -> c.getClassNode().getTotalDepsCount() }
+			.sortedBy { c: JavaClass -> c.getClassNode().totalDepsCount }
 			.map { c: JavaClass -> Collections.singletonList(c) }
 
 		private fun dumpBatchesStats(classes: List<JavaClass>, result: List<List<JavaClass>>, deps: List<DepInfo>) {
 			val clsInBatches = result.sumOf { it.size }
 			val avg = if (result.isEmpty()) -1.0 else result.sumOf { it.size }.toDouble() / result.size
 			val maxSingleDeps = classes.maxOfOrNull { it.getTotalDepsCount() } ?: -1
-			val maxSubDeps = deps.maxOfOrNull { it.getDepsCount() } ?: -1
+			val maxSubDeps = deps.maxOfOrNull { it.depsCount } ?: -1
 			LOG.info(
 				"Batches stats:" +
 					"\n input classes: " + classes.size +
@@ -135,10 +135,7 @@ class DecompilerScheduler : IDecompileScheduler {
 		}
 	}
 
-	private class DepInfo(private val cls: JavaClass, private val depsCount: Int) : Comparable<DepInfo> {
-		fun getCls(): JavaClass = cls
-
-		fun getDepsCount(): Int = depsCount
+	private class DepInfo(val cls: JavaClass, val depsCount: Int) : Comparable<DepInfo> {
 
 		override fun compareTo(o: DepInfo): Int {
 			val deps = depsCount.compareTo(o.depsCount)

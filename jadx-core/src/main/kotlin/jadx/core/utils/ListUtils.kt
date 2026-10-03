@@ -18,14 +18,12 @@ import java.util.TreeSet
  */
 object ListUtils {
 
-	@JvmStatic
 	fun <T> mutableListOf(obj: T): List<T> {
 		val list = ArrayList<T>()
 		list.add(obj)
 		return list
 	}
 
-	@JvmStatic
 	fun <T> mutableListOf(obj1: T, obj2: T): List<T> {
 		val list = ArrayList<T>()
 		list.add(obj1)
@@ -33,10 +31,8 @@ object ListUtils {
 		return list
 	}
 
-	@JvmStatic
 	fun <T> mutableListOf(vararg objs: T): List<T> = ArrayList(Arrays.asList(*objs))
 
-	@JvmStatic
 	fun <T> isSingleElement(list: List<T>?, obj: T): Boolean {
 		if (list == null || list.size != 1) {
 			return false
@@ -44,7 +40,6 @@ object ListUtils {
 		return Objects.equals(list[0], obj)
 	}
 
-	@JvmStatic
 	fun <T> unorderedEquals(first: List<T>, second: List<T>): Boolean {
 		if (first.size != second.size) {
 			return false
@@ -52,7 +47,6 @@ object ListUtils {
 		return first.containsAll(second)
 	}
 
-	@JvmStatic
 	fun <T, U> orderedEquals(list1: List<T>, list2: List<U>, comparer: (T, U) -> Boolean): Boolean {
 		if (list1 === list2) {
 			return true
@@ -72,7 +66,6 @@ object ListUtils {
 		return !iter1.hasNext() && !iter2.hasNext()
 	}
 
-	@JvmStatic
 	fun <T, R> map(list: Collection<T>?, mapFunc: (T) -> R): List<R> {
 		if (list == null || list.isEmpty()) {
 			return Collections.emptyList()
@@ -84,10 +77,8 @@ object ListUtils {
 		return result
 	}
 
-	@JvmStatic
 	fun <T> first(list: List<T>): T = list[0]
 
-	@JvmStatic
 	fun <T> firstOrNull(list: List<T>?): T? {
 		if (list == null || list.isEmpty()) {
 			return null
@@ -95,7 +86,6 @@ object ListUtils {
 		return list[0]
 	}
 
-	@JvmStatic
 	fun <T> last(list: List<T>?): T? {
 		if (list == null || list.isEmpty()) {
 			return null
@@ -103,7 +93,6 @@ object ListUtils {
 		return list[list.size - 1]
 	}
 
-	@JvmStatic
 	fun <T> removeLast(list: List<T>?): T? {
 		if (list == null) {
 			return null
@@ -119,7 +108,6 @@ object ListUtils {
 	@Suppress("UNCHECKED_CAST")
 	private fun <T> mutable(list: List<T>): MutableList<T> = list as MutableList<T>
 
-	@JvmStatic
 	fun <T : Comparable<T>> distinctMergeSortedLists(first: List<T>, second: List<T>): List<T> {
 		if (first.isEmpty()) {
 			return second
@@ -132,10 +120,8 @@ object ListUtils {
 		return ArrayList(set)
 	}
 
-	@JvmStatic
 	fun <T> distinctList(list: List<T>): List<T> = ArrayList(LinkedHashSet(list))
 
-	@JvmStatic
 	@Suppress("UNCHECKED_CAST")
 	fun <T> concat(first: T?, values: Array<T>): List<T> {
 		val list = ArrayList<T>(1 + values.size)
@@ -149,7 +135,6 @@ object ListUtils {
 	 * 把旧元素替换为新元素。
 	 * 兼容 null 与不可变空列表（`Collections.emptyList()` 产生的对象）。
 	 */
-	@JvmStatic
 	fun <T> safeReplace(list: List<T>?, oldObj: T, newObj: T): List<T> {
 		if (list == null || list.isEmpty()) {
 			// 不可变空列表：必须新建
@@ -166,14 +151,12 @@ object ListUtils {
 		return list
 	}
 
-	@JvmStatic
 	fun <T> safeRemove(list: List<T>?, obj: T) {
 		if (list != null && !list.isEmpty()) {
 			mutable(list).remove(obj)
 		}
 	}
 
-	@JvmStatic
 	fun <T> safeRemoveAndTrim(list: List<T>?, obj: T): List<T>? {
 		if (list == null || list.isEmpty()) {
 			return list
@@ -186,7 +169,6 @@ object ListUtils {
 		return list
 	}
 
-	@JvmStatic
 	fun <T> safeAdd(list: List<T>?, obj: T): List<T> {
 		if (list == null || list.isEmpty()) {
 			val newList = ArrayList<T>(1)
@@ -197,7 +179,6 @@ object ListUtils {
 		return list
 	}
 
-	@JvmStatic
 	fun <T> filter(list: Collection<T>?, filter: (T) -> Boolean): List<T> {
 		if (list == null || list.isEmpty()) {
 			return Collections.emptyList()
@@ -216,7 +197,6 @@ object ListUtils {
 	 *
 	 * @return 匹配 0 个或多个时返回 null
 	 */
-	@JvmStatic
 	fun <T> filterOnlyOne(list: List<T>?, filter: (T) -> Boolean): T? {
 		if (list == null || list.isEmpty()) {
 			return null
@@ -234,7 +214,6 @@ object ListUtils {
 		return found
 	}
 
-	@JvmStatic
 	fun <T> allMatch(list: Collection<T>?, test: (T) -> Boolean): Boolean {
 		if (list == null || list.isEmpty()) {
 			return false
@@ -247,10 +226,8 @@ object ListUtils {
 		return true
 	}
 
-	@JvmStatic
 	fun <T> noneMatch(list: Collection<T>?, test: (T) -> Boolean): Boolean = !anyMatch(list, test)
 
-	@JvmStatic
 	fun <T> anyMatch(list: Collection<T>?, test: (T) -> Boolean): Boolean {
 		if (list == null || list.isEmpty()) {
 			return false
@@ -263,7 +240,6 @@ object ListUtils {
 		return false
 	}
 
-	@JvmStatic
 	fun <T> enumerationToList(enumeration: Enumeration<T>?): List<T> {
 		if (enumeration == null || enumeration === Collections.emptyEnumeration<T>()) {
 			return Collections.emptyList()

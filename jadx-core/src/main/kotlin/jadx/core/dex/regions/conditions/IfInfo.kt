@@ -23,13 +23,13 @@ import jadx.core.utils.blocks.BlockSet
  * 便于 Java 调用方零改动。静态工厂 [invert] 放入 companion + `@JvmStatic`。
  */
 class IfInfo private constructor(
-	private val mth: MethodNode,
-	private val condition: IfCondition,
-	private val thenBlock: BlockNode?,
-	private val elseBlock: BlockNode?,
-	private val mergedBlocks: BlockSet,
-	private val skipBlocks: MutableSet<BlockNode>,
-	private val forceInlineInsns: MutableList<InsnNode>,
+	val mth: MethodNode,
+	val condition: IfCondition,
+	val thenBlock: BlockNode?,
+	val elseBlock: BlockNode?,
+	val mergedBlocks: BlockSet,
+	val skipBlocks: MutableSet<BlockNode>,
+	val forceInlineInsns: MutableList<InsnNode>,
 ) {
 
 	constructor(mth: MethodNode, condition: IfCondition, thenBlock: BlockNode?, elseBlock: BlockNode?) :
@@ -37,13 +37,13 @@ class IfInfo private constructor(
 
 	constructor(info: IfInfo, thenBlock: BlockNode?, elseBlock: BlockNode?) :
 		this(
-			info.getMth(),
-			info.getCondition(),
+			info.mth,
+			info.condition,
 			thenBlock,
 			elseBlock,
-			info.getMergedBlocks(),
-			info.getSkipBlocks(),
-			info.getForceInlineInsns(),
+			info.mergedBlocks,
+			info.skipBlocks,
+			info.forceInlineInsns,
 		)
 
 	/** 合并后的出口块；构建过程中可能被设置 */
@@ -52,34 +52,20 @@ class IfInfo private constructor(
 	/** 把若干 IfInfo 的块集合、跳过块与内联指令合并进本对象 */
 	fun merge(vararg arr: IfInfo) {
 		for (info in arr) {
-			mergedBlocks.addAll(info.getMergedBlocks())
-			skipBlocks.addAll(info.getSkipBlocks())
-			addInsnsForForcedInline(info.getForceInlineInsns())
+			mergedBlocks.addAll(info.mergedBlocks)
+			skipBlocks.addAll(info.skipBlocks)
+			addInsnsForForcedInline(info.forceInlineInsns)
 		}
 	}
 
 	@Deprecated("Use getMergedBlocks().getFirst() instead")
-	fun getFirstIfBlock(): BlockNode = mergedBlocks.getFirst()
-
-	fun getMergedBlocks(): BlockSet = mergedBlocks
-
-	fun getMth(): MethodNode = mth
-
-	fun getCondition(): IfCondition = condition
-
-	fun getSkipBlocks(): MutableSet<BlockNode> = skipBlocks
-
-	fun getThenBlock(): BlockNode? = thenBlock
-
-	fun getElseBlock(): BlockNode? = elseBlock
+	val firstIfBlock: BlockNode get() = mergedBlocks.first
 
 	fun getOutBlock(): BlockNode? = outBlock
 
 	fun setOutBlock(outBlock: BlockNode?) {
 		this.outBlock = outBlock
 	}
-
-	fun getForceInlineInsns(): MutableList<InsnNode> = forceInlineInsns
 
 	fun resetForceInlineInsns() {
 		forceInlineInsns.clear()
@@ -93,15 +79,14 @@ class IfInfo private constructor(
 
 	companion object {
 		/** 生成条件取反、并交换 then/else 分支的新 IfInfo */
-		@JvmStatic
 		fun invert(info: IfInfo): IfInfo = IfInfo(
-			info.getMth(),
-			IfCondition.invert(info.getCondition()),
-			info.getElseBlock(),
-			info.getThenBlock(),
-			info.getMergedBlocks(),
-			info.getSkipBlocks(),
-			info.getForceInlineInsns(),
+			info.mth,
+			IfCondition.invert(info.condition),
+			info.elseBlock,
+			info.thenBlock,
+			info.mergedBlocks,
+			info.skipBlocks,
+			info.forceInlineInsns,
 		)
 	}
 }

@@ -31,10 +31,10 @@ class FieldReplaceAttr private constructor(
 	constructor(reg: InsnArg) : this(ReplaceWith.VAR, reg)
 
 	/** 取类实例引用（仅当 [replaceType] 为 CLASS_INSTANCE 时有效） */
-	fun getClsRef(): ClassInfo = replaceObj as ClassInfo
+	val clsRef: ClassInfo get() = replaceObj as ClassInfo
 
 	/** 取变量引用（仅当 [replaceType] 为 VAR 时有效） */
-	fun getVarRef(): InsnArg = replaceObj as InsnArg
+	val varRef: InsnArg get() = replaceObj as InsnArg
 
 	override val attrType: AType<FieldReplaceAttr> get() = AType.FIELD_REPLACE
 

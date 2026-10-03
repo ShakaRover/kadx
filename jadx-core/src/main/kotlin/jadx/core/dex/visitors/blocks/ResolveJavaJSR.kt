@@ -25,9 +25,8 @@ import jadx.core.utils.exceptions.JadxRuntimeException
  */
 object ResolveJavaJSR {
 
-	@JvmStatic
 	fun process(mth: MethodNode) {
-		val blocksCount = checkNotNull(mth.getBasicBlocks()).size
+		val blocksCount = checkNotNull(mth.basicBlocks).size
 		var k = 0
 		while (true) {
 			val changed = resolve(mth)
@@ -41,13 +40,13 @@ object ResolveJavaJSR {
 	}
 
 	private fun resolve(mth: MethodNode): Boolean {
-		val blocks = checkNotNull(mth.getBasicBlocks())
+		val blocks = checkNotNull(mth.basicBlocks)
 		val blocksCount = blocks.size
 		for (block in blocks) {
 			if (BlockUtils.checkLastInsnType(block, InsnType.JAVA_RET)) {
 				resolveForRetBlock(mth, block)
 				// 若块数量发生变化，说明刚刚复制过路径，需要重新开始扫描
-				if (blocksCount != checkNotNull(mth.getBasicBlocks()).size) {
+				if (blocksCount != checkNotNull(mth.basicBlocks).size) {
 					return true
 				}
 			}
@@ -78,13 +77,13 @@ object ResolveJavaJSR {
 
 	private fun removeInsns(retBlock: BlockNode, startBlock: BlockNode, jsrBlocks: List<BlockNode>) {
 		val retInsn = ListUtils.removeLast(retBlock.getInstructions())
-		if (retInsn != null && retInsn.getType() == InsnType.JAVA_RET) {
+		if (retInsn != null && retInsn.type == InsnType.JAVA_RET) {
 			val retArg: InsnArg = retInsn.getArg(0)
 			if (retArg.isRegister) {
 				val regNum = (retArg as RegisterArg).regNum
 				val startInsn = BlockUtils.getFirstInsn(startBlock)
 				if (startInsn != null &&
-					startInsn.getType() == InsnType.MOVE &&
+					startInsn.type == InsnType.MOVE &&
 					checkNotNull(startInsn.getResult()).regNum == regNum
 				) {
 					startBlock.instructions.removeAt(0)

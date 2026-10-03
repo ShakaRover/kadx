@@ -22,7 +22,6 @@ class InvokeCustomUtils {
 		 * - INVOKE_INTERFACE → INTERFACE
 		 * - 字段类句柄等不支持的类型抛异常
 		 */
-		@JvmStatic
 		fun convertInvokeType(type: MethodHandleType): InvokeType = when (type) {
 			MethodHandleType.INVOKE_STATIC -> InvokeType.STATIC
 

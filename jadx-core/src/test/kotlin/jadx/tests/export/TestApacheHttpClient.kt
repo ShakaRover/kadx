@@ -11,7 +11,7 @@ class TestApacheHttpClient : ExportGradleTest() {
 
 	@Test
 	fun test() {
-		val gradleInfo = getRootNode().getGradleInfoStorage()
+		val gradleInfo = getRootNode().gradleInfoStorage
 		gradleInfo.isUseApacheHttpLegacy = true
 		exportGradle("OptionalTargetSdkVersion.xml", "strings.xml")
 		assertThat(getAppGradleBuild()).contains("        useLibrary 'org.apache.http.legacy'")

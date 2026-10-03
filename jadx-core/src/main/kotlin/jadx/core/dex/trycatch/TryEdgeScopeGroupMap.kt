@@ -74,7 +74,7 @@ class TryEdgeScopeGroupMap(
 
 	fun hasMergedEdges(): Boolean = mergedEdges.isNotEmpty()
 
-	fun getMergedScopes(): List<Pair<TryEdge>> = mergedEdges
+	val mergedScopes: List<Pair<TryEdge>> get() = mergedEdges
 
 	/** 先合并同作用域的边，再为每条边建立“边 -> 终点块”的映射 */
 	fun populateFromEdges(edges: Map<TryEdge, BlockNode>) {
@@ -177,10 +177,10 @@ class TryEdgeScopeGroupMap(
 				val keptEdge = pair.first
 				val removedEdge = pair.second
 
-				if (keptEdge.isHandlerExit() && !tryCatch.getHandlers().contains(keptEdge.getExceptionHandler())) {
+				if (keptEdge.isHandlerExit() && !tryCatch.handlers.contains(keptEdge.exceptionHandler)) {
 					continue
 				}
-				if (removedEdge.isHandlerExit() && !tryCatch.getHandlers().contains(removedEdge.getExceptionHandler())) {
+				if (removedEdge.isHandlerExit() && !tryCatch.handlers.contains(removedEdge.exceptionHandler)) {
 					continue
 				}
 

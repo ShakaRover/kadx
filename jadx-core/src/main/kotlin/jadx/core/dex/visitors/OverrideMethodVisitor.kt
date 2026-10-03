@@ -149,7 +149,7 @@ class OverrideMethodVisitor : AbstractVisitor() {
 		// 用不含返回值、但返回值更宽泛的签名匹配
 		for (supMth in cls.methods) {
 			if (supMth.getMethodInfo().shortId.startsWith(signature) && !supMth.accessFlags.isStatic()) {
-				val typeCompare: TypeCompare = cls.root().getTypeCompare()
+				val typeCompare: TypeCompare = cls.root().typeCompare
 				val supRetType = supMth.getMethodInfo().returnType
 				val mthRetType = mth.getMethodInfo().returnType
 				val res = typeCompare.compareTypes(supRetType, mthRetType)
@@ -359,7 +359,7 @@ class OverrideMethodVisitor : AbstractVisitor() {
 		if (!baseReturnType.containsTypeVariable()) {
 			return false
 		}
-		val typeCompare = mth.root().getTypeCompare()
+		val typeCompare = mth.root().typeCompare
 		val baseCls = baseMth.getMethodInfo().declClass.type
 		for (superType in superData.superTypes) {
 			val compareResult = typeCompare.compareTypes(superType, baseCls)
@@ -413,7 +413,7 @@ class OverrideMethodVisitor : AbstractVisitor() {
 		if (!baseArg.containsTypeVariable()) {
 			return null
 		}
-		val typeCompare = mth.root().getTypeCompare()
+		val typeCompare = mth.root().typeCompare
 		val baseCls = baseMth.getMethodInfo().declClass.type
 		for (superType in superData.superTypes) {
 			val compareResult = typeCompare.compareTypes(superType, baseCls)
@@ -434,7 +434,7 @@ class OverrideMethodVisitor : AbstractVisitor() {
 		val mthName = mth.getMethodInfo().alias
 		val newSignature = MethodInfo.makeShortId(mthName, mth.getArgTypes(), null)
 		for (otherMth in mth.parentClass.methods) {
-			val otherMthName = otherMth.getAlias()
+			val otherMthName = otherMth.alias
 			if (otherMthName == mthName && otherMth !== mth) {
 				val otherSignature = otherMth.getMethodInfo().makeSignature(true, false)
 				if (otherSignature == newSignature) {
@@ -456,7 +456,7 @@ class OverrideMethodVisitor : AbstractVisitor() {
 	// TODO: at this point deobfuscator is not available and map file already saved
 	private fun makeNewAlias(mth: MethodNode): String {
 		val cls = mth.parentClass
-		val baseName = mth.getAlias()
+		val baseName = mth.alias
 		var k = 2
 		while (true) {
 			val alias = baseName + k

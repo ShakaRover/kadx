@@ -25,8 +25,8 @@ class PredecessorBlockTraverserVisitor(state: TraverserState) : AbstractBlockTra
 
 	override fun visit(block: BlockNode): TraverserState {
 		val currentState: TraverserState = getState()
-		val centralityState: CentralityState = currentState.getCentralityState()
-		val globalState: GlobalTraverserSourceState = currentState.getGlobalState()
+		val centralityState: CentralityState = currentState.centralityState
+		val globalState: GlobalTraverserSourceState = currentState.globalState
 
 		val predecessors: List<BlockNode> = block.getPredecessors()
 		val containedPredecessors: List<BlockNode> = ListUtils.filter(predecessors) { globalState.isBlockContained(it) }

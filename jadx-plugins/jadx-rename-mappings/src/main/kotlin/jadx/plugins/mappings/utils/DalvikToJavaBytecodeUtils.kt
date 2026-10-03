@@ -39,7 +39,7 @@ public object DalvikToJavaBytecodeUtils {
 	public fun getMethodArgLvIndex(methodArgSsaVar: SSAVar, mth: MethodNode): Int? = getMethodArgLvIndexViaSsaVars(methodArgSsaVar.regNum, mth)
 
 	private fun getMethodArgLvIndexViaSsaVars(regNum: Int, mth: MethodNode): Int? {
-		val ssaVars = mth.getSVars()
+		val ssaVars = mth.SVars
 		if (ssaVars.isNotEmpty()) {
 			return regNum - ssaVars[0].regNum
 		}
@@ -65,12 +65,12 @@ public object DalvikToJavaBytecodeUtils {
 	public fun getMethodVarLvIndex(methodVarSsaVar: SSAVar, mth: MethodNode): Int? = getMethodVarLvIndexViaSsaVars(methodVarSsaVar.regNum, mth)
 
 	private fun getMethodVarLvIndexViaSsaVars(regNum: Int, mth: MethodNode): Int? {
-		val ssaVars = mth.getSVars()
+		val ssaVars = mth.SVars
 		if (ssaVars.isEmpty()) {
 			return null
 		}
 		var lastArgLvIndex = if (mth.accessFlags.isStatic()) -1 else 0
-		val args = mth.getArgRegs()
+		val args = mth.argRegs
 		if (args.isNotEmpty()) {
 			val lastArgSv = checkNotNull(args[args.size - 1].sVar) { "SSA var not set for method arg" }
 			lastArgLvIndex = checkNotNull(getMethodArgLvIndexViaSsaVars(lastArgSv.regNum, mth))
@@ -97,12 +97,12 @@ public object DalvikToJavaBytecodeUtils {
 	}
 
 	public fun getMethodArgLvtIndex(methodArgSsaVar: SSAVar, mth: MethodNode): Int? {
-		val ssaVars = mth.getSVars()
+		val ssaVars = mth.SVars
 		if (ssaVars.isEmpty()) {
 			return null
 		}
 		var lvtIndex = if (mth.accessFlags.isStatic()) 0 else 1
-		for (arg in mth.getArgRegs()) {
+		for (arg in mth.argRegs) {
 			if (arg.sVar == methodArgSsaVar) {
 				return lvtIndex
 			}
@@ -116,7 +116,7 @@ public object DalvikToJavaBytecodeUtils {
 	// TODO: public static Integer getMethodVarLvtIndex(VarNode methodVar) {}
 
 	public fun getMethodVarLvtIndex(methodVarSsaVar: SSAVar, mth: MethodNode): Int? {
-		val ssaVars = ArrayList(mth.getSVars())
+		val ssaVars = ArrayList(mth.SVars)
 		if (ssaVars.isEmpty()) {
 			return null
 		}

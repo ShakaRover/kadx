@@ -31,7 +31,6 @@ enum class ClspClassSource(val jarFile: String) {
 		 * 遍历所有枚举值，找到 `jarFile` 完全相等的一项；找不到时回退为 [APP]
 		 * （与原 Java 行为一致，例如无法识别的第三方 jar）。
 		 */
-		@JvmStatic
 		fun getClspClassSource(jarFile: String): ClspClassSource {
 			for (classSource in values()) {
 				if (classSource.jarFile == jarFile) {

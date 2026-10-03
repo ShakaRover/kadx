@@ -33,7 +33,7 @@ class CheckRegions : AbstractVisitor() {
 	override fun visit(mth: MethodNode) {
 		if (mth.isNoCode() ||
 			mth.region == null ||
-			checkNotNull(mth.getBasicBlocks()).isEmpty() ||
+			checkNotNull(mth.basicBlocks).isEmpty() ||
 			mth.contains(AType.JADX_ERROR)
 		) {
 			return
@@ -63,8 +63,8 @@ class CheckRegions : AbstractVisitor() {
 				}
 			},
 		)
-		if (checkNotNull(mth.getBasicBlocks()).size != blocksInRegions.size) {
-			for (block in checkNotNull(mth.getBasicBlocks())) {
+		if (checkNotNull(mth.basicBlocks).size != blocksInRegions.size) {
+			for (block in checkNotNull(mth.basicBlocks)) {
 				if (!blocksInRegions.contains(block) &&
 					!block.getInstructions().isEmpty() &&
 					!block.contains(AFlag.ADDED_TO_REGION) &&
@@ -83,7 +83,7 @@ class CheckRegions : AbstractVisitor() {
 			object : AbstractRegionVisitor() {
 				override fun enterRegion(mth: MethodNode, region: IRegion): Boolean {
 					if (region is LoopRegion) {
-						val loopHeader = region.getHeader()
+						val loopHeader = region.header
 						if (loopHeader != null &&
 							!loopHeader.contains(AFlag.ALLOW_MULTIPLE_INSNS_LOOP_COND) &&
 							loopHeader.getInstructions().size != 1

@@ -44,7 +44,7 @@ class IfRegion(parent: IRegion?) :
 		elseRegion = tmp
 	}
 
-	fun getSourceLine(): Int = getConditionSourceLine()
+	val sourceLine: Int get() = getConditionSourceLine()
 
 	override fun getSubBlocks(): List<IContainer> {
 		val conditionBlocks = getConditionBlocks()

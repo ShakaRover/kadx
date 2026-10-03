@@ -145,7 +145,7 @@ class ControlFlowGraphDialog private constructor(mainWindow: MainWindow, jMth: J
 		}
 	}
 
-	private fun getPassList(): List<IDexTreeVisitor> = mth.root().getProcessClasses().getPasses()
+	private fun getPassList(): List<IDexTreeVisitor> = mth.root().getProcessClasses().passes
 
 	companion object {
 		private const val serialVersionUID = -68749445239697710L

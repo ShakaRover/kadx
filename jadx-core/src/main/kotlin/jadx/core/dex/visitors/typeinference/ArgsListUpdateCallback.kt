@@ -45,7 +45,7 @@ class ArgsListUpdateCallback<T : InsnArg>(
 			if (res != TypeUpdateResult.SAME) {
 				allSame = false
 			}
-			val next = getNextArg()
+			val next = nextArg
 			if (next == null) {
 				return finalResult(if (allSame) TypeUpdateResult.SAME else TypeUpdateResult.CHANGED)
 			}
@@ -99,7 +99,7 @@ class ArgsListUpdateCallback<T : InsnArg>(
 		return result
 	}
 
-	private fun getNextArg(): T? {
+	private val nextArg: T? get() {
 		val filter = argsFilter
 		while (true) {
 			if (!argsIterator.hasNext()) {

@@ -388,7 +388,7 @@ class JadxArgs : Closeable {
 			if (decompiler == null) {
 				return ""
 			}
-			return decompiler.getPluginManager().getResolvedPluginContexts()
+			return decompiler.getPluginManager().resolvedPluginContexts
 				.joinToString(":") { obj: PluginContext -> obj.getInputsHash() }
 		}
 	}

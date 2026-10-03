@@ -26,7 +26,7 @@ abstract class AbstractTypeConstraint(
 	private val relatedVars: List<SSAVar> = collectRelatedVars(insn, arg)
 
 	private fun collectRelatedVars(insn: InsnNode, arg: InsnArg): List<SSAVar> {
-		val list = ArrayList<SSAVar>(insn.getArgsCount())
+		val list = ArrayList<SSAVar>(insn.argsCount)
 		if (insn.getResult() === arg) {
 			// 约束针对结果：所有寄存器参数都会影响结果的类型
 			for (insnArg in insn.getArguments()) {
@@ -48,5 +48,5 @@ abstract class AbstractTypeConstraint(
 
 	override fun getRelatedVars(): List<SSAVar> = relatedVars
 
-	override fun toString(): String = "(" + insn.getType() + ':' + Utils.listToString(relatedVars) { it.toShortString() } + ')'
+	override fun toString(): String = "(" + insn.type + ':' + Utils.listToString(relatedVars) { it.toShortString() } + ')'
 }

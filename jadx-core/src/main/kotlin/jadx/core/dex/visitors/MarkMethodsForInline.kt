@@ -46,7 +46,6 @@ class MarkMethodsForInline : AbstractVisitor() {
 		/**
 		 * @return 若方法尚未加载、无法分析则返回 null
 		 */
-		@JvmStatic
 		fun process(mth: MethodNode): MethodInlineAttr? {
 			try {
 				val mia = mth.get(AType.METHOD_INLINE)
@@ -54,7 +53,7 @@ class MarkMethodsForInline : AbstractVisitor() {
 					return mia
 				}
 				if (mth.contains(AFlag.METHOD_CANDIDATE_FOR_INLINE)) {
-					if (mth.getBasicBlocks() == null) {
+					if (mth.basicBlocks == null) {
 						return null
 					}
 					val inlined = inlineMth(mth)
@@ -69,14 +68,14 @@ class MarkMethodsForInline : AbstractVisitor() {
 		}
 
 		private fun inlineMth(mth: MethodNode): MethodInlineAttr? {
-			val insns = BlockUtils.collectInsnsWithLimit(checkNotNull(mth.getBasicBlocks()), 2)
+			val insns = BlockUtils.collectInsnsWithLimit(checkNotNull(mth.basicBlocks), 2)
 			val insnsCount = insns.size
 			if (insnsCount == 0) {
 				return null
 			}
 			if (insnsCount == 1) {
 				val insn = insns[0]
-				if (insn.getType() == InsnType.RETURN && insn.getArgsCount() == 1) {
+				if (insn.type == InsnType.RETURN && insn.argsCount == 1) {
 					// 合成的字段 getter：把 'return' 的参数作为内联指令
 					val arg = insn.getArg(0)
 					if (!arg.isInsnWrap) {
@@ -87,10 +86,10 @@ class MarkMethodsForInline : AbstractVisitor() {
 				// 方法调用
 				return addInlineAttr(mth, insn, false)
 			}
-			if (insnsCount == 2 && insns[1].getType() == InsnType.RETURN) {
+			if (insnsCount == 2 && insns[1].type == InsnType.RETURN) {
 				val firstInsn = insns[0]
 				val retInsn = insns[1]
-				if (retInsn.getArgsCount() == 0 ||
+				if (retInsn.argsCount == 0 ||
 					isSyntheticAccessPattern(mth, firstInsn, retInsn)
 				) {
 					return addInlineAttr(mth, firstInsn, false)
@@ -101,8 +100,8 @@ class MarkMethodsForInline : AbstractVisitor() {
 		}
 
 		private fun isSyntheticAccessPattern(mth: MethodNode, firstInsn: InsnNode, retInsn: InsnNode): Boolean {
-			val mthRegs = mth.getArgRegs()
-			return when (firstInsn.getType()) {
+			val mthRegs = mth.argRegs
+			return when (firstInsn.type) {
 				InsnType.IGET ->
 					mthRegs.size == 1 &&
 						retInsn.getArg(0).isSameVar(firstInsn.getResult()) &&
@@ -126,7 +125,7 @@ class MarkMethodsForInline : AbstractVisitor() {
 					if (!retInsn.getArg(0).isSameVar(firstInsn.getResult())) {
 						return false
 					}
-					ListUtils.orderedEquals(mth.getArgRegs(), firstInsn.getArgList()) { mthArg, insnArg ->
+					ListUtils.orderedEquals(mth.argRegs, firstInsn.argList) { mthArg, insnArg ->
 						insnArg.isSameVar(mthArg)
 					}
 				}
@@ -164,7 +163,7 @@ class MarkMethodsForInline : AbstractVisitor() {
 
 		private fun fixVisibilityOfInlineCode(mth: MethodNode, insn: InsnNode): Boolean {
 			val newVisFlag = AccessFlags.PUBLIC // TODO: 更精确地计算
-			val insnType = insn.getType()
+			val insnType = insn.type
 			if (insnType == InsnType.INVOKE) {
 				val invoke = insn as InvokeNode
 				val callMthNode = mth.root().resolveMethod(invoke.callMth)

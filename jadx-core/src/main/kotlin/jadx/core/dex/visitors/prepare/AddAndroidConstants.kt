@@ -40,7 +40,7 @@ class AddAndroidConstants : AbstractVisitor() {
 			return
 		}
 		val constStorage = root.getConstValues()
-		for ((resId, path) in AndroidResourcesMap.getMap()) {
+		for ((resId, path) in AndroidResourcesMap.map) {
 			val sep = path.indexOf('/')
 			val clsName = R_INNER_CLS + path.substring(0, sep)
 			val resName = path.substring(sep + 1)

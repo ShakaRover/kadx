@@ -32,5 +32,5 @@ class TraverserGlobalCommonState(private val mth: MethodNode) {
 		return searchedStates.containsKey(blocks)
 	}
 
-	fun getMethodNode(): MethodNode = mth
+	val methodNode: MethodNode get() = mth
 }

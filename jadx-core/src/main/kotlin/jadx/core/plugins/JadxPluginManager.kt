@@ -87,7 +87,7 @@ class JadxPluginManager(private val decompiler: JadxDecompiler) {
 				"Plugin '{}' not loaded: requires '{}' jadx version which it is not compatible with current: {}",
 				pluginContext,
 				requiredJadxVersion,
-				verifyRequiredVersion.getJadxVersion(),
+				verifyRequiredVersion.jadxVersion,
 			)
 			return null
 		}
@@ -113,9 +113,9 @@ class JadxPluginManager(private val decompiler: JadxDecompiler) {
 		return result
 	}
 
-	fun getAllPluginContexts(): SortedSet<PluginContext> = allPlugins
+	val allPluginContexts: SortedSet<PluginContext> get() = allPlugins
 
-	fun getResolvedPluginContexts(): SortedSet<PluginContext> = resolvedPlugins
+	val resolvedPluginContexts: SortedSet<PluginContext> get() = resolvedPlugins
 
 	/**
 	 * 解析插件冲突：对每个 `provides` 分组，若只有一个插件则直接采用；
@@ -230,12 +230,12 @@ class JadxPluginManager(private val decompiler: JadxDecompiler) {
 	}
 
 	/** 汇总所有已解析插件注册的代码输入。 */
-	fun getCodeInputs(): List<JadxCodeInput> = getResolvedPluginContexts().flatMap { p -> p.getCodeInputs() }
+	val codeInputs: List<JadxCodeInput> get() = resolvedPluginContexts.flatMap { p -> p.getCodeInputs() }
 
 	/** 注册插件添加监听器，并立即对已存在的插件回调一次。 */
 	fun registerAddPluginListener(listener: (PluginContext) -> Unit) {
 		this.addPluginListeners.add(listener)
 		// 对已添加的插件立即执行一次
-		getAllPluginContexts().forEach { p -> listener(p) }
+		allPluginContexts.forEach { p -> listener(p) }
 	}
 }

@@ -55,7 +55,7 @@ class DiskCodeCache(root: RootNode, projectCacheDir: Path) : ICodeCache {
 		metaDir = baseDir.resolve("metadata")
 		codeVersionFile = baseDir.resolve("code-version")
 		val args = root.getArgs()
-		codeVersion = buildCodeVersion(args, root.getDecompiler())
+		codeVersion = buildCodeVersion(args, root.decompiler)
 		writePool = Executors.newFixedThreadPool(args.threadsCount)
 		codeMetadataAdapter = CodeMetadataAdapter(root)
 		clsDataMap = buildClassDataMap(root.getClasses())
@@ -208,7 +208,7 @@ class DiskCodeCache(root: RootNode, projectCacheDir: Path) : ICodeCache {
 			inputFiles.add(generatedRenamesMappingFile)
 		}
 		return "$DATA_FORMAT_VERSION" +
-			":" + Jadx.getVersion() +
+			":" + Jadx.version +
 			":" + args.makeCodeArgsHash(decompiler) +
 			":" + FileUtils.buildInputsHash(Utils.collectionMap(inputFiles) { it.toPath() })
 	}

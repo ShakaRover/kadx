@@ -28,7 +28,7 @@ interface IUpdateCallback {
 	fun onUpdate(r: Release)
 }
 
-class JadxUpdate(private val jadxVersion: String = Jadx.getVersion()) {
+class JadxUpdate(private val jadxVersion: String = Jadx.version) {
 
 	companion object {
 		private val LOG = KotlinLogging.logger {}

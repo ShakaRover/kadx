@@ -18,12 +18,12 @@ class JavaField internal constructor(
 	private val parent: JavaClass,
 ) : JavaNode {
 
-	override fun getName(): String = field.getAlias()
+	override fun getName(): String = field.alias
 
 	override fun getFullName(): String = parent.getFullName() + '.' + getName()
 
 	/** 原始（未去混淆）字段名。 */
-	fun getRawName(): String = field.getName()
+	fun getRawName(): String = field.name
 
 	override fun getDeclaringClass(): JavaClass = parent
 

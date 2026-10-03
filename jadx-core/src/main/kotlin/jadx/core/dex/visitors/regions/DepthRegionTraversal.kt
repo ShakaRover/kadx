@@ -29,7 +29,6 @@ object DepthRegionTraversal {
 	/** 迭代遍历的次数上限倍数：上限 = 该倍数 × 基本块数量，防止死循环 */
 	private const val ITERATIVE_LIMIT_MULTIPLIER = 5
 
-	@JvmStatic
 	fun traverse(mth: MethodNode, visitor: IRegionVisitor) {
 		val region = mth.region
 		if (region != null) {
@@ -37,12 +36,10 @@ object DepthRegionTraversal {
 		}
 	}
 
-	@JvmStatic
 	fun traverse(mth: MethodNode, container: IContainer, visitor: IRegionVisitor) {
 		traverseInternal(mth, visitor, container)
 	}
 
-	@JvmStatic
 	fun <R> traversePartial(mth: MethodNode, visitor: IRegionPartialVisitor<R>): R? {
 		val region = mth.region
 		if (region == null) {
@@ -51,14 +48,12 @@ object DepthRegionTraversal {
 		return traversePartialInternal(mth, visitor, region)
 	}
 
-	@JvmStatic
 	fun <R> traversePartial(mth: MethodNode, container: IContainer, visitor: IRegionPartialVisitor<R>): R? = traversePartialInternal(mth, visitor, container)
 
-	@JvmStatic
 	fun traverseIterative(mth: MethodNode, visitor: IRegionIterativeVisitor) {
 		var repeat: Boolean
 		var k = 0
-		val blocksCount = checkNotNull(mth.getBasicBlocks()).size
+		val blocksCount = checkNotNull(mth.basicBlocks).size
 		val limit = ITERATIVE_LIMIT_MULTIPLIER * blocksCount
 		val region = mth.region
 		if (region == null) {
@@ -76,11 +71,10 @@ object DepthRegionTraversal {
 		} while (repeat)
 	}
 
-	@JvmStatic
 	fun traverseIncludingExcHandlers(mth: MethodNode, visitor: IRegionIterativeVisitor) {
 		var repeat: Boolean
 		var k = 0
-		val blocksCount = checkNotNull(mth.getBasicBlocks()).size
+		val blocksCount = checkNotNull(mth.basicBlocks).size
 		val limit = ITERATIVE_LIMIT_MULTIPLIER * blocksCount
 		val region = mth.region
 		if (region == null) {

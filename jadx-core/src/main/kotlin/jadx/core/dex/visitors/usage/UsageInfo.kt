@@ -123,8 +123,8 @@ class UsageInfo(private val root: RootNode) : IUsageInfoData {
 	}
 
 	fun clsUse(cls: ClassNode, depCls: ClassNode) {
-		val topParentClass = cls.getTopParentClass()
-		clsDeps.add(topParentClass, depCls.getTopParentClass())
+		val topParentClass = cls.topParentClass
+		clsDeps.add(topParentClass, depCls.topParentClass)
 
 		clsUsage.add(depCls, cls)
 		clsUsage.add(depCls, topParentClass)
@@ -188,7 +188,7 @@ class UsageInfo(private val root: RootNode) : IUsageInfoData {
 			// TODO: 支持通过 API 注册自定义处理器
 			val clsDetails = checkNotNull(root.getClsp()).getClsDetails(type)
 			if (clsDetails != null && clsDetails.source == ClspClassSource.APACHE_HTTP_LEGACY_CLIENT) {
-				root.getGradleInfoStorage().isUseApacheHttpLegacy = true
+				root.gradleInfoStorage.isUseApacheHttpLegacy = true
 			}
 			val clsNode = root.resolveClass(type)
 			if (clsNode != null) {

@@ -32,9 +32,8 @@ class CleanRegions : AbstractVisitor() {
 		/** 单例访问器，避免每次遍历都新建对象 */
 		private val REMOVE_REGION_VISITOR: IRegionVisitor = RemoveRegionVisitor()
 
-		@JvmStatic
 		fun process(mth: MethodNode) {
-			if (mth.isNoCode() || checkNotNull(mth.getBasicBlocks()).isEmpty()) {
+			if (mth.isNoCode() || checkNotNull(mth.basicBlocks).isEmpty()) {
 				return
 			}
 			DepthRegionTraversal.traverse(mth, REMOVE_REGION_VISITOR)

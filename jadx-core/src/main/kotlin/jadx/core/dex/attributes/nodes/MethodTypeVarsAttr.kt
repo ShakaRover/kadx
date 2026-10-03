@@ -16,14 +16,13 @@ import jadx.core.utils.Utils
  * - 原 Java `this == EMPTY` 是对象引用比较，Kotlin 必须写 `this === EMPTY`；
  * - 构造器私有，保持单例语义。
  */
-class MethodTypeVarsAttr private constructor(private val typeVars: Set<ArgType>) : IJadxAttribute {
+class MethodTypeVarsAttr private constructor(val typeVars: Set<ArgType>) : IJadxAttribute {
 
 	companion object {
 		/** 共享空实例：表示“没有类型变量” */
 		private val EMPTY = MethodTypeVarsAttr(emptySet())
 
 		/** 构建属性；[typeVars] 为空时返回共享的 [EMPTY] 单例 */
-		@JvmStatic
 		fun build(typeVars: Set<ArgType>): MethodTypeVarsAttr {
 			if (Utils.isEmpty(typeVars)) {
 				return EMPTY
@@ -33,7 +32,6 @@ class MethodTypeVarsAttr private constructor(private val typeVars: Set<ArgType>)
 	}
 
 	/** 方法作用域内已知的类型变量集合 */
-	fun getTypeVars(): Set<ArgType> = typeVars
 
 	override val attrType: AType<MethodTypeVarsAttr> get() = AType.METHOD_TYPE_VARS
 

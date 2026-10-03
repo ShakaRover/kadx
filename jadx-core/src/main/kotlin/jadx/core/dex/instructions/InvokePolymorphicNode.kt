@@ -17,8 +17,8 @@ import jadx.core.utils.InsnUtils
  */
 open class InvokePolymorphicNode : InvokeNode {
 
-	private val proto: IMethodProto
-	private val baseCallRef: MethodInfo
+	val proto: IMethodProto
+	val baseCallRef: MethodInfo
 
 	constructor(callMth: MethodInfo, insn: InsnData, proto: IMethodProto, baseRef: MethodInfo, isRange: Boolean) :
 		super(callMth, insn, InvokeType.POLYMORPHIC, true, isRange) {
@@ -32,12 +32,8 @@ open class InvokePolymorphicNode : InvokeNode {
 		this.baseCallRef = baseRef
 	}
 
-	fun getProto(): IMethodProto = proto
-
-	fun getBaseCallRef(): MethodInfo = baseCallRef
-
 	override fun copy(): InsnNode {
-		val copy = InvokePolymorphicNode(callMth, getArgsCount(), proto, baseCallRef)
+		val copy = InvokePolymorphicNode(callMth, argsCount, proto, baseCallRef)
 		copyCommonParams(copy)
 		return copy
 	}

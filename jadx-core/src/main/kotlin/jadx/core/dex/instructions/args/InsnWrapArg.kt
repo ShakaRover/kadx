@@ -57,7 +57,7 @@ class InsnWrapArg internal constructor(insn: InsnNode) : InsnArg() {
 		if (!thisInsn.isSame(thatInsn)) {
 			return false
 		}
-		for (i in 0 until thisInsn.getArgsCount()) {
+		for (i in 0 until thisInsn.argsCount) {
 			if (thisInsn.getArg(i) != thatInsn.getArg(i)) {
 				return false
 			}
@@ -66,15 +66,15 @@ class InsnWrapArg internal constructor(insn: InsnNode) : InsnArg() {
 	}
 
 	override fun toShortString(): String {
-		if (wrapInsn.getType() == InsnType.CONST_STR) {
-			return "(\"${(wrapInsn as ConstStringNode).getString()}\")"
+		if (wrapInsn.type == InsnType.CONST_STR) {
+			return "(\"${(wrapInsn as ConstStringNode).string}\")"
 		}
-		return "(wrap $type:${wrapInsn.getType()})"
+		return "(wrap $type:${wrapInsn.type})"
 	}
 
 	override fun toString(): String {
-		if (wrapInsn.getType() == InsnType.CONST_STR) {
-			return "(\"${(wrapInsn as ConstStringNode).getString()}\")"
+		if (wrapInsn.type == InsnType.CONST_STR) {
+			return "(\"${(wrapInsn as ConstStringNode).string}\")"
 		}
 		return "(wrap $type:$wrapInsn)"
 	}

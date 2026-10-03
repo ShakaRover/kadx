@@ -17,7 +17,7 @@ class BlockFinisher : AbstractVisitor() {
 
 	override fun visit(mth: MethodNode) {
 		// 无代码、或还没有任何基本块的方法无需处理
-		if (mth.isNoCode() || checkNotNull(mth.getBasicBlocks()).isEmpty()) {
+		if (mth.isNoCode() || checkNotNull(mth.basicBlocks).isEmpty()) {
 			return
 		}
 		// DISABLE_BLOCKS_LOCK 用于测试/特殊场景下显式跳过冻结

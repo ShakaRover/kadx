@@ -51,7 +51,6 @@ class DeobfuscatorVisitor : AbstractVisitor() {
 		 * 注意：包的别名会改变包的层级结构，因此只要有任意一个包被重命名，就必须调用
 		 * [RootNode.runPackagesUpdate] 刷新包节点。
 		 */
-		@JvmStatic
 		fun process(root: RootNode, renameCondition: IRenameCondition, aliasProvider: IAliasProvider) {
 			var pkgUpdated = false
 			for (pkg in root.getPackages()) {

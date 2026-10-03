@@ -29,13 +29,12 @@ class UserRenames {
 		private val LOG: Logger = LoggerFactory.getLogger(UserRenames::class.java)
 
 		/** 应用所有用户重命名（类/字段/方法/包）。 */
-		@JvmStatic
 		fun apply(root: RootNode) {
 			val codeData = root.getArgs().codeData
 			if (codeData == null || codeData.getRenames().isEmpty()) {
 				return
 			}
-			val infoStorage = root.getInfoStorage()
+			val infoStorage = root.infoStorage
 			val renamesByCls = HashMap<String, MutableList<ICodeRename>>()
 			for (rename in codeData.getRenames()) {
 				if (rename.getCodeRef() == null && rename.getNodeRef().getType() != IJavaNodeRef.RefType.PKG) {

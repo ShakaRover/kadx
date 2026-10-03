@@ -27,18 +27,16 @@ class FieldInfo private constructor(
 
 	companion object {
 		/** 从缓存获取或创建 [FieldInfo]。 */
-		@JvmStatic
 		fun from(root: RootNode, declClass: ClassInfo, name: String, type: ArgType): FieldInfo {
 			val field = FieldInfo(declClass, name, type)
-			return root.getInfoStorage().getField(field)
+			return root.infoStorage.getField(field)
 		}
 
 		/** 从输入层的字段引用 [IFieldRef] 构造 [FieldInfo]。 */
-		@JvmStatic
 		fun fromRef(root: RootNode, fieldRef: IFieldRef): FieldInfo {
 			val declClass = ClassInfo.fromName(root, checkNotNull(fieldRef.parentClassType))
 			val field = FieldInfo(declClass, checkNotNull(fieldRef.name), ArgType.parse(fieldRef.type))
-			return root.getInfoStorage().getField(field)
+			return root.infoStorage.getField(field)
 		}
 	}
 

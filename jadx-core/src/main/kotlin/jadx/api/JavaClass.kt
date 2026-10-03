@@ -101,7 +101,7 @@ class JavaClass : JavaNode {
 
 	/** 获取 smali 反汇编文本。 */
 	@Synchronized
-	fun getSmali(): String = cls.getDisassembledCode()
+	fun getSmali(): String = cls.disassembledCode
 
 	override fun isOwnCodeAnnotation(ann: ICodeAnnotation): Boolean {
 		if (ann.getAnnType() == ICodeAnnotation.AnnType.CLASS) {
@@ -269,7 +269,7 @@ class JavaClass : JavaNode {
 	}
 
 	/** 依赖数量（含递归依赖计数）。 */
-	fun getTotalDepsCount(): Int = cls.getTotalDepsCount()
+	fun getTotalDepsCount(): Int = cls.totalDepsCount
 
 	override fun removeAlias() {
 		cls.removeAlias()

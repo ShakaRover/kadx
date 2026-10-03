@@ -44,7 +44,6 @@ class CustomLambdaCall {
 		 * 3. 目标类必须是 `java.lang.invoke.LambdaMetafactory`；
 		 * 4. 方法名是 `metafactory` 或 `altMetafactory`。
 		 */
-		@JvmStatic
 		fun isLambdaInvoke(values: List<EncodedValue>): Boolean {
 			if (values.size < 6) {
 				return false
@@ -66,7 +65,6 @@ class CustomLambdaCall {
 		}
 
 		/** 构建 lambda 的 invoke-custom 节点，并把结果寄存器类型设为 lambda 返回类型。 */
-		@JvmStatic
 		fun buildLambdaMethodCall(mth: MethodNode, insn: InsnData, isRange: Boolean, values: List<EncodedValue>): InvokeCustomNode {
 			val callMthHandle = values[4].value as IMethodHandle
 			if (callMthHandle.type.isField) {
@@ -166,7 +164,7 @@ class CustomLambdaCall {
 			val invokeNode = InvokeNode(callMthInfo, invokeType, callArgsCount)
 
 			// 复制 invoke-custom 的实参
-			val argsCount = invokeCustomNode.getArgsCount()
+			val argsCount = invokeCustomNode.argsCount
 			for (i in 0 until argsCount) {
 				val arg = invokeCustomNode.getArg(i)
 				invokeNode.addArg(arg.duplicate())

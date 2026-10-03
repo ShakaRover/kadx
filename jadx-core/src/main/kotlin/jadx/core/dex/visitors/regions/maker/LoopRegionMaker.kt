@@ -47,7 +47,7 @@ internal class LoopRegionMaker(
 
 	fun process(curRegion: IRegion, loop: LoopInfo, stack: RegionStack): BlockNode? {
 		val loopStart = loop.start
-		val exitBlocksSet = HashSet(loop.getExitNodes())
+		val exitBlocksSet = HashSet(loop.exitNodes)
 
 		// 设定出口块扫描优先级
 		// 当循环有多个出口（break/return）时有助于选择正确的头块
@@ -76,29 +76,29 @@ internal class LoopRegionMaker(
 		stack.push(loopRegion)
 
 		var condInfo = ifMaker.buildIfInfo(loopRegion)
-		val condThen = condInfo.getThenBlock()
+		val condThen = condInfo.thenBlock
 		if (condThen == null || !loop.loopBlocks.contains(condThen)) {
 			// 若 then 指向出口，则反转循环条件
 			condInfo = IfInfo.invert(condInfo)
 		}
 		loopRegion.updateCondition(condInfo)
 		// 防止 if 与循环条件合并
-		for (b in condInfo.getMergedBlocks()) {
+		for (b in condInfo.mergedBlocks) {
 			b.add(AFlag.ADDED_TO_REGION)
 		}
-		exitBlocks.removeAll(condInfo.getMergedBlocks().toList())
+		exitBlocks.removeAll(condInfo.mergedBlocks.toList())
 
 		if (exitBlocks.isNotEmpty()) {
 			// 与循环条件相关的块
 			val loopConditionBlocks = loopRegion.getConditionBlocks()
 
-			for (exitEdge in loop.getExitEdges()) {
+			for (exitEdge in loop.exitEdges) {
 				val exitSource = exitEdge.source
 				if (loopConditionBlocks.contains(exitSource)) {
 					val outBlock = BlockUtils.followEmptyPath(exitEdge.target)
 					for (pred in outBlock.getPredecessors()) {
 						// 从“顶部”重新搜索出口边
-						for (exitEdgeTop in loop.getExitEdges()) {
+						for (exitEdgeTop in loop.exitEdges) {
 							if (!loopConditionBlocks.contains(exitEdgeTop.source)) {
 								if (BlockUtils.isPathExists(exitEdgeTop.target, pred) || exitEdgeTop.target === outBlock) {
 									insertLoopBreak(stack, loop, outBlock, exitEdgeTop.source, Edge(pred, outBlock))
@@ -114,8 +114,8 @@ internal class LoopRegionMaker(
 
 		val out: BlockNode?
 		if (loopRegion.isConditionAtEnd()) {
-			val thenBlock = condInfo.getThenBlock()
-			val out0 = if (thenBlock === loop.end || thenBlock === loopStart) condInfo.getElseBlock() else thenBlock
+			val thenBlock = condInfo.thenBlock
+			val out0 = if (thenBlock === loop.end || thenBlock === loopStart) condInfo.elseBlock else thenBlock
 			out = BlockUtils.followEmptyPath(checkNotNull(out0))
 			loopStart.remove(AType.LOOP)
 			loop.end.add(AFlag.ADDED_TO_REGION)
@@ -126,7 +126,7 @@ internal class LoopRegionMaker(
 			loopStart.addAttr(AType.LOOP, loop)
 			loop.end.remove(AFlag.ADDED_TO_REGION)
 		} else {
-			var out1: BlockNode? = condInfo.getElseBlock()
+			var out1: BlockNode? = condInfo.elseBlock
 			if (outerRegion != null &&
 				out1 != null &&
 				out1.contains(AFlag.LOOP_START) &&
@@ -137,7 +137,7 @@ internal class LoopRegionMaker(
 				out1 = null
 			}
 			stack.addExit(out1)
-			val loopBody = condInfo.getThenBlock()
+			val loopBody = condInfo.thenBlock
 			val body: Region
 			if (loopBody == loopStart) {
 				// 空循环体
@@ -146,7 +146,7 @@ internal class LoopRegionMaker(
 				body = regionMaker.makeRegion(checkNotNull(loopBody))
 			}
 			// 把从循环头到第一个条件块之间的块加入循环体
-			val conditionBlock = condInfo.getMergedBlocks().getFirst()
+			val conditionBlock = condInfo.mergedBlocks.first
 			if (loopStart !== conditionBlock) {
 				val blocks = HashSet(BlockUtils.getAllPathsBlocks(loopStart, conditionBlock))
 				blocks.remove(conditionBlock)
@@ -178,7 +178,7 @@ internal class LoopRegionMaker(
 			}
 			// 忽略不是 if 分支的块
 			val lastInsn = BlockUtils.getLastInsn(block)
-			if (lastInsn == null || lastInsn.getType() != InsnType.IF) {
+			if (lastInsn == null || lastInsn.type != InsnType.IF) {
 				continue
 			}
 			// 跳过嵌套 if
@@ -247,7 +247,7 @@ internal class LoopRegionMaker(
 	 * 检查把 mainExitBlock 当作头块时，出口是否与循环条件一致。
 	 */
 	private fun checkLoopExits(loop: LoopInfo, mainExitBlock: BlockNode): Boolean {
-		val exitEdges = loop.getExitEdges()
+		val exitEdges = loop.exitEdges
 		if (exitEdges.size < 2) {
 			return true
 		}
@@ -268,7 +268,7 @@ internal class LoopRegionMaker(
 		val firstInstructions = firstWorkAfterMainExitBlock.getInstructions()
 
 		// 若从条件头有直接通往 return 的路径，则所有出口都在循环内
-		if (firstInstructions.size == 1 && firstInstructions[0].getType() == InsnType.RETURN) {
+		if (firstInstructions.size == 1 && firstInstructions[0].type == InsnType.RETURN) {
 			return true
 		}
 
@@ -281,7 +281,7 @@ internal class LoopRegionMaker(
 	 * （允许重复一个块）。
 	 */
 	private fun validOutBlock(outBlock: BlockNode, loop: LoopInfo): Boolean {
-		val exitEdges = loop.getExitEdges()
+		val exitEdges = loop.exitEdges
 		val edgesToCheck: Queue<Edge> = LinkedList(exitEdges)
 
 		while (edgesToCheck.isNotEmpty()) {
@@ -354,7 +354,7 @@ internal class LoopRegionMaker(
 					for (predecessor in predecessors) {
 						// 若从 exit 可达的前驱无法插入 continue，则不接受
 						if (BlockUtils.isPathExists(exitBlock, predecessor) &&
-							!canInsertContinue(predecessor, predecessors, loopEnd, outerLoop.getExitNodes())
+							!canInsertContinue(predecessor, predecessors, loopEnd, outerLoop.exitNodes)
 						) {
 							return false
 						}
@@ -401,7 +401,7 @@ internal class LoopRegionMaker(
 		val currentIf = IfRegionMaker.makeIfInfo(mth, possibleFirstIF) ?: return false
 		val mergedIf = IfRegionMaker.mergeNestedIfNodes(currentIf) ?: return false
 
-		val mergedBlocks = mergedIf.getMergedBlocks()
+		val mergedBlocks = mergedIf.mergedBlocks
 		for (predecessor in predecessors) {
 			val possibleIF = BlockUtils.followEmptyPath(predecessor, true)
 			if (!mergedBlocks.contains(possibleIF)) {
@@ -422,7 +422,7 @@ internal class LoopRegionMaker(
 		for (edgeInsn in edgeInsns) {
 			val insn = edgeInsn.insn
 			// 若有 break 边指令
-			if (insn.getType() == InsnType.BREAK) {
+			if (insn.type == InsnType.BREAK) {
 				val loopsBrokenFrom = checkNotNull(insn.get(AType.LOOP)).list
 				for (loopBrokenFrom in loopsBrokenFrom) {
 					// 若 break 的是当前循环的某一层父循环
@@ -448,7 +448,7 @@ internal class LoopRegionMaker(
 
 		var out: BlockNode? = null
 		// 为出口插入 break
-		val exitEdges = loop.getExitEdges()
+		val exitEdges = loop.exitEdges
 		if (exitEdges.size == 1) {
 			val exitEdge = exitEdges[0]
 			val exit = exitEdge.target
@@ -491,7 +491,7 @@ internal class LoopRegionMaker(
 			if (out != null && out !== mth.exitBlock) {
 				// 在每条从循环可达的入边上添加 break
 				for (predecessor in out.getPredecessors()) {
-					for (exitEdge in loop.getExitEdges()) {
+					for (exitEdge in loop.exitEdges) {
 						val target = exitEdge.target
 						if (BlockUtils.isPathExists(target, predecessor) || target === out) {
 							insertLoopBreak(stack, loop, out, exitEdge.source, Edge(predecessor, out))
@@ -522,11 +522,11 @@ internal class LoopRegionMaker(
 	}
 
 	private fun inExceptionHandlerBlocks(loopEnd: BlockNode): Boolean {
-		if (mth.getExceptionHandlersCount() == 0) {
+		if (mth.exceptionHandlersCount == 0) {
 			return false
 		}
 		for (eh in mth.getExceptionHandlers()) {
-			if (eh.getBlocks().contains(loopEnd)) {
+			if (eh.blocks.contains(loopEnd)) {
 				return true
 			}
 		}
@@ -640,7 +640,7 @@ internal class LoopRegionMaker(
 		if (parentLoop == null) {
 			return
 		}
-		if (parentLoop.end !== exit && !parentLoop.getExitNodes().contains(exit)) {
+		if (parentLoop.end !== exit && !parentLoop.exitNodes.contains(exit)) {
 			val labelAttr = LoopLabelAttr(parentLoop)
 			breakInsn.addAttr(labelAttr)
 			parentLoop.start.addAttr(labelAttr)
@@ -654,7 +654,7 @@ internal class LoopRegionMaker(
 			if (predecessors.size <= 1) {
 				return
 			}
-			val loopExitNodes = loop.getExitNodes()
+			val loopExitNodes = loop.exitNodes
 			for (pred in predecessors) {
 				if (canInsertContinue(pred, predecessors, loopEnd, loopExitNodes)) {
 					val cont = InsnNode(InsnType.CONTINUE, 0)
@@ -692,7 +692,7 @@ internal class LoopRegionMaker(
 				// 若已插入 break，则不要在同一点再插 continue
 				val insns = pred.getAll(AType.EDGE_INSN)
 				for (insn in insns) {
-					if (insn.insn.getType() == InsnType.BREAK) {
+					if (insn.insn.type == InsnType.BREAK) {
 						return false
 					}
 				}

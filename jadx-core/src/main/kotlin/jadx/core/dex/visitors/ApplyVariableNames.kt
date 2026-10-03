@@ -46,7 +46,7 @@ class ApplyVariableNames : AbstractVisitor() {
 
 	@Throws(JadxException::class)
 	override fun visit(mth: MethodNode) {
-		for (ssaVar in mth.getSVars()) {
+		for (ssaVar in mth.SVars) {
 			val codeVar = ssaVar.codeVar
 			val newName = guessName(codeVar)
 			if (newName != null) {
@@ -106,7 +106,7 @@ class ApplyVariableNames : AbstractVisitor() {
 	}
 
 	private fun makeNameFromInsn(ssaVar: SSAVar, insn: InsnNode): String? {
-		when (insn.getType()) {
+		when (insn.type) {
 			InsnType.INVOKE -> return makeNameFromInvoke(ssaVar, insn as InvokeNode)
 
 			InsnType.CONSTRUCTOR -> {
@@ -116,7 +116,7 @@ class ApplyVariableNames : AbstractVisitor() {
 					// 不要使用匿名类的名字
 					return null
 				}
-				return makeNameForClass(co.getClassType())
+				return makeNameForClass(co.classType)
 			}
 
 			InsnType.ARRAY_LENGTH -> return "length"

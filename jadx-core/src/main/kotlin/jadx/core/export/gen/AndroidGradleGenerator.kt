@@ -108,7 +108,7 @@ class AndroidGradleGenerator(
 
 	@Throws(IOException::class)
 	private fun saveGradleProperties() {
-		val gradleInfo = root.getGradleInfoStorage()
+		val gradleInfo = root.gradleInfoStorage
 		// Android Gradle Plugin >= 8.0.0 下，资源 ID 被当作常量表达式使用时，
 		// 必须在 gradle.properties 中显式关闭 nonFinalResIds。
 		if (gradleInfo.isNonFinalResIds) {
@@ -176,7 +176,7 @@ class AndroidGradleGenerator(
 	/** 根据 SDK 版本与已记录的开关，拼出额外的 Android Gradle Plugin 选项文本。 */
 	private fun genAdditionalAndroidPluginOptions(minSdkVersion: Int): String {
 		val additionalOptions = ArrayList<String>()
-		val gradleInfo: GradleInfoStorage = root.getGradleInfoStorage()
+		val gradleInfo: GradleInfoStorage = root.gradleInfoStorage
 		if ((gradleInfo.isVectorPathData && minSdkVersion < 21) || (gradleInfo.isVectorFillType && minSdkVersion < 24)) {
 			additionalOptions.add("vectorDrawables.useSupportLibrary = true")
 		}

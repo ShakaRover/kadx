@@ -24,7 +24,7 @@ import java.util.Collections
  *
  * 同样属于区域树节点，保持普通 class（身份语义）。
  */
-class TryCatchRegion(parent: IRegion?, private val tryRegion: IContainer) :
+class TryCatchRegion(parent: IRegion?, val tryRegion: IContainer) :
 	AbstractRegion(parent),
 	IBranchRegion {
 
@@ -40,9 +40,9 @@ class TryCatchRegion(parent: IRegion?, private val tryRegion: IContainer) :
 	 */
 	fun setTryCatchBlock(tryCatchBlock: TryCatchBlockAttr) {
 		this.tryCatchBlock = tryCatchBlock
-		val count = tryCatchBlock.getHandlersCount()
+		val count = tryCatchBlock.handlersCount
 		val regions = LinkedHashMap<ExceptionHandler, IContainer>(count)
-		for (handler in tryCatchBlock.getHandlers()) {
+		for (handler in tryCatchBlock.handlers) {
 			val handlerRegion = handler.getHandlerRegion()
 			if (handlerRegion != null) {
 				if (handler.isFinally()) {
@@ -54,8 +54,6 @@ class TryCatchRegion(parent: IRegion?, private val tryRegion: IContainer) :
 		}
 		this.catchRegions = regions
 	}
-
-	fun getTryRegion(): IContainer = tryRegion
 
 	fun getCatchRegions(): MutableMap<ExceptionHandler, IContainer> = catchRegions
 

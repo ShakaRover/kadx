@@ -80,14 +80,12 @@ class InsnRemover {
 	}
 
 	companion object {
-		@JvmStatic
 		fun unbindInsn(mth: MethodNode?, insn: InsnNode) {
 			unbindAllArgs(mth, insn)
 			unbindResult(mth, insn)
 			insn.add(AFlag.DONT_GENERATE)
 		}
 
-		@JvmStatic
 		fun unbindInsns(mth: MethodNode?, insns: List<InsnNode>) {
 			// 先移除所有使用，再解绑结果，这样解绑时才能识别未使用的 SSA 变量
 			insns.forEach { insn -> unbindAllArgs(mth, insn) }
@@ -97,12 +95,11 @@ class InsnRemover {
 			}
 		}
 
-		@JvmStatic
 		fun unbindAllArgs(mth: MethodNode?, insn: InsnNode) {
 			for (arg in insn.getArguments()) {
 				unbindArgUsage(mth, arg)
 			}
-			if (insn.getType() == InsnType.PHI) {
+			if (insn.type == InsnType.PHI) {
 				for (arg in insn.getArguments()) {
 					if (arg is RegisterArg) {
 						checkNotNull(arg.sVar).updateUsedInPhiList()
@@ -113,7 +110,6 @@ class InsnRemover {
 			insn.add(AFlag.DONT_GENERATE)
 		}
 
-		@JvmStatic
 		fun unbindResult(mth: MethodNode?, insn: InsnNode) {
 			val r = insn.getResult() ?: return
 			if (mth != null) {
@@ -127,14 +123,14 @@ class InsnRemover {
 		}
 
 		private fun removeSsaVar(mth: MethodNode, ssaVar: SSAVar) {
-			val useCount = ssaVar.getUseCount()
+			val useCount = ssaVar.useCount
 			if (useCount == 0) {
 				mth.removeSVar(ssaVar)
 				return
 			}
 			// 检查是否只在 PHI 指令中使用
-			if (ListUtils.allMatch(ssaVar.getUseList()) { arg -> InsnUtils.isInsnType(arg.getParentInsn(), InsnType.PHI) }) {
-				for (arg in ArrayList(ssaVar.getUseList())) {
+			if (ListUtils.allMatch(ssaVar.useList) { arg -> InsnUtils.isInsnType(arg.getParentInsn(), InsnType.PHI) }) {
+				for (arg in ArrayList(ssaVar.useList)) {
 					val parentInsn = arg.getParentInsn()
 					if (parentInsn != null) {
 						(parentInsn as PhiInsn).removeArg(arg)
@@ -144,11 +140,11 @@ class InsnRemover {
 				return
 			}
 			// 检查是否只在不会生成的指令中使用
-			if (ListUtils.allMatch(ssaVar.getUseList()) { arg ->
+			if (ListUtils.allMatch(ssaVar.useList) { arg ->
 					arg.contains(AFlag.DONT_GENERATE) || InsnUtils.contains(arg.getParentInsn(), AFlag.DONT_GENERATE)
 				}
 			) {
-				for (arg in ssaVar.getUseList()) {
+				for (arg in ssaVar.useList) {
 					arg.resetSSAVar()
 				}
 				mth.removeSVar(ssaVar)
@@ -156,12 +152,11 @@ class InsnRemover {
 			}
 			throw JadxRuntimeException(
 				"Can't remove SSA var: $ssaVar, still in use, count: $useCount" +
-					", list:\n  " + ssaVar.getUseList()
+					", list:\n  " + ssaVar.useList
 						.joinToString("\n  ") { arg -> "$arg from " + arg.getParentInsn() },
 			)
 		}
 
-		@JvmStatic
 		fun unbindArgUsage(mth: MethodNode?, arg: InsnArg) {
 			if (arg is RegisterArg) {
 				val sVar = arg.sVar
@@ -200,7 +195,6 @@ class InsnRemover {
 			}
 		}
 
-		@JvmStatic
 		fun remove(mth: MethodNode, insn: InsnNode?) {
 			if (insn == null) {
 				return
@@ -218,7 +212,6 @@ class InsnRemover {
 			}
 		}
 
-		@JvmStatic
 		fun remove(mth: MethodNode, block: BlockNode, insn: InsnNode) {
 			if (block.contains(AFlag.DUPLICATED)) {
 				mth.addWarnComment("Instruction removed from duplicated block: $block, please report this as an issue")
@@ -227,7 +220,6 @@ class InsnRemover {
 			removeWithoutUnbind(mth, block, insn)
 		}
 
-		@JvmStatic
 		fun removeWithoutUnbind(mth: MethodNode, block: BlockNode, insn: InsnNode): Boolean {
 			// 按指针删除（不要用 equals）
 			val it = block.instructions.iterator()
@@ -244,36 +236,31 @@ class InsnRemover {
 			return false
 		}
 
-		@JvmStatic
 		fun removeAllAndUnbind(mth: MethodNode, block: BlockNode, insns: List<InsnNode>) {
 			unbindInsns(mth, insns)
 			removeAll(block.instructions, insns)
 		}
 
-		@JvmStatic
 		fun removeAllAndUnbind(mth: MethodNode, container: IContainer, insns: List<InsnNode>) {
 			unbindInsns(mth, insns)
 			RegionUtils.visitBlocks(mth, container) { b -> removeAll(asMutable(b.getInstructions()), insns) }
 		}
 
-		@JvmStatic
 		fun removeAllAndUnbind(mth: MethodNode, insns: List<InsnNode>) {
 			unbindInsns(mth, insns)
-			val blocks = mth.getBasicBlocks() ?: return
+			val blocks = mth.basicBlocks ?: return
 			for (block in blocks) {
 				removeAll(block.instructions, insns)
 			}
 		}
 
-		@JvmStatic
 		fun removeAllWithoutUnbind(block: BlockNode, insns: List<InsnNode>) {
 			removeAll(block.instructions, insns)
 		}
 
-		@JvmStatic
 		fun removeAllMarked(mth: MethodNode) {
 			val insnRemover = InsnRemover(mth)
-			val blocks = mth.getBasicBlocks() ?: return
+			val blocks = mth.basicBlocks ?: return
 			for (blockNode in blocks) {
 				for (insn in blockNode.getInstructions()) {
 					if (insn.contains(AFlag.REMOVE)) {
@@ -285,16 +272,14 @@ class InsnRemover {
 			}
 		}
 
-		@JvmStatic
 		fun remove(mth: MethodNode, block: BlockNode, index: Int) {
 			val instructions = block.instructions
 			unbindInsn(mth, instructions[index])
 			instructions.removeAt(index)
 		}
 
-		@JvmStatic
 		fun delistPhi(mth: MethodNode, phiInsn: PhiInsn) {
-			val blocks = mth.getBasicBlocks() ?: return
+			val blocks = mth.basicBlocks ?: return
 			for (block in blocks) {
 				val phiListAttr = block.get(AType.PHI_LIST)
 				if (phiListAttr != null) {

@@ -86,7 +86,7 @@ class TraverserController {
 		previousFinallyState: AtomicReference<TraverserState?>,
 		previousCandidateState: AtomicReference<TraverserState?>,
 	): List<TraverserActivePathState>? {
-		val commonState = state.getGlobalCommonState()
+		val commonState = state.globalCommonState
 		val finallyState = state.getFinallyState()
 		val candidateState = state.getCandidateState()
 

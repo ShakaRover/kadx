@@ -33,7 +33,6 @@ class FileSignature(fileType: String, signatureHex: String) {
 		 * 注意：原实现用 0 表示通配，因此只要签名里有 0 字节就无法区分“通配”和“真 0”，
 		 * 这里机械保留同样的行为。
 		 */
-		@JvmStatic
 		fun matches(sig: FileSignature, data: ByteArray): Boolean {
 			if (data.size < sig.signatureBytes.size) {
 				return false

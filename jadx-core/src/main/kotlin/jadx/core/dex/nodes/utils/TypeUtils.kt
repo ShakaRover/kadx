@@ -28,7 +28,7 @@ class TypeUtils(private val root: RootNode) {
 	fun getClassGenerics(type: ArgType): List<ArgType> {
 		val classNode = root.resolveClass(type)
 		if (classNode != null) {
-			return classNode.getGenericTypeParameters()
+			return classNode.genericTypeParameters
 		}
 		val clsDetails = checkNotNull(root.getClsp()).getClsDetails(type)
 		if (clsDetails == null || clsDetails.typeParameters.isEmpty()) {
@@ -97,12 +97,12 @@ class TypeUtils(private val root: RootNode) {
 	fun getKnownTypeVarsAtMethod(mth: MethodNode): Set<ArgType> {
 		val typeVarsAttr = mth.get(AType.METHOD_TYPE_VARS)
 		if (typeVarsAttr != null) {
-			return typeVarsAttr.getTypeVars()
+			return typeVarsAttr.typeVars
 		}
 		val typeVars = collectKnownTypeVarsAtMethod(mth)
 		val varsAttr = MethodTypeVarsAttr.build(typeVars)
 		mth.addAttr(varsAttr)
-		return varsAttr.getTypeVars()
+		return varsAttr.typeVars
 	}
 
 	/**
@@ -127,11 +127,11 @@ class TypeUtils(private val root: RootNode) {
 		/** 收集类作用域内的已知类型变量（内部类会合并外部类的类型变量）。 */
 		private fun getKnownTypeVarsAtClass(cls: ClassNode): Collection<ArgType> {
 			if (cls.isInner()) {
-				val typeVars: MutableSet<ArgType> = HashSet(cls.getGenericTypeParameters())
-				cls.visitParentClasses { parent -> typeVars.addAll(parent.getGenericTypeParameters()) }
+				val typeVars: MutableSet<ArgType> = HashSet(cls.genericTypeParameters)
+				cls.visitParentClasses { parent -> typeVars.addAll(parent.genericTypeParameters) }
 				return typeVars
 			}
-			return cls.getGenericTypeParameters()
+			return cls.genericTypeParameters
 		}
 
 		/** 收集方法作用域内的已知类型变量（类类型变量 + 方法类型变量）。 */
@@ -225,9 +225,9 @@ class TypeUtils(private val root: RootNode) {
 	/** 根据调用指令的实际参数/返回值，建立方法类型变量的映射。 */
 	fun getTypeVarMappingForInvoke(invokeInsn: BaseInvokeNode): Map<ArgType, ArgType> {
 		val mthDetails = root.getMethodUtils().getMethodDetails(invokeInsn) ?: return emptyMap()
-		val map = HashMap<ArgType, ArgType>(1 + invokeInsn.getArgsCount())
+		val map = HashMap<ArgType, ArgType>(1 + invokeInsn.argsCount)
 		addTypeVarMapping(map, mthDetails.getReturnType(), invokeInsn.getResult())
-		val argCount = Math.min(mthDetails.getArgTypes().size, invokeInsn.getArgsCount() - invokeInsn.getFirstArgOffset())
+		val argCount = Math.min(mthDetails.getArgTypes().size, invokeInsn.argsCount - invokeInsn.getFirstArgOffset())
 		for (i in 0 until argCount) {
 			addTypeVarMapping(map, mthDetails.getArgTypes()[i], invokeInsn.getArg(i + invokeInsn.getFirstArgOffset()))
 		}
@@ -332,7 +332,7 @@ class TypeUtils(private val root: RootNode) {
 				map[type.getObject()] = varsMap
 			}
 		}
-		val currentTypeVars = cls.getGenericTypeParameters()
+		val currentTypeVars = cls.genericTypeParameters
 		val typeVarsAttr = ClassTypeVarsAttr(currentTypeVars, map)
 		cls.addAttr(typeVarsAttr)
 		return typeVarsAttr

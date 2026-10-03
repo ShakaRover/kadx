@@ -45,13 +45,13 @@ class MergePathActivePathTraverserHandler(comparatorState: TraverserActivePathSt
 
 	@Throws(TraverserException::class)
 	override fun handle(): List<TraverserActivePathState> {
-		val comparator = getComparator().duplicate()
-		val commonState: TraverserGlobalCommonState = comparator.getGlobalCommonState()
+		val comparator = comparator.duplicate()
+		val commonState: TraverserGlobalCommonState = comparator.globalCommonState
 		val finallyState = comparator.getFinallyState() as IdentifiedScopeWithTerminatorTraverserState
 		val candidateState = comparator.getCandidateState() as IdentifiedScopeWithTerminatorTraverserState
 
-		val finallyTerminus: BlockNode = finallyState.getTerminus()
-		val candidateTerminus: BlockNode = candidateState.getTerminus()
+		val finallyTerminus: BlockNode = finallyState.terminus
+		val candidateTerminus: BlockNode = candidateState.terminus
 
 		val abortFunction: (TraverserState) -> Boolean = getStateAbortOnTerminusFunction(finallyState, candidateState)
 
@@ -64,8 +64,8 @@ class MergePathActivePathTraverserHandler(comparatorState: TraverserActivePathSt
 				val finallyRoot = finallyState.getRoots()[i]
 				val candidateRoot = candidateRootsPermutation[i]
 
-				val finallyCentrality = finallyState.getCentralityState().duplicate()
-				val candidateCentrality = candidateState.getCentralityState().duplicate()
+				val finallyCentrality = finallyState.centralityState.duplicate()
+				val candidateCentrality = candidateState.centralityState.duplicate()
 
 				val finallyBlockInfo = TraverserBlockInfo(finallyRoot)
 				val candidateBlockInfo = TraverserBlockInfo(candidateRoot)
@@ -113,15 +113,15 @@ class MergePathActivePathTraverserHandler(comparatorState: TraverserActivePathSt
 			val nonMatchingState = createNonMatchingTerminator(comparator)
 			return listOf(nonMatchingState)
 		}
-		val newFinallyCentralityState = finallyState.getCentralityState().duplicate()
+		val newFinallyCentralityState = finallyState.centralityState.duplicate()
 		newFinallyCentralityState.allowsCentral = validPostMerge.finallyAllowsCentral
 		newFinallyCentralityState.addAllowableOutputs(validPostMerge.finallyAllowableOutputs)
-		val newCandidateCentralityState = candidateState.getCentralityState().duplicate()
+		val newCandidateCentralityState = candidateState.centralityState.duplicate()
 		newCandidateCentralityState.allowsCentral = validPostMerge.candidateAllowsCentral
 		newCandidateCentralityState.addAllowableOutputs(validPostMerge.candidateAllowableOutputs)
 
-		val finallyTerminusBlockInfo = TraverserBlockInfo(finallyState.getTerminus())
-		val candidateTerminusBlockInfo = TraverserBlockInfo(candidateState.getTerminus())
+		val finallyTerminusBlockInfo = TraverserBlockInfo(finallyState.terminus)
+		val candidateTerminusBlockInfo = TraverserBlockInfo(candidateState.terminus)
 
 		val finallyStateFactory = NewBlockTraverserState.getFactory(newFinallyCentralityState, finallyTerminusBlockInfo)
 		val candidateStateFactory = NewBlockTraverserState.getFactory(newCandidateCentralityState, candidateTerminusBlockInfo)
@@ -159,15 +159,15 @@ class MergePathActivePathTraverserHandler(comparatorState: TraverserActivePathSt
 			finallyState: IdentifiedScopeWithTerminatorTraverserState,
 			candidateState: IdentifiedScopeWithTerminatorTraverserState,
 		): (TraverserState) -> Boolean {
-			val finallyTerminus: BlockNode = finallyState.getTerminus()
-			val candidateTerminus: BlockNode = candidateState.getTerminus()
-			val finallyGlobalState: GlobalTraverserSourceState = finallyState.getGlobalState()
-			val candidateGlobalState: GlobalTraverserSourceState = candidateState.getGlobalState()
+			val finallyTerminus: BlockNode = finallyState.terminus
+			val candidateTerminus: BlockNode = candidateState.terminus
+			val finallyGlobalState: GlobalTraverserSourceState = finallyState.globalState
+			val candidateGlobalState: GlobalTraverserSourceState = candidateState.globalState
 
 			return { state ->
-				if (state.getGlobalState() === finallyGlobalState) {
+				if (state.globalState === finallyGlobalState) {
 					isStateOnTerminus(state, finallyTerminus)
-				} else if (state.getGlobalState() === candidateGlobalState) {
+				} else if (state.globalState === candidateGlobalState) {
 					isStateOnTerminus(state, candidateTerminus)
 				} else {
 					throw JadxRuntimeException("Unknown global traverser state. Has a global state been duplicated?")
@@ -209,12 +209,12 @@ class MergePathActivePathTraverserHandler(comparatorState: TraverserActivePathSt
 					finallyState = path.getFinallyState()
 					candidateState = path.getCandidateState()
 				}
-				val finallyCentralityState = finallyState.getCentralityState()
-				val candidateCentralityState = candidateState.getCentralityState()
+				val finallyCentralityState = finallyState.centralityState
+				val candidateCentralityState = candidateState.centralityState
 				status.finallyAllowsCentral = status.finallyAllowsCentral && finallyCentralityState.allowsCentral
 				status.candidateAllowsCentral = status.candidateAllowsCentral && candidateCentralityState.allowsCentral
-				status.finallyAllowableOutputs.addAll(finallyCentralityState.getAllowableOutputArguments())
-				status.candidateAllowableOutputs.addAll(candidateCentralityState.getAllowableOutputArguments())
+				status.finallyAllowableOutputs.addAll(finallyCentralityState.allowableOutputArguments)
+				status.candidateAllowableOutputs.addAll(candidateCentralityState.allowableOutputArguments)
 			}
 			return status
 		}
@@ -225,7 +225,6 @@ class MergePathActivePathTraverserHandler(comparatorState: TraverserActivePathSt
 		 * 内部先复制一份可变集合，避免修改调用方传入的只读列表（原 Java 会在结束时还原，
 		 * 这里用副本达到相同的净效果）。
 		 */
-		@JvmStatic
 		fun getAllPermutationsOfCollection(elements: Collection<BlockNode>): List<Array<BlockNode>> {
 			val mutableElements: MutableCollection<BlockNode> = ArrayList(elements)
 			val permutationStack = Stack<BlockNode>()
@@ -235,7 +234,6 @@ class MergePathActivePathTraverserHandler(comparatorState: TraverserActivePathSt
 		}
 
 		/** 递归生成排列：逐个选择剩余元素入栈，递归后回溯。 */
-		@JvmStatic
 		fun permutations(
 			permutationsResult: MutableList<Array<BlockNode>>,
 			elements: MutableCollection<BlockNode>,

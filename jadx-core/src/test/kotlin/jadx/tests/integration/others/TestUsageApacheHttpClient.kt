@@ -25,6 +25,6 @@ class TestUsageApacheHttpClient : SmaliTest() {
 	fun test() {
 		disableCompilation()
 		val cls = getClassNodeFromSmali()
-		assertThat(cls.root().getGradleInfoStorage().isUseApacheHttpLegacy).isTrue()
+		assertThat(cls.root().gradleInfoStorage.isUseApacheHttpLegacy).isTrue()
 	}
 }

@@ -88,7 +88,7 @@ open class TestUtils {
 			if (!allowWarnInCode) {
 				val commentsAttr = node.get(AType.JADX_COMMENTS)
 				if (commentsAttr != null) {
-					return commentsAttr.getComments().get(CommentsLevel.WARN) != null
+					return commentsAttr.comments.get(CommentsLevel.WARN) != null
 				}
 			}
 			return false

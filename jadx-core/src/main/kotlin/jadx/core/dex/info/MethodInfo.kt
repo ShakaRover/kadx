@@ -41,9 +41,8 @@ class MethodInfo private constructor(
 
 	companion object {
 		/** 从输入层方法引用构造（并按 uniq id / 签名缓存）。 */
-		@JvmStatic
 		fun fromRef(root: RootNode, methodRef: IMethodRef): MethodInfo {
-			val infoStorage = root.getInfoStorage()
+			val infoStorage = root.infoStorage
 			val uniqId = methodRef.uniqId
 			if (uniqId != 0) {
 				val prevMth = infoStorage.getByUniqId(uniqId)
@@ -65,14 +64,12 @@ class MethodInfo private constructor(
 		}
 
 		/** 用已知的声明类、名字、参数、返回类型构造并唯一化。 */
-		@JvmStatic
 		fun fromDetails(root: RootNode, declClass: ClassInfo, name: String, args: List<ArgType>, retType: ArgType): MethodInfo {
 			val newMth = MethodInfo(declClass, name, args, retType)
-			return root.getInfoStorage().putMethod(newMth)
+			return root.infoStorage.putMethod(newMth)
 		}
 
 		/** 从输入层方法原型 [IMethodProto] 构造。 */
-		@JvmStatic
 		fun fromMethodProto(root: RootNode, declClass: ClassInfo, name: String, proto: IMethodProto): MethodInfo {
 			val args = Utils.collectionMap(proto.argTypes) { ArgType.parse(it) }
 			val returnType = ArgType.parse(proto.returnType)
@@ -80,7 +77,6 @@ class MethodInfo private constructor(
 		}
 
 		/** 拼接方法短 id：`名字(参数签名)返回签名`。 */
-		@JvmStatic
 		fun makeShortId(name: String, argTypes: List<ArgType>, retType: ArgType?): String {
 			val sb = StringBuilder()
 			sb.append(name)

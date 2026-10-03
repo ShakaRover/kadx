@@ -24,7 +24,6 @@ object TextResMapFile {
 	private const val SPLIT_POS = 8
 
 	/** 从输入流读取映射（UTF-8）。 */
-	@JvmStatic
 	fun read(`is`: InputStream): Map<Int, String> {
 		try {
 			return BufferedReader(InputStreamReader(`is`, StandardCharsets.UTF_8)).use { br ->
@@ -47,7 +46,6 @@ object TextResMapFile {
 	}
 
 	/** 从文件路径读取映射。 */
-	@JvmStatic
 	fun read(resMapFile: Path): Map<Int, String> {
 		try {
 			return Files.newInputStream(resMapFile).use { input -> read(input) }
@@ -57,7 +55,6 @@ object TextResMapFile {
 	}
 
 	/** 按资源 id 升序写出映射（每行 `%08x=name`）。 */
-	@JvmStatic
 	fun write(resMapFile: Path, inputResMap: Map<Int, String>) {
 		try {
 			val resMap = TreeMap(inputResMap)

@@ -132,7 +132,7 @@ abstract class BaseExternalTest : TestUtils() {
 					"Print method: {}\n{}\n{}\n{}",
 					mth.getMethodInfo().rawFullId,
 					dashLine,
-					mth.getCodeStr(),
+					mth.codeStr,
 					dashLine,
 				)
 			}

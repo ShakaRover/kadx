@@ -57,7 +57,6 @@ class BlockSplitter : AbstractVisitor() {
 			InsnType.MOVE_EXCEPTION,
 		)
 
-		@JvmStatic
 		fun isSeparate(insnType: InsnType): Boolean = SEPARATE_INSNS.contains(insnType)
 
 		/**
@@ -89,7 +88,7 @@ class BlockSplitter : AbstractVisitor() {
 				if (insn == null) {
 					continue
 				}
-				if (insn.getType() == InsnType.NOP && insn.isAttrStorageEmpty()) {
+				if (insn.type == InsnType.NOP && insn.isAttrStorageEmpty()) {
 					continue
 				}
 				val insnOffset = insn.getOffset()
@@ -97,11 +96,11 @@ class BlockSplitter : AbstractVisitor() {
 					// 方法入口块之后的第一个块
 					curBlock = connectNewBlock(mth, curBlock, insnOffset)
 				} else {
-					val prevType = prevInsn.getType()
+					val prevType = prevInsn.type
 					if (SPLIT_WITHOUT_CONNECT.contains(prevType)) {
 						curBlock = startNewBlock(mth, insnOffset)
 					} else if (isSeparate(prevType) ||
-						isSeparate(insn.getType()) ||
+						isSeparate(insn.type) ||
 						insn.contains(AFlag.TRY_ENTER) ||
 						prevInsn.contains(AFlag.TRY_LEAVE) ||
 						insn.contains(AType.EXC_HANDLER) ||
@@ -120,7 +119,7 @@ class BlockSplitter : AbstractVisitor() {
 
 		/** 为 `if` 指令初始化 then/else 块。 */
 		private fun initBlocksInTargetNodes(mth: MethodNode) {
-			for (block in checkNotNull(mth.getBasicBlocks())) {
+			for (block in checkNotNull(mth.basicBlocks)) {
 				val lastInsn = BlockUtils.getLastInsn(block)
 				if (lastInsn is TargetInsnNode) {
 					lastInsn.initBlocks(block)
@@ -128,22 +127,19 @@ class BlockSplitter : AbstractVisitor() {
 			}
 		}
 
-		@JvmStatic
 		fun connectNewBlock(mth: MethodNode, block: BlockNode, offset: Int): BlockNode {
 			val newBlock = startNewBlock(mth, offset)
 			connect(block, newBlock)
 			return newBlock
 		}
 
-		@JvmStatic
 		fun startNewBlock(mth: MethodNode, offset: Int): BlockNode {
-			val blocks = checkNotNull(mth.getBasicBlocks()) as MutableList<BlockNode>
-			val block = BlockNode(mth.getNextBlockCId(), blocks.size, offset)
+			val blocks = checkNotNull(mth.basicBlocks) as MutableList<BlockNode>
+			val block = BlockNode(mth.nextBlockCId, blocks.size, offset)
 			blocks.add(block)
 			return block
 		}
 
-		@JvmStatic
 		fun connect(from: BlockNode, to: BlockNode) {
 			if (!from.getSuccessors().contains(to)) {
 				(from.getSuccessors() as MutableList<BlockNode>).add(to)
@@ -153,13 +149,11 @@ class BlockSplitter : AbstractVisitor() {
 			}
 		}
 
-		@JvmStatic
 		fun removeConnection(from: BlockNode, to: BlockNode) {
 			(from.getSuccessors() as MutableList<BlockNode>).remove(to)
 			(to.getPredecessors() as MutableList<BlockNode>).remove(from)
 		}
 
-		@JvmStatic
 		fun removePredecessors(block: BlockNode) {
 			for (pred in block.getPredecessors()) {
 				(pred.getSuccessors() as MutableList<BlockNode>).remove(block)
@@ -167,14 +161,12 @@ class BlockSplitter : AbstractVisitor() {
 			(block.getPredecessors() as MutableList<BlockNode>).clear()
 		}
 
-		@JvmStatic
 		fun replaceConnection(source: BlockNode, oldDest: BlockNode, newDest: BlockNode) {
 			removeConnection(source, oldDest)
 			connect(source, newDest)
 			replaceTarget(source, oldDest, newDest)
 		}
 
-		@JvmStatic
 		fun insertBlockBetween(mth: MethodNode, source: BlockNode, target: BlockNode): BlockNode {
 			val newBlock = startNewBlock(mth, target.startOffset)
 			newBlock.add(AFlag.SYNTHETIC)
@@ -187,7 +179,6 @@ class BlockSplitter : AbstractVisitor() {
 			return newBlock
 		}
 
-		@JvmStatic
 		fun blockSplitTop(mth: MethodNode, block: BlockNode): BlockNode {
 			val newBlock = startNewBlock(mth, block.startOffset)
 			for (pred in ArrayList(block.getPredecessors())) {
@@ -199,7 +190,6 @@ class BlockSplitter : AbstractVisitor() {
 			return newBlock
 		}
 
-		@JvmStatic
 		fun copyBlockData(from: BlockNode, to: BlockNode) {
 			val toInsns = to.instructions
 			for (insn in from.getInstructions()) {
@@ -208,7 +198,6 @@ class BlockSplitter : AbstractVisitor() {
 			to.copyAttributesFrom(from)
 		}
 
-		@JvmStatic
 		fun copyBlocksTree(mth: MethodNode, blocks: List<BlockNode>): List<BlockNode> {
 			val copyBlocks = ArrayList<BlockNode>(blocks.size)
 			val map = HashMap<BlockNode, BlockNode>()
@@ -230,7 +219,6 @@ class BlockSplitter : AbstractVisitor() {
 
 		private fun getNewBlock(block: BlockNode, map: Map<BlockNode, BlockNode>): BlockNode = map[block] ?: throw JadxRuntimeException("Copy blocks tree failed. Missing block for connection: $block")
 
-		@JvmStatic
 		fun replaceTarget(source: BlockNode, oldTarget: BlockNode, newTarget: BlockNode) {
 			val lastInsn = BlockUtils.getLastInsn(source)
 			if (lastInsn is TargetInsnNode) {
@@ -239,7 +227,7 @@ class BlockSplitter : AbstractVisitor() {
 		}
 
 		private fun setupConnectionsFromJumps(mth: MethodNode, blocksMap: Map<Int, BlockNode>) {
-			for (block in checkNotNull(mth.getBasicBlocks())) {
+			for (block in checkNotNull(mth.basicBlocks)) {
 				for (insn in block.getInstructions()) {
 					val jumps = insn.getAll(AType.JUMP)
 					for (jump in jumps) {
@@ -259,11 +247,11 @@ class BlockSplitter : AbstractVisitor() {
 			if (mth.isNoExceptionHandlers()) {
 				return
 			}
-			for (block in checkNotNull(mth.getBasicBlocks())) {
+			for (block in checkNotNull(mth.basicBlocks)) {
 				for (insn in block.getInstructions()) {
 					val catchAttr = insn.get(AType.EXC_CATCH) ?: continue
-					for (handler in catchAttr.getHandlers()) {
-						val handlerBlock = getBlock(handler.getHandlerOffset(), blocksMap)
+					for (handler in catchAttr.handlers) {
+						val handlerBlock = getBlock(handler.handlerOffset, blocksMap)
 						if (!handlerBlock.contains(AType.TMP_EDGE)) {
 							val preds = block.getPredecessors()
 							if (preds.isEmpty()) {
@@ -282,7 +270,7 @@ class BlockSplitter : AbstractVisitor() {
 
 		private fun setupExitConnections(mth: MethodNode) {
 			val exitBlock = checkNotNull(mth.exitBlock)
-			for (block in checkNotNull(mth.getBasicBlocks())) {
+			for (block in checkNotNull(mth.basicBlocks)) {
 				if (block.getSuccessors().isEmpty() && block !== exitBlock) {
 					connect(block, exitBlock)
 					if (BlockUtils.checkLastInsnType(block, InsnType.RETURN)) {
@@ -310,7 +298,7 @@ class BlockSplitter : AbstractVisitor() {
 
 		private fun isDoWhile(blocksMap: Map<Int, BlockNode>, curBlock: BlockNode, insn: InsnNode): Boolean {
 			// 拆分 do-while 块（最后一条指令是 if，目标就是本块）
-			if (insn.getType() != InsnType.IF) {
+			if (insn.type != InsnType.IF) {
 				return false
 			}
 			val ifs = insn as IfNode
@@ -322,14 +310,14 @@ class BlockSplitter : AbstractVisitor() {
 
 		/** 把 MOVE_MULTI（多寄存器批量 move）展开成多条普通 MOVE。 */
 		private fun expandMoveMulti(mth: MethodNode) {
-			for (block in checkNotNull(mth.getBasicBlocks())) {
+			for (block in checkNotNull(mth.basicBlocks)) {
 				val insnsList = block.instructions
 				var len = insnsList.size
 				var i = 0
 				while (i < len) {
 					val insn = insnsList[i]
-					if (insn.getType() == InsnType.MOVE_MULTI) {
-						val mvCount = insn.getArgsCount() / 2
+					if (insn.type == InsnType.MOVE_MULTI) {
+						val mvCount = insn.argsCount / 2
 						for (j in 0 until mvCount) {
 							val mv = InsnNode(InsnType.MOVE, 1)
 							val startArg = j * 2
@@ -352,7 +340,7 @@ class BlockSplitter : AbstractVisitor() {
 		}
 
 		private fun removeJumpAttr(mth: MethodNode) {
-			for (block in checkNotNull(mth.getBasicBlocks())) {
+			for (block in checkNotNull(mth.basicBlocks)) {
 				for (insn in block.getInstructions()) {
 					insn.remove(AType.JUMP)
 				}
@@ -360,28 +348,26 @@ class BlockSplitter : AbstractVisitor() {
 		}
 
 		private fun removeInsns(mth: MethodNode) {
-			for (block in checkNotNull(mth.getBasicBlocks())) {
+			for (block in checkNotNull(mth.basicBlocks)) {
 				block.instructions.removeIf { insn ->
 					if (!insn.isAttrStorageEmpty()) {
 						return@removeIf false
 					}
-					val insnType = insn.getType()
+					val insnType = insn.type
 					insnType == InsnType.GOTO || insnType == InsnType.NOP
 				}
 			}
 		}
 
-		@JvmStatic
 		fun detachMarkedBlocks(mth: MethodNode) {
-			for (block in checkNotNull(mth.getBasicBlocks())) {
+			for (block in checkNotNull(mth.basicBlocks)) {
 				if (block.contains(AFlag.REMOVE)) {
 					detachBlock(block)
 				}
 			}
 		}
 
-		@JvmStatic
-		fun removeEmptyDetachedBlocks(mth: MethodNode): Boolean = (checkNotNull(mth.getBasicBlocks()) as MutableList<BlockNode>).removeIf { block ->
+		fun removeEmptyDetachedBlocks(mth: MethodNode): Boolean = (checkNotNull(mth.basicBlocks) as MutableList<BlockNode>).removeIf { block ->
 			block.getInstructions().isEmpty() &&
 				block.getPredecessors().isEmpty() &&
 				block.getSuccessors().isEmpty() &&
@@ -389,7 +375,6 @@ class BlockSplitter : AbstractVisitor() {
 				!block.contains(AFlag.MTH_EXIT_BLOCK)
 		}
 
-		@JvmStatic
 		fun removeEmptyBlock(block: BlockNode): Boolean {
 			if (canRemoveBlock(block)) {
 				if (block.getSuccessors().size == 1) {
@@ -423,7 +408,6 @@ class BlockSplitter : AbstractVisitor() {
 			!block.contains(AFlag.MTH_EXIT_BLOCK) &&
 			!block.getSuccessors().contains(block) // 无自环
 
-		@JvmStatic
 		fun collectSuccessors(startBlock: BlockNode, methodEnterBlock: BlockNode, toRemove: MutableSet<BlockNode>) {
 			val stack = ArrayDeque<BlockNode>()
 			stack.add(startBlock)
@@ -440,7 +424,6 @@ class BlockSplitter : AbstractVisitor() {
 			}
 		}
 
-		@JvmStatic
 		fun detachBlock(block: BlockNode) {
 			for (pred in block.getPredecessors()) {
 				(pred.getSuccessors() as MutableList<BlockNode>).remove(block)
@@ -472,7 +455,7 @@ class BlockSplitter : AbstractVisitor() {
 		removeJumpAttr(mth)
 		removeInsns(mth)
 		removeEmptyDetachedBlocks(mth)
-		(checkNotNull(mth.getBasicBlocks()) as MutableList<BlockNode>).removeIf { removeEmptyBlock(it) }
+		(checkNotNull(mth.basicBlocks) as MutableList<BlockNode>).removeIf { removeEmptyBlock(it) }
 
 		addTempConnectionsForExcHandlers(mth, blocksMap)
 		setupExitConnections(mth)

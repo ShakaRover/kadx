@@ -71,7 +71,7 @@ class SimplifyVisitor : AbstractVisitor() {
 			return
 		}
 		var changed = false
-		for (block in checkNotNull(mth.getBasicBlocks())) {
+		for (block in checkNotNull(mth.basicBlocks)) {
 			if (simplifyBlock(mth, block)) {
 				changed = true
 			}
@@ -136,7 +136,7 @@ class SimplifyVisitor : AbstractVisitor() {
 			return null
 		}
 		simplifyArgs(mth, insn)
-		when (insn.getType()) {
+		when (insn.type) {
 			InsnType.ARITH -> return simplifyArith(insn as ArithNode)
 
 			InsnType.IF -> simplifyIf(mth, insn as IfNode)
@@ -169,15 +169,15 @@ class SimplifyVisitor : AbstractVisitor() {
 
 	private fun simplifyStringConstructor(mth: MethodNode, insn: ConstructorInsn): InsnNode? {
 		if (insn.callMth.declClass.type == ArgType.STRING &&
-			insn.getArgsCount() != 0 &&
+			insn.argsCount != 0 &&
 			insn.getArg(0).isInsnWrap
 		) {
 			val arrInsn = (insn.getArg(0) as InsnWrapArg).wrapInsn
-			if (arrInsn.getType() == InsnType.FILLED_NEW_ARRAY && arrInsn.getArgsCount() != 0) {
+			if (arrInsn.type == InsnType.FILLED_NEW_ARRAY && arrInsn.argsCount != 0) {
 				val elemType = (arrInsn as FilledNewArrayNode).elemType
 				if (elemType == ArgType.BYTE || elemType == ArgType.CHAR) {
 					var printable = 0
-					val arr = ByteArray(arrInsn.getArgsCount())
+					val arr = ByteArray(arrInsn.argsCount)
 					for (i in arr.indices) {
 						val arrArg = arrInsn.getArg(i)
 						if (!arrArg.isLiteral) {
@@ -190,7 +190,7 @@ class SimplifyVisitor : AbstractVisitor() {
 					}
 					if (printable >= arr.size - printable) {
 						val constStr = ConstStringNode(String(arr))
-						if (insn.getArgsCount() == 1) {
+						if (insn.argsCount == 1) {
 							constStr.setResult(insn.getResult())
 							constStr.copyAttributesFrom(insn)
 							InsnRemover.unbindArgUsage(mth, insn.getArg(0))
@@ -220,7 +220,7 @@ class SimplifyVisitor : AbstractVisitor() {
 		// 若 wrapped INVOKE 返回不同类型，不要移除 CHECK_CAST
 		if (castArg.isInsnWrap) {
 			val wrapInsn = (castArg as InsnWrapArg).wrapInsn
-			if (wrapInsn.getType() == InsnType.INVOKE) {
+			if (wrapInsn.type == InsnType.INVOKE) {
 				argType = (wrapInsn as InvokeNode).callMth.returnType
 			}
 		}
@@ -247,10 +247,10 @@ class SimplifyVisitor : AbstractVisitor() {
 	 * 例：`(long) i << 32`，若去掉 `long` cast 会用 int 移位指令，结果错误。
 	 */
 	private fun isArithWideUpCast(parentInsn: InsnNode?, argType: ArgType, castToType: ArgType): Boolean {
-		if (parentInsn != null && parentInsn.getType() == InsnType.ARITH &&
+		if (parentInsn != null && parentInsn.type == InsnType.ARITH &&
 			argType.isPrimitive() && castToType.isPrimitive()
 		) {
-			return castToType.getRegCount() > argType.getRegCount()
+			return castToType.regCount > argType.regCount
 		}
 		return false
 	}
@@ -259,9 +259,9 @@ class SimplifyVisitor : AbstractVisitor() {
 		val arg = castInsn.getArg(0)
 		if (arg.isRegister) {
 			val sVar = (arg as RegisterArg).sVar
-			if (sVar != null && sVar.getUseCount() == 1 && !sVar.isUsedInPhi()) {
+			if (sVar != null && sVar.useCount == 1 && !sVar.isUsedInPhi()) {
 				val assignInsn = sVar.assign.getParentInsn()
-				if (assignInsn != null && assignInsn.getType() == InsnType.CHECK_CAST) {
+				if (assignInsn != null && assignInsn.type == InsnType.CHECK_CAST) {
 					val assignCastType = (assignInsn as IndexInsnNode).index
 					return assignCastType == castInsn.index
 				}
@@ -271,9 +271,9 @@ class SimplifyVisitor : AbstractVisitor() {
 	}
 
 	private fun shadowedByOuterCast(root: RootNode, castType: ArgType, parentInsn: InsnNode?): Boolean {
-		if (parentInsn != null && parentInsn.getType() == InsnType.CAST) {
+		if (parentInsn != null && parentInsn.type == InsnType.CAST) {
 			val parentCastType = (parentInsn as IndexInsnNode).index as ArgType
-			val result = root.getTypeCompare().compareTypes(parentCastType, castType)
+			val result = root.typeCompare.compareTypes(parentCastType, castType)
 			return result.isNarrow()
 		}
 		return false
@@ -286,7 +286,7 @@ class SimplifyVisitor : AbstractVisitor() {
 		val f = insn.getArg(0)
 		if (f.isInsnWrap) {
 			val wi = (f as InsnWrapArg).wrapInsn
-			if (wi.getType() == InsnType.CMP_L || wi.getType() == InsnType.CMP_G) {
+			if (wi.type == InsnType.CMP_L || wi.type == InsnType.CMP_G) {
 				if (insn.getArg(1).isZeroLiteral()) {
 					insn.changeCondition(insn.getOp(), wi.getArg(0).duplicate(), wi.getArg(1).duplicate())
 					InsnRemover.unbindInsn(mth, wi)
@@ -301,9 +301,9 @@ class SimplifyVisitor : AbstractVisitor() {
 	 * 简化三元运算中的条件。
 	 */
 	private fun simplifyTernary(mth: MethodNode, insn: TernaryInsn) {
-		val condition = insn.getCondition()
+		val condition = insn.condition
 		if (condition.isCompare()) {
-			simplifyIf(mth, checkNotNull(condition.getCompare()).getInsn())
+			simplifyIf(mth, checkNotNull(condition.compare).insn)
 		} else {
 			insn.simplifyCondition()
 		}
@@ -336,13 +336,13 @@ class SimplifyVisitor : AbstractVisitor() {
 
 	private fun collectUseChain(mth: MethodNode, insn: InvokeNode, instanceArg: RegisterArg): List<InsnNode> {
 		val sVar = checkNotNull(instanceArg.sVar)
-		if (sVar.isUsedInPhi() || sVar.getUseCount() == 0) {
+		if (sVar.isUsedInPhi() || sVar.useCount == 0) {
 			return emptyList()
 		}
-		val useChain = ArrayList<InsnNode>(sVar.getUseCount() + 1)
+		val useChain = ArrayList<InsnNode>(sVar.useCount + 1)
 		val assignInsn = sVar.assign.getParentInsn() ?: return emptyList()
 		useChain.add(assignInsn)
-		for (reg in sVar.getUseList()) {
+		for (reg in sVar.useList) {
 			val parentInsn = reg.getParentInsn() ?: return emptyList()
 			useChain.add(parentInsn)
 		}
@@ -377,11 +377,11 @@ class SimplifyVisitor : AbstractVisitor() {
 			}
 			val args = ArrayList<InsnArg>(chainSize)
 			val firstInsn = chain[0]
-			if (firstInsn.getType() != InsnType.CONSTRUCTOR) {
+			if (firstInsn.type != InsnType.CONSTRUCTOR) {
 				return null
 			}
 			val constrInsn = firstInsn as ConstructorInsn
-			if (constrInsn.getArgsCount() == 1) {
+			if (constrInsn.argsCount == 1) {
 				val argType = constrInsn.callMth.argumentsTypes[0]
 				if (!argType.isObject()) {
 					return null
@@ -481,7 +481,7 @@ class SimplifyVisitor : AbstractVisitor() {
 		if (arg.isInsnWrap) {
 			val wrapInsn = (arg as InsnWrapArg).wrapInsn
 			if (wrapInsn is ConstStringNode) {
-				return wrapInsn.getString()
+				return wrapInsn.string
 			}
 		}
 		return null
@@ -510,7 +510,7 @@ class SimplifyVisitor : AbstractVisitor() {
 		while (arg.isInsnWrap) {
 			val wrapInsn = (arg as InsnWrapArg).wrapInsn
 			chain.add(wrapInsn)
-			if (wrapInsn.getType() == insnType || wrapInsn.getArgsCount() == 0) {
+			if (wrapInsn.type == insnType || wrapInsn.argsCount == 0) {
 				break
 			}
 			arg = wrapInsn.getArg(0)
@@ -520,7 +520,7 @@ class SimplifyVisitor : AbstractVisitor() {
 	}
 
 	private fun getArgFromAppend(chainInsn: InsnNode): InsnArg? {
-		if (chainInsn.getType() == InsnType.INVOKE && chainInsn.getArgsCount() == 2) {
+		if (chainInsn.type == InsnType.INVOKE && chainInsn.argsCount == 2) {
 			val callMth = (chainInsn as InvokeNode).callMth
 			if (callMth.declClass.fullName == Consts.CLASS_STRING_BUILDER &&
 				callMth.name == "append"
@@ -532,14 +532,14 @@ class SimplifyVisitor : AbstractVisitor() {
 	}
 
 	private fun simplifyArith(arith: ArithNode): InsnNode? {
-		if (arith.getArgsCount() != 2) {
+		if (arith.argsCount != 2) {
 			return null
 		}
 		var litArg: LiteralArg? = null
 		val secondArg = arith.getArg(1)
 		if (secondArg.isInsnWrap) {
 			val wr = (secondArg as InsnWrapArg).wrapInsn
-			if (wr.getType() == InsnType.CONST) {
+			if (wr.type == InsnType.CONST) {
 				val arg = wr.getArg(0)
 				if (arg.isLiteral) {
 					litArg = arg as LiteralArg
@@ -595,13 +595,13 @@ class SimplifyVisitor : AbstractVisitor() {
 			return null
 		}
 		val wrap = (arg as InsnWrapArg).wrapInsn
-		val wrapType = wrap.getType()
+		val wrapType = wrap.type
 		if ((wrapType != InsnType.ARITH && wrapType != InsnType.STR_CONCAT) || !wrap.getArg(0).isInsnWrap) {
 			return null
 		}
 		val getWrap = wrap.getArg(0)
 		val get = (getWrap as InsnWrapArg).wrapInsn
-		val getType = get.getType()
+		val getType = get.type
 		if (getType != InsnType.IGET && getType != InsnType.SGET) {
 			return null
 		}
@@ -611,7 +611,7 @@ class SimplifyVisitor : AbstractVisitor() {
 			return null
 		}
 		try {
-			if (getType == InsnType.IGET && insn.getType() == InsnType.IPUT) {
+			if (getType == InsnType.IGET && insn.type == InsnType.IPUT) {
 				val reg = get.getArg(0)
 				val putReg = insn.getArg(1)
 				if (reg != putReg) {
@@ -620,7 +620,7 @@ class SimplifyVisitor : AbstractVisitor() {
 			}
 			val fArg = getWrap.duplicate()
 			InsnRemover.unbindInsn(mth, get)
-			if (insn.getType() == InsnType.IPUT) {
+			if (insn.type == InsnType.IPUT) {
 				InsnRemover.unbindArgUsage(mth, insn.getArg(1))
 			}
 			if (wrapType == InsnType.ARITH) {
@@ -630,7 +630,7 @@ class SimplifyVisitor : AbstractVisitor() {
 				newInsn.setOffset(insn.getOffset())
 				return newInsn
 			}
-			val argsCount = wrap.getArgsCount()
+			val argsCount = wrap.argsCount
 			val concat = InsnNode(InsnType.STR_CONCAT, argsCount - 1)
 			for (i in 1 until argsCount) {
 				concat.addArg(wrap.getArg(i).duplicate())

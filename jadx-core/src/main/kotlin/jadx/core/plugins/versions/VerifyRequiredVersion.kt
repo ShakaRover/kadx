@@ -20,11 +20,9 @@ class VerifyRequiredVersion {
 
 	companion object {
 		/** 便捷静态方法：判断给定要求是否与当前 jadx 版本兼容。 */
-		@JvmStatic
 		fun isJadxCompatible(reqVersionStr: String?): Boolean = VerifyRequiredVersion().isCompatible(reqVersionStr)
 
 		/** 仅校验 `requiredJadxVersion` 格式是否合法，不比较版本。 */
-		@JvmStatic
 		fun verify(requiredJadxVersion: String) {
 			try {
 				parse(requiredJadxVersion)
@@ -47,7 +45,7 @@ class VerifyRequiredVersion {
 	}
 
 	/** 当前 jadx 版本字符串。 */
-	private val jadxVersion: String
+	val jadxVersion: String
 
 	/** 当前是否为 `r` 开头的不稳定版本。 */
 	private val unstable: Boolean
@@ -55,7 +53,7 @@ class VerifyRequiredVersion {
 	/** 当前是否为开发版（版本号等于 [Jadx.VERSION_DEV]）。 */
 	private val dev: Boolean
 
-	constructor() : this(Jadx.getVersion())
+	constructor() : this(Jadx.version)
 
 	constructor(jadxVersion: String) {
 		this.jadxVersion = jadxVersion
@@ -79,20 +77,14 @@ class VerifyRequiredVersion {
 			return true
 		}
 		if (unstable) {
-			return VersionComparator.checkAndCompare(jadxVersion, reqVer.getUnstableRev()) >= 0
+			return VersionComparator.checkAndCompare(jadxVersion, reqVer.unstableRev) >= 0
 		}
-		return VersionComparator.checkAndCompare(jadxVersion, reqVer.getReleaseVer()) >= 0
+		return VersionComparator.checkAndCompare(jadxVersion, reqVer.releaseVer) >= 0
 	}
-
-	fun getJadxVersion(): String = jadxVersion
 
 	/** 解析后的版本要求数据。 */
 	private class RequiredVersionData(
-		private val releaseVer: String,
-		private val unstableRev: String,
-	) {
-		fun getReleaseVer(): String = releaseVer
-
-		fun getUnstableRev(): String = unstableRev
-	}
+		val releaseVer: String,
+		val unstableRev: String,
+	)
 }

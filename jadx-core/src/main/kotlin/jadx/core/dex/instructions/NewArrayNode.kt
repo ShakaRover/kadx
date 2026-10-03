@@ -12,10 +12,10 @@ import jadx.core.dex.nodes.InsnNode
  */
 open class NewArrayNode(private val arrType: ArgType, argsCount: Int) : InsnNode(InsnType.NEW_ARRAY, argsCount) {
 
-	fun getArrayType(): ArgType = arrType
+	val arrayType: ArgType get() = arrType
 
 	/** 数组维度数（`int[]` 为 1，`int[][]` 为 2）。 */
-	fun getDimension(): Int = arrType.getArrayDimension()
+	val dimension: Int get() = arrType.getArrayDimension()
 
 	override fun isSame(obj: InsnNode): Boolean {
 		if (this === obj) {
@@ -28,7 +28,7 @@ open class NewArrayNode(private val arrType: ArgType, argsCount: Int) : InsnNode
 		return arrType === obj.arrType
 	}
 
-	override fun copy(): InsnNode = copyCommonParams(NewArrayNode(arrType, getArgsCount()))
+	override fun copy(): InsnNode = copyCommonParams(NewArrayNode(arrType, argsCount))
 
 	override fun toString(): String = super.toString() + " type: " + arrType
 }

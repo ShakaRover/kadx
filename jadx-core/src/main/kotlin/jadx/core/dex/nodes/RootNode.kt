@@ -68,24 +68,24 @@ class RootNode private constructor(
 
 	@get:JvmName("argsValue")
 	val args: JadxArgs
-	private val errorsCounter = ErrorsCounter()
-	private val stringUtils: StringUtils
+	val errorsCounter = ErrorsCounter()
+	val stringUtils: StringUtils
 
 	@get:JvmName("constValuesValue")
 	val constValues: ConstStorage
-	private val infoStorage = InfoStorage()
-	private val cacheStorage = CacheStorage()
-	private val typeUpdate: TypeUpdate
+	val infoStorage = InfoStorage()
+	val cacheStorage = CacheStorage()
+	val typeUpdate: TypeUpdate
 
 	@get:JvmName("methodUtilsValue")
 	val methodUtils: MethodUtils
 
 	@get:JvmName("typeUtilsValue")
 	val typeUtils: TypeUtils
-	private val attributes = AttributeStorage()
+	val attributes = AttributeStorage()
 
 	private val codeDataUpdateListeners = ArrayList<ICodeDataUpdateListener>()
-	private val gradleInfoStorage = GradleInfoStorage()
+	val gradleInfoStorage = GradleInfoStorage()
 
 	private val clsMap = HashMap<ClassInfo, ClassNode>()
 	private val rawClsMap = HashMap<String, ClassNode>()
@@ -112,13 +112,13 @@ class RootNode private constructor(
 	@get:JvmName("appResClassValue")
 	var appResClass: ClassNode? = null
 
-	private val decompiler: JadxDecompiler?
+	val decompiler: JadxDecompiler?
 	private var manifestAttributes: ManifestAttributes? = null
 
 	init {
 		this.decompiler = decompilerRef
 		args = jadxArgs
-		preDecompilePasses = Jadx.getPreDecompilePassesList()
+		preDecompilePasses = Jadx.preDecompilePassesList
 		processClasses = ProcessClass(Jadx.getPassesList(args))
 		stringUtils = StringUtils(args)
 		constValues = ConstStorage(args)
@@ -324,11 +324,11 @@ class RootNode private constructor(
 		if (mode == DecompilationMode.FALLBACK || mode == DecompilationMode.SIMPLE) return
 
 		PassMerge(preDecompilePasses).merge(customPasses[JadxPreparePass.TYPE]) { p -> PreparePassWrapper(p as JadxPreparePass) }
-		PassMerge(processClasses.getPasses()).merge(customPasses[JadxDecompilePass.TYPE]) { p -> DecompilePassWrapper(p as JadxDecompilePass) }
+		PassMerge(processClasses.passes).merge(customPasses[JadxDecompilePass.TYPE]) { p -> DecompilePassWrapper(p as JadxDecompilePass) }
 
 		if (args.isRunDebugChecks) {
 			preDecompilePasses = insertDebugPasses(preDecompilePasses)
-			processClasses = ProcessClass(insertDebugPasses(processClasses.getPasses()))
+			processClasses = ProcessClass(insertDebugPasses(processClasses.passes))
 		}
 		val disabledPasses = args.disabledPasses
 		if (disabledPasses.isNotEmpty()) {
@@ -341,7 +341,7 @@ class RootNode private constructor(
 					false
 				}
 			}
-			processClasses.getPasses().removeIf { p ->
+			processClasses.passes.removeIf { p ->
 				if (disabledSet.contains(p.getName())) {
 					LOG.debug("Disable pass: {}", p.getName())
 					true
@@ -380,9 +380,9 @@ class RootNode private constructor(
 
 	fun resetPasses() {
 		preDecompilePasses.clear()
-		preDecompilePasses.addAll(Jadx.getPreDecompilePassesList())
-		processClasses.getPasses().clear()
-		processClasses.getPasses().addAll(Jadx.getPassesList(args))
+		preDecompilePasses.addAll(Jadx.preDecompilePassesList)
+		processClasses.passes.clear()
+		processClasses.passes.addAll(Jadx.getPassesList(args))
 	}
 
 	fun restartVisitors() {
@@ -396,7 +396,7 @@ class RootNode private constructor(
 
 	fun getClasses(): List<ClassNode> = classes
 
-	fun getClassesWithoutInner(): List<ClassNode> = getClasses(false)
+	val classesWithoutInner: List<ClassNode> get() = getClasses(false)
 
 	fun getClasses(includeInner: Boolean): List<ClassNode> {
 		if (includeInner) return classes
@@ -595,7 +595,7 @@ class RootNode private constructor(
 
 	fun getProcessClasses(): ProcessClass = processClasses
 
-	fun getPasses(): List<IDexTreeVisitor> = processClasses.getPasses()
+	val passes: List<IDexTreeVisitor> get() = processClasses.passes
 
 	fun getPreDecompilePasses(): List<IDexTreeVisitor> = preDecompilePasses
 
@@ -618,37 +618,21 @@ class RootNode private constructor(
 
 	fun getClsp(): ClspGraph? = clsp
 
-	fun getErrorsCounter(): ErrorsCounter = errorsCounter
-
 	fun getAppPackage(): String? = appPackage
 
 	fun getAppResClass(): ClassNode? = appResClass
 
-	fun getStringUtils(): StringUtils = stringUtils
-
 	fun getConstValues(): ConstStorage = constValues
-
-	fun getInfoStorage(): InfoStorage = infoStorage
-
-	fun getCacheStorage(): CacheStorage = cacheStorage
 
 	fun getArgs(): JadxArgs = args
 
-	fun getDecompiler(): JadxDecompiler? = decompiler
+	val typeCompare: TypeCompare get() = typeUpdate.typeCompare
 
-	fun getTypeUpdate(): TypeUpdate = typeUpdate
-
-	fun getTypeCompare(): TypeCompare = typeUpdate.typeCompare
-
-	fun getCodeCache() = args.codeCache
+	val codeCache get() = args.codeCache
 
 	fun getMethodUtils(): MethodUtils = methodUtils
 
 	fun getTypeUtils(): TypeUtils = typeUtils
-
-	fun getAttributes(): AttributeStorage = attributes
-
-	fun getGradleInfoStorage(): GradleInfoStorage = gradleInfoStorage
 
 	@Synchronized
 	fun initManifestAttributes(): ManifestAttributes {

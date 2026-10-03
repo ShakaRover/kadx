@@ -46,7 +46,7 @@ internal class ArgsInfo(
 	val args: List<RegisterArg> = getArgs(insn)
 
 	/** 本条指令直接/间接使用的所有寄存器编号集合；没有则返回共享空 BitSet。 */
-	fun getArgsSet(): BitSet {
+	val argsSet: BitSet get() {
 		if (args.isEmpty() && Utils.isEmpty(wrappedInsns)) {
 			return EmptyBitSet.EMPTY
 		}
@@ -87,7 +87,7 @@ internal class ArgsInfo(
 		if (start > to) {
 			throw JadxRuntimeException("Invalid inline insn positions: $start - $to")
 		}
-		val movedSet = startInfo.getArgsSet()
+		val movedSet = startInfo.argsSet
 		if (movedSet === EmptyBitSet.EMPTY && startInfo.insn.isConstInsn()) {
 			return true
 		}
@@ -168,8 +168,8 @@ internal class ArgsInfo(
 		}
 
 		private fun addArgs(insn: InsnNode, args: MutableList<RegisterArg>) {
-			if (insn.getType() == InsnType.TERNARY) {
-				args.addAll((insn as TernaryInsn).getCondition().getRegisterArgs())
+			if (insn.type == InsnType.TERNARY) {
+				args.addAll((insn as TernaryInsn).condition.registerArgs)
 			}
 			for (arg in insn.getArguments()) {
 				if (arg.isRegister) {

@@ -103,7 +103,7 @@ class Smali private constructor() {
 		/** 反汇编一个类（含其内部类）。 */
 		@JvmStatic
 		fun disassemble(cls: ClassNode): Smali {
-			val topCls = cls.getTopParentClass()
+			val topCls = cls.topParentClass
 			val code = SmaliWriter(topCls)
 			val smali = Smali()
 			smali.isJavaBytecode = topCls.getInputFileName()?.endsWith(".class") == true // TODO: add flag to api
@@ -153,12 +153,12 @@ class Smali private constructor() {
 		if (info != null) {
 			val insn = info.getInsnNode(codeOffset)
 			if (insn != null) {
-				if (insn.getType() == InsnType.IPUT) {
+				if (insn.type == InsnType.IPUT) {
 					return (insn as IndexInsnNode).index
 				}
-				if (insn.getType() == InsnType.INVOKE) {
+				if (insn.type == InsnType.INVOKE) {
 					if (insn is InvokeNode) {
-						if (insn.getArgsCount() > 0) {
+						if (insn.argsCount > 0) {
 							return (insn.getArg(0) as RegisterArg).regNum
 						}
 					}
@@ -365,11 +365,11 @@ class Smali private constructor() {
 			return
 		}
 		lw.append(formatInsnName(insn)).append(" ")
-		fmtRegs(insn, node.getType(), line)
-		if (!tryFormatTargetIns(insn, node.getType(), line)) {
+		fmtRegs(insn, node.type, line)
+		if (!tryFormatTargetIns(insn, node.type, line)) {
 			if (hasLiteral(insn)) {
 				lw.append(", ").append(literal(insn))
-			} else if (node.getType() == InsnType.INVOKE) {
+			} else if (node.type == InsnType.INVOKE) {
 				lw.append(", ").append(method(insn))
 			} else if (insn.indexType == InsnIndexType.FIELD_REF) {
 				lw.append(", ").append(field(insn))
@@ -599,7 +599,7 @@ class Smali private constructor() {
 
 	@Suppress("UNCHECKED_CAST")
 	private fun writeEncodedValue(smali: SmaliWriter, value: EncodedValue, wrapArray: Boolean) {
-		val stringUtils = smali.getClassNode().root().getStringUtils()
+		val stringUtils = smali.getClassNode().root().stringUtils
 		when (value.type) {
 			EncodedType.ENCODED_ARRAY -> {
 				smali.add("{")

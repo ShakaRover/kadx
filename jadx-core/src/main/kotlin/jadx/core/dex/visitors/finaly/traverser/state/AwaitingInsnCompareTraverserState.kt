@@ -12,22 +12,22 @@ import jadx.core.dex.visitors.finaly.traverser.handlers.InstructionActivePathTra
  */
 class AwaitingInsnCompareTraverserState(
 	state: TraverserActivePathState,
-	private val centralityState: CentralityState,
+	private val centralityStateValue: CentralityState,
 	private val blockInsnInfo: TraverserBlockInfo,
 ) : TraverserState(state) {
 
-	override fun getNextHandler(): AbstractBlockTraverserHandler = InstructionActivePathTraverserHandler(getComparatorState())
+	override fun getNextHandler(): AbstractBlockTraverserHandler = InstructionActivePathTraverserHandler(comparatorState)
 
 	override fun getCompareState(): ComparisonState = ComparisonState.READY_TO_COMPARE
 
 	override fun isTerminal(): Boolean = false
 
-	override fun getUnderlyingCentralityState(): CentralityState = centralityState
+	override fun getUnderlyingCentralityState(): CentralityState = centralityStateValue
 
 	override fun getUnderlyingBlockInsnInfo(): TraverserBlockInfo = blockInsnInfo
 
 	override fun duplicateInternalState(comparatorState: TraverserActivePathState): TraverserState {
-		val dCentralityState = centralityState.duplicate()
+		val dCentralityState = centralityStateValue.duplicate()
 		val dBlockInsnInfo = blockInsnInfo.duplicate()
 		return AwaitingInsnCompareTraverserState(comparatorState, dCentralityState, dBlockInsnInfo)
 	}

@@ -14,7 +14,7 @@ import jadx.core.dex.visitors.finaly.traverser.handlers.BaseBlockTraverserHandle
  */
 class NewBlockTraverserState(
 	state: TraverserActivePathState,
-	private val centralityState: CentralityState,
+	private val centralityStateValue: CentralityState,
 	private val blockInsnInfo: TraverserBlockInfo,
 ) : TraverserState(state) {
 
@@ -27,18 +27,17 @@ class NewBlockTraverserState(
 		return BaseBlockTraverserHandler(this)
 	}
 
-	override fun getUnderlyingCentralityState(): CentralityState = centralityState
+	override fun getUnderlyingCentralityState(): CentralityState = centralityStateValue
 
 	override fun getUnderlyingBlockInsnInfo(): TraverserBlockInfo = blockInsnInfo
 
 	override fun duplicateInternalState(comparatorState: TraverserActivePathState): TraverserState {
-		val dCentralityState = centralityState.duplicate()
+		val dCentralityState = centralityStateValue.duplicate()
 		val dBlockInsnInfo = blockInsnInfo.duplicate()
 		return NewBlockTraverserState(comparatorState, dCentralityState, dBlockInsnInfo)
 	}
 
 	companion object {
-		@JvmStatic
 		fun getFactory(
 			centralityState: CentralityState,
 			blockInsnInfo: TraverserBlockInfo,

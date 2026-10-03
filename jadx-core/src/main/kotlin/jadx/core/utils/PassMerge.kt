@@ -30,16 +30,16 @@ class PassMerge(private val visitors: MutableList<IDexTreeVisitor>) {
 
 		namesMap = IdentityHashMap()
 		visitors.forEach { p -> namesMap[p] = p.getName() }
-		mergePasses.forEach { p -> namesMap[p.getVisitor()] = p.getName() }
+		mergePasses.forEach { p -> namesMap[p.visitor] = p.name }
 
-		mergePassesNames = mergePasses.map { it.getName() }.toSet()
+		mergePassesNames = mergePasses.map { it.name }.toSet()
 
 		for (mergePass in mergePasses) {
 			val pos = searchInsertPos(mergePass)
 			if (pos == -1) {
-				visitors.add(mergePass.getVisitor())
+				visitors.add(mergePass.visitor)
 			} else {
-				visitors.add(pos, mergePass.getVisitor())
+				visitors.add(pos, mergePass.visitor)
 			}
 		}
 	}
@@ -116,39 +116,33 @@ class PassMerge(private val visitors: MutableList<IDexTreeVisitor>) {
 	 * 把依赖关系做成双向的：A 声明 runAfter B，则在 B 的 before 列表里加上 A。
 	 */
 	private fun linkDeps(mergePasses: List<MergePass>) {
-		val map = mergePasses.associateBy { p -> p.getName() }
+		val map = mergePasses.associateBy { p -> p.name }
 		for (pass in mergePasses) {
-			for (after in pass.getInfo().runAfter()) {
+			for (after in pass.info.runAfter()) {
 				val beforePass = map[after]
 				if (beforePass != null) {
-					beforePass.before().add(pass.getName())
+					beforePass.before().add(pass.name)
 				}
 			}
-			for (before in pass.getInfo().runBefore()) {
+			for (before in pass.info.runBefore()) {
 				val afterPass = map[before]
 				if (afterPass != null) {
-					afterPass.after().add(pass.getName())
+					afterPass.after().add(pass.name)
 				}
 			}
 		}
 	}
 
 	private class MergePass(
-		private val pass: JadxPass,
-		private val visitor: IDexTreeVisitor,
-		private val info: JadxPassInfo,
+		val pass: JadxPass,
+		val visitor: IDexTreeVisitor,
+		val info: JadxPassInfo,
 	) {
 		// 复制依赖列表，便于后续修改
 		private val beforeList: MutableList<String> = ArrayList(info.runBefore())
 		private val afterList: MutableList<String> = ArrayList(info.runAfter())
 
-		fun getPass(): JadxPass = pass
-
-		fun getVisitor(): IDexTreeVisitor = visitor
-
-		fun getName(): String = info.getName()
-
-		fun getInfo(): JadxPassInfo = info
+		val name: String get() = info.getName()
 
 		fun before(): MutableList<String> = beforeList
 
@@ -184,13 +178,13 @@ class PassMerge(private val visitors: MutableList<IDexTreeVisitor>) {
 	 */
 	private class InvertedDepsComparator : Comparator<MergePass> {
 		override fun compare(first: MergePass, second: MergePass): Int {
-			if (first.before().contains(second.getName()) ||
-				first.after().contains(second.getName())
+			if (first.before().contains(second.name) ||
+				first.after().contains(second.name)
 			) {
 				return 1
 			}
-			if (second.before().contains(first.getName()) ||
-				second.after().contains(first.getName())
+			if (second.before().contains(first.name) ||
+				second.after().contains(first.name)
 			) {
 				return -1
 			}

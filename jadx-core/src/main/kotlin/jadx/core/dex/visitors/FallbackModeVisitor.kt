@@ -37,7 +37,7 @@ class FallbackModeVisitor : AbstractVisitor() {
 			// 移除“不会抛异常”的指令上的异常捕获属性
 			val catchAttr: CatchAttr? = insn.get(AType.EXC_CATCH)
 			if (catchAttr != null) {
-				when (insn.getType()) {
+				when (insn.type) {
 					InsnType.RETURN,
 					InsnType.IF,
 					InsnType.GOTO,

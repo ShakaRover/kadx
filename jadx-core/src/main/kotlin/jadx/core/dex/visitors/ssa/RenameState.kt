@@ -24,14 +24,13 @@ import java.util.Arrays
  */
 class RenameState private constructor(
 	private val mth: MethodNode,
-	private val block: BlockNode,
+	val block: BlockNode,
 	private val vars: Array<SSAVar?>,
 	private val versions: IntArray,
 ) {
 
 	companion object {
 		/** 初始化入口块的状态，并为 `this` 与所有参数寄存器建立初始 SSA 变量。 */
-		@JvmStatic
 		fun init(mth: MethodNode): RenameState {
 			val regsCount = mth.getRegsCount()
 			val state = RenameState(
@@ -44,7 +43,7 @@ class RenameState private constructor(
 			if (thisArg != null) {
 				state.startVar(thisArg)
 			}
-			for (arg in mth.getArgRegs()) {
+			for (arg in mth.argRegs) {
 				state.startVar(arg)
 			}
 			return state
@@ -56,7 +55,6 @@ class RenameState private constructor(
 		 * [vars] 需要复制（不同支配分支各有一份），而 [versions] 共享同一数组，
 		 * 这样同一寄存器在不同分支上也不会生成重复版本号。
 		 */
-		@JvmStatic
 		fun copyFrom(state: RenameState, block: BlockNode): RenameState = RenameState(
 			state.mth,
 			block,
@@ -64,8 +62,6 @@ class RenameState private constructor(
 			state.versions,
 		)
 	}
-
-	fun getBlock(): BlockNode = block
 
 	fun getVar(regNum: Int): SSAVar? = vars[regNum]
 

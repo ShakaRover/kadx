@@ -13,19 +13,13 @@ import jadx.core.dex.instructions.args.InsnArg
  * **Kotlin 转换说明**：保留显式 `getXxx()/isDirect()` 方法名，Java 调用方零改动。
  */
 class TypeUpdateRequest(
-	private val arg: InsnArg,
-	private val candidateType: ArgType,
+	val arg: InsnArg,
+	val candidateType: ArgType,
 	private val direct: Boolean,
-	private val callback: ITypeUpdateCallback?,
+	val callback: ITypeUpdateCallback?,
 ) {
 
-	fun getArg(): InsnArg = arg
-
-	fun getCandidateType(): ArgType = candidateType
-
 	fun isDirect(): Boolean = direct
-
-	fun getCallback(): ITypeUpdateCallback? = callback
 
 	override fun toString(): String = "TypeUpdateRequest{arg=$arg, candidateType=$candidateType}"
 }

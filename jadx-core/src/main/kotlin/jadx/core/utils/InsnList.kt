@@ -16,7 +16,6 @@ import jadx.core.dex.nodes.InsnNode
 class InsnList(private val list: MutableList<InsnNode>) : Iterable<InsnNode> {
 
 	companion object {
-		@JvmStatic
 		fun remove(list: MutableList<InsnNode>, insn: InsnNode) {
 			val iterator = list.iterator()
 			while (iterator.hasNext()) {
@@ -28,15 +27,12 @@ class InsnList(private val list: MutableList<InsnNode>) : Iterable<InsnNode> {
 			}
 		}
 
-		@JvmStatic
 		fun remove(block: BlockNode, insn: InsnNode) {
 			remove(block.instructions, insn)
 		}
 
-		@JvmStatic
 		fun getIndex(list: List<InsnNode>, insn: InsnNode): Int = getIndex(list, insn, 0)
 
-		@JvmStatic
 		fun getIndex(list: List<InsnNode>, insn: InsnNode, startOffset: Int): Int {
 			val size = list.size
 			for (i in startOffset until size) {
@@ -47,10 +43,8 @@ class InsnList(private val list: MutableList<InsnNode>) : Iterable<InsnNode> {
 			return -1
 		}
 
-		@JvmStatic
 		fun contains(list: List<InsnNode>, insn: InsnNode): Boolean = getIndex(list, insn, 0) != -1
 
-		@JvmStatic
 		fun contains(list: List<InsnNode>, insn: InsnNode, startOffset: Int): Boolean = getIndex(list, insn, startOffset) != -1
 	}
 

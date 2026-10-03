@@ -39,7 +39,7 @@ class AttachTryCatchVisitor : AbstractVisitor() {
 		if (mth.isNoCode()) {
 			return
 		}
-		initTryCatches(mth, checkNotNull(mth.instructions), checkNotNull(mth.getCodeReader()).tries)
+		initTryCatches(mth, checkNotNull(mth.instructions), checkNotNull(mth.codeReader).tries)
 	}
 
 	companion object {
@@ -100,7 +100,7 @@ class AttachTryCatchVisitor : AbstractVisitor() {
 			val existAttr = insn.get(AType.EXC_CATCH)
 			if (existAttr != null) {
 				// 合并处理器
-				val handlers = Utils.concat(existAttr.getHandlers(), catchAttr.getHandlers())
+				val handlers = Utils.concat(existAttr.handlers, catchAttr.handlers)
 				insn.addAttr(CatchAttr.build(ArrayList(handlers)))
 			} else {
 				insn.addAttr(catchAttr)
@@ -135,7 +135,7 @@ class AttachTryCatchVisitor : AbstractVisitor() {
 			if (insn != null) {
 				val excHandlerAttr = insn.get(AType.EXC_HANDLER)
 				if (excHandlerAttr != null) {
-					val handler = excHandlerAttr.getHandler()
+					val handler = excHandlerAttr.handler
 					if (handler.addCatchType(mth, type)) {
 						// 已存在的处理器被更新（来自同一个 try 块）—— 不再添加
 						return null

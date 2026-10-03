@@ -189,7 +189,6 @@ abstract class ArgType private constructor() {
 		 * 创建对象类型（带常用类缓存优化）。
 		 * 对于 Object/String/Class 等高频类型直接返回共享实例。
 		 */
-		@JvmStatic
 		fun `object`(obj: String): ArgType {
 			val cleanObjectName = cleanObjectName(obj)
 			return when (cleanObjectName) {
@@ -203,55 +202,43 @@ abstract class ArgType private constructor() {
 		}
 
 		/** 创建泛型类型（如 "T extends Comparable"） */
-		@JvmStatic
 		fun genericType(type: String): ArgType = GenericType(type)
 
 		/** 创建带单个上界的泛型类型 */
-		@JvmStatic
 		fun genericType(type: String, extendType: ArgType): ArgType = GenericType(type, extendType)
 
 		/** 创建带多个上界（联合约束）的泛型类型 */
-		@JvmStatic
 		fun genericType(type: String, extendTypes: List<ArgType>): ArgType = GenericType(type, extendTypes)
 
 		/** 创建无界通配符 "?" */
-		@JvmStatic
 		fun wildcard(): ArgType = WildcardType(OBJECT, WildcardBound.UNBOUND)
 
 		/** 创建通配符类型（? extends T 或 ? super T） */
-		@JvmStatic
 		fun wildcard(obj: ArgType, bound: WildcardBound): ArgType = WildcardType(obj, bound)
 
 		/** 创建泛型对象类型 List<String> */
-		@JvmStatic
 		fun generic(obj: ArgType, generics: List<ArgType>): ArgType {
 			require(obj.isObject()) { "Expected Object as ArgType, got: $obj" }
 			return GenericObject((obj as ObjectType).objName, generics)
 		}
 
 		/** 变长参数版本 */
-		@JvmStatic
 		fun generic(obj: ArgType, vararg generics: ArgType): ArgType = generic(obj, Arrays.asList(*generics))
 
 		/** 从类名字符串创建泛型类型 */
-		@JvmStatic
 		fun generic(obj: String, generics: List<ArgType>): ArgType = GenericObject(cleanObjectName(obj), generics)
 
 		/** 单个泛型参数快捷方式 */
-		@JvmStatic
 		fun generic(obj: String, generic: ArgType): ArgType = generic(obj, Collections.singletonList(generic))
 
 		/** Java vararg 兼容：generic(String, ArgType...) */
-		@JvmStatic
 		fun generic(obj: String, vararg generics: ArgType): ArgType = generic(obj, Arrays.asList(*generics))
 
 		/** 创建外部类$内部类的泛型类型 */
-		@JvmStatic
 		fun outerGeneric(genericOuterType: ArgType, innerType: ArgType): ArgType = OuterGenericObject(genericOuterType as ObjectType, innerType as ObjectType)
 
 		/** 创建一维数组类型 */
 		@JvmOverloads
-		@JvmStatic
 		fun array(vtype: ArgType, dimension: Int = 1): ArgType {
 			require(dimension >= 1) { "dimension must be at least 1" }
 			if (dimension == 1) return ArrayArg(vtype)
@@ -261,13 +248,11 @@ abstract class ArgType private constructor() {
 		}
 
 		/** 创建未知类型（表示可能是多个类型之一） */
-		@JvmStatic
 		fun unknown(vararg types: PrimitiveType): ArgType = UnknownArg(Arrays.copyOf(types, types.size))
 
 		// ==================== 工具方法 ====================
 
 		/** 从基本类型转换为 ArgType */
-		@JvmStatic
 		fun convertFromPrimitiveType(primitiveType: PrimitiveType): ArgType = when (primitiveType) {
 			PrimitiveType.BOOLEAN -> BOOLEAN
 			PrimitiveType.CHAR -> CHAR
@@ -283,7 +268,6 @@ abstract class ArgType private constructor() {
 		}
 
 		/** 从 DEX 类型字符串解析（Ljava/lang/String;、[I、V 等） */
-		@JvmStatic
 		fun parse(type: String?): ArgType {
 			require(!type.isNullOrBlank()) { "Failed to parse type string: $type" }
 			val f = type[0]
@@ -296,7 +280,6 @@ abstract class ArgType private constructor() {
 		}
 
 		/** 从单个字符解析基本类型 */
-		@JvmStatic
 		fun parse(f: Char): ArgType = when (f) {
 			'Z' -> BOOLEAN
 			'B' -> BYTE
@@ -311,7 +294,6 @@ abstract class ArgType private constructor() {
 		}
 
 		/** 尝试解析类别名 */
-		@JvmStatic
 		fun tryToResolveClassAlias(root: RootNode, type: ArgType): ArgType {
 			if (type.isGenericType()) return type
 			if (type.isArray()) {
@@ -335,21 +317,18 @@ abstract class ArgType private constructor() {
 			return type
 		}
 
-		@JvmStatic
 		fun tryToResolveClassAlias(root: RootNode, types: List<ArgType>): List<ArgType> = map(types) { t ->
 			tryToResolveClassAlias(root, t)
 		}
 
 		/** 判断是否需要类型转换 */
-		@JvmStatic
 		fun isCastNeeded(root: RootNode, from: ArgType, to: ArgType): Boolean {
 			if (from == to) return false
-			val result = root.getTypeCompare().compareTypes(from, to)
+			val result = root.typeCompare.compareTypes(from, to)
 			return !result.isNarrow()
 		}
 
 		/** 判断 instanceof 是否成立 */
-		@JvmStatic
 		fun isInstanceOf(root: RootNode, type: ArgType, of: ArgType): Boolean {
 			if (type == of) return true
 			if (!type.isObject() || !of.isObject()) return false
@@ -357,7 +336,6 @@ abstract class ArgType private constructor() {
 		}
 
 		/** 判断类是否已知 */
-		@JvmStatic
 		fun isClsKnown(root: RootNode, cls: ArgType): Boolean {
 			if (cls.isObject()) return checkNotNull(root.getClsp()).isClsKnown(cls.getObject())
 			return false
@@ -507,7 +485,6 @@ abstract class ArgType private constructor() {
 		;
 
 		companion object {
-			@JvmStatic
 			fun getByNum(num: Int): WildcardBound = when (num) {
 				0 -> UNBOUND
 				1 -> EXTENDS
@@ -633,7 +610,7 @@ abstract class ArgType private constructor() {
 	}
 
 	/** 获取类型占用的寄存器数量（long/double=2，其他=1） */
-	fun getRegCount(): Int {
+	val regCount: Int get() {
 		if (isPrimitive()) {
 			val type = getPrimitiveType()
 			return if (type == PrimitiveType.LONG || type == PrimitiveType.DOUBLE) 2 else 1

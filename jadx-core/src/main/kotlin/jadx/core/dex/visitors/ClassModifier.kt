@@ -123,7 +123,7 @@ class ClassModifier : AbstractVisitor() {
 			if (mth.isNoCode() || !mth.accessFlags.isConstructor()) {
 				return false
 			}
-			val args = mth.getArgRegs()
+			val args = mth.argRegs
 			if (args.isEmpty() || mth.contains(AFlag.SKIP_FIRST_ARG)) {
 				return false
 			}
@@ -137,7 +137,7 @@ class ClassModifier : AbstractVisitor() {
 				return false
 			}
 			val insn = instructions[0]
-			if (insn.getType() != InsnType.IPUT) {
+			if (insn.type != InsnType.IPUT) {
 				return false
 			}
 			val putInsn = insn as IndexInsnNode
@@ -148,10 +148,10 @@ class ClassModifier : AbstractVisitor() {
 			mth.skipFirstArgument()
 			InsnRemover.remove(mth, block, insn)
 			// 该参数还有其它使用点 -> 用 IGET 指令包裹
-			if (checkNotNull(arg.sVar).getUseCount() != 0) {
+			if (checkNotNull(arg.sVar).useCount != 0) {
 				val iget = IndexInsnNode(InsnType.IGET, fieldInfo, 1)
 				iget.addArg(insn.getArg(1))
-				for (insnArg in ArrayList(checkNotNull(arg.sVar).getUseList())) {
+				for (insnArg in ArrayList(checkNotNull(arg.sVar).useList)) {
 					insnArg.wrapInstruction(mth, iget)
 				}
 			}
@@ -181,7 +181,7 @@ class ClassModifier : AbstractVisitor() {
 			) {
 				val insn = BlockUtils.getOnlyOneInsnFromMth(mth)
 				if (insn != null) {
-					val args = mth.getArgRegs()
+					val args = mth.argRegs
 					if (isRemovedClassInArgs(cls, args)) {
 						modifySyntheticMethod(cls, mth, insn, args)
 					}
@@ -222,7 +222,7 @@ class ClassModifier : AbstractVisitor() {
 		 * 删除合成构造器，并把调用重定向到已存在的构造器。
 		 */
 		private fun modifySyntheticMethod(cls: ClassNode, mth: MethodNode, insn: InsnNode, args: List<RegisterArg>) {
-			if (insn.getType() == InsnType.CONSTRUCTOR) {
+			if (insn.type == InsnType.CONSTRUCTOR) {
 				val constr = insn as ConstructorInsn
 				if (constr.isThis && args.isNotEmpty()) {
 					// 删除非静态类的第一个参数（对外部类的引用）
@@ -235,7 +235,7 @@ class ClassModifier : AbstractVisitor() {
 					for (i in 0 until argsCount) {
 						val arg = args[i]
 						val sVar = arg.sVar
-						if (sVar != null && sVar.getUseCount() == 0) {
+						if (sVar != null && sVar.useCount == 0) {
 							SkipMethodArgsAttr.skipArg(mth, i)
 						}
 					}
@@ -253,10 +253,10 @@ class ClassModifier : AbstractVisitor() {
 
 		private fun removeBridgeMethod(cls: ClassNode, mth: MethodNode): Boolean {
 			if (cls.root().getArgs().isInlineMethods) { // 简单 wrapper 删除与内联等价
-				val allInsns = BlockUtils.collectAllInsns(checkNotNull(mth.getBasicBlocks()))
+				val allInsns = BlockUtils.collectAllInsns(checkNotNull(mth.basicBlocks))
 				if (allInsns.size == 1) {
 					var wrappedInsn = allInsns[0]
-					if (wrappedInsn.getType() == InsnType.RETURN) {
+					if (wrappedInsn.type == InsnType.RETURN) {
 						val arg = wrappedInsn.getArg(0)
 						if (arg.isInsnWrap) {
 							wrappedInsn = (arg as InsnWrapArg).wrapInsn
@@ -269,7 +269,7 @@ class ClassModifier : AbstractVisitor() {
 		}
 
 		private fun checkSyntheticWrapper(mth: MethodNode, insn: InsnNode): Boolean {
-			val insnType = insn.getType()
+			val insnType = insn.type
 			if (insnType != InsnType.INVOKE) {
 				return false
 			}
@@ -301,8 +301,8 @@ class ClassModifier : AbstractVisitor() {
 				// 必须为 public
 				FixAccessModifiers.changeVisibility(wrappedMth, AccessFlags.PUBLIC)
 			}
-			val alias = mth.getAlias()
-			if (wrappedMth.getAlias() != alias) {
+			val alias = mth.alias
+			if (wrappedMth.alias != alias) {
 				wrappedMth.rename(alias)
 				RenameReasonAttr.forNode(wrappedMth).append("merged with bridge method [inline-methods]")
 			}
@@ -318,7 +318,7 @@ class ClassModifier : AbstractVisitor() {
 			}
 			if (arg.isInsnWrap) {
 				val wrapInsn = (arg as InsnWrapArg).wrapInsn
-				if (wrapInsn.getType() == InsnType.CHECK_CAST) {
+				if (wrapInsn.type == InsnType.CHECK_CAST) {
 					return registersAndCastsOnly(wrapInsn.getArg(0))
 				}
 			}
@@ -329,7 +329,7 @@ class ClassModifier : AbstractVisitor() {
 		 * 删除 public 的空构造器（static 或默认）。
 		 */
 		private fun removeEmptyMethods(mth: MethodNode) {
-			if (mth.getArgRegs().isNotEmpty()) {
+			if (mth.argRegs.isNotEmpty()) {
 				return
 			}
 			val af = mth.accessFlags
@@ -337,7 +337,7 @@ class ClassModifier : AbstractVisitor() {
 			val enumDefConstructor = mth.isConstructor() && mth.parentClass.contains(AFlag.CONVERTED_ENUM)
 			val clsInit = mth.getMethodInfo().isClassInit() && af.isStatic()
 			if (publicConstructor || enumDefConstructor || clsInit) {
-				if (!BlockUtils.isAllBlocksEmpty(mth.getBasicBlocks())) {
+				if (!BlockUtils.isAllBlocksEmpty(mth.basicBlocks)) {
 					return
 				}
 				if (clsInit) {

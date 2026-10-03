@@ -22,7 +22,7 @@ class AvoidClsAndPkgNamesCollision : AbstractDeobfCondition() {
 	override fun init(root: RootNode) {
 		avoidClsNames.clear()
 		for (pkg in root.getPackages()) {
-			avoidClsNames.add(pkg.getName())
+			avoidClsNames.add(pkg.name)
 		}
 	}
 

@@ -28,12 +28,12 @@ import java.util.Objects
  * **Kotlin 转换说明**：所有 getter/setter 保持显式函数形式（大量 Kotlin 调用方以
  * `handler.getHandlerBlock()` 等形式调用），JVM 表面与 Java 完全一致。
  */
-class ExceptionHandler private constructor(private val handlerOffset: Int) {
+class ExceptionHandler private constructor(val handlerOffset: Int) {
 
-	private val catchTypes: MutableList<ClassInfo> = ArrayList(1)
+	val catchTypes: MutableList<ClassInfo> = ArrayList(1)
 
 	private var handlerBlock: BlockNode? = null
-	private val blocks: MutableList<BlockNode> = ArrayList()
+	val blocks: MutableList<BlockNode> = ArrayList()
 	private var handlerRegion: IRegion? = null
 	private var arg: InsnArg? = null
 
@@ -70,19 +70,17 @@ class ExceptionHandler private constructor(private val handlerOffset: Int) {
 		}
 	}
 
-	fun getCatchTypes(): List<ClassInfo> = catchTypes
-
 	/**
 	 * 返回该处理器用于接收异常对象的类型。
 	 *
 	 * - 捕获全部或捕获多种类型时统一用 `Throwable`；
 	 * - 只捕获一种类型时用该类型。
 	 */
-	fun getArgType(): ArgType {
+	val argType: ArgType get() {
 		if (isCatchAll()) {
 			return ArgType.THROWABLE
 		}
-		val types = getCatchTypes()
+		val types = catchTypes
 		return if (types.size == 1) {
 			types.iterator().next().type
 		} else {
@@ -103,15 +101,11 @@ class ExceptionHandler private constructor(private val handlerOffset: Int) {
 		return false
 	}
 
-	fun getHandlerOffset(): Int = handlerOffset
-
 	fun getHandlerBlock(): BlockNode? = handlerBlock
 
 	fun setHandlerBlock(handlerBlock: BlockNode?) {
 		this.handlerBlock = handlerBlock
 	}
-
-	fun getBlocks(): List<BlockNode> = blocks
 
 	fun addBlock(node: BlockNode) {
 		blocks.add(node)
@@ -148,8 +142,8 @@ class ExceptionHandler private constructor(private val handlerOffset: Int) {
 	 *
 	 * 目前不支持带有多个内层 try 的 catch（此时打印警告并返回 null）。
 	 */
-	@Nullable
-	fun getBottomSplitter(): BlockNode? {
+	@get:Nullable
+	val bottomSplitter: BlockNode? get() {
 		val handlerTryBlock = checkNotNull(getTryBlock())
 		// TODO: Implement support for finding bottom splitter of catch with inner tries
 		if (handlerTryBlock.getInnerTryBlocks().size > 1) {
@@ -219,7 +213,6 @@ class ExceptionHandler private constructor(private val handlerOffset: Int) {
 		 * @param addr 处理器入口地址
 		 * @param type 捕获的异常类型；null 表示捕获全部（Throwable）
 		 */
-		@JvmStatic
 		fun build(mth: MethodNode, addr: Int, type: ClassInfo?): ExceptionHandler {
 			val eh = ExceptionHandler(addr)
 			eh.addCatchType(mth, type)

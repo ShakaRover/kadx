@@ -99,7 +99,7 @@ class ClsSet(private val root: RootNode) {
 				throw JadxRuntimeException("Duplicate class: $clsRawName")
 			}
 			k++
-			nClass.typeParameters = cls.getGenericTypeParameters()
+			nClass.typeParameters = cls.genericTypeParameters
 			nClass.setMethods(getMethodsDetails(cls))
 		}
 		classes = Array(list.size) { i ->
@@ -171,14 +171,14 @@ class ClsSet(private val root: RootNode) {
 		for (cls in classes) {
 			out.writeInt(cls.accFlags)
 			writeUnsignedByte(out, cls.source.ordinal)
-			val clsName = cls.getName()
+			val clsName = cls.name
 			writeString(out, clsName)
 			names[clsName] = cls
 		}
 		for (cls in classes) {
 			writeArgTypesArray(out, cls.parents, names)
 			writeArgTypesList(out, cls.typeParameters, names)
-			val methods = cls.getSortedMethodsList()
+			val methods = cls.sortedMethodsList
 			out.writeShort(methods.size)
 			for (method in methods) {
 				writeMethod(out, method, names)
@@ -324,11 +324,11 @@ class ClsSet(private val root: RootNode) {
 		}
 	}
 
-	fun getClassesCount(): Int = classes.size
+	val classesCount: Int get() = classes.size
 
 	fun addToMap(nameMap: MutableMap<String, ClspClass>) {
 		for (cls in classes) {
-			nameMap[cls.getName()] = cls
+			nameMap[cls.name] = cls
 		}
 	}
 
@@ -355,7 +355,6 @@ class ClsSet(private val root: RootNode) {
 		private val OBJECT_ARGTYPE_ARRAY: Array<ArgType?> = arrayOf(ArgType.OBJECT)
 
 		/** 由类节点构建“父类 + 接口”数组；java.lang.Object 返回空数组 */
-		@JvmStatic
 		fun makeParentsArray(cls: ClassNode): Array<ArgType?> {
 			val superClass = cls.superClass
 			if (superClass == null) {

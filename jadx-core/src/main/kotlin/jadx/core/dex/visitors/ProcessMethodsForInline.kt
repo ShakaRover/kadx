@@ -54,7 +54,7 @@ class ProcessMethodsForInline : AbstractVisitor() {
 				return false
 			}
 			val accessFlags = mth.accessFlags
-			val isSynthetic = accessFlags.isSynthetic() || mth.getName().contains("$")
+			val isSynthetic = accessFlags.isSynthetic() || mth.name.contains("$")
 			return isSynthetic && canInlineMethod(mth, accessFlags)
 		}
 
@@ -66,10 +66,10 @@ class ProcessMethodsForInline : AbstractVisitor() {
 		}
 
 		private fun fixClassDependencies(mth: MethodNode) {
-			val parentClass = mth.getTopParentClass()
+			val parentClass = mth.topParentClass
 			for (useInMth in mth.getUseIn()) {
 				// 移除可能的跨类依赖，强制“含内联方法的类”先于其使用方被处理
-				val useTopCls = useInMth.getTopParentClass()
+				val useTopCls = useInMth.topParentClass
 				if (useTopCls !== parentClass) {
 					parentClass.removeDependency(useTopCls)
 					useTopCls.addCodegenDep(parentClass)

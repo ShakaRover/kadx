@@ -39,7 +39,7 @@ internal class VisibilityUtils(private val root: RootNode) {
 			}
 		} else {
 			visitDeclaringNodes(targetNode) { node ->
-				val nodeVisFlags = node.accessFlags.getVisibility()
+				val nodeVisFlags = node.accessFlags.visibility
 				if (nodeVisFlags.isPublic()) {
 					return@visitDeclaringNodes
 				}
@@ -75,7 +75,7 @@ internal class VisibilityUtils(private val root: RootNode) {
 
 	private fun inSamePkg(cls1: ClassNode, cls2: ClassNode): Boolean = cls1.packageNode == cls2.packageNode
 
-	private fun inSameTopClass(cls1: ClassNode, cls2: ClassNode): Boolean = cls1.getTopParentClass() == cls2.getTopParentClass()
+	private fun inSameTopClass(cls1: ClassNode, cls2: ClassNode): Boolean = cls1.topParentClass == cls2.topParentClass
 
 	private fun isSuperType(cls: ClassNode, superCls: ClassNode): Boolean = checkNotNull(root.getClsp()).getSuperTypes(cls.rawName).any { it == superCls.rawName }
 

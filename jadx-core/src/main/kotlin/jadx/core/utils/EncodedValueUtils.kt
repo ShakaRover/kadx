@@ -39,7 +39,6 @@ object EncodedValueUtils {
 	 *
 	 * @return [LiteralArg]、[String]、[ArgType]，无法转换时返回 null
 	 */
-	@JvmStatic
 	fun convertToConstValue(encodedValue: EncodedValue?): Any? {
 		if (encodedValue == null) {
 			return null
@@ -61,7 +60,6 @@ object EncodedValueUtils {
 		}
 	}
 
-	@JvmStatic
 	fun convertToInsnArg(root: RootNode, value: EncodedValue): InsnArg {
 		val obj = value.value
 		return when (value.type) {
@@ -111,9 +109,8 @@ object EncodedValueUtils {
 		return invoke
 	}
 
-	@JvmStatic
 	fun getTypeField(root: RootNode, type: PrimitiveType): FieldInfo {
-		val boxType = type.getBoxType()
+		val boxType = type.boxType
 		val boxCls = ClassInfo.fromType(root, boxType)
 		return FieldInfo.from(root, boxCls, "TYPE", boxType)
 	}
@@ -146,7 +143,6 @@ object EncodedValueUtils {
 		return invoke
 	}
 
-	@JvmStatic
 	fun buildLookupArg(root: RootNode): InsnArg {
 		val lookupType = ArgType.`object`("java.lang.invoke.MethodHandles.Lookup")
 		val cls = ClassInfo.fromName(root, "java.lang.invoke.MethodHandles")

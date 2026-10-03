@@ -21,7 +21,7 @@ class JavaMethod internal constructor(
 	private val parent: JavaClass,
 ) : JavaNode {
 
-	override fun getName(): String = mth.getAlias()
+	override fun getName(): String = mth.alias
 
 	override fun getFullName(): String = mth.getMethodInfo().fullName
 
@@ -51,7 +51,7 @@ class JavaMethod internal constructor(
 	override fun getUseIn(): List<JavaNode> = getDeclaringClass().getRootDecompiler().convertNodes(mth.getUseIn())
 
 	/** 本方法调用了哪些方法。 */
-	fun getUsed(): List<JavaNode> = getDeclaringClass().getRootDecompiler().convertNodes(mth.getUsed())
+	fun getUsed(): List<JavaNode> = getDeclaringClass().getRootDecompiler().convertNodes(mth.used)
 
 	/** 未能解析的目标方法列表。 */
 	fun getUnresolvedUsed(): List<MethodInfo> = mth.getUnresolvedUsed()
@@ -75,7 +75,7 @@ class JavaMethod internal constructor(
 	override fun getDefPos(): Int = mth.getDefPosition()
 
 	/** 本方法的反编译代码字符串。 */
-	fun getCodeStr(): String = mth.getCodeStr()
+	fun getCodeStr(): String = mth.codeStr
 
 	override fun removeAlias() {
 		mth.getMethodInfo().removeAlias()

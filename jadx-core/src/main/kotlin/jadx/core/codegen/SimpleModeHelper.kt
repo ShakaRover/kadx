@@ -47,14 +47,14 @@ class SimpleModeHelper(private val mth: MethodNode) {
 			val preds = block.getPredecessors()
 			val predsCount = preds.size
 			if (predsCount > 1) {
-				startLabel.set(block.getId())
+				startLabel.set(block.id)
 			} else if (predsCount == 1 && prev != null) {
 				if (prev != preds[0]) {
 					if (!block.contains(AFlag.EXC_BOTTOM_SPLITTER)) {
-						startLabel.set(block.getId())
+						startLabel.set(block.id)
 					}
 					if (prev.getSuccessors().size == 1 && !mth.isPreExitBlock(prev)) {
-						endGoto.set(prev.getId())
+						endGoto.set(prev.id)
 					}
 				}
 			}
@@ -63,10 +63,10 @@ class SimpleModeHelper(private val mth: MethodNode) {
 				processTargetInsn(block, lastInsn, nextBlock)
 			}
 			if (block.contains(AType.EXC_HANDLER)) {
-				startLabel.set(block.getId())
+				startLabel.set(block.id)
 			}
 			if (nextBlock == null && !mth.isPreExitBlock(block)) {
-				endGoto.set(block.getId())
+				endGoto.set(block.id)
 			}
 			prev = block
 		}
@@ -82,7 +82,7 @@ class SimpleModeHelper(private val mth: MethodNode) {
 
 	/** 删除“空指令、有前驱、只有一个后继”的块，并把前驱直接连到后继。 */
 	private fun removeEmptyBlocks() {
-		for (block in checkNotNull(mth.getBasicBlocks())) {
+		for (block in checkNotNull(mth.basicBlocks)) {
 			if (block.getInstructions().isEmpty() &&
 				block.getPredecessors().size > 0 &&
 				block.getSuccessors().size == 1
@@ -122,26 +122,26 @@ class SimpleModeHelper(private val mth: MethodNode) {
 			val thenBlock = lastInsn.getThenBlock()
 			if (next == thenBlock) {
 				lastInsn.invertCondition()
-				startLabel.set(checkNotNull(lastInsn.getThenBlock()).getId())
+				startLabel.set(checkNotNull(lastInsn.getThenBlock()).id)
 			} else {
-				startLabel.set(checkNotNull(thenBlock).getId())
+				startLabel.set(checkNotNull(thenBlock).id)
 			}
 			lastInsn.normalize()
 		} else {
 			for (successor in block.getSuccessors()) {
-				startLabel.set(successor.getId())
+				startLabel.set(successor.id)
 			}
 		}
 	}
 
-	fun isNeedStartLabel(block: BlockNode): Boolean = startLabel.get(block.getId())
+	fun isNeedStartLabel(block: BlockNode): Boolean = startLabel.get(block.id)
 
-	fun isNeedEndGoto(block: BlockNode): Boolean = endGoto.get(block.getId())
+	fun isNeedEndGoto(block: BlockNode): Boolean = endGoto.get(block.id)
 
 	/** 用 DFS 顺序遍历基本块，减少生成的 `goto` 数量。 */
 	private val sortedBlocks: MutableList<BlockNode>
 		get() {
-			val list = ArrayList<BlockNode>(checkNotNull(mth.getBasicBlocks()).size)
+			val list = ArrayList<BlockNode>(checkNotNull(mth.basicBlocks).size)
 			BlockUtils.visitDFS(mth) { list.add(it) }
 			return list
 		}

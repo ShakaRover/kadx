@@ -50,7 +50,7 @@ class TraverserActivePathState {
 				val indexMatched = botPointer + i
 				matchedIndices.remove(indexMatched)
 			}
-			val bottomImplicitCount = info.getBottomImplicitCount()
+			val bottomImplicitCount = info.bottomImplicitCount
 			val noPathEndInsns = botPointer - bottomImplicitCount == 0
 			if (noPathEndInsns) {
 				for (i in 0 until bottomImplicitCount) {
@@ -158,13 +158,13 @@ class TraverserActivePathState {
 		}
 	}
 
-	private val finallyStateRef: AtomicReference<TraverserState>
-	private val candidateStateRef: AtomicReference<TraverserState>
-	private val finallyGlobalState: GlobalTraverserSourceState
-	private val candidateGlobalState: GlobalTraverserSourceState
+	val finallyStateRef: AtomicReference<TraverserState>
+	val candidateStateRef: AtomicReference<TraverserState>
+	val finallyGlobalState: GlobalTraverserSourceState
+	val candidateGlobalState: GlobalTraverserSourceState
 	private val commonGlobalState: TraverserGlobalCommonState
 
-	private val matchedInsns: MutableSet<Pair<InsnNode>>
+	val matchedInsns: MutableSet<Pair<InsnNode>>
 	private val finallyCompletionMonitor: BlockCompletionMonitorMap
 	private val candidateCompletionMonitor: BlockCompletionMonitorMap
 
@@ -254,12 +254,6 @@ class TraverserActivePathState {
 
 	fun getCandidateState(): TraverserState = candidateStateRef.get()
 
-	fun getFinallyStateRef(): AtomicReference<TraverserState> = finallyStateRef
-
-	fun getCandidateStateRef(): AtomicReference<TraverserState> = candidateStateRef
-
-	fun getMatchedInsns(): MutableSet<Pair<InsnNode>> = matchedInsns
-
 	/** 返回持有 [state] 的原子引用；若不是本路径的状态则返回 null。 */
 	fun getReferenceForState(state: TraverserState): AtomicReference<TraverserState>? {
 		if (finallyStateRef.get() === state) {
@@ -282,16 +276,12 @@ class TraverserActivePathState {
 		throw JadxRuntimeException("Orphaned TraverserState node")
 	}
 
-	fun getFinallyGlobalState(): GlobalTraverserSourceState = finallyGlobalState
-
-	fun getCandidateGlobalState(): GlobalTraverserSourceState = candidateGlobalState
-
-	fun getGlobalCommonState(): TraverserGlobalCommonState = commonGlobalState
+	val globalCommonState: TraverserGlobalCommonState get() = commonGlobalState
 
 	/** 把另一批路径的匹配结果合并进来（指令对取并集，块进度取交集）。 */
 	fun mergeWith(otherStates: List<TraverserActivePathState>) {
 		for (otherState in otherStates) {
-			matchedInsns.addAll(otherState.getMatchedInsns())
+			matchedInsns.addAll(otherState.matchedInsns)
 
 			finallyCompletionMonitor.mergeMap(otherState.finallyCompletionMonitor)
 			candidateCompletionMonitor.mergeMap(otherState.candidateCompletionMonitor)
@@ -306,9 +296,9 @@ class TraverserActivePathState {
 		monitorMap.registerWithBlockInfo(info, numberMatched)
 	}
 
-	fun getAllFullyMatchedFinallyBlocks(): MutableSet<BlockNode> = getAllFullyMatchedBlocks(finallyCompletionMonitor)
+	val allFullyMatchedFinallyBlocks: MutableSet<BlockNode> get() = getAllFullyMatchedBlocks(finallyCompletionMonitor)
 
-	fun getAllFullyMatchedCandidateBlocks(): MutableSet<BlockNode> = getAllFullyMatchedBlocks(candidateCompletionMonitor)
+	val allFullyMatchedCandidateBlocks: MutableSet<BlockNode> get() = getAllFullyMatchedBlocks(candidateCompletionMonitor)
 
 	private fun getAllFullyMatchedBlocks(monitorMap: BlockCompletionMonitorMap): MutableSet<BlockNode> {
 		val matches = HashSet<BlockNode>()
@@ -328,7 +318,6 @@ class TraverserActivePathState {
 		 * 注意：这里**不会**深拷贝指令对集合与匹配进度表（与原 Java 一致），
 		 * 而是与 [previousTraverserState] 共享，只有在需要分叉时调用方才会先 duplicate。
 		 */
-		@JvmStatic
 		fun produceFromFactories(
 			previousTraverserState: TraverserActivePathState,
 			finallyStateProducer: TraverserStateFactory<*>,

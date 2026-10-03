@@ -17,7 +17,7 @@ import jadx.core.dex.nodes.RootNode
  */
 class TypeBoundCheckCastAssign(
 	private val root: RootNode,
-	private val insn: IndexInsnNode,
+	val insn: IndexInsnNode,
 ) : ITypeBoundDynamic {
 
 	override fun getBound(): BoundEnum = BoundEnum.ASSIGN
@@ -27,15 +27,13 @@ class TypeBoundCheckCastAssign(
 	override fun getType(): ArgType = getReturnType(insn.getArg(0).getType())
 
 	private fun getReturnType(argType: ArgType): ArgType {
-		val castType = insn.getIndexAsType()
-		val result = root.getTypeCompare().compareTypes(argType, castType)
+		val castType = insn.indexAsType
+		val result = root.typeCompare.compareTypes(argType, castType)
 		// 若实际类型更窄，则忽略 cast 类型，直接使用实际类型
 		return if (result.isNarrow()) argType else castType
 	}
 
 	override fun getArg(): RegisterArg? = insn.getResult()
-
-	fun getInsn(): IndexInsnNode = insn
 
 	override fun toString(): String = "CHECK_CAST_ASSIGN{(" + insn.index + ") " + insn.getArg(0).getType() + "}"
 }

@@ -21,7 +21,7 @@ class CodeVar {
 		}
 	}
 
-	fun getAnySsaVar(): SSAVar {
+	val anySsaVar: SSAVar get() {
 		if (ssaVars.isEmpty()) {
 			throw IllegalStateException("CodeVar without SSA variables attached: $this")
 		}
@@ -46,7 +46,6 @@ class CodeVar {
 	override fun toString(): String = (if (isFinal) "final " else "") + type + ' ' + name
 
 	companion object {
-		@JvmStatic
 		fun fromMthArg(mthArg: RegisterArg, linkRegister: Boolean): CodeVar {
 			val cv = CodeVar()
 			cv.type = mthArg.getInitType()

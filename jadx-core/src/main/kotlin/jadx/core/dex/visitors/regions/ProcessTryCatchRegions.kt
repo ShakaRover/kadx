@@ -30,7 +30,6 @@ import jadx.core.utils.RegionUtils
 class ProcessTryCatchRegions : AbstractRegionVisitor() {
 
 	companion object {
-		@JvmStatic
 		fun process(mth: MethodNode) {
 			if (mth.isNoCode() || mth.isNoExceptionHandlers()) {
 				return
@@ -135,7 +134,7 @@ class ProcessTryCatchRegions : AbstractRegionVisitor() {
 
 		/** 判断容器是否位于某个异常处理器的可达路径上（即 try 体之后） */
 		private fun isHandlerPath(tb: TryCatchBlockAttr, container: IContainer): Boolean {
-			for (h in tb.getHandlers()) {
+			for (h in tb.handlers) {
 				val handlerBlock = h.getHandlerBlock()
 				if (handlerBlock != null &&
 					!handlerBlock.contains(AFlag.REMOVE) &&

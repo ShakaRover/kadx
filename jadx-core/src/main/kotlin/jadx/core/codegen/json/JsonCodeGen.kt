@@ -115,9 +115,9 @@ class JsonCodeGen(cls: ClassNode) {
 				continue
 			}
 			val jsonField = JsonField()
-			jsonField.name = field.getName()
+			jsonField.name = field.name
 			if (field.getFieldInfo().hasAlias()) {
-				jsonField.alias = field.getAlias()
+				jsonField.alias = field.alias
 			}
 
 			val cw: ICodeWriter = SimpleCodeWriter(args)
@@ -136,9 +136,9 @@ class JsonCodeGen(cls: ClassNode) {
 				continue
 			}
 			val jsonMth = JsonMethod()
-			jsonMth.name = mth.getName()
+			jsonMth.name = mth.name
 			if (mth.getMethodInfo().hasAlias()) {
-				jsonMth.alias = mth.getAlias()
+				jsonMth.alias = mth.alias
 			}
 			jsonMth.signature = mth.getMethodInfo().shortId
 			jsonMth.returnType = getTypeAlias(classGen, mth.getReturnType())
@@ -150,7 +150,7 @@ class JsonCodeGen(cls: ClassNode) {
 			jsonMth.declaration = cw.getCodeStr()
 			jsonMth.accessFlags = mth.accessFlags.rawValue()
 			jsonMth.lines = fillMthCode(mth, mthGen)
-			jsonMth.offset = "0x" + java.lang.Long.toHexString(mth.getMethodCodeOffset())
+			jsonMth.offset = "0x" + java.lang.Long.toHexString(mth.methodCodeOffset)
 			mthList.add(jsonMth)
 		}
 	}
@@ -175,7 +175,7 @@ class JsonCodeGen(cls: ClassNode) {
 		val lines = Pattern.compile(args.codeNewLineStr).split(codeStr)
 		val metadata: ICodeMetadata = code.getCodeMetadata()
 		val lineMapping = metadata.getLineMapping()
-		val mthCodeOffset = mth.getMethodCodeOffset() + 16
+		val mthCodeOffset = mth.methodCodeOffset + 16
 
 		val linesCount = lines.size
 		val codeLines = ArrayList<JsonCodeLine>(linesCount)

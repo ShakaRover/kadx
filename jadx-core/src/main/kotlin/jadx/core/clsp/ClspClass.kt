@@ -37,7 +37,7 @@ class ClspClass(
 	var typeParameters: List<ArgType> = emptyList()
 
 	/** 类的全限定名（DEX 内部名，如 `java.lang.String`） */
-	fun getName(): String = clsType.getObject()
+	val name: String get() = clsType.getObject()
 
 	/** 是否为接口（检查访问标志中的 INTERFACE 位） */
 	fun isInterface(): Boolean = AccessFlags.hasFlag(accFlags, AccessFlags.INTERFACE)
@@ -46,7 +46,7 @@ class ClspClass(
 	fun hasAccFlag(@MagicConstant(flagsFromClass = AccessFlags::class) flags: Int): Boolean = AccessFlags.hasFlag(accFlags, flags)
 
 	/** 返回按方法签名排序后的方法列表（用于稳定输出，如保存 .jcst 文件） */
-	fun getSortedMethodsList(): List<ClspMethod> {
+	val sortedMethodsList: List<ClspMethod> get() {
 		val list = ArrayList<ClspMethod>(methodsMap.size)
 		list.addAll(methodsMap.values)
 		list.sort()

@@ -44,7 +44,7 @@ class TypeGen private constructor() {
 		fun literalToString(arg: LiteralArg, dexNode: IDexNode, fallback: Boolean): String = literalToString(
 			arg.literal,
 			arg.getType(),
-			dexNode.root().getStringUtils(),
+			dexNode.root().stringUtils,
 			fallback,
 			arg.contains(AFlag.EXPLICIT_PRIMITIVE_TYPE),
 		)
@@ -54,7 +54,7 @@ class TypeGen private constructor() {
 		 *
 		 * @throws JadxRuntimeException 类型或字面量不合法时抛出
 		 */
-		fun literalToString(lit: Long, type: ArgType?, dexNode: IDexNode, fallback: Boolean): String = literalToString(lit, type, dexNode.root().getStringUtils(), fallback, false)
+		fun literalToString(lit: Long, type: ArgType?, dexNode: IDexNode, fallback: Boolean): String = literalToString(lit, type, dexNode.root().stringUtils, fallback, false)
 
 		fun literalToString(lit: Long, type: ArgType?, stringUtils: StringUtils, fallback: Boolean, cast: Boolean): String {
 			if (type == null || !type.isTypeKnown()) {

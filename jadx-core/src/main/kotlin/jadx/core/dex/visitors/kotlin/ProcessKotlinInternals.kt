@@ -91,9 +91,9 @@ class ProcessKotlinInternals : AbstractVisitor() {
 		if (mth.isNoCode() || mth.contains(AType.JADX_ERROR)) {
 			return
 		}
-		for (block in checkNotNull(mth.getBasicBlocks())) {
+		for (block in checkNotNull(mth.basicBlocks)) {
 			for (insn in block.instructions) {
-				if (insn.getType() == InsnType.INVOKE) {
+				if (insn.type == InsnType.INVOKE) {
 					try {
 						processInvoke(mth, insn)
 					} catch (e: Exception) {
@@ -105,7 +105,7 @@ class ProcessKotlinInternals : AbstractVisitor() {
 	}
 
 	private fun processInvoke(mth: MethodNode, insn: InsnNode) {
-		val argsCount = insn.getArgsCount()
+		val argsCount = insn.argsCount
 		if (argsCount < 2) {
 			return
 		}
@@ -151,9 +151,9 @@ class ProcessKotlinInternals : AbstractVisitor() {
 			return null
 		}
 		val constInsn = (strArg as InsnWrapArg).wrapInsn
-		val insnType = constInsn.getType()
+		val insnType = constInsn.type
 		if (insnType == InsnType.CONST_STR) {
-			return (constInsn as ConstStringNode).getString()
+			return (constInsn as ConstStringNode).string
 		}
 		if (insnType == InsnType.SGET) {
 			// 还原被内联的常量字段 :(

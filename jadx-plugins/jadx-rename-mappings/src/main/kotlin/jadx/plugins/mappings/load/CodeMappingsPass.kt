@@ -75,7 +75,7 @@ public class CodeMappingsPass : JadxDecompilePass {
 			for (mth in cls.methods) {
 				val methodName = mth.getMethodInfo().name
 				val methodDesc = mth.getMethodInfo().shortId.substring(methodName.length)
-				val ssaVars = mth.getSVars()
+				val ssaVars = mth.SVars
 				if (ssaVars.isEmpty()) {
 					continue
 				}

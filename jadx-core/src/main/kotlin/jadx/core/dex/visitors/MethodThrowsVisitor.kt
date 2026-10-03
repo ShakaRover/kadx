@@ -116,21 +116,21 @@ class MethodThrowsVisitor : AbstractVisitor() {
 	}
 
 	private fun processInstructions(mth: MethodNode) {
-		if (mth.isNoCode() || mth.getBasicBlocks() == null) {
+		if (mth.isNoCode() || mth.basicBlocks == null) {
 			return
 		}
 		try {
-			blocks@ for (block in checkNotNull(mth.getBasicBlocks())) {
+			blocks@ for (block in checkNotNull(mth.basicBlocks)) {
 				// 跳过（例如 synchronized 区域的）throw 指令
 				val skipExceptions = block.contains(AFlag.REMOVE) || block.contains(AFlag.DONT_GENERATE)
 				val excludedExceptions = HashSet<String>()
 				val catchAttr = block.get(AType.EXC_CATCH)
 				if (catchAttr != null) {
-					for (handler in catchAttr.getHandlers()) {
+					for (handler in catchAttr.handlers) {
 						if (handler.isCatchAll()) {
 							continue@blocks
 						}
-						excludedExceptions.add(handler.getArgType().toString())
+						excludedExceptions.add(handler.argType.toString())
 					}
 				}
 				for (insn in block.getInstructions()) {
@@ -144,14 +144,14 @@ class MethodThrowsVisitor : AbstractVisitor() {
 
 	@Throws(JadxException::class)
 	private fun checkInsn(mth: MethodNode, insn: InsnNode, excludedExceptions: Set<String>, skipExceptions: Boolean) {
-		if (!skipExceptions && insn.getType() == InsnType.THROW && !insn.contains(AFlag.DONT_GENERATE)) {
+		if (!skipExceptions && insn.type == InsnType.THROW && !insn.contains(AFlag.DONT_GENERATE)) {
 			val throwArg = insn.getArg(0)
 			if (throwArg is RegisterArg) {
 				val exceptionType = throwArg.getType()
 				if (exceptionType == ArgType.THROWABLE) {
-					val assignInsn = throwArg.getAssignInsn()
+					val assignInsn = throwArg.assignInsn
 					if (assignInsn != null &&
-						assignInsn.getType() == InsnType.MOVE_EXCEPTION &&
+						assignInsn.type == InsnType.MOVE_EXCEPTION &&
 						checkNotNull(assignInsn.getResult()).contains(AFlag.CUSTOM_DECLARE)
 					) {
 						// 该变量来自 catch 语句，忽略对 Throwable 的 rethrow
@@ -168,7 +168,7 @@ class MethodThrowsVisitor : AbstractVisitor() {
 			return
 		}
 
-		if (insn.getType() == InsnType.INVOKE) {
+		if (insn.type == InsnType.INVOKE) {
 			val invokeNode = insn as InvokeNode
 			val callMth = invokeNode.callMth
 			val signature = callMth.makeSignature(true)
@@ -270,7 +270,7 @@ class MethodThrowsVisitor : AbstractVisitor() {
 		// 用不含返回值、但返回值更宽泛的签名匹配
 		for (supMth in cls.methods) {
 			if (supMth.getMethodInfo().shortId.startsWith(signature) && !supMth.accessFlags.isStatic()) {
-				val typeCompare: TypeCompare = cls.root().getTypeCompare()
+				val typeCompare: TypeCompare = cls.root().typeCompare
 				val supRetType = supMth.getMethodInfo().returnType
 				val mthRetType = mth.returnType
 				val res = typeCompare.compareTypes(supRetType, mthRetType)

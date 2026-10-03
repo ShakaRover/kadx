@@ -22,17 +22,14 @@ import java.lang.reflect.Type
  */
 object GsonUtils {
 
-	@JvmStatic
 	fun buildGson(): Gson = defaultGsonBuilder().create()
 
-	@JvmStatic
 	fun defaultGsonBuilder(): GsonBuilder = GsonBuilder()
 		.disableJdkUnsafe()
 		.disableInnerClassSerialization()
 		.setStrictness(Strictness.STRICT)
 		.setPrettyPrinting()
 
-	@JvmStatic
 	fun <T> interfaceReplace(replaceCls: Class<T>): InterfaceReplace<T> = InterfaceReplace(replaceCls)
 
 	/**

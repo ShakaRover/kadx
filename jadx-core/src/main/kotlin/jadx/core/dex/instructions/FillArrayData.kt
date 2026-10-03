@@ -29,7 +29,7 @@ class FillArrayData private constructor(
 
 	constructor(payload: IArrayPayload) : this(payload.data, payload.size, payload.elementSize)
 
-	fun getElementType(): ArgType = elemType
+	val elementType: ArgType get() = elemType
 
 	/** 把原始数组展开成一组字面量参数（供代码生成输出 `{...}`）。 */
 	fun getLiteralArgs(type: ArgType): List<LiteralArg> {

@@ -217,7 +217,7 @@ class RenameVisitor : AbstractVisitor() {
 				}
 			}
 			for (mth in methods) {
-				val alias = mth.getAlias()
+				val alias = mth.alias
 				val notValid = args.isRenameValid && !NameMapper.isValidIdentifier(alias)
 				val notPrintable = args.isRenamePrintable && !NameMapper.isAllCharsPrintable(alias)
 				if (notValid || notPrintable) {
@@ -256,13 +256,13 @@ class RenameVisitor : AbstractVisitor() {
 
 		private fun processRootPackages(aliasProvider: IAliasProvider, root: RootNode, classes: List<ClassNode>) {
 			val rootPkgs = collectRootPkgs(root)
-			root.getCacheStorage().rootPkgs = rootPkgs
+			root.cacheStorage.rootPkgs = rootPkgs
 
 			if (root.getArgs().isRenameValid) {
 				// 字段名与根包名冲突时重命名
 				for (cls in classes) {
 					for (field in cls.fields) {
-						if (rootPkgs.contains(field.getAlias())) {
+						if (rootPkgs.contains(field.alias)) {
 							field.rename(checkNotNull(aliasProvider.forField(field)))
 							field.addAttr(RenameReasonAttr("collision with root package name"))
 						}

@@ -148,7 +148,7 @@ class SummaryNode(mainWindow: MainWindow) : JNode() {
 
 	private fun writeDecompilationSummary(builder: StringEscapeUtils.Builder) {
 		builder.append("<h2>Decompilation</h2>")
-		val classes = wrapper.getRootNode().getClassesWithoutInner()
+		val classes = wrapper.getRootNode().classesWithoutInner
 		val classesCount = classes.size
 		val notLoadedClasses = classes.count { c -> c.state === ProcessState.NOT_LOADED }
 		val loadedClasses = classes.count { c -> c.state === ProcessState.LOADED }
@@ -162,20 +162,20 @@ class SummaryNode(mainWindow: MainWindow) : JNode() {
 		builder.append("<li>Code generated: " + valueAndPercent(generatedClasses, classesCount) + "</li>")
 		builder.append("</ul>")
 
-		val counter: ErrorsCounter = wrapper.getRootNode().getErrorsCounter()
+		val counter: ErrorsCounter = wrapper.getRootNode().errorsCounter
 		val problemNodes = HashSet<IAttributeNode>()
-		problemNodes.addAll(counter.getErrorNodes())
-		problemNodes.addAll(counter.getWarnNodes())
+		problemNodes.addAll(counter.errorNodes)
+		problemNodes.addAll(counter.warnNodes)
 		val problemMethods = problemNodes.count { it is MethodNode }
 		val methodsCount = classes.sumOf { cls -> cls.methods.size }
 		val methodSuccessRate = (methodsCount - problemMethods) * 100.0 / methodsCount.toDouble()
 
 		builder.append("<h3>Issues</h3>")
 		builder.append("<ul>")
-		builder.append("<li>Errors: " + counter.getErrorCount() + "</li>")
+		builder.append("<li>Errors: " + counter.errorCount + "</li>")
 		builder.append("<li>Warnings: " + counter.getWarnsCount() + "</li>")
-		builder.append("<li>Nodes with errors: " + counter.getErrorNodes().size + "</li>")
-		builder.append("<li>Nodes with warnings: " + counter.getWarnNodes().size + "</li>")
+		builder.append("<li>Nodes with errors: " + counter.errorNodes.size + "</li>")
+		builder.append("<li>Nodes with warnings: " + counter.warnNodes.size + "</li>")
 		builder.append("<li>Total nodes with issues: " + problemNodes.size + "</li>")
 		builder.append("<li>Methods with issues: " + problemMethods + "</li>")
 		builder.append("<li>Methods success rate: " + String.format("%.2f", methodSuccessRate) + "%</li>")

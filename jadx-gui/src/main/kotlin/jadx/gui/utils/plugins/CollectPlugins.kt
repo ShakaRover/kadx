@@ -24,7 +24,7 @@ class CollectPlugins(private val mainWindow: MainWindow) {
 	fun build(): CloseablePlugins {
 		val currentDecompiler: JadxDecompiler? = mainWindow.getWrapper().getCurrentDecompiler()
 		if (currentDecompiler != null) {
-			val plugins: SortedSet<PluginContext> = currentDecompiler.getPluginManager().getResolvedPluginContexts()
+			val plugins: SortedSet<PluginContext> = currentDecompiler.getPluginManager().resolvedPluginContexts
 			return CloseablePlugins(ArrayList(plugins), null)
 		}
 		// 在临时上下文中收集并初始化插件
@@ -39,7 +39,7 @@ class CollectPlugins(private val mainWindow: MainWindow) {
 				pluginContext.setAppContext(appContext)
 			}
 			pluginManager.load(JadxExternalPluginsLoader())
-			val allPlugins: SortedSet<PluginContext> = pluginManager.getAllPluginContexts()
+			val allPlugins: SortedSet<PluginContext> = pluginManager.allPluginContexts
 			pluginManager.init(allPlugins)
 			val closeable = Runnable { pluginManager.unload(allPlugins) }
 			return CloseablePlugins(ArrayList(allPlugins), closeable)

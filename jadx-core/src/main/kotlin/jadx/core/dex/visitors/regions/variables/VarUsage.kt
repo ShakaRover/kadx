@@ -17,16 +17,12 @@ import jadx.core.dex.instructions.args.SSAVar
 internal class VarUsage(private val varUsage: SSAVar?) {
 
 	/** 赋值位置列表，初始容量 3 覆盖常见情况 */
-	private val assigns: MutableList<UsePlace> = ArrayList(3)
+	val assigns: MutableList<UsePlace> = ArrayList(3)
 
 	/** 使用位置列表 */
-	private val uses: MutableList<UsePlace> = ArrayList(3)
+	val uses: MutableList<UsePlace> = ArrayList(3)
 
 	fun getVar(): SSAVar? = varUsage
-
-	fun getAssigns(): MutableList<UsePlace> = assigns
-
-	fun getUses(): MutableList<UsePlace> = uses
 
 	override fun toString(): String = '{' + (varUsage?.toShortString() ?: "-") + ", a:" + assigns + ", u:" + uses + '}'
 }

@@ -104,7 +104,7 @@ class FixAccessModifiers : AbstractVisitor() {
 			val parentMD = overrideAttr.overrideList[0]
 			val parentAccInfo = AccessInfo(parentMD.getRawAccessFlags(), AccessInfo.AFType.METHOD)
 			if (accessFlags.isVisibilityWeakerThan(parentAccInfo)) {
-				changeVisibility(mth, parentAccInfo.getVisibility().rawValue())
+				changeVisibility(mth, parentAccInfo.visibility.rawValue())
 			}
 		}
 
@@ -117,7 +117,6 @@ class FixAccessModifiers : AbstractVisitor() {
 
 	companion object {
 		/** 把节点的可见性改为 [newVisFlag]，并记录一条变更注释。 */
-		@JvmStatic
 		fun changeVisibility(node: NotificationAttrNode, newVisFlag: Int) {
 			val accessFlags = node.accessFlags
 			val newAccFlags = accessFlags.changeVisibility(newVisFlag)

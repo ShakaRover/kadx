@@ -180,7 +180,7 @@ class ClassGen(
 		clsCode.attachDefinition(cls)
 		clsCode.add(cls.classInfo.aliasShortName)
 
-		addGenericTypeParameters(clsCode, cls.getGenericTypeParameters(), true)
+		addGenericTypeParameters(clsCode, cls.genericTypeParameters, true)
 		clsCode.add(' ')
 
 		val sup = cls.superClass
@@ -339,7 +339,7 @@ class ClassGen(
 		try {
 			addMethodCode(code, mth)
 		} catch (e: Exception) {
-			if (mth.parentClass.getTopParentClass().contains(AFlag.RESTART_CODEGEN)) {
+			if (mth.parentClass.topParentClass.contains(AFlag.RESTART_CODEGEN)) {
 				throw JadxRuntimeException("Method generation error", e)
 			}
 			mth.addError("Method generation error", e)
@@ -365,7 +365,7 @@ class ClassGen(
 				mth.add(AFlag.DONT_GENERATE)
 				return true
 			}
-			val useInCompleted = mth.getUseIn().filter { m -> m.getTopParentClass().state.isProcessComplete() }
+			val useInCompleted = mth.getUseIn().filter { m -> m.topParentClass.state.isProcessComplete() }
 			if (useInCompleted.isEmpty()) {
 				mth.add(AFlag.DONT_GENERATE)
 				return true
@@ -443,7 +443,7 @@ class ClassGen(
 		}
 		CodeGenUtils.addComments(code, f)
 		if (f.getFieldInfo().hasAlias()) {
-			CodeGenUtils.addRenamedComment(code, f, f.getName())
+			CodeGenUtils.addRenamedComment(code, f, f.name)
 		}
 		annotationGen.addForField(code, f)
 
@@ -451,11 +451,11 @@ class ClassGen(
 		useType(code, f.type)
 		code.add(' ')
 		code.attachDefinition(f)
-		code.add(f.getAlias())
+		code.add(f.alias)
 
 		val initInsnAttr = f.get(AType.FIELD_INIT_INSN)
 		if (initInsnAttr != null) {
-			val insnGen = makeInsnGen(initInsnAttr.getInsnMth())
+			val insnGen = makeInsnGen(initInsnAttr.insnMth)
 			code.add(" = ")
 			addInsnBody(insnGen, code, initInsnAttr.insn)
 		} else {
@@ -508,11 +508,11 @@ class ClassGen(
 			val f = it.next()
 
 			CodeGenUtils.addComments(code, f.field)
-			code.startLine(f.field.getAlias())
+			code.startLine(f.field.alias)
 			val constrInsn = f.constrInsn
 			val callMth = cls.root().resolveMethod(constrInsn.callMth)
 			val skipCount = getEnumCtrSkipArgsCount(callMth)
-			if (constrInsn.getArgsCount() > skipCount) {
+			if (constrInsn.argsCount > skipCount) {
 				if (igen == null) {
 					igen = makeInsnGen(checkNotNull(enumFields.staticMethod))
 				}
@@ -542,7 +542,7 @@ class ClassGen(
 		if (callMth != null) {
 			val skipArgsAttr = callMth.get(AType.SKIP_MTH_ARGS)
 			if (skipArgsAttr != null) {
-				return skipArgsAttr.getSkipCount()
+				return skipArgsAttr.skipCount
 			}
 		}
 		return 0

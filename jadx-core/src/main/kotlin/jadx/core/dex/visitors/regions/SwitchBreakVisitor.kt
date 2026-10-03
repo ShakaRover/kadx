@@ -88,7 +88,7 @@ class SwitchBreakVisitor : AbstractVisitor() {
 				}
 				val last = RegionUtils.getLastInsnWithBlock(branch) ?: return
 				val lastInsn = last.insn
-				if (lastInsn.getType() == InsnType.BREAK) {
+				if (lastInsn.type == InsnType.BREAK) {
 					val block = last.block
 					val parent = checkNotNull(RegionUtils.getBlockContainer(branch, block))
 					forBreakRemove.add(BlockParentContainer(parent, block))
@@ -224,7 +224,7 @@ class SwitchBreakVisitor : AbstractVisitor() {
 		protected fun isBreakBlock(block: IBlock?): Boolean {
 			if (block != null) {
 				val lastInsn = ListUtils.last(block.getInstructions())
-				if (lastInsn != null && lastInsn.getType() == InsnType.BREAK) {
+				if (lastInsn != null && lastInsn.type == InsnType.BREAK) {
 					val regionRefAttr: RegionRefAttr? = lastInsn.get(AType.REGION_REF)
 					return regionRefAttr != null && regionRefAttr.region === currentSwitchRef
 				}
@@ -235,7 +235,7 @@ class SwitchBreakVisitor : AbstractVisitor() {
 		protected fun removeBreak(breakBlock: IBlock, parentContainer: IContainer) {
 			val instructions = breakBlock.getInstructions()
 			val last = ListUtils.last(instructions)
-			if (last != null && last.getType() == InsnType.BREAK) {
+			if (last != null && last.type == InsnType.BREAK) {
 				ListUtils.removeLast(instructions)
 				if (instructions.isEmpty()) {
 					breakBlock.add(AFlag.REMOVE)

@@ -101,7 +101,7 @@ class CodeRenameVisitor : AbstractVisitor() {
 		private fun processRename(mth: MethodNode, codeRef: IJavaCodeRef, rename: ICodeRename) {
 			when (codeRef.getAttachType()) {
 				CodeRefType.MTH_ARG -> {
-					val argRegs = mth.getArgRegs()
+					val argRegs = mth.argRegs
 					val argNum = codeRef.getIndex()
 					if (argNum < argRegs.size) {
 						checkNotNull(argRegs[argNum].sVar).codeVar.name = rename.getNewName()
@@ -113,7 +113,7 @@ class CodeRenameVisitor : AbstractVisitor() {
 				CodeRefType.VAR -> {
 					val regNum = codeRef.getIndex() shr 16
 					val ssaVer = codeRef.getIndex() and 0xFFFF
-					for (ssaVar in mth.getSVars()) {
+					for (ssaVar in mth.SVars) {
 						if (ssaVar.regNum == regNum && ssaVar.version == ssaVer) {
 							ssaVar.codeVar.name = rename.getNewName()
 							return

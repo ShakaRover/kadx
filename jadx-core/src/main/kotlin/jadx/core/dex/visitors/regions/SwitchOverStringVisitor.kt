@@ -90,7 +90,7 @@ class SwitchOverStringVisitor :
 			val isPart2Switch = nextContainer is SwitchRegion
 			if (isPart2Switch) {
 				val part2Region = nextContainer as SwitchRegion
-				val part2SwInsn = BlockUtils.getLastInsnWithType(part2Region.getHeader(), InsnType.SWITCH)
+				val part2SwInsn = BlockUtils.getLastInsnWithType(part2Region.header, InsnType.SWITCH)
 				if (part2SwInsn == null || !part2SwInsn.getArg(0).isRegister) {
 					return false
 				}
@@ -130,8 +130,8 @@ class SwitchOverStringVisitor :
 		// hashcode -> case 块
 		val hashCases: MutableMap<Int, BlockNode> = LinkedHashMap()
 		if (data.getType() == SwitchStringType.IF_SWITCH) {
-			val part1If = data.getPart1Region() as IfRegion
-			val part2Header = checkNotNull(data.getPart2Region()).getHeader()
+			val part1If = data.part1Region as IfRegion
+			val part2Header = checkNotNull(data.getPart2Region()).header
 			var strHashArg: RegisterArg? = null
 			val ifStartBlock = part1If.getConditionBlocks()[0]
 			var hashCmpBlock: BlockNode? = getOnlyOneInsnBlock(ifStartBlock)
@@ -166,8 +166,8 @@ class SwitchOverStringVisitor :
 				}
 			} while (true)
 		} else {
-			val part1Switch = data.getPart1Region() as SwitchRegion
-			val swInsn = BlockUtils.getLastInsnWithType(part1Switch.getHeader(), InsnType.SWITCH) as SwitchInsn
+			val part1Switch = data.part1Region as SwitchRegion
+			val swInsn = BlockUtils.getLastInsnWithType(part1Switch.header, InsnType.SWITCH) as SwitchInsn
 			checkNotNull(swInsn)
 			val keys = swInsn.getKeys()
 			val targetBlocks = checkNotNull(swInsn.getTargetBlocks())
@@ -189,7 +189,7 @@ class SwitchOverStringVisitor :
 				val strEqualsInsn = checkNotNull(InsnUtils.getWrappedInsn(checkNotNull(ifStrEqualsInsn).getArg(0)))
 				val strArg = strEqualsInsn.getArg(0)
 				val valArg = strEqualsInsn.getArg(1)
-				val strValue = InsnUtils.getConstValueByArg(data.getMth().root(), valArg)
+				val strValue = InsnUtils.getConstValueByArg(data.mth.root(), valArg)
 				if (data.getStrArg() != strArg || strValue !is String || strValue.hashCode() != hashcode) {
 					return false
 				}
@@ -200,7 +200,7 @@ class SwitchOverStringVisitor :
 				if (data.getType() == SwitchStringType.SWITCH_SWITCH || data.getType() == SwitchStringType.IF_SWITCH) {
 					val numInsn = BlockUtils.getLastInsn(getOnlyOneInsnBlock(thenBlock))
 					val numArg = checkNotNull(data.getNumArg())
-					if (thenBlock != null && (numInsn == null || numInsn.getType() == InsnType.SWITCH)) {
+					if (thenBlock != null && (numInsn == null || numInsn.type == InsnType.SWITCH)) {
 						// 数值在第一个区域之前赋值，找最近的赋值
 						var iDom: BlockNode? = thenBlock.idom
 						while (iDom != null && numValue == null) {
@@ -241,9 +241,9 @@ class SwitchOverStringVisitor :
 			// 按数值分组
 			val casesMap: MutableMap<Int?, MutableList<Any>> = HashMap(cases.size)
 			for (caseData in cases) {
-				casesMap.computeIfAbsent(caseData.getCodeNum()) { ArrayList() }.add(caseData.getStrValue())
+				casesMap.computeIfAbsent(caseData.codeNum) { ArrayList() }.add(caseData.strValue)
 			}
-			for (caseInfo in checkNotNull(part2Region).getCases()) {
+			for (caseInfo in checkNotNull(part2Region).cases) {
 				val newCase = SwitchRegion.CaseInfo(ArrayList(), caseInfo.container)
 				for (key in caseInfo.keys) {
 					val intKey = unwrapIntKey(key)
@@ -265,25 +265,25 @@ class SwitchOverStringVisitor :
 				newCases.add(newCase)
 			}
 			if (casesMap.isNotEmpty()) {
-				data.getMth().addWarnComment("switch over string: strings are not added: " + casesMap.values)
+				data.mth.addWarnComment("switch over string: strings are not added: " + casesMap.values)
 			}
 		} else if (data.getType() == SwitchStringType.SINGLE_SWITCH) {
-			val part1Region = data.getPart1Region() as SwitchRegion
-			val swInsn = BlockUtils.getLastInsnWithType(part1Region.getHeader(), InsnType.SWITCH) as SwitchInsn
+			val part1Region = data.part1Region as SwitchRegion
+			val swInsn = BlockUtils.getLastInsnWithType(part1Region.header, InsnType.SWITCH) as SwitchInsn
 			val defBlock = checkNotNull(swInsn).getDefTargetBlock()
 			if (defBlock != null) {
 				cases.add(CaseData(SwitchRegion.DEFAULT_CASE_KEY, DEFAULT_NUM_VALUE, defBlock))
 			}
 			var lastCaseData: CaseData? = null
 			for (caseData in cases) {
-				if (lastCaseData != null && lastCaseData.getCode() === caseData.getCode()) {
+				if (lastCaseData != null && lastCaseData.code === caseData.code) {
 					// 合并代码块相同的 case
 					val lastInfo = checkNotNull(ListUtils.last(newCases))
-					mutableKeys(lastInfo).add(caseData.getStrValue())
+					mutableKeys(lastInfo).add(caseData.strValue)
 				} else {
-					val container = RegionUtils.getBlockContainer(part1Region, checkNotNull(caseData.getCode())) ?: return false
+					val container = RegionUtils.getBlockContainer(part1Region, checkNotNull(caseData.code)) ?: return false
 					val newInfo = SwitchRegion.CaseInfo(ArrayList(), container)
-					mutableKeys(newInfo).add(caseData.getStrValue())
+					mutableKeys(newInfo).add(caseData.strValue)
 					newCases.add(newInfo)
 				}
 				lastCaseData = caseData
@@ -294,16 +294,16 @@ class SwitchOverStringVisitor :
 
 	/** 用合并后的字符串 switch 替换原代码，并清理旧指令 */
 	private fun replaceWithMergedSwitch(data: SwitchData): Boolean {
-		val mth = data.getMth()
-		val part1Region = data.getPart1Region()
+		val mth = data.mth
+		val part1Region = data.part1Region
 		val part1Parent = checkNotNull(part1Region.parent)
 		val part2Region = data.getPart2Region()
 		val keptInsns = ArrayList<InsnNode>()
 		val newHeader: BlockNode
 		if (data.getType() == SwitchStringType.SWITCH_SWITCH || data.getType() == SwitchStringType.SINGLE_SWITCH) {
-			newHeader = (part1Region as SwitchRegion).getHeader()
+			newHeader = (part1Region as SwitchRegion).header
 		} else {
-			newHeader = checkNotNull(part2Region).getHeader()
+			newHeader = checkNotNull(part2Region).header
 		}
 		// 直接在 switch 中使用字符串参数
 		val swInsn = BlockUtils.getLastInsnWithType(newHeader, InsnType.SWITCH)
@@ -343,7 +343,7 @@ class SwitchOverStringVisitor :
 					if (assignInsn != null) {
 						assignInsn.add(AFlag.REMOVE)
 					}
-					for (useArg in ssaVar.getUseList()) {
+					for (useArg in ssaVar.useList) {
 						val parentInsn = useArg.getParentInsn()
 						if (parentInsn != null) {
 							parentInsn.add(AFlag.REMOVE)
@@ -367,10 +367,10 @@ class SwitchOverStringVisitor :
 	private fun mutableKeys(caseInfo: SwitchRegion.CaseInfo): MutableList<Any> = caseInfo.keys as MutableList<Any>
 
 	private fun extractConstNumber(switchData: SwitchData, numInsn: InsnNode?): Int? {
-		if (numInsn == null || numInsn.getArgsCount() != 1) {
+		if (numInsn == null || numInsn.argsCount != 1) {
 			return null
 		}
-		val constVal = InsnUtils.getConstValueByArg(switchData.getMth().root(), numInsn.getArg(0))
+		val constVal = InsnUtils.getConstValueByArg(switchData.mth.root(), numInsn.getArg(0))
 		if (constVal is LiteralArg) {
 			val numArg = switchData.getNumArg()
 			if (numArg != null && numArg.sameCodeVar(checkNotNull(numInsn.getResult()))) {
@@ -397,11 +397,11 @@ class SwitchOverStringVisitor :
 	private fun getStrHashcodeInvokeInsn(arg: InsnArg): InvokeNode? {
 		var insn: InsnNode? = null
 		if (arg.isRegister) {
-			insn = (arg as RegisterArg).getAssignInsn()
+			insn = (arg as RegisterArg).assignInsn
 		} else if (arg.isInsnWrap) {
 			insn = (arg as InsnWrapArg).wrapInsn
 		}
-		if (insn != null && insn.getType() == InsnType.INVOKE) {
+		if (insn != null && insn.type == InsnType.INVOKE) {
 			val invInsn = insn as InvokeNode
 			if (invInsn.callMth.rawFullId == "java.lang.String.hashCode()I") {
 				return invInsn
@@ -411,9 +411,9 @@ class SwitchOverStringVisitor :
 	}
 
 	private fun isIfStringEqualsInsn(ifInsn: InsnNode?): Boolean {
-		if (ifInsn != null && ifInsn.getType() == InsnType.IF && ifInsn.getArgsCount() == 2) {
+		if (ifInsn != null && ifInsn.type == InsnType.IF && ifInsn.argsCount == 2) {
 			val wrapped = InsnUtils.getWrappedInsn(ifInsn.getArg(0))
-			return wrapped != null && wrapped.getType() == InsnType.INVOKE &&
+			return wrapped != null && wrapped.type == InsnType.INVOKE &&
 				(wrapped as InvokeNode).callMth.rawFullId == "java.lang.String.equals(Ljava/lang/Object;)Z"
 		}
 		return false
@@ -433,7 +433,7 @@ class SwitchOverStringVisitor :
 	}
 
 	/** switch 还原过程中的临时数据载体 */
-	private class SwitchData(private val mth: MethodNode, private val part1Region: IRegion) {
+	private class SwitchData(val mth: MethodNode, val part1Region: IRegion) {
 		private var type: SwitchStringType = SwitchStringType.SWITCH_SWITCH
 		private var part2Region: SwitchRegion? = null
 		private var cases: MutableList<CaseData>? = null
@@ -459,10 +459,6 @@ class SwitchOverStringVisitor :
 		fun setNewCases(cases: MutableList<SwitchRegion.CaseInfo>) {
 			this.newCases = cases
 		}
-
-		fun getMth(): MethodNode = mth
-
-		fun getPart1Region(): IRegion = part1Region
 
 		fun getPart2Region(): SwitchRegion? = part2Region
 
@@ -490,12 +486,7 @@ class SwitchOverStringVisitor :
 	}
 
 	/** 单个字符串 case：字符串值 + 对应的数值 / 代码块 */
-	private class CaseData(private val strValue: Any, private val codeNum: Int?, private val code: BlockNode?) {
-		fun getStrValue(): Any = strValue
-
-		fun getCode(): BlockNode? = code
-
-		fun getCodeNum(): Int? = codeNum
+	private class CaseData(val strValue: Any, val codeNum: Int?, val code: BlockNode?) {
 
 		override fun toString(): String = "CaseData{$strValue}"
 	}

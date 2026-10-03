@@ -14,19 +14,17 @@ import jadx.core.dex.instructions.args.InsnArg
  *
  * 这是指令包装（身份语义），保持普通 class。
  */
-class Compare(private val insn: IfNode) {
+class Compare(val insn: IfNode) {
 
 	init {
 		insn.add(AFlag.HIDDEN)
 	}
 
-	fun getOp(): IfOp = insn.getOp()
+	val op: IfOp get() = insn.getOp()
 
-	fun getA(): InsnArg = insn.getArg(0)
+	val a: InsnArg get() = insn.getArg(0)
 
-	fun getB(): InsnArg = insn.getArg(1)
-
-	fun getInsn(): IfNode = insn
+	val b: InsnArg get() = insn.getArg(1)
 
 	/** 条件取反，直接修改底层指令并返回自身 */
 	fun invert(): Compare {
@@ -38,5 +36,5 @@ class Compare(private val insn: IfNode) {
 		insn.normalize()
 	}
 
-	override fun toString(): String = getA().toString() + " " + getOp().symbol + ' ' + getB()
+	override fun toString(): String = a.toString() + " " + op.symbol + ' ' + b
 }

@@ -45,7 +45,7 @@ class ClspGraph(private val root: RootNode) {
 
 	fun addClasspath(set: ClsSet) {
 		if (nameMap == null) {
-			nameMap = HashMap(set.getClassesCount())
+			nameMap = HashMap(set.classesCount)
 			set.addToMap(checkNotNull(nameMap))
 		} else {
 			throw JadxRuntimeException("Classpath already loaded")
@@ -181,7 +181,7 @@ class ClspGraph(private val root: RootNode) {
 
 				else -> HashSet(tmpSet)
 			}
-			map[cls.getName()] = result
+			map[cls.name] = result
 		}
 		superTypesCache = map
 	}
@@ -193,7 +193,7 @@ class ClspGraph(private val root: RootNode) {
 			}
 			val parentCls = getClspClass(parentType)
 			if (parentCls != null) {
-				val isNew = result.add(parentCls.getName())
+				val isNew = result.add(parentCls.name)
 				if (isNew) {
 					addSuperTypes(parentCls, result)
 				}

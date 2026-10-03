@@ -43,7 +43,7 @@ abstract class InsnArg : Typed() {
 		if (i == -1) {
 			return null
 		}
-		if (insn.getType() == InsnType.MOVE && isRegister) {
+		if (insn.type == InsnType.MOVE && isRegister) {
 			// preserve variable name for move insn (needed in `for-each` loop for iteration variable)
 			val name = (this as RegisterArg).name
 			if (name != null) {
@@ -86,7 +86,7 @@ abstract class InsnArg : Typed() {
 		}
 		if (isInsnWrap) {
 			val wrapInsn = (this as InsnWrapArg).wrapInsn
-			if (wrapInsn.getType() == InsnType.CONST) {
+			if (wrapInsn.type == InsnType.CONST) {
 				return wrapInsn.getArg(0).isZeroLiteral()
 			}
 		}
@@ -119,7 +119,7 @@ abstract class InsnArg : Typed() {
 			return true
 		}
 		val wrappedInsn = unwrap()
-		if (wrappedInsn != null && wrappedInsn.getType() == InsnType.IGET) {
+		if (wrappedInsn != null && wrappedInsn.type == InsnType.IGET) {
 			return wrappedInsn.getArg(0).isAnyThis()
 		}
 		return false
@@ -187,13 +187,10 @@ abstract class InsnArg : Typed() {
 	companion object {
 		private val LOG = LoggerFactory.getLogger(InsnArg::class.java)
 
-		@JvmStatic
 		fun reg(regNum: Int, type: ArgType): RegisterArg = RegisterArg(regNum, type)
 
-		@JvmStatic
 		fun reg(insn: InsnData, argNum: Int, type: ArgType): RegisterArg = reg(insn.getReg(argNum), type)
 
-		@JvmStatic
 		fun typeImmutableIfKnownReg(insn: InsnData, argNum: Int, type: ArgType): RegisterArg {
 			if (type.isTypeKnown()) {
 				return typeImmutableReg(insn.getReg(argNum), type)
@@ -201,13 +198,10 @@ abstract class InsnArg : Typed() {
 			return reg(insn.getReg(argNum), type)
 		}
 
-		@JvmStatic
 		fun typeImmutableReg(insn: InsnData, argNum: Int, type: ArgType): RegisterArg = typeImmutableReg(insn.getReg(argNum), type)
 
-		@JvmStatic
 		fun typeImmutableReg(regNum: Int, type: ArgType): RegisterArg = reg(regNum, type, true)
 
-		@JvmStatic
 		fun reg(regNum: Int, type: ArgType, typeImmutable: Boolean): RegisterArg {
 			val reg = RegisterArg(regNum, type)
 			if (typeImmutable) {
@@ -216,10 +210,8 @@ abstract class InsnArg : Typed() {
 			return reg
 		}
 
-		@JvmStatic
 		fun lit(literal: Long, type: ArgType): LiteralArg = LiteralArg.makeWithFixedType(literal, type)
 
-		@JvmStatic
 		fun lit(insn: InsnData, type: ArgType): LiteralArg = lit(insn.literal, type)
 
 		private fun wrap(insn: InsnNode): InsnWrapArg {
@@ -227,9 +219,8 @@ abstract class InsnArg : Typed() {
 			return InsnWrapArg(insn)
 		}
 
-		@JvmStatic
 		fun wrapInsnIntoArg(insn: InsnNode): InsnArg {
-			val type = insn.getType()
+			val type = insn.type
 			if (type == InsnType.CONST || type == InsnType.MOVE) {
 				if (insn.contains(AFlag.FORCE_ASSIGN_INLINE)) {
 					val resArg = insn.getResult()
@@ -248,7 +239,7 @@ abstract class InsnArg : Typed() {
 		}
 
 		private fun getArgIndex(parent: InsnNode, arg: InsnArg): Int {
-			val count = parent.getArgsCount()
+			val count = parent.argsCount
 			for (i in 0 until count) {
 				if (parent.getArg(i) === arg) {
 					return i
@@ -262,11 +253,10 @@ abstract class InsnArg : Typed() {
 		 *
 		 * This method don't support MOVE and CONST insns!
 		 */
-		@JvmStatic
 		fun wrapArg(insn: InsnNode): InsnArg {
 			val resArg = insn.getResult()
 			val arg = wrap(insn)
-			when (insn.getType()) {
+			when (insn.type) {
 				InsnType.CONST, InsnType.MOVE -> throw JadxRuntimeException("Don't wrap MOVE or CONST insns: $insn")
 
 				InsnType.CONST_STR -> {

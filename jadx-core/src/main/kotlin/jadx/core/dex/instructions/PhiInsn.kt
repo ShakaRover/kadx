@@ -94,7 +94,7 @@ class PhiInsn : InsnNode {
 	}
 
 	fun getArgBySsaVar(ssaVar: SSAVar): RegisterArg? {
-		if (getArgsCount() == 0) {
+		if (argsCount == 0) {
 			return null
 		}
 		for (insnArg in getArguments()) {
@@ -108,7 +108,7 @@ class PhiInsn : InsnNode {
 
 	/** 按 [IBlock] 查找参数；这里沿用原 Java 的 equals 匹配语义。 */
 	fun getArgByBlock(block: IBlock): RegisterArg? {
-		if (getArgsCount() == 0) {
+		if (argsCount == 0) {
 			return null
 		}
 		val index = blockBinds.indexOfFirst { it == block }
@@ -138,7 +138,7 @@ class PhiInsn : InsnNode {
 
 	override fun setArg(n: Int, arg: InsnArg): Unit = throw JadxRuntimeException("Direct setArg is forbidden for PHI insn, bindArg must be used")
 
-	override fun copy(): InsnNode = copyCommonParams(PhiInsn(getArgsCount()))
+	override fun copy(): InsnNode = copyCommonParams(PhiInsn(argsCount))
 
 	override fun toString(): String = baseString() + " binds: " + blockBinds + attributesString()
 }

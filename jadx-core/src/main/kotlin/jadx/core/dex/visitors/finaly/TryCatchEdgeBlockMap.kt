@@ -67,7 +67,7 @@ class TryCatchEdgeBlockMap : MutableMap<TryEdge, MutableList<BlockNode>> {
 			if (edge.isNotHandlerExit()) {
 				continue
 			}
-			if (edge.getExceptionHandler() != handler) {
+			if (edge.exceptionHandler != handler) {
 				continue
 			}
 			edgeWithHandler = edge
@@ -80,7 +80,7 @@ class TryCatchEdgeBlockMap : MutableMap<TryEdge, MutableList<BlockNode>> {
 	}
 
 	/** 汇总所有“非处理器出口”（贯穿/提前退出等）边关联的块。 */
-	fun getBlocksForAllFallthroughs(): MutableList<BlockNode> {
+	val blocksForAllFallthroughs: MutableList<BlockNode> get() {
 		val blks = ArrayList<BlockNode>()
 		for (edge in keys) {
 			if (edge.isHandlerExit()) {
@@ -93,7 +93,6 @@ class TryCatchEdgeBlockMap : MutableMap<TryEdge, MutableList<BlockNode>> {
 
 	companion object {
 		/** 判断给定块集合中是否存在“非隐式”的 try 块（隐式 try 在反编译中不应保留）。 */
-		@JvmStatic
 		fun anyBlockHasNonImplicitTry(blocks: List<BlockNode>): Boolean {
 			val blocksWithTries = ListUtils.filter(blocks) { it.contains(AFlag.EXC_TOP_SPLITTER) }
 			if (blocksWithTries.isEmpty()) {
@@ -122,7 +121,6 @@ class TryCatchEdgeBlockMap : MutableMap<TryEdge, MutableList<BlockNode>> {
 		 * 若某条边可达的块里含有其它 try，则需要连同非 clean 后继一起收集；
 		 * 若是“贯穿”出口，还要把 try 体本身算进去；最后从结果中剔除 finally 块。
 		 */
-		@JvmStatic
 		fun getAllInScope(
 			mth: MethodNode,
 			tryCatch: TryCatchBlockAttr,
@@ -130,7 +128,7 @@ class TryCatchEdgeBlockMap : MutableMap<TryEdge, MutableList<BlockNode>> {
 			finallyHandler: ExceptionHandler,
 			scopeTerminusGroups: Map<BlockNode, List<TryEdge>>,
 		): TryCatchEdgeBlockMap {
-			val edgeBlocks = tryCatch.getEdgeBlockMap()
+			val edgeBlocks = tryCatch.edgeBlockMap
 			val result = TryCatchEdgeBlockMap()
 			for (scopeTerminus in scopeTerminusGroups.keys) {
 				val sourceEdges = checkNotNull(scopeTerminusGroups[scopeTerminus])
@@ -138,7 +136,7 @@ class TryCatchEdgeBlockMap : MutableMap<TryEdge, MutableList<BlockNode>> {
 					val edgeBlock = checkNotNull(edgeBlocks[sourceEdge])
 					val useClean = !(
 						sourceEdge.isNotHandlerExit() &&
-							ListUtils.anyMatch(scopeGroups.getMergedScopes()) { pair -> pair.second.isNotHandlerExit() }
+							ListUtils.anyMatch(scopeGroups.mergedScopes) { pair -> pair.second.isNotHandlerExit() }
 						)
 					var allBlocks = asMutableList(
 						BlockUtils.collectAllSuccessorsUntil(mth, edgeBlock, useClean) { block -> block === scopeTerminus },
@@ -162,7 +160,7 @@ class TryCatchEdgeBlockMap : MutableMap<TryEdge, MutableList<BlockNode>> {
 			val finallyBlocks = result.getBlocksForHandler(finallyHandler)
 			if (finallyBlocks != null) {
 				for (edge in result.keys) {
-					if (edge.isHandlerExit() && edge.getExceptionHandler() === finallyHandler) {
+					if (edge.isHandlerExit() && edge.exceptionHandler === finallyHandler) {
 						continue
 					}
 					checkNotNull(result[edge]).removeAll(finallyBlocks)

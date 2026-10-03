@@ -22,5 +22,5 @@ abstract class AbstractBlockTraverserVisitor(private val state: TraverserState) 
 	open fun getState(): TraverserState = state
 
 	/** 当前活动路径状态（比较上下文）。 */
-	open fun getComparator(): TraverserActivePathState = state.getComparatorState()
+	open fun getComparator(): TraverserActivePathState = state.comparatorState
 }

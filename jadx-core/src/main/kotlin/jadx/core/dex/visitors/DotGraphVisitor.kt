@@ -45,23 +45,18 @@ class DotGraphVisitor private constructor(
 		private const val PRINT_DOMINATORS = false
 		private const val PRINT_DOMINATORS_INFO = false
 
-		@JvmStatic
 		fun dump(): DotGraphVisitor = DotGraphVisitor(false, false)
 
-		@JvmStatic
 		fun dumpRaw(): DotGraphVisitor = DotGraphVisitor(false, true)
 
-		@JvmStatic
 		fun dumpRegions(): DotGraphVisitor = DotGraphVisitor(true, false)
 
-		@JvmStatic
 		fun dumpRawRegions(): DotGraphVisitor = DotGraphVisitor(true, true)
 
 		/**
 		 * 调试辅助：只绘制指定区域及其子区域的 CFG。
 		 * 用法：`DotGraphVisitor.debugDumpWithRegionHighlight(region).visit(mth);`
 		 */
-		@JvmStatic
 		fun debugDumpWithRegionHighlight(region: IRegion): DotGraphVisitor = DotGraphVisitor(false, false, region)
 	}
 }

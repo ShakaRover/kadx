@@ -39,13 +39,12 @@ class MoveInlineVisitor : AbstractVisitor() {
 	}
 
 	companion object {
-		@JvmStatic
 		fun moveInline(mth: MethodNode) {
 			val remover = InsnRemover(mth)
-			for (block in checkNotNull(mth.getBasicBlocks())) {
+			for (block in checkNotNull(mth.basicBlocks)) {
 				remover.setBlock(block)
 				for (insn in block.getInstructions()) {
-					if (insn.getType() != InsnType.MOVE) {
+					if (insn.type != InsnType.MOVE) {
 						continue
 					}
 					if (processMove(mth, insn)) {
@@ -70,7 +69,7 @@ class MoveInlineVisitor : AbstractVisitor() {
 				}
 			}
 			val ssaVar = checkNotNull(resultArg.sVar)
-			if (ssaVar.getUseList().isEmpty()) {
+			if (ssaVar.useList.isEmpty()) {
 				// 结果未被使用
 				return true
 			}
@@ -81,7 +80,7 @@ class MoveInlineVisitor : AbstractVisitor() {
 				// return deleteMove(mth, move)
 			}
 			var debugInfo: RegDebugInfoAttr? = moveArg.get(AType.REG_DEBUG_INFO)
-			for (useArg in ssaVar.getUseList()) {
+			for (useArg in ssaVar.useList) {
 				val useInsn = useArg.getParentInsn()
 				if (useInsn == null) {
 					return false
@@ -95,7 +94,7 @@ class MoveInlineVisitor : AbstractVisitor() {
 			}
 
 			// 所有检查通过，执行内联
-			for (useArg in ArrayList(ssaVar.getUseList())) {
+			for (useArg in ArrayList(ssaVar.useList)) {
 				val useInsn = useArg.getParentInsn() ?: continue
 				val replaceArg: InsnArg = if (moveArg.isRegister) {
 					(moveArg as RegisterArg).duplicate(useArg.getInitType())
@@ -122,7 +121,7 @@ class MoveInlineVisitor : AbstractVisitor() {
 			}
 			val moveReg = moveArg as RegisterArg
 			val ssaVar = checkNotNull(moveReg.sVar)
-			if (ssaVar.getUseCount() != 1 || ssaVar.isUsedInPhi()) {
+			if (ssaVar.useCount != 1 || ssaVar.isUsedInPhi()) {
 				return false
 			}
 			val assignArg = ssaVar.assign

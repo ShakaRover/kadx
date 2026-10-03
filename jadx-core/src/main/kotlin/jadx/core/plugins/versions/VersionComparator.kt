@@ -15,7 +15,6 @@ package jadx.core.plugins.versions
 object VersionComparator {
 
 	/** 清洗后比较两个版本字符串，返回负数 / 0 / 正数。 */
-	@JvmStatic
 	fun checkAndCompare(str1: String?, str2: String?): Int = compare(clean(str1), clean(str2))
 
 	/** 去掉版本前缀（`jadx-gui-`、`jadx-`、`v`、`r`）与不稳定版本后缀。 */

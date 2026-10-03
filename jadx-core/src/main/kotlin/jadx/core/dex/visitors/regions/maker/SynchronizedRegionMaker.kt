@@ -39,7 +39,7 @@ class SynchronizedRegionMaker(private val mth: MethodNode, private val regionMak
 		val cacheSet: MutableSet<BlockNode> = HashSet()
 		traverseMonitorExits(synchRegion, insn.getArg(0), block, exits, cacheSet)
 
-		for (exitInsn in synchRegion.getExitInsns()) {
+		for (exitInsn in synchRegion.exitInsns) {
 			val insnBlock = BlockUtils.getBlockByInsn(mth, exitInsn)
 			if (insnBlock != null) {
 				insnBlock.add(AFlag.DONT_GENERATE)
@@ -92,12 +92,12 @@ class SynchronizedRegionMaker(private val mth: MethodNode, private val regionMak
 	) {
 		visited.add(block)
 		for (insn in block.getInstructions()) {
-			if (insn.getType() == InsnType.MONITOR_EXIT &&
-				insn.getArgsCount() > 0 &&
+			if (insn.type == InsnType.MONITOR_EXIT &&
+				insn.argsCount > 0 &&
 				insn.getArg(0) == arg
 			) {
 				exits.add(block)
-				region.getExitInsns().add(insn)
+				region.exitInsns.add(insn)
 				return
 			}
 		}
@@ -134,21 +134,20 @@ class SynchronizedRegionMaker(private val mth: MethodNode, private val regionMak
 	}
 
 	companion object {
-		@JvmStatic
 		fun removeSynchronized(mth: MethodNode) {
 			val startRegion = checkNotNull(mth.region)
 			val subBlocks = startRegion.getSubBlocks()
 			if (subBlocks.isNotEmpty() && subBlocks[0] is SynchronizedRegion) {
 				val synchRegion = subBlocks[0] as SynchronizedRegion
-				val syncInsn = synchRegion.getEnterInsn()
+				val syncInsn = synchRegion.enterInsn
 				if (canRemoveSyncBlock(mth, syncInsn)) {
 					// 用内层区域替换 synchronized 块
 					@Suppress("UNCHECKED_CAST")
-					(startRegion.getSubBlocks() as MutableList<IContainer>).set(0, synchRegion.getRegion())
+					(startRegion.getSubBlocks() as MutableList<IContainer>).set(0, synchRegion.region)
 					// 移除 monitor-enter 指令
 					InsnRemover.remove(mth, syncInsn)
 					// 移除 monitor-exit 指令
-					for (exit in synchRegion.getExitInsns()) {
+					for (exit in synchRegion.exitInsns) {
 						InsnRemover.remove(mth, exit)
 					}
 					// 再次清理区域
@@ -162,7 +161,7 @@ class SynchronizedRegionMaker(private val mth: MethodNode, private val regionMak
 			if (mth.accessFlags.isStatic()) {
 				if (syncArg.isInsnWrap && syncArg.isConst()) {
 					val constInsn = syncArg.unwrap()
-					if (constInsn != null && constInsn.getType() == InsnType.CONST_CLASS) {
+					if (constInsn != null && constInsn.type == InsnType.CONST_CLASS) {
 						val clsType = (constInsn as ConstClassNode).clsType
 						if (clsType == mth.parentClass.getType()) {
 							return true

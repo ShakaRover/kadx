@@ -27,7 +27,6 @@ import jadx.core.utils.input.InsnDataUtils
 class InvokeCustomBuilder {
 
 	companion object {
-		@JvmStatic
 		fun build(mth: MethodNode, insn: InsnData, isRange: Boolean): InsnNode {
 			try {
 				val callSite = InsnDataUtils.getCallSite(insn)

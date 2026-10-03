@@ -29,13 +29,13 @@ open class BaseBlockTraverserHandler : AbstractBlockPathTraverserHandler {
 	constructor(initialStateRef: AtomicReference<TraverserState>) : super(initialStateRef)
 
 	override fun handle() {
-		val blockInsnInfo: TraverserBlockInfo = getState().getBlockInsnInfo()
+		val blockInsnInfo: TraverserBlockInfo = state.getBlockInsnInfo()
 			?: throw JadxRuntimeException("Expected to find block info within " + javaClass.simpleName)
-		val comparator: TraverserActivePathState = getState().getComparatorState()
-		val stateRef = comparator.getReferenceForState(getState())
+		val comparator: TraverserActivePathState = state.comparatorState
+		val stateRef = comparator.getReferenceForState(state)
 			?: throw JadxRuntimeException("Orphaned traverser state")
 		val block: BlockNode = blockInsnInfo.block
-		val implicitVisitor = ImplicitInsnBlockTraverserVisitor(getState())
+		val implicitVisitor = ImplicitInsnBlockTraverserVisitor(state)
 		val stateAfterImplicit: TraverserState = implicitVisitor.visit(block)
 		val pathEndVisitor = PathEndBlockTraverserVisitor(stateAfterImplicit)
 		val nextState: TraverserState = pathEndVisitor.visit(block)

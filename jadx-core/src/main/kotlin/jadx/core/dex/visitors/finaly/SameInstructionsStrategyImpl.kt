@@ -25,7 +25,7 @@ class SameInstructionsStrategyImpl : SameInstructionsStrategy() {
 		if (!dupInsn.isSame(fInsn)) {
 			return false
 		}
-		for (i in 0 until dupInsn.getArgsCount()) {
+		for (i in 0 until dupInsn.argsCount) {
 			val dupArg = dupInsn.getArg(i)
 			val fArg = fInsn.getArg(i)
 			if (!isSameArgs(dupArg, fArg)) {
@@ -78,8 +78,8 @@ class SameInstructionsStrategyImpl : SameInstructionsStrategy() {
 		 * 保证行为完全一致。
 		 */
 		private fun assignInsnDifferent(dupReg: RegisterArg, fReg: RegisterArg): Boolean {
-			val assignInsn = fReg.getAssignInsn()
-			val dupAssign = dupReg.getAssignInsn()
+			val assignInsn = fReg.assignInsn
+			val dupAssign = dupReg.assignInsn
 			if (assignInsn == null || dupAssign == null) {
 				return true
 			}

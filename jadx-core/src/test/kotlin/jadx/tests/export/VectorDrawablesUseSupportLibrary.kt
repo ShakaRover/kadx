@@ -11,7 +11,7 @@ class VectorDrawablesUseSupportLibrary : ExportGradleTest() {
 
 	@Test
 	fun test() {
-		val gradleInfo = getRootNode().getGradleInfoStorage()
+		val gradleInfo = getRootNode().gradleInfoStorage
 		gradleInfo.isVectorFillType = true
 		exportGradle("OptionalTargetSdkVersion.xml", "strings.xml")
 		assertThat(getAppGradleBuild()).contains("        vectorDrawables.useSupportLibrary = true")

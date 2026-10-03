@@ -33,8 +33,8 @@ class PredecessorBlockPathTraverserHandler<T> : AbstractBlockPathTraverserHandle
 	}
 
 	override fun handle() {
-		val baseState: TraverserState = getState()
-		val comparator: TraverserActivePathState = baseState.getComparatorState()
+		val baseState: TraverserState = state
+		val comparator: TraverserActivePathState = baseState.comparatorState
 		val stateRef = comparator.getReferenceForState(baseState)
 			?: throw JadxRuntimeException("Orphaned traverser state")
 		val sourceBlock: BlockNode = sourceBlockState.getSourceBlock()

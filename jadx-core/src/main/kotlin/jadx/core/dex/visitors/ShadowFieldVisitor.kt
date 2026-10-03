@@ -105,7 +105,7 @@ class ShadowFieldVisitor : AbstractVisitor() {
 		private fun groupByName(allFields: List<FieldNode>): MutableMap<String, MutableList<FieldNode>> {
 			val groupByName = HashMap<String, MutableList<FieldNode>>(allFields.size)
 			for (field in allFields) {
-				groupByName.getOrPut(field.getName()) { ArrayList() }.add(field)
+				groupByName.getOrPut(field.name) { ArrayList() }.add(field)
 			}
 			return groupByName
 		}
@@ -132,7 +132,7 @@ class ShadowFieldVisitor : AbstractVisitor() {
 		}
 
 		private fun fixShadowFieldAccess(mth: MethodNode, fixInfoMap: Map<String, FieldFixInfo>) {
-			for (block in checkNotNull(mth.getBasicBlocks())) {
+			for (block in checkNotNull(mth.basicBlocks)) {
 				for (insn in block.getInstructions()) {
 					processInsn(mth, insn, fixInfoMap)
 				}
@@ -141,7 +141,7 @@ class ShadowFieldVisitor : AbstractVisitor() {
 
 		private fun processInsn(mth: MethodNode, insn: InsnNode, fixInfoMap: Map<String, FieldFixInfo>) {
 			val fieldInfo = getFieldInfo(insn) ?: return
-			val arg = insn.getArg(insn.getArgsCount() - 1)
+			val arg = insn.getArg(insn.argsCount - 1)
 			val type = arg.getType()
 			if (!type.isTypeKnown() || !type.isObject()) {
 				return
@@ -151,7 +151,7 @@ class ShadowFieldVisitor : AbstractVisitor() {
 			fixFieldAccess(mth, fieldInfo, fieldFixType, arg)
 		}
 
-		private fun getFieldInfo(insn: InsnNode): FieldInfo? = when (insn.getType()) {
+		private fun getFieldInfo(insn: InsnNode): FieldInfo? = when (insn.type) {
 			InsnType.IPUT, InsnType.IGET -> (insn as IndexInsnNode).index as FieldInfo
 			else -> null
 		}

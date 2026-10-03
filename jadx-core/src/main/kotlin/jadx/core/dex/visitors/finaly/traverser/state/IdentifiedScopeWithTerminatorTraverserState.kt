@@ -16,29 +16,28 @@ import jadx.core.dex.visitors.finaly.traverser.handlers.MergePathActivePathTrave
  */
 class IdentifiedScopeWithTerminatorTraverserState(
 	state: TraverserActivePathState,
-	private val centralityState: CentralityState,
+	private val centralityStateValue: CentralityState,
 	private val roots: List<BlockNode>,
 	private val scopeTerminator: BlockNode,
 ) : TraverserState(state) {
 
-	override fun getNextHandler(): AbstractBlockTraverserHandler = MergePathActivePathTraverserHandler(getComparatorState())
+	override fun getNextHandler(): AbstractBlockTraverserHandler = MergePathActivePathTraverserHandler(comparatorState)
 
 	override fun getCompareState(): ComparisonState = ComparisonState.READY_TO_COMPARE
 
 	override fun isTerminal(): Boolean = false
 
-	override fun getUnderlyingCentralityState(): CentralityState = centralityState
+	override fun getUnderlyingCentralityState(): CentralityState = centralityStateValue
 
 	override fun getUnderlyingBlockInsnInfo(): TraverserBlockInfo? = null
 
-	override fun duplicateInternalState(comparatorState: TraverserActivePathState): TraverserState = IdentifiedScopeWithTerminatorTraverserState(comparatorState, centralityState, roots, scopeTerminator)
+	override fun duplicateInternalState(comparatorState: TraverserActivePathState): TraverserState = IdentifiedScopeWithTerminatorTraverserState(comparatorState, centralityStateValue, roots, scopeTerminator)
 
-	fun getTerminus(): BlockNode = scopeTerminator
+	val terminus: BlockNode get() = scopeTerminator
 
 	fun getRoots(): List<BlockNode> = roots
 
 	companion object {
-		@JvmStatic
 		fun getFactory(
 			centralityState: CentralityState,
 			roots: List<BlockNode>,

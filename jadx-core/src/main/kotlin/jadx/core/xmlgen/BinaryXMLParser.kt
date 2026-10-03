@@ -56,7 +56,7 @@ class BinaryXMLParser(private val rootNode: RootNode) : CommonBinaryParser() {
 	init {
 		try {
 			val constStorage: ConstStorage = rootNode.getConstValues()
-			resNames = constStorage.getResourcesNames()
+			resNames = constStorage.resourcesNames
 		} catch (e: Exception) {
 			throw JadxRuntimeException("BinaryXMLParser init error", e)
 		}
@@ -333,9 +333,9 @@ class BinaryXMLParser(private val rootNode: RootNode) : CommonBinaryParser() {
 		}
 		if (shortNsName != null && shortNsName == "android") {
 			if (attrName == "pathData") {
-				rootNode.getGradleInfoStorage().isVectorPathData = true
+				rootNode.gradleInfoStorage.isVectorPathData = true
 			} else if (attrName == "fillType") {
-				rootNode.getGradleInfoStorage().isVectorFillType = true
+				rootNode.gradleInfoStorage.isVectorFillType = true
 			}
 		}
 		writer.add('"')

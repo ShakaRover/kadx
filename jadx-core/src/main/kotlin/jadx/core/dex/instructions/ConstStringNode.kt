@@ -16,7 +16,7 @@ import jadx.core.utils.StringUtils
 class ConstStringNode(private val str: String?) : InsnNode(InsnType.CONST_STR, 0) {
 
 	/** 返回字符串字面量；与输入格式的索引解析结果一致，可能为 null。 */
-	fun getString(): String? = str
+	val string: String? get() = str
 
 	override fun copy(): InsnNode = copyCommonParams(ConstStringNode(str))
 
@@ -30,5 +30,5 @@ class ConstStringNode(private val str: String?) : InsnNode(InsnType.CONST_STR, 0
 		return str == obj.str
 	}
 
-	override fun toString(): String = super.baseString() + StringUtils.getInstance().unescapeString(checkNotNull(str)) + super.attributesString()
+	override fun toString(): String = super.baseString() + StringUtils.instance.unescapeString(checkNotNull(str)) + super.attributesString()
 }

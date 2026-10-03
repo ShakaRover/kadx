@@ -93,7 +93,7 @@ class JadxGUI {
 			if (LOG.isDebugEnabled()) {
 				LOG.debug(
 					"Starting jadx-gui: version: {}, bundle: {}. JVM: {} {}. OS: {}, version: {}, arch: {}",
-					Jadx.getVersion(),
+					Jadx.version,
 					JadxBuildInfo.getJadxBundleType(),
 					JadxSystemInfo.JAVA_VM,
 					JadxSystemInfo.JAVA_VER,

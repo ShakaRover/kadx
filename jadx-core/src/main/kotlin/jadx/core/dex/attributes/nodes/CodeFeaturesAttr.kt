@@ -27,14 +27,12 @@ class CodeFeaturesAttr : IJadxAttribute {
 
 	companion object {
 		/** 查询方法是否具有指定特征 */
-		@JvmStatic
 		fun contains(mth: MethodNode, feature: CodeFeature): Boolean {
 			val codeFeaturesAttr = mth.get(AType.METHOD_CODE_FEATURES) ?: return false
 			return codeFeaturesAttr.codeFeatures.contains(feature)
 		}
 
 		/** 为方法添加一个代码特征（属性不存在时先创建） */
-		@JvmStatic
 		fun add(mth: MethodNode, feature: CodeFeature) {
 			var codeFeaturesAttr = mth.get(AType.METHOD_CODE_FEATURES)
 			if (codeFeaturesAttr == null) {

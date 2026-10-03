@@ -42,7 +42,7 @@ open class VarNode(
 
 		/** 由代码变量构造。 */
 		@JvmStatic
-		fun get(mth: MethodNode, codeVar: CodeVar): VarNode? = get(mth, codeVar.getAnySsaVar())
+		fun get(mth: MethodNode, codeVar: CodeVar): VarNode? = get(mth, codeVar.anySsaVar)
 
 		/** 由 SSA 变量构造（`this` 变量不生成节点；命中缓存则直接复用）。 */
 		@JvmStatic

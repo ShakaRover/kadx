@@ -23,7 +23,6 @@ class SelectFromDuplicates {
 		private val CLASSES_DEX_PATTERN = Pattern.compile("classes([1-9]\\d*)\\.dex")
 
 		/** 从候选列表中选出最佳类；列表为空时返回 null。 */
-		@JvmStatic
 		fun process(dupClsList: List<ClassNode>): ClassNode? {
 			var bestCls: ClassNode? = null
 			var bestClsIndex = -1

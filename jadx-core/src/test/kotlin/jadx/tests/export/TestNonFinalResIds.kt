@@ -12,7 +12,7 @@ class TestNonFinalResIds : ExportGradleTest() {
 
 	@Test
 	fun test() {
-		val gradleInfo = getRootNode().getGradleInfoStorage()
+		val gradleInfo = getRootNode().gradleInfoStorage
 		gradleInfo.isNonFinalResIds = false
 		exportGradle("OptionalTargetSdkVersion.xml", "strings.xml")
 		assertFalse(getGradleProperiesFile().exists())

@@ -47,7 +47,7 @@ class NonFinalResIdsVisitor :
 
 	@Throws(JadxException::class)
 	override fun init(root: RootNode) {
-		gradleInfoStorage = root.getGradleInfoStorage()
+		gradleInfoStorage = root.gradleInfoStorage
 	}
 
 	@Throws(JadxException::class)
@@ -110,10 +110,10 @@ class NonFinalResIdsVisitor :
 	}
 
 	private fun detectSwitchOverResIds(switchRegion: SwitchRegion): Boolean {
-		for (caseInfo in switchRegion.getCases()) {
+		for (caseInfo in switchRegion.cases) {
 			for (key in caseInfo.keys) {
 				if (key is FieldNode) {
-					val topParentClass = key.getTopParentClass()
+					val topParentClass = key.topParentClass
 					if (AndroidResourcesUtils.isResourceClass(topParentClass) && "android.R" != topParentClass.fullName) {
 						this.nonFinalResIdsFlagRequired = true
 						gradleInfoStorage.isNonFinalResIds = true

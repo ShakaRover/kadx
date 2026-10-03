@@ -189,11 +189,11 @@ open class InsnGen(
 			if (replace != null) {
 				when (replace.replaceType) {
 					FieldReplaceAttr.ReplaceWith.CLASS_INSTANCE -> {
-						useClass(code, replace.getClsRef())
+						useClass(code, replace.clsRef)
 						code.add(".this")
 					}
 
-					FieldReplaceAttr.ReplaceWith.VAR -> addArg(code, replace.getVarRef())
+					FieldReplaceAttr.ReplaceWith.VAR -> addArg(code, replace.varRef)
 				}
 				return
 			}
@@ -205,7 +205,7 @@ open class InsnGen(
 		if (fieldNode == null) {
 			code.add(field.alias)
 		} else {
-			code.add(fieldNode.getAlias())
+			code.add(fieldNode.alias)
 		}
 	}
 
@@ -248,7 +248,7 @@ open class InsnGen(
 
 	@Throws(CodegenException::class)
 	internal fun makeInsn(insn: InsnNode, code: ICodeWriter, flag: Flags?) {
-		if (insn.getType() == InsnType.REGION_ARG) {
+		if (insn.type == InsnType.REGION_ARG) {
 			return
 		}
 		try {
@@ -265,7 +265,7 @@ open class InsnGen(
 				val resArg = insn.getResult()
 				if (resArg != null) {
 					val v = resArg.sVar
-					if (v == null || v.getUseCount() != 0 || insn.getType() != InsnType.CONSTRUCTOR) {
+					if (v == null || v.useCount != 0 || insn.type != InsnType.CONSTRUCTOR) {
 						assignVar(code, insn)
 						code.add(" = ")
 					}
@@ -283,10 +283,10 @@ open class InsnGen(
 
 	@Throws(CodegenException::class)
 	private fun makeInsnBody(code: ICodeWriter, insn: InsnNode, state: Set<Flags>) {
-		when (insn.getType()) {
+		when (insn.type) {
 			InsnType.CONST_STR -> {
-				val str = (insn as ConstStringNode).getString()
-				code.add(mth.root().getStringUtils().unescapeString(checkNotNull(str)))
+				val str = (insn as ConstStringNode).string
+				code.add(mth.root().stringUtils.unescapeString(checkNotNull(str)))
 			}
 
 			InsnType.CONST_CLASS -> {
@@ -326,7 +326,7 @@ open class InsnGen(
 			}
 
 			InsnType.RETURN -> {
-				if (insn.getArgsCount() != 0) {
+				if (insn.argsCount != 0) {
 					code.add("return ")
 					addArg(code, insn.getArg(0), false)
 				} else {
@@ -379,10 +379,10 @@ open class InsnGen(
 			InsnType.INVOKE -> makeInvoke(insn as InvokeNode, code)
 
 			InsnType.NEW_ARRAY -> {
-				val arrayType = (insn as NewArrayNode).getArrayType()
+				val arrayType = (insn as NewArrayNode).arrayType
 				code.add("new ")
 				useType(code, arrayType.getArrayRootElement())
-				val argsCount = insn.getArgsCount()
+				val argsCount = insn.argsCount
 				for (k in 0 until argsCount) {
 					code.add('[')
 					addArg(code, insn.getArg(k), false)
@@ -476,7 +476,7 @@ open class InsnGen(
 			InsnType.MONITOR_EXIT -> {
 				if (isFallback) {
 					code.add("monitor-exit(")
-					if (insn.getArgsCount() == 1) {
+					if (insn.argsCount == 1) {
 						addArg(code, insn.getArg(0))
 					}
 					code.add(')')
@@ -533,7 +533,7 @@ open class InsnGen(
 						code.add(MethodGen.getLabelName(targets[i])).add(';')
 					}
 					code.startLine("default: goto ")
-					code.add(MethodGen.getLabelName(sw.getDefaultCaseOffset())).add(';')
+					code.add(MethodGen.getLabelName(sw.defaultCaseOffset)).add(';')
 				}
 				code.decIndent()
 				code.startLine('}')
@@ -547,7 +547,7 @@ open class InsnGen(
 
 			InsnType.PHI -> {
 				fallbackOnlyInsn(insn)
-				code.add(insn.getType().toString()).add('(')
+				code.add(insn.type.toString()).add('(')
 				for (insnArg in insn.getArguments()) {
 					addArg(code, insnArg)
 					code.add(' ')
@@ -572,7 +572,7 @@ open class InsnGen(
 
 			InsnType.MOVE_MULTI -> {
 				fallbackOnlyInsn(insn)
-				val len = insn.getArgsCount()
+				val len = insn.argsCount
 				for (i in 0 until len - 1 step 2) {
 					addArg(code, insn.getArg(i))
 					code.add(" = ")
@@ -592,7 +592,7 @@ open class InsnGen(
 				addArg(code, insn.getArg(0))
 			}
 
-			else -> throw CodegenException(mth, "Unknown instruction: " + insn.getType())
+			else -> throw CodegenException(mth, "Unknown instruction: " + insn.type)
 		}
 	}
 
@@ -611,7 +611,7 @@ open class InsnGen(
 		if (arrayType.isTypeKnown() && arrayType.isArray()) {
 			elemType = checkNotNull(arrayType.getArrayElement())
 		} else {
-			val elementType = arrayNode.getElementType() // unknown type
+			val elementType = arrayNode.elementType // unknown type
 			elemType = checkNotNull(elementType.selectFirst())
 		}
 		val args = arrayNode.getLiteralArgs(elemType)
@@ -642,10 +642,10 @@ open class InsnGen(
 	@Throws(CodegenException::class)
 	private fun fallbackOnlyInsn(insn: InsnNode) {
 		if (!fallback) {
-			val msg = insn.getType().toString() + " instruction can be used only in fallback mode"
+			val msg = insn.type.toString() + " instruction can be used only in fallback mode"
 			val e = CodegenException(msg)
 			mth.addError(msg, e)
-			mth.parentClass.getTopParentClass().add(AFlag.RESTART_CODEGEN)
+			mth.parentClass.topParentClass.add(AFlag.RESTART_CODEGEN)
 			throw e
 		}
 	}
@@ -654,10 +654,10 @@ open class InsnGen(
 	private fun filledNewArray(insn: FilledNewArrayNode, code: ICodeWriter) {
 		if (!insn.contains(AFlag.DECLARE_VAR)) {
 			code.add("new ")
-			useType(code, insn.getArrayType())
+			useType(code, insn.arrayType)
 		}
 		code.add('{')
-		val c = insn.getArgsCount()
+		val c = insn.argsCount
 		var wrap = 0
 		for (i in 0 until c) {
 			addArg(code, insn.getArg(i), false)
@@ -675,7 +675,7 @@ open class InsnGen(
 
 	@Throws(CodegenException::class)
 	private fun makeConstructor(insn: ConstructorInsn, code: ICodeWriter) {
-		val cls = mth.root().resolveClass(insn.getClassType())
+		val cls = mth.root().resolveClass(insn.classType)
 		if (cls != null && cls.isAnonymous() && !fallback) {
 			inlineAnonymousConstructor(code, cls, insn)
 			return
@@ -708,9 +708,9 @@ open class InsnGen(
 				code.attachAnnotation(refMth)
 			}
 			if (forceShortName) {
-				mgen.classGen.addClsShortNameForced(code, insn.getClassType())
+				mgen.classGen.addClsShortNameForced(code, insn.classType)
 			} else {
-				mgen.classGen.addClsName(code, insn.getClassType())
+				mgen.classGen.addClsName(code, insn.classType)
 			}
 			val genericInfoAttr = insn.get(AType.GENERIC_INFO)
 			if (genericInfoAttr != null) {
@@ -738,7 +738,7 @@ open class InsnGen(
 			return false
 		}
 		val ctrCls = checkNotNull(callMth.getDeclaringClass())
-		if (!ctrCls.isInner() || insn.getArgsCount() == 0) {
+		if (!ctrCls.isInner() || insn.argsCount == 0) {
 			return false
 		}
 		val instArg = insn.getArg(0)
@@ -760,7 +760,7 @@ open class InsnGen(
 		if (this.mth.parentClass === cls) {
 			cls.remove(AType.ANONYMOUS_CLASS)
 			cls.remove(AFlag.DONT_GENERATE)
-			mth.parentClass.getTopParentClass().add(AFlag.RESTART_CODEGEN)
+			mth.parentClass.topParentClass.add(AFlag.RESTART_CODEGEN)
 			throw CodegenException(
 				"Anonymous inner class unlimited recursion detected." +
 					" Convert class to inner: " + cls.classInfo.fullName,
@@ -781,8 +781,8 @@ open class InsnGen(
 		val callMth = mth.root().resolveMethod(insn.callMth)
 		if (callMth != null) {
 			// copy var names
-			val mthArgs = callMth.getArgRegs()
-			val argsCount = Math.min(insn.getArgsCount(), mthArgs.size)
+			val mthArgs = callMth.argRegs
+			val argsCount = Math.min(insn.argsCount, mthArgs.size)
 			for (i in 0 until argsCount) {
 				val arg = insn.getArg(i)
 				if (arg.isRegister) {
@@ -857,7 +857,7 @@ open class InsnGen(
 			code.add(callMth.name)
 		} else {
 			if (callMthNode != null) {
-				code.add(callMthNode.getAlias())
+				code.add(callMthNode.alias)
 			} else {
 				code.add(callMth.alias)
 			}
@@ -883,7 +883,7 @@ open class InsnGen(
 				useType(code, returnType)
 				code.add(") ")
 			}
-			makeInvoke(insn.getResolveInvoke(), code)
+			makeInvoke(insn.resolveInvoke, code)
 			code.add(".dynamicInvoker().invoke")
 			generateMethodArguments(code, insn, 0, callMthNode)
 			code.add(" /* invoke-custom */")
@@ -947,10 +947,10 @@ open class InsnGen(
 				code.add("()")
 			} else {
 				code.add('(')
-				val callArgsCount = callInsn.getArgsCount()
+				val callArgsCount = callInsn.argsCount
 				val startArg = callArgsCount - implArgsCount
 				if (customNode.handleType != MethodHandleType.INVOKE_STATIC &&
-					customNode.getArgsCount() > 0 &&
+					customNode.argsCount > 0 &&
 					customNode.getArg(0).isThis()
 				) {
 					callInsn.getArg(0).add(AFlag.THIS)
@@ -993,7 +993,7 @@ open class InsnGen(
 		nameGen.inheritUsedNames(this.mgen.nameGen)
 
 		val implArgs = checkNotNull(customNode.implMthInfo).argumentsTypes
-		val callArgs = callMth.getArgRegs()
+		val callArgs = callMth.argRegs
 		if (implArgs.isEmpty()) {
 			code.add("()")
 		} else {
@@ -1014,7 +1014,7 @@ open class InsnGen(
 			}
 		}
 		// force set external arg names into call method args
-		val extArgsCount = customNode.getArgsCount()
+		val extArgsCount = customNode.argsCount
 		val startArg = if (customNode.handleType == MethodHandleType.INVOKE_STATIC) 0 else 1 // skip 'this' arg
 		var callArg = 0
 		for (i in startArg until extArgsCount) {
@@ -1083,7 +1083,7 @@ open class InsnGen(
 		if (mthNode != null && mthNode.contains(AFlag.SKIP_FIRST_ARG)) {
 			k++
 		}
-		val argsCount = insn.getArgsCount()
+		val argsCount = insn.argsCount
 		code.add('(')
 		val skipAttr = mthNode?.get(AType.SKIP_MTH_ARGS)
 		var firstArg = true
@@ -1119,10 +1119,10 @@ open class InsnGen(
 			return false
 		}
 		val insn = (lastArg as InsnWrapArg).wrapInsn
-		if (insn.getType() != InsnType.FILLED_NEW_ARRAY) {
+		if (insn.type != InsnType.FILLED_NEW_ARRAY) {
 			return false
 		}
-		val count = insn.getArgsCount()
+		val count = insn.argsCount
 		for (i in 0 until count) {
 			val elemArg = insn.getArg(i)
 			addArg(code, elemArg, false)
@@ -1143,9 +1143,9 @@ open class InsnGen(
 		val second = insn.getArg(1)
 		val condGen = ConditionGen(this)
 		if (first.isTrue() && second.isFalse()) {
-			condGen.add(code, insn.getCondition())
+			condGen.add(code, insn.condition)
 		} else {
-			condGen.wrap(code, insn.getCondition())
+			condGen.wrap(code, insn.condition)
 			code.add(" ? ")
 			addArg(code, first, false)
 			code.add(" : ")
@@ -1227,7 +1227,7 @@ open class InsnGen(
 			if (fieldNode == null) {
 				code.add(field.alias)
 			} else {
-				code.add(fieldNode.getAlias())
+				code.add(fieldNode.alias)
 			}
 		}
 

@@ -23,9 +23,9 @@ class IndexInsnNode(type: InsnType, index: Any?, argCount: Int) : InsnNode(type,
 	var index: Any? = index
 
 	/** 把 [index] 当作类型使用（cast / check-cast / new-instance 等场景）。 */
-	fun getIndexAsType(): ArgType = index as ArgType
+	val indexAsType: ArgType get() = index as ArgType
 
-	override fun copy(): IndexInsnNode = copyCommonParams(IndexInsnNode(insnType, index, getArgsCount()))
+	override fun copy(): IndexInsnNode = copyCommonParams(IndexInsnNode(insnType, index, argsCount))
 
 	override fun isSame(obj: InsnNode): Boolean {
 		if (this === obj) {

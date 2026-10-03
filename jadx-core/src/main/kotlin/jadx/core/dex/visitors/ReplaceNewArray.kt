@@ -49,7 +49,7 @@ class ReplaceNewArray : AbstractVisitor() {
 		var k = 0
 		while (true) {
 			var changed = false
-			for (block in checkNotNull(mth.getBasicBlocks())) {
+			for (block in checkNotNull(mth.basicBlocks)) {
 				val insnList = block.getInstructions()
 				val size = insnList.size
 				for (i in 0 until size) {
@@ -72,7 +72,7 @@ class ReplaceNewArray : AbstractVisitor() {
 	companion object {
 		private fun processInsn(mth: MethodNode, instructions: List<InsnNode>, i: Int, remover: InsnRemover): Boolean {
 			val insn = instructions[i]
-			if (insn.getType() == InsnType.NEW_ARRAY && !insn.contains(AFlag.REMOVE)) {
+			if (insn.type == InsnType.NEW_ARRAY && !insn.contains(AFlag.REMOVE)) {
 				return processNewArray(mth, insn as NewArrayNode, instructions, remover)
 			}
 			return false
@@ -92,13 +92,13 @@ class ReplaceNewArray : AbstractVisitor() {
 			if (len == 0) {
 				return false
 			}
-			val arrType = newArrayInsn.getArrayType()
+			val arrType = newArrayInsn.arrayType
 			val elemType = checkNotNull(arrType.getArrayElement())
 			val allowMissingKeys = arrType.getArrayDimension() == 1 && elemType.isPrimitive()
 			val minLen = if (allowMissingKeys) len / 2 else len
 
 			val arrArg = newArrayInsn.getResult()
-			val useList = checkNotNull(checkNotNull(arrArg).sVar).getUseList()
+			val useList = checkNotNull(checkNotNull(arrArg).sVar).useList
 			if (useList.size < minLen) {
 				return false
 			}
@@ -106,7 +106,7 @@ class ReplaceNewArray : AbstractVisitor() {
 			var foundPut = false
 			for (registerArg in useList) {
 				val parentInsn = registerArg.getParentInsn()
-				if (parentInsn != null && parentInsn.getType() == InsnType.APUT) {
+				if (parentInsn != null && parentInsn.type == InsnType.APUT) {
 					foundPut = true
 					break
 				}
@@ -120,7 +120,7 @@ class ReplaceNewArray : AbstractVisitor() {
 			for (registerArg in useList) {
 				val parentInsn = registerArg.getParentInsn()
 				if (parentInsn == null ||
-					parentInsn.getType() != InsnType.APUT ||
+					parentInsn.type != InsnType.APUT ||
 					!arrArg.sameRegAndSVar(parentInsn.getArg(0))
 				) {
 					if (firstNotAPutUsage == null) {

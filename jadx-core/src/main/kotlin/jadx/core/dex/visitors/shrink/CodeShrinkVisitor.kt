@@ -51,13 +51,12 @@ class CodeShrinkVisitor : AbstractVisitor() {
 
 	companion object {
 		/** 对单个方法执行收缩（供其它 Pass 在修改代码后调用）。 */
-		@JvmStatic
 		fun shrinkMethod(mth: MethodNode) {
 			if (mth.isNoCode()) {
 				return
 			}
 			mth.remove(AFlag.REQUEST_CODE_SHRINK)
-			for (block in checkNotNull(mth.getBasicBlocks())) {
+			for (block in checkNotNull(mth.basicBlocks)) {
 				shrinkBlock(mth, block)
 				simplifyMoveInsns(mth, block)
 			}
@@ -120,7 +119,7 @@ class CodeShrinkVisitor : AbstractVisitor() {
 			}
 			// 只允许内联“仅使用一次”的参数
 			var useCount = 0
-			for (useArg in sVar.getUseList()) {
+			for (useArg in sVar.useList) {
 				val useParentInsn = useArg.getParentInsn()
 				if (useParentInsn != null && useParentInsn.contains(AFlag.DONT_GENERATE)) {
 					continue
@@ -175,10 +174,10 @@ class CodeShrinkVisitor : AbstractVisitor() {
 		 * {@code () -> { ... }.apply(); }
 		 */
 		private fun checkLambdaInline(arg: RegisterArg, assignInsn: InsnNode): Boolean {
-			if (assignInsn.getType() == InsnType.INVOKE && assignInsn is InvokeCustomNode) {
-				for (useArg in checkNotNull(arg.sVar).getUseList()) {
+			if (assignInsn.type == InsnType.INVOKE && assignInsn is InvokeCustomNode) {
+				for (useArg in checkNotNull(arg.sVar).useList) {
 					val parentInsn = useArg.getParentInsn()
-					if (parentInsn != null && parentInsn.getType() == InsnType.INVOKE) {
+					if (parentInsn != null && parentInsn.type == InsnType.INVOKE) {
 						val invokeNode = parentInsn as InvokeNode
 						val instArg = invokeNode.getInstanceArg()
 						if (instArg != null && instArg === useArg) {
@@ -191,12 +190,12 @@ class CodeShrinkVisitor : AbstractVisitor() {
 		}
 
 		private fun varWithSameNameExists(mth: MethodNode, inlineVar: SSAVar): Boolean {
-			for (ssaVar in mth.getSVars()) {
+			for (ssaVar in mth.SVars) {
 				if (ssaVar === inlineVar || ssaVar.codeVar === inlineVar.codeVar) {
 					continue
 				}
 				if (Objects.equals(ssaVar.getName(), inlineVar.getName())) {
-					return ssaVar.getUseCount() > inlineVar.getUseCount()
+					return ssaVar.useCount > inlineVar.useCount
 				}
 			}
 			return false
@@ -215,7 +214,7 @@ class CodeShrinkVisitor : AbstractVisitor() {
 		}
 
 		private fun assignInline(mth: MethodNode, arg: RegisterArg, assignInsn: InsnNode, assignBlock: BlockNode): Boolean {
-			val useArg = checkNotNull(arg.sVar).getUseList()[0]
+			val useArg = checkNotNull(arg.sVar).useList[0]
 			val useInsn = useArg.getParentInsn()
 			if (useInsn == null || useInsn.contains(AFlag.DONT_GENERATE)) {
 				return false
@@ -308,7 +307,7 @@ class CodeShrinkVisitor : AbstractVisitor() {
 			val size = insns.size
 			for (i in 0 until size) {
 				val insn = insns[i]
-				if (insn.getType() == InsnType.MOVE) {
+				if (insn.type == InsnType.MOVE) {
 					// 用 wrapped 指令替换 move
 					val arg = insn.getArg(0)
 					if (arg.isInsnWrap) {

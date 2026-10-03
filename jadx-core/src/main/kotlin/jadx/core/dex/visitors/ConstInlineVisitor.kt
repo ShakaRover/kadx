@@ -54,10 +54,9 @@ class ConstInlineVisitor : AbstractVisitor() {
 
 	companion object {
 
-		@JvmStatic
 		fun process(mth: MethodNode) {
 			val toRemove = ArrayList<InsnNode>()
-			for (block in checkNotNull(mth.getBasicBlocks())) {
+			for (block in checkNotNull(mth.basicBlocks)) {
 				toRemove.clear()
 				for (insn in block.getInstructions()) {
 					checkInsn(mth, insn, toRemove)
@@ -76,7 +75,7 @@ class ConstInlineVisitor : AbstractVisitor() {
 			val sVar = checkNotNull(checkNotNull(insn.getResult()).sVar)
 			var constArg: InsnArg
 			var onSuccess: Runnable? = null
-			when (insn.getType()) {
+			when (insn.type) {
 				InsnType.CONST, InsnType.MOVE -> {
 					constArg = insn.getArg(0)
 					if (!constArg.isLiteral) {
@@ -89,7 +88,7 @@ class ConstInlineVisitor : AbstractVisitor() {
 				}
 
 				InsnType.CONST_STR -> {
-					val s = checkNotNull((insn as ConstStringNode).getString())
+					val s = checkNotNull((insn as ConstStringNode).string)
 					val f = mth.parentClass.getConstField(s)
 					if (f == null) {
 						val copy = insn.copyWithoutResult<InsnNode>()
@@ -122,7 +121,7 @@ class ConstInlineVisitor : AbstractVisitor() {
 
 		/** 不要内联 null 对象引用。 */
 		private fun forbidNullInlines(sVar: SSAVar): Boolean {
-			val useList = sVar.getUseList()
+			val useList = sVar.useList
 			if (useList.isEmpty()) {
 				return false
 			}
@@ -137,7 +136,7 @@ class ConstInlineVisitor : AbstractVisitor() {
 		}
 
 		private fun forbidNullArgInline(insn: InsnNode, useArg: RegisterArg): Boolean {
-			if (insn.getType() == InsnType.MOVE) {
+			if (insn.type == InsnType.MOVE) {
 				// 结果是 null，继续链式检查
 				return forbidNullInlines(checkNotNull(checkNotNull(insn.getResult()).sVar))
 			}
@@ -149,7 +148,7 @@ class ConstInlineVisitor : AbstractVisitor() {
 		}
 
 		private fun canUseNull(insn: InsnNode, useArg: RegisterArg): Boolean {
-			when (insn.getType()) {
+			when (insn.type) {
 				InsnType.INVOKE -> return (insn as InvokeNode).getInstanceArg() !== useArg
 
 				InsnType.ARRAY_LENGTH,
@@ -171,10 +170,10 @@ class ConstInlineVisitor : AbstractVisitor() {
 
 		private fun replaceConst(mth: MethodNode, constInsn: InsnNode, constArg: InsnArg): Boolean {
 			val ssaVar = checkNotNull(checkNotNull(constInsn.getResult()).sVar)
-			if (ssaVar.getUseCount() == 0) {
+			if (ssaVar.useCount == 0) {
 				return true
 			}
-			val useList = ArrayList(ssaVar.getUseList())
+			val useList = ArrayList(ssaVar.useList)
 			var replaceCount = 0
 			for (arg in useList) {
 				if (canInline(mth, arg) && replaceArg(mth, arg, constArg, constInsn)) {
@@ -186,7 +185,7 @@ class ConstInlineVisitor : AbstractVisitor() {
 			}
 			// 若仅被“不生成”的指令使用，则隐藏本指令
 			var allIgnore = true
-			for (reg in ssaVar.getUseList()) {
+			for (reg in ssaVar.useList) {
 				if (!canIgnoreInsn(reg)) {
 					allIgnore = false
 					break
@@ -200,7 +199,7 @@ class ConstInlineVisitor : AbstractVisitor() {
 
 		private fun canIgnoreInsn(reg: RegisterArg): Boolean {
 			val parentInsn = reg.getParentInsn()
-			if (parentInsn == null || parentInsn.getType() == InsnType.PHI) {
+			if (parentInsn == null || parentInsn.type == InsnType.PHI) {
 				return false
 			}
 			if (reg.isLinkedToOtherSsaVars()) {
@@ -221,7 +220,7 @@ class ConstInlineVisitor : AbstractVisitor() {
 				// 不要内联 finally 块中使用的变量
 				return false
 			}
-			if (parentInsn.getType() == InsnType.CONSTRUCTOR) {
+			if (parentInsn.type == InsnType.CONSTRUCTOR) {
 				// 若匿名类调用后续可能被内联，则不要内联到其中
 				val ctrMth = mth.root().getMethodUtils().resolveMethod(parentInsn as ConstructorInsn)
 				if (ctrMth != null &&
@@ -235,7 +234,7 @@ class ConstInlineVisitor : AbstractVisitor() {
 
 		private fun replaceArg(mth: MethodNode, arg: RegisterArg, constArg: InsnArg, constInsn: InsnNode): Boolean {
 			val useInsn = arg.getParentInsn() ?: return false
-			val insnType = useInsn.getType()
+			val insnType = useInsn.type
 			if (insnType == InsnType.PHI) {
 				return false
 			}

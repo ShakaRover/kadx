@@ -38,7 +38,7 @@ class AdjustForIfMergeVisitor : AbstractVisitor() {
 			return
 		}
 		// 选出位于两条 if 语句之间的块作为候选
-		val blocks = mth.getBasicBlocks() ?: return
+		val blocks = mth.basicBlocks ?: return
 
 		for (blk in blocks) {
 			if (areSurroundingsCorrectShape(blk)) {
@@ -58,7 +58,7 @@ class AdjustForIfMergeVisitor : AbstractVisitor() {
 
 	private fun areSurroundingsCorrectShape(blk: BlockNode): Boolean = blk.getPredecessors().size == 1 && checkNotNull(blk.getCleanSuccessors()).size == 1
 
-	private fun isSimpleIf(blk: BlockNode): Boolean = blk.getInstructions().size == 1 && blk.getInstructions()[0].getType() == InsnType.IF
+	private fun isSimpleIf(blk: BlockNode): Boolean = blk.getInstructions().size == 1 && blk.getInstructions()[0].type == InsnType.IF
 
 	private fun couldMerge(mth: MethodNode, pred: BlockNode, blk: BlockNode, succ: BlockNode): Boolean {
 		// blk→succ 若是回边则不能合并。
@@ -78,7 +78,7 @@ class AdjustForIfMergeVisitor : AbstractVisitor() {
 		// 目前只处理“同一寄存器的 nop move”，且目标变量不在 succ 块中被使用。
 		val movableInstructions = ArrayList<InsnNode>()
 		for (insn in blk.getInstructions()) {
-			if (insn.getType() == InsnType.MOVE) {
+			if (insn.type == InsnType.MOVE) {
 				val arg0 = insn.getArg(0)
 				if (arg0 !is RegisterArg) {
 					// 可能是 LiteralArg
@@ -87,7 +87,7 @@ class AdjustForIfMergeVisitor : AbstractVisitor() {
 				val source = arg0
 				val target = checkNotNull(insn.getResult())
 
-				val uses = checkNotNull(target.sVar).getUseList()
+				val uses = checkNotNull(target.sVar).useList
 				for (use in uses) {
 					val parentInsn = use.getParentInsn()
 					if (parentInsn != null && BlockUtils.blockContains(succ, parentInsn)) {

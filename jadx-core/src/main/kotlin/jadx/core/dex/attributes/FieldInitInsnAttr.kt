@@ -22,7 +22,7 @@ class FieldInitInsnAttr(
 ) : PinnedAttribute() {
 
 	/** 初始化指令所在的方法（原 Java 方法名：getInsnMth） */
-	fun getInsnMth(): MethodNode = mth
+	val insnMth: MethodNode get() = mth
 
 	override val attrType: IJadxAttrType<*> get() = AType.FIELD_INIT_INSN
 

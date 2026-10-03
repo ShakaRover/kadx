@@ -46,7 +46,7 @@ class DebugInfoAttachVisitor : AbstractVisitor() {
 	@Throws(JadxException::class)
 	override fun visit(mth: MethodNode) {
 		try {
-			val debugInfo = mth.getDebugInfo()
+			val debugInfo = mth.debugInfo
 			if (debugInfo != null) {
 				processDebugInfo(mth, debugInfo)
 			}
@@ -134,7 +134,7 @@ class DebugInfoAttachVisitor : AbstractVisitor() {
 				if (thisArg != null) {
 					attachDebugInfo(thisArg, debugInfoAttr, regNum)
 				}
-				for (arg in mth.getArgRegs()) {
+				for (arg in mth.argRegs) {
 					attachDebugInfo(arg, debugInfoAttr, regNum)
 				}
 				start = 0
@@ -184,7 +184,6 @@ class DebugInfoAttachVisitor : AbstractVisitor() {
 
 	companion object {
 		/** 从局部变量调试信息推导变量类型（泛型签名优先）。 */
-		@JvmStatic
 		fun getVarType(mth: MethodNode, v: ILocalVar): ArgType {
 			val type = ArgType.parse(v.type)
 			val sign = v.signature ?: return type

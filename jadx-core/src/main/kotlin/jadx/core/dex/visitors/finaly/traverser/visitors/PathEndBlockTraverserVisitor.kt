@@ -22,13 +22,13 @@ import jadx.core.dex.visitors.finaly.traverser.state.TraverserState
 class PathEndBlockTraverserVisitor(state: TraverserState) : AbstractBlockTraverserVisitor(state) {
 
 	override fun visit(block: BlockNode): TraverserState {
-		val centralityState: CentralityState = getState().getCentralityState()
+		val centralityState: CentralityState = getState().centralityState
 		val insnInfo = getState().getBlockInsnInfo()
 		if (!centralityState.allowsCentral) {
 			return AwaitingInsnCompareTraverserState(getComparator(), centralityState, checkNotNull(insnInfo))
 		}
 		val validInsnInfo: TraverserBlockInfo = checkNotNull(insnInfo)
-		val insns: List<InsnNode> = validInsnInfo.getInsnsSlice()
+		val insns: List<InsnNode> = validInsnInfo.insnsSlice
 		val insnsIterator = insns.listIterator(insns.size)
 
 		// 统计块尾被识别为“路径结束相关”的指令数量。
@@ -45,7 +45,7 @@ class PathEndBlockTraverserVisitor(state: TraverserState) : AbstractBlockTravers
 				// 例如：
 				//   CONST_STR r2 = "return this string"  <-- 路径结束指令（设置 RETURN 使用的参数）
 				//   RETURN r2                             <-- 路径结束指令
-				if (insn.getArgsCount() != 0) {
+				if (insn.argsCount != 0) {
 					val handlerExitArg = insn.getArg(0)
 					// 指令返回值只能是寄存器参数，因此确认它是 RegisterArg。
 					if (handlerExitArg is RegisterArg) {
@@ -78,9 +78,8 @@ class PathEndBlockTraverserVisitor(state: TraverserState) : AbstractBlockTravers
 
 	companion object {
 		/** 判断一条指令是否为“路径结束”指令（RETURN 或 THROW）。 */
-		@JvmStatic
 		fun isInstructionPathEnd(insn: InsnNode): Boolean {
-			val type: InsnType = insn.getType()
+			val type: InsnType = insn.type
 
 			return when (type) {
 				InsnType.RETURN, InsnType.THROW -> true

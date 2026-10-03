@@ -50,13 +50,13 @@ class ProcessInstructionsVisitor : AbstractVisitor() {
 	private fun initJumps(mth: MethodNode, insnByOffset: Array<InsnNode?>) {
 		for (offset in insnByOffset.indices) {
 			val insn = insnByOffset[offset] ?: continue
-			when (insn.getType()) {
+			when (insn.type) {
 				InsnType.SWITCH -> {
 					val sw = insn as SwitchInsn
 					if (sw.needData()) {
 						attachSwitchData(insnByOffset, offset, sw)
 					}
-					val defCaseOffset = sw.getDefaultCaseOffset()
+					val defCaseOffset = sw.defaultCaseOffset
 					if (defCaseOffset != -1) {
 						addJump(mth, insnByOffset, offset, defCaseOffset)
 					}
@@ -98,7 +98,7 @@ class ProcessInstructionsVisitor : AbstractVisitor() {
 				}
 
 				InsnType.FILLED_NEW_ARRAY -> {
-					val arrType = (insn as FilledNewArrayNode).getArrayType()
+					val arrType = (insn as FilledNewArrayNode).arrayType
 					mergeMoveResult(insnByOffset, offset, insn, arrType)
 				}
 
@@ -106,7 +106,7 @@ class ProcessInstructionsVisitor : AbstractVisitor() {
 					val fillArrayInsn = insn as FillArrayInsn
 					val target = fillArrayInsn.target
 					val arrDataInsn = getInsnAtOffset(insnByOffset, target)
-					if (arrDataInsn != null && arrDataInsn.getType() == InsnType.FILL_ARRAY_DATA) {
+					if (arrDataInsn != null && arrDataInsn.type == InsnType.FILL_ARRAY_DATA) {
 						fillArrayInsn.setArrayData(arrDataInsn as FillArrayData)
 						removeInsn(insnByOffset, arrDataInsn)
 					} else {
@@ -121,9 +121,9 @@ class ProcessInstructionsVisitor : AbstractVisitor() {
 
 	private fun attachSwitchData(insnByOffset: Array<InsnNode?>, offset: Int, sw: SwitchInsn) {
 		val nextInsnOffset = getNextInsnOffset(insnByOffset, offset)
-		val dataTarget = sw.getDataTarget()
+		val dataTarget = sw.dataTarget
 		val switchDataInsn = getInsnAtOffset(insnByOffset, dataTarget)
-		if (switchDataInsn != null && switchDataInsn.getType() == InsnType.SWITCH_DATA) {
+		if (switchDataInsn != null && switchDataInsn.type == InsnType.SWITCH_DATA) {
 			val data = switchDataInsn as SwitchData
 			data.fixTargets(offset)
 			sw.attachSwitchData(data, nextInsnOffset)
@@ -139,7 +139,7 @@ class ProcessInstructionsVisitor : AbstractVisitor() {
 			return
 		}
 		val nextInsn = checkNotNull(insnByOffset[nextInsnOffset])
-		if (nextInsn.getType() != InsnType.MOVE_RESULT) {
+		if (nextInsn.type != InsnType.MOVE_RESULT) {
 			return
 		}
 		val moveRes = nextInsn.getResult()
@@ -161,12 +161,11 @@ class ProcessInstructionsVisitor : AbstractVisitor() {
 	}
 
 	companion object {
-		@JvmStatic
 		fun getNextInsnOffset(insnByOffset: Array<InsnNode?>, offset: Int): Int {
 			val len = insnByOffset.size
 			for (i in offset + 1 until len) {
 				val insnNode = insnByOffset[i]
-				if (insnNode != null && insnNode.getType() != InsnType.NOP) {
+				if (insnNode != null && insnNode.type != InsnType.NOP) {
 					return i
 				}
 			}
@@ -177,7 +176,7 @@ class ProcessInstructionsVisitor : AbstractVisitor() {
 			val len = insnByOffset.size
 			for (i in offset until len) {
 				val insnNode = insnByOffset[i]
-				if (insnNode != null && insnNode.getType() != InsnType.NOP) {
+				if (insnNode != null && insnNode.type != InsnType.NOP) {
 					return insnNode
 				}
 			}

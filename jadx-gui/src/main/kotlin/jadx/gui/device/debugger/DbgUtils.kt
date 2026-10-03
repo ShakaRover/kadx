@@ -36,20 +36,20 @@ object DbgUtils {
 	private val smaliCache: MutableMap<ClassInfo, Smali> = HashMap()
 
 	/** 获取（必要时生成）指定类的 smali 反汇编结果。 */
-	internal fun getSmali(topCls: ClassNode): Smali = smaliCache.computeIfAbsent(topCls.getTopParentClass().classInfo) { Smali.disassemble(topCls) }
+	internal fun getSmali(topCls: ClassNode): Smali = smaliCache.computeIfAbsent(topCls.topParentClass.classInfo) { Smali.disassemble(topCls) }
 
 	/** @return 指定类的 smali 代码文本 */
 	fun getSmaliCode(topCls: ClassNode): String = getSmali(topCls).getCode()
 
 	/** 按 smali 行号定位到方法全名与代码偏移。 */
 	fun getCodeOffsetInfoByLine(cls: JClass, line: Int): Map.Entry<String, Int>? {
-		val smali = getSmali(cls.getCls().getClassNode().getTopParentClass())
+		val smali = getSmali(cls.getCls().getClassNode().topParentClass)
 		return smali.getMthFullIDAndCodeOffsetByLine(line)
 	}
 
 	/** 按方法全名取 smali 方法调试元数据。 */
 	fun getSmaliMethodNode(cls: JClass, mthRawFullID: String): SmaliMethodNode? {
-		val smali = getSmali(cls.getCls().getClassNode().getTopParentClass())
+		val smali = getSmali(cls.getCls().getClassNode().topParentClass)
 		return smali.getMethodNode(mthRawFullID)
 	}
 

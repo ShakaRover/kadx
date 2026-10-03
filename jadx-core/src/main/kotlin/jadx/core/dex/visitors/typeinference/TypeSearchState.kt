@@ -19,10 +19,10 @@ import java.util.LinkedHashMap
  */
 class TypeSearchState(mth: MethodNode) {
 
-	private val varInfoMap: MutableMap<SSAVar, TypeSearchVarInfo> = LinkedHashMap(mth.getSVars().size)
+	private val varInfoMap: MutableMap<SSAVar, TypeSearchVarInfo> = LinkedHashMap(mth.SVars.size)
 
 	init {
-		for (ssaVar in mth.getSVars()) {
+		for (ssaVar in mth.SVars) {
 			varInfoMap[ssaVar] = TypeSearchVarInfo(ssaVar)
 		}
 	}
@@ -44,9 +44,9 @@ class TypeSearchState(mth: MethodNode) {
 		return arg.getType()
 	}
 
-	fun getAllVars(): List<TypeSearchVarInfo> = ArrayList(varInfoMap.values)
+	val allVars: List<TypeSearchVarInfo> get() = ArrayList(varInfoMap.values)
 
-	fun getUnresolvedVars(): List<TypeSearchVarInfo> {
+	val unresolvedVars: List<TypeSearchVarInfo> get() {
 		val list = ArrayList<TypeSearchVarInfo>()
 		for (varInfo in varInfoMap.values) {
 			if (!varInfo.isTypeResolved()) {
@@ -56,7 +56,7 @@ class TypeSearchState(mth: MethodNode) {
 		return list
 	}
 
-	fun getResolvedVars(): List<TypeSearchVarInfo> {
+	val resolvedVars: List<TypeSearchVarInfo> get() {
 		val list = ArrayList<TypeSearchVarInfo>()
 		for (varInfo in varInfoMap.values) {
 			if (varInfo.isTypeResolved()) {

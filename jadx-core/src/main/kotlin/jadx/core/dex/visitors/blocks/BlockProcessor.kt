@@ -57,7 +57,6 @@ class BlockProcessor : AbstractVisitor() {
 		 *
 		 * 该方法应在 [BlockFinisher] 之前的自定义 Pass 调用。
 		 */
-		@JvmStatic
 		fun updateBlocksData(mth: MethodNode) {
 			clearBlocksState(mth)
 			DominatorTree.compute(mth)
@@ -72,9 +71,8 @@ class BlockProcessor : AbstractVisitor() {
 			updateCleanSuccessors(mth)
 		}
 
-		@JvmStatic
 		fun updateCleanSuccessors(mth: MethodNode) {
-			for (block in checkNotNull(mth.getBasicBlocks())) {
+			for (block in checkNotNull(mth.basicBlocks)) {
 				block.updateCleanSuccessors()
 			}
 		}
@@ -86,7 +84,7 @@ class BlockProcessor : AbstractVisitor() {
 		private fun checkForUnreachableBlocks(mth: MethodNode) {
 			while (true) {
 				var fixed = false
-				for (block in checkNotNull(mth.getBasicBlocks())) {
+				for (block in checkNotNull(mth.basicBlocks)) {
 					if (block.getPredecessors().isEmpty() && block !== mth.enterBlock) {
 						if (block.contains(AType.EXC_SPLIT_CROSS) && fixUnreachableSplitCross(mth, block)) {
 							mth.addInfoComment("Removed unreachable split cross block $block")
@@ -127,7 +125,7 @@ class BlockProcessor : AbstractVisitor() {
 				val predsCount = predecessors.size
 				if (predsCount > 1) {
 					val lastInsn = BlockUtils.getLastInsn(block)
-					if (lastInsn != null && lastInsn.getType() == InsnType.IF) {
+					if (lastInsn != null && lastInsn.type == InsnType.IF) {
 						return false
 					}
 					if (BlockUtils.checkFirstInsn(block) { insn -> insn.contains(AType.EXC_HANDLER) }) {
@@ -191,7 +189,7 @@ class BlockProcessor : AbstractVisitor() {
 				return true
 			}
 			if (insn.isSame(otherInsn) && sameArgs(insn.getResult(), otherInsn.getResult())) {
-				val argsCount = insn.getArgsCount()
+				val argsCount = insn.argsCount
 				for (i in 0 until argsCount) {
 					if (!sameArgs(insn.getArg(i), otherInsn.getArg(i))) {
 						return false
@@ -241,7 +239,7 @@ class BlockProcessor : AbstractVisitor() {
 		 * 这条边是回边，二者共同构成一个自然循环。
 		 */
 		private fun markLoops(mth: MethodNode) {
-			for (block in checkNotNull(mth.getBasicBlocks())) {
+			for (block in checkNotNull(mth.basicBlocks)) {
 				for (successor in block.getSuccessors()) {
 					if (checkNotNull(block.doms).get(successor.pos) || block === successor) {
 						successor.add(AFlag.LOOP_START)
@@ -258,7 +256,7 @@ class BlockProcessor : AbstractVisitor() {
 
 		private fun registerLoops(mth: MethodNode) {
 			mth.resetLoops()
-			for (block in checkNotNull(mth.getBasicBlocks())) {
+			for (block in checkNotNull(mth.basicBlocks)) {
 				if (block.contains(AFlag.LOOP_START)) {
 					for (loop in block.getAll(AType.LOOP)) {
 						mth.registerLoop(loop)
@@ -269,7 +267,7 @@ class BlockProcessor : AbstractVisitor() {
 
 		/** 建立循环的父子关系（内层循环的父循环是其直接外层包含者）。 */
 		private fun processNestedLoops(mth: MethodNode) {
-			if (mth.getLoopsCount() == 0) {
+			if (mth.loopsCount == 0) {
 				return
 			}
 			for (outLoop in mth.getLoops()) {
@@ -295,7 +293,7 @@ class BlockProcessor : AbstractVisitor() {
 		}
 
 		private fun modifyBlocksTree(mth: MethodNode): Boolean {
-			for (block in checkNotNull(mth.getBasicBlocks())) {
+			for (block in checkNotNull(mth.basicBlocks)) {
 				if (checkLoops(mth, block)) {
 					return true
 				}
@@ -304,7 +302,7 @@ class BlockProcessor : AbstractVisitor() {
 				return true
 			}
 			if (CodeFeaturesAttr.contains(mth, CodeFeaturesAttr.CodeFeature.SWITCH)) {
-				for (basicBlock in checkNotNull(mth.getBasicBlocks())) {
+				for (basicBlock in checkNotNull(mth.basicBlocks)) {
 					if (duplicateSimpleMoveBlock(mth, basicBlock)) {
 						return true
 					}
@@ -319,14 +317,14 @@ class BlockProcessor : AbstractVisitor() {
 				return false
 			}
 			var changed = false
-			for (retBlock in ArrayList(mth.getPreExitBlocks())) {
+			for (retBlock in ArrayList(mth.preExitBlocks)) {
 				val pred = Utils.getOne(retBlock.getPredecessors())
 				if (pred != null) {
 					val constInsn = Utils.getOne(pred.getInstructions())
 					if (constInsn != null && constInsn.isConstInsn()) {
 						val constArg = constInsn.getResult()
 						val returnInsn = BlockUtils.getLastInsn(retBlock)
-						if (returnInsn != null && returnInsn.getType() == InsnType.RETURN) {
+						if (returnInsn != null && returnInsn.type == InsnType.RETURN) {
 							val retArg = returnInsn.getArg(0)
 							if (checkNotNull(constArg).sameReg(retArg)) {
 								mergeConstAndReturnBlocks(mth, retBlock, pred)
@@ -359,7 +357,7 @@ class BlockProcessor : AbstractVisitor() {
 
 		private fun independentBlockTreeMod(mth: MethodNode): Boolean {
 			var changed = false
-			val basicBlocks = checkNotNull(mth.getBasicBlocks())
+			val basicBlocks = checkNotNull(mth.basicBlocks)
 			for (basicBlock in basicBlocks) {
 				if (deduplicateBlockInsns(mth, basicBlock)) {
 					changed = true
@@ -387,7 +385,7 @@ class BlockProcessor : AbstractVisitor() {
 			val insns = block.getInstructions()
 			if (insns.size == 1 && block.getSuccessors().size == 1) {
 				val insn = insns[0]
-				if (insn.getType() == InsnType.MOVE) {
+				if (insn.type == InsnType.MOVE) {
 					val preds = block.getPredecessors()
 					val predSize = preds.size
 					if (predSize >= 3 && onlySwitchAndIfInLastInsns(preds)) {
@@ -419,7 +417,7 @@ class BlockProcessor : AbstractVisitor() {
 			var hasIf = false
 			for (pred in preds) {
 				val lastInsn = BlockUtils.getLastInsn(pred) ?: return false
-				when (lastInsn.getType()) {
+				when (lastInsn.type) {
 					InsnType.SWITCH -> hasSwitch = true
 					InsnType.IF -> hasIf = true
 					else -> return false
@@ -511,7 +509,7 @@ class BlockProcessor : AbstractVisitor() {
 		/** 为可能的 break 插入额外块。 */
 		private fun insertBlocksForBreak(mth: MethodNode, loop: LoopInfo): Boolean {
 			var change = false
-			val edges = loop.getExitEdges()
+			val edges = loop.exitEdges
 			if (edges.isNotEmpty()) {
 				for (edge in edges) {
 					val target = edge.target
@@ -573,7 +571,7 @@ class BlockProcessor : AbstractVisitor() {
 
 		private fun splitExitBlocks(mth: MethodNode): Boolean {
 			var changed = false
-			for (preExitBlock in mth.getPreExitBlocks()) {
+			for (preExitBlock in mth.preExitBlocks) {
 				if (splitReturn(mth, preExitBlock)) {
 					changed = true
 				} else if (splitThrow(mth, preExitBlock)) {
@@ -592,7 +590,7 @@ class BlockProcessor : AbstractVisitor() {
 		private fun updateExitBlockConnections(mth: MethodNode) {
 			val exitBlock = checkNotNull(mth.exitBlock)
 			BlockSplitter.removePredecessors(exitBlock)
-			for (block in checkNotNull(mth.getBasicBlocks())) {
+			for (block in checkNotNull(mth.basicBlocks)) {
 				if (block !== exitBlock &&
 					block.getSuccessors().isEmpty() &&
 					!block.contains(AFlag.REMOVE)
@@ -615,7 +613,7 @@ class BlockProcessor : AbstractVisitor() {
 				return false
 			}
 			val returnInsn = BlockUtils.getLastInsn(returnBlock) ?: return false
-			if (returnInsn.getArgsCount() == 1 &&
+			if (returnInsn.argsCount == 1 &&
 				returnBlock.getInstructions().size == 1 &&
 				!isArgAssignInPred(preds, returnInsn.getArg(0))
 			) {
@@ -651,7 +649,7 @@ class BlockProcessor : AbstractVisitor() {
 				return false
 			}
 			val throwInsn = BlockUtils.getLastInsn(exitBlock)
-			if (throwInsn == null || throwInsn.getType() != InsnType.THROW) {
+			if (throwInsn == null || throwInsn.type != InsnType.THROW) {
 				return false
 			}
 			// 只为多个异常处理器拆分
@@ -664,7 +662,7 @@ class BlockProcessor : AbstractVisitor() {
 					if (excHandlerAttr == null) {
 						return@visitPredecessorsUntil false
 					}
-					val correctHandler = excHandlerAttr.getHandler().getBlocks().contains(block)
+					val correctHandler = excHandlerAttr.handler.blocks.contains(block)
 					if (correctHandler && isArgAssignInPred(Collections.singletonList(block), throwInsn.getArg(0))) {
 						handlersMap[pred] = excHandlerAttr
 						handlers.add(block)
@@ -692,7 +690,7 @@ class BlockProcessor : AbstractVisitor() {
 					newThrowBlock.copyAttributesFrom(exitBlock)
 					val excHandlerAttr = handlersMap[pred]
 					if (excHandlerAttr != null) {
-						excHandlerAttr.getHandler().addBlock(newThrowBlock)
+						excHandlerAttr.handler.addBlock(newThrowBlock)
 					}
 					BlockSplitter.replaceConnection(pred, exitBlock, newThrowBlock)
 				}
@@ -715,9 +713,8 @@ class BlockProcessor : AbstractVisitor() {
 			return false
 		}
 
-		@JvmStatic
 		fun removeMarkedBlocks(mth: MethodNode) {
-			val removed = (checkNotNull(mth.getBasicBlocks()) as MutableList<BlockNode>).removeIf { block ->
+			val removed = (checkNotNull(mth.basicBlocks) as MutableList<BlockNode>).removeIf { block ->
 				if (block.contains(AFlag.REMOVE)) {
 					if (!block.getPredecessors().isEmpty() || !block.getSuccessors().isEmpty()) {
 						LOG.warn("Block {} not deleted, method: {}", block, mth)
@@ -738,13 +735,12 @@ class BlockProcessor : AbstractVisitor() {
 
 		private fun removeUnreachableBlocks(mth: MethodNode) {
 			val toRemove = LinkedHashSet<BlockNode>()
-			for (block in checkNotNull(mth.getBasicBlocks())) {
+			for (block in checkNotNull(mth.basicBlocks)) {
 				computeUnreachableFromBlock(toRemove, block, mth)
 			}
 			removeFromMethod(toRemove, mth)
 		}
 
-		@JvmStatic
 		fun removeUnreachableBlock(blockToRemove: BlockNode, mth: MethodNode) {
 			val toRemove = LinkedHashSet<BlockNode>()
 			computeUnreachableFromBlock(toRemove, blockToRemove, mth)
@@ -778,12 +774,12 @@ class BlockProcessor : AbstractVisitor() {
 			for (block in toRemove) {
 				BlockSplitter.detachBlock(block)
 			}
-			(checkNotNull(mth.getBasicBlocks()) as MutableList<BlockNode>).removeAll(toRemove)
+			(checkNotNull(mth.basicBlocks) as MutableList<BlockNode>).removeAll(toRemove)
 			mth.updateBlockPositions()
 		}
 
 		private fun clearBlocksState(mth: MethodNode) {
-			for (block in checkNotNull(mth.getBasicBlocks())) {
+			for (block in checkNotNull(mth.basicBlocks)) {
 				block.remove(AType.LOOP)
 				block.remove(AFlag.LOOP_START)
 				block.remove(AFlag.LOOP_END)
@@ -796,7 +792,7 @@ class BlockProcessor : AbstractVisitor() {
 	}
 
 	override fun visit(mth: MethodNode) {
-		if (mth.isNoCode() || checkNotNull(mth.getBasicBlocks()).isEmpty()) {
+		if (mth.isNoCode() || checkNotNull(mth.basicBlocks).isEmpty()) {
 			return
 		}
 		processBlocksTree(mth)
@@ -815,7 +811,7 @@ class BlockProcessor : AbstractVisitor() {
 		}
 		updateCleanSuccessors(mth)
 
-		val blocksCount = checkNotNull(mth.getBasicBlocks()).size
+		val blocksCount = checkNotNull(mth.basicBlocks).size
 		val modLimit = maxOf(100, blocksCount)
 		if (DEBUG_MODS) {
 			mth.addAttr(DebugModAttr())

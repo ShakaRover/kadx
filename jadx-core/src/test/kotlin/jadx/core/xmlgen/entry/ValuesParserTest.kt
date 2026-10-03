@@ -8,7 +8,7 @@ class ValuesParserTest {
 
 	@Test
 	fun testResMapLoad() {
-		val androidResMap = AndroidResourcesMap.getMap()
+		val androidResMap = AndroidResourcesMap.map
 		assertThat(androidResMap).isNotNull().isNotEmpty()
 	}
 }

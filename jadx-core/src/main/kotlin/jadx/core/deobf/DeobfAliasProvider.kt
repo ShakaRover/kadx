@@ -50,11 +50,11 @@ class DeobfAliasProvider : IAliasProvider {
 		return String.format("%sC%04d%s", prefix, clsIndex++, prepareNamePart(cls.name))
 	}
 
-	override fun forField(fld: FieldNode): String = String.format("f%d%s", fldIndex++, prepareNamePart(fld.getName()))
+	override fun forField(fld: FieldNode): String = String.format("f%d%s", fldIndex++, prepareNamePart(fld.name))
 
 	override fun forMethod(mth: MethodNode): String {
 		val prefix = if (mth.contains(AType.METHOD_OVERRIDE)) "mo" else "m"
-		return String.format("%s%d%s", prefix, mthIndex++, prepareNamePart(mth.getName()))
+		return String.format("%s%d%s", prefix, mthIndex++, prepareNamePart(mth.name))
 	}
 
 	private fun prepareNamePart(name: String): String {

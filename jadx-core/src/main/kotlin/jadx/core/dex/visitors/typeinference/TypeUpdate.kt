@@ -79,8 +79,8 @@ class TypeUpdate(private val root: RootNode) {
 			}
 			if (Consts.DEBUG_TYPE_INFERENCE) {
 				LOG.debug("Applying type {} to {}:", candidateType, ssaVar.toShortString())
-				for (upd in updateInfo.getSortedUpdates()) {
-					LOG.debug("  {} -> {} in {}", upd.getType(), upd.getArg().toShortString(), upd.getArg().getParentInsn())
+				for (upd in updateInfo.sortedUpdates) {
+					LOG.debug("  {} -> {} in {}", upd.type, upd.arg.toShortString(), upd.arg.getParentInsn())
 				}
 			}
 			updateInfo.applyUpdates()
@@ -97,8 +97,8 @@ class TypeUpdate(private val root: RootNode) {
 		var result: TypeUpdateResult? = TypeUpdateResult.REJECT
 		while (true) {
 			val request = updateInfo.pollNextRequest() ?: return result
-			val updateArg = request.getArg()
-			val updateType = request.getCandidateType()
+			val updateArg = request.arg
+			val updateType = request.candidateType
 			val newResult: TypeUpdateResult? = if (request.isDirect()) {
 				requestUpdate(updateInfo, updateArg, updateType)
 			} else {
@@ -156,7 +156,7 @@ class TypeUpdate(private val root: RootNode) {
 			return TypeUpdateResult.CHANGED
 		}
 		val currentType = arg.getType()
-		val typeUpdateFlags = updateInfo.getFlags()
+		val typeUpdateFlags = updateInfo.flags
 		if (currentType == candidateType) {
 			if (!typeUpdateFlags.isIgnoreSame()) {
 				return TypeUpdateResult.SAME
@@ -203,7 +203,7 @@ class TypeUpdate(private val root: RootNode) {
 			}
 			if (candidateType.containsTypeVariable()) {
 				// 拒绝含有未知类型变量的候选类型
-				val unknownTypeVar = root.getTypeUtils().checkForUnknownTypeVars(updateInfo.getMth(), candidateType)
+				val unknownTypeVar = root.getTypeUtils().checkForUnknownTypeVars(updateInfo.mth, candidateType)
 				if (unknownTypeVar != null) {
 					if (Consts.DEBUG_TYPE_INFERENCE) {
 						LOG.debug("Type rejected for {}: candidate: '{}' has unknown type var: '{}'", arg, candidateType, unknownTypeVar)
@@ -217,23 +217,23 @@ class TypeUpdate(private val root: RootNode) {
 
 	private fun updateTypeForSsaVar(updateInfo: TypeUpdateInfo, ssaVar: SSAVar, candidateType: ArgType): TypeUpdateResult? {
 		val typeInfo = ssaVar.typeInfo
-		val immutableType = ssaVar.getImmutableType()
+		val immutableType = ssaVar.immutableType
 		if (immutableType != null && immutableType != candidateType) {
 			if (Consts.DEBUG_TYPE_INFERENCE) {
 				LOG.info("Reject change immutable type {} to {} for {}", immutableType, candidateType, ssaVar)
 			}
 			return TypeUpdateResult.REJECT
 		}
-		if (!inBounds(updateInfo, ssaVar, typeInfo.getBounds(), candidateType)) {
+		if (!inBounds(updateInfo, ssaVar, typeInfo.bounds, candidateType)) {
 			return TypeUpdateResult.REJECT
 		}
-		val updateCallback = ArgsListUpdateCallback(this, updateInfo, ssaVar.getUseList(), candidateType, true)
+		val updateCallback = ArgsListUpdateCallback(this, updateInfo, ssaVar.useList, candidateType, true)
 		updateCallback.setFinalResultCallback(
 			ITypeUpdateCallback { result ->
 				if (result == TypeUpdateResult.REJECT) {
 					// 回滚当前 SSA 变量所有寄存器的更新
 					updateInfo.rollbackUpdate(ssaVar.assign)
-					for (useArg in ssaVar.getUseList()) {
+					for (useArg in ssaVar.useList) {
 						updateInfo.rollbackUpdate(useArg)
 					}
 				}
@@ -249,9 +249,9 @@ class TypeUpdate(private val root: RootNode) {
 		}
 		updateInfo.requestUpdate(arg, candidateType)
 		val insn = arg.getParentInsn() ?: return TypeUpdateResult.SAME
-		val listener = listenerRegistry[insn.getType()] ?: return TypeUpdateResult.CHANGED
+		val listener = listenerRegistry[insn.type] ?: return TypeUpdateResult.CHANGED
 		if (Consts.DEBUG_TYPE_INFERENCE) {
-			LOG.debug("Run listener for insn: {}, arg: {}, type: {}", insn.getType(), arg, candidateType)
+			LOG.debug("Run listener for insn: {}, arg: {}, type: {}", insn.type, arg, candidateType)
 		}
 		return listener.update(updateInfo, insn, arg, candidateType)
 	}
@@ -362,7 +362,7 @@ class TypeUpdate(private val root: RootNode) {
 		if (invoke.getInstanceArg() === arg) {
 			val methodDetails = root.getMethodUtils().getMethodDetails(invoke) ?: return TypeUpdateResult.SAME
 			val typeUtils = root.getTypeUtils()
-			val knownTypeVars = typeUtils.getKnownTypeVarsAtMethod(updateInfo.getMth())
+			val knownTypeVars = typeUtils.getKnownTypeVarsAtMethod(updateInfo.mth)
 			val typeVarsMap = typeUtils.getTypeVariablesMapping(candidateType)
 
 			val returnType = methodDetails.getReturnType()
@@ -433,7 +433,7 @@ class TypeUpdate(private val root: RootNode) {
 			return queueTypeUpdate(updateInfo, checkNotNull(insn.getResult()), candidateType, null)
 		}
 		// 用相同类型更新其它参数
-		val updateCallback = ArgsListUpdateCallback(this, updateInfo, insn.getArgList(), candidateType, false)
+		val updateCallback = ArgsListUpdateCallback(this, updateInfo, insn.argList, candidateType, false)
 		updateCallback.setArgsFilter { a -> a !== arg }
 		return updateCallback.runFirstQueue()
 	}
@@ -451,7 +451,7 @@ class TypeUpdate(private val root: RootNode) {
 	 * 尝试把候选类型设置给所有参数，遇到拒绝也不失败。
 	 */
 	private fun suggestAllSameListener(updateInfo: TypeUpdateInfo, insn: InsnNode, arg: InsnArg, candidateType: ArgType): TypeUpdateResult? {
-		val updateCallback = ArgsListUpdateCallback(this, updateInfo, insn.getArgList(), candidateType, false)
+		val updateCallback = ArgsListUpdateCallback(this, updateInfo, insn.argList, candidateType, false)
 		updateCallback.setArgsFilter { a -> a !== arg }
 		updateCallback.setIgnoreReject(true)
 		if (!isAssign(insn, arg)) {
@@ -476,7 +476,7 @@ class TypeUpdate(private val root: RootNode) {
 				ITypeUpdateCallback { r -> if (r == TypeUpdateResult.REJECT) TypeUpdateResult.SAME else r },
 			)
 		}
-		val castType = checkCast.getIndexAsType()
+		val castType = checkCast.indexAsType
 		val res = typeCompare.compareTypes(candidateType, castType)
 		if (res == TypeCompareEnum.CONFLICT) {
 			// 允许接口之间的互转
@@ -616,7 +616,7 @@ class TypeUpdate(private val root: RootNode) {
 						if (updateArgType.canBePrimitive(checkNotNull(candidateType.getPrimitiveType()))) {
 							return@ITypeUpdateCallback TypeUpdateResult.SAME
 						}
-						if (updateArgType.isTypeKnown() && candidateType.getRegCount() == updateArgType.getRegCount()) {
+						if (updateArgType.isTypeKnown() && candidateType.regCount == updateArgType.regCount) {
 							return@ITypeUpdateCallback TypeUpdateResult.SAME
 						}
 					}
@@ -634,7 +634,7 @@ class TypeUpdate(private val root: RootNode) {
 			var current: TypeUpdateResult = result
 			while (true) {
 				val cbReq = updateInfo.pollNextCallback() ?: return current
-				val callback = checkNotNull(cbReq.getCallback())
+				val callback = checkNotNull(cbReq.callback)
 				val next = callback.updateCallback(current)
 				if (next == null) {
 					// 无结果：把回调放回队列，等结果算出后再执行
@@ -643,7 +643,7 @@ class TypeUpdate(private val root: RootNode) {
 				}
 				current = next
 				if (current == TypeUpdateResult.REJECT) {
-					updateInfo.rollbackUpdate(cbReq.getArg())
+					updateInfo.rollbackUpdate(cbReq.arg)
 				}
 				// 继续处理下一个回调
 			}

@@ -34,7 +34,7 @@ class PredecessorMergeActivePathTraverserHandler(initialState: TraverserActivePa
 	override fun handle(): List<TraverserActivePathState> {
 		// 此时处理器持有“请求前驱合并”的路径块状态。若另一侧也请求合并，就合并两者；
 		// 否则把活动路径拆分以支持多条路径。
-		val comparator = getComparator()
+		val comparator = comparator
 		val finallyState: TraverserState = comparator.getFinallyState()
 		val candidateState: TraverserState = comparator.getCandidateState()
 
@@ -72,8 +72,8 @@ class PredecessorMergeActivePathTraverserHandler(initialState: TraverserActivePa
 		finallyState: UnknownAdvanceStrategyTraverserState,
 		candidateState: UnknownAdvanceStrategyTraverserState,
 	): List<TraverserActivePathState> {
-		val finallyBlocks: List<BlockNode> = finallyState.getNextBlocks()
-		val candidateBlocks: List<BlockNode> = candidateState.getNextBlocks()
+		val finallyBlocks: List<BlockNode> = finallyState.nextBlocks
+		val candidateBlocks: List<BlockNode> = candidateState.nextBlocks
 
 		val finallyBlocksSize = finallyBlocks.size
 		val candidateBlocksSize = candidateBlocks.size
@@ -102,7 +102,7 @@ class PredecessorMergeActivePathTraverserHandler(initialState: TraverserActivePa
 			val candidateStateFactory =
 				TerminalTraverserState.getFactory(TerminalTraverserState.TerminationReason.UNMERGEABLE_STATE)
 			val newState =
-				TraverserActivePathState.produceFromFactories(getComparator(), finallyStateFactory, candidateStateFactory)
+				TraverserActivePathState.produceFromFactories(comparator, finallyStateFactory, candidateStateFactory)
 			states = listOf(newState)
 		}
 		return states
@@ -114,10 +114,10 @@ class PredecessorMergeActivePathTraverserHandler(initialState: TraverserActivePa
 		otherState: TraverserState,
 		duplicateIsFromFinally: Boolean,
 	): List<TraverserActivePathState> {
-		val nextPredecessors: List<BlockNode> = advancingState.getNextBlocks()
+		val nextPredecessors: List<BlockNode> = advancingState.nextBlocks
 		val newPaths = ArrayList<TraverserActivePathState>(nextPredecessors.size)
 		for (predecessor in nextPredecessors) {
-			val centralityState: CentralityState = advancingState.getCentralityState()
+			val centralityState: CentralityState = advancingState.centralityState
 			val duplicatePathBlockInfo = TraverserBlockInfo(predecessor)
 			val duplicatePathStateFactory = NewBlockTraverserState.getFactory(centralityState, duplicatePathBlockInfo)
 			val otherStateFactory: TraverserStateFactory<*> = DuplicatedTraverserStateFactory(otherState)
@@ -134,16 +134,16 @@ class PredecessorMergeActivePathTraverserHandler(initialState: TraverserActivePa
 	}
 
 	private fun getScopeForBlocks(finallyBlocks: List<BlockNode>, candidateBlocks: List<BlockNode>): TraverserActivePathState {
-		val comparator = getComparator()
-		val mth: MethodNode = getComparator().getGlobalCommonState().getMethodNode()
+		val comparator = comparator
+		val mth: MethodNode = comparator.globalCommonState.methodNode
 
 		val finallyState: TraverserState = comparator.getFinallyState()
 		val candidateState: TraverserState = comparator.getCandidateState()
 
 		val finallyGlobalState: GlobalTraverserSourceState = comparator.getGlobalStateFor(finallyState)
-		val finallyCentralityState = finallyState.getCentralityState()
+		val finallyCentralityState = finallyState.centralityState
 		val finallyTerminator =
-			BlockUtils.getBottomCommonPredecessor(mth, finallyBlocks, finallyGlobalState.getContainedBlocks())
+			BlockUtils.getBottomCommonPredecessor(mth, finallyBlocks, finallyGlobalState.containedBlocks)
 		val finallyStateFactory = IdentifiedScopeWithTerminatorTraverserState.getFactory(
 			finallyCentralityState,
 			finallyBlocks,
@@ -151,9 +151,9 @@ class PredecessorMergeActivePathTraverserHandler(initialState: TraverserActivePa
 		)
 
 		val candidateGlobalState: GlobalTraverserSourceState = comparator.getGlobalStateFor(candidateState)
-		val candidateCentralityState = candidateState.getCentralityState()
+		val candidateCentralityState = candidateState.centralityState
 		val candidateTerminator =
-			BlockUtils.getBottomCommonPredecessor(mth, candidateBlocks, candidateGlobalState.getContainedBlocks())
+			BlockUtils.getBottomCommonPredecessor(mth, candidateBlocks, candidateGlobalState.containedBlocks)
 		val candidateStateFactory = IdentifiedScopeWithTerminatorTraverserState.getFactory(
 			candidateCentralityState,
 			candidateBlocks,

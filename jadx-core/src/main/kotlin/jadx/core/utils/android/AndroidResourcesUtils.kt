@@ -41,7 +41,6 @@ object AndroidResourcesUtils {
 	 * 定位应用的 `R` 类：优先按“应用包名.R”查找；找不到再按短名 `R` 唯一候选查找；
 	 * 实在没有则合成一个 `R` 类并把资源字段补进去。
 	 */
-	@JvmStatic
 	fun searchAppResClass(root: RootNode, resStorage: ResourceStorage): ClassNode {
 		val appPackage = root.getAppPackage()
 		val fullName = if (appPackage != null) "$appPackage.R" else "R"
@@ -69,7 +68,6 @@ object AndroidResourcesUtils {
 	}
 
 	/** 处理对 `R` 内部类字段的引用：若声明类是 `R` 的内部类，则用“R.短名”形式输出。 */
-	@JvmStatic
 	fun handleAppResField(code: ICodeWriter, clsGen: ClassGen, declClass: ClassInfo): Boolean {
 		val parentClass = declClass.parentClass
 		if (parentClass != null && parentClass.shortName == "R") {
@@ -82,11 +80,9 @@ object AndroidResourcesUtils {
 	}
 
 	/** 资源类里的 int 字段强制用 16 进制输出（资源 id 可读性更好）。 */
-	@JvmStatic
 	fun isResourceFieldValue(cls: ClassNode, type: ArgType): Boolean = type == ArgType.INT && isResourceClass(cls)
 
 	/** 判断该类是否是 `R` 的内部类（其父类别名为 `R`）。 */
-	@JvmStatic
 	fun isResourceClass(cls: ClassNode): Boolean = cls.parentClass.alias == "R"
 
 	/** 某个资源类型（`R.string`/`R.drawable` 等）对应的内部类及其已有字段映射。 */
@@ -105,7 +101,7 @@ object AndroidResourcesUtils {
 		if (rClsExists) {
 			for (innerClass in resCls.innerClasses) {
 				val innerResCls = ResClsInfo(innerClass)
-				innerClass.fields.forEach { field -> innerResCls.fieldsMap[field.getName()] = field }
+				innerClass.fields.forEach { field -> innerResCls.fieldsMap[field.name] = field }
 				innerClsMap[innerClass.alias] = innerResCls
 			}
 		}
@@ -133,7 +129,7 @@ object AndroidResourcesUtils {
 			}
 			val fieldNode = resFieldsMap[resource.id]
 			if (fieldNode != null &&
-				fieldNode.getName() != resName &&
+				fieldNode.name != resName &&
 				NameMapper.isValidAndPrintable(resName) &&
 				resCls.root().getArgs().isRenameValid
 			) {
@@ -151,7 +147,7 @@ object AndroidResourcesUtils {
 		val existCls = root.resolveClass(clsInfo)
 		if (existCls != null) {
 			val resClsInfo = ResClsInfo(existCls)
-			existCls.fields.forEach { field -> resClsInfo.fieldsMap[field.getName()] = field }
+			existCls.fields.forEach { field -> resClsInfo.fieldsMap[field.name] = field }
 			return resClsInfo
 		}
 		val newTypeCls = ClassNode.addSyntheticClass(
@@ -169,7 +165,7 @@ object AndroidResourcesUtils {
 	private fun fillResFieldsMap(resCls: ClassNode): MutableMap<Int, FieldNode> {
 		val resFieldsMap = HashMap<Int, FieldNode>()
 		val constStorage: ConstStorage = resCls.root().getConstValues()
-		constStorage.getGlobalConstFields().forEach { (key, field) ->
+		constStorage.globalConstFields.forEach { (key, field) ->
 			if (field.getFieldInfo().type == ArgType.INT &&
 				field is FieldNode &&
 				key is Int

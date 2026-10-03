@@ -65,10 +65,10 @@ class ExtractFieldInit : AbstractVisitor() {
 	companion object {
 
 		private fun moveStaticFieldsInit(cls: ClassNode) {
-			val classInitMth = cls.getClassInitMth() ?: return
+			val classInitMth = cls.classInitMth ?: return
 			if (!classInitMth.accessFlags.isStatic() ||
 				classInitMth.isNoCode() ||
-				classInitMth.getBasicBlocks() == null
+				classInitMth.basicBlocks == null
 			) {
 				return
 			}
@@ -164,10 +164,10 @@ class ExtractFieldInit : AbstractVisitor() {
 			BlockUtils.visitSinglePath(mth.enterBlock) { block -> singlePathBlocks.add(block) }
 
 			var canReorder = true
-			for (block in checkNotNull(mth.getBasicBlocks())) {
+			for (block in checkNotNull(mth.basicBlocks)) {
 				for (insn in block.getInstructions()) {
 					var fieldInsn = false
-					if (insn.getType() == putType) {
+					if (insn.type == putType) {
 						val putInsn = insn as IndexInsnNode
 						val field = putInsn.index as FieldInfo
 						if (field.declClass == cls.classInfo) {
@@ -259,12 +259,12 @@ class ExtractFieldInit : AbstractVisitor() {
 				return false
 			}
 			val insn = initInfo.putInsn
-			val staticField = insn.getType() == InsnType.SPUT
+			val staticField = insn.type == InsnType.SPUT
 			val useType = if (staticField) InsnType.SGET else InsnType.IGET
 			// 若初始化代码引用了被排除的字段，则排除该字段
 			val exclude: Boolean? = insn.visitInsns<Boolean> { innerInsn ->
 				var res: Boolean? = null
-				if (innerInsn.getType() == useType) {
+				if (innerInsn.type == useType) {
 					val fieldInfo = (innerInsn as IndexInsnNode).index as FieldInfo
 					if (excludedFields.contains(fieldInfo)) {
 						res = true
@@ -286,11 +286,11 @@ class ExtractFieldInit : AbstractVisitor() {
 			val deps = HashMap<FieldNode, MutableList<FieldNode>>(inits.size)
 			for (initInfo in inits) {
 				val insn = initInfo.putInsn
-				val staticField = insn.getType() == InsnType.SPUT
+				val staticField = insn.type == InsnType.SPUT
 				val useType = if (staticField) InsnType.SGET else InsnType.IGET
 				insn.visitInsns(
 					{ subInsn ->
-						if (subInsn.getType() == useType) {
+						if (subInsn.type == useType) {
 							val fieldInfo = (subInsn as IndexInsnNode).index as FieldInfo
 							if (fieldInfo.declClass == cls.classInfo) {
 								val depField = cls.searchField(fieldInfo)
@@ -369,7 +369,7 @@ class ExtractFieldInit : AbstractVisitor() {
 				val accFlags: AccessInfo = mth.accessFlags
 				if (!accFlags.isStatic() && accFlags.isConstructor()) {
 					list.add(mth)
-					if (mth.isNoCode() || BlockUtils.isAllBlocksEmpty(mth.getBasicBlocks())) {
+					if (mth.isNoCode() || BlockUtils.isAllBlocksEmpty(mth.basicBlocks)) {
 						return Collections.emptyList()
 					}
 				}

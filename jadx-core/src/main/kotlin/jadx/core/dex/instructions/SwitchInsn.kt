@@ -17,7 +17,7 @@ import jadx.core.utils.exceptions.JadxRuntimeException
  * Kotlin 转换说明：目标块数组 `targetBlocks` 的元素在初始化前可能为 null，
  * 故用 `Array<BlockNode?>`；对外仍暴露原 Java 方法名 `getTargetBlocks()`。
  */
-class SwitchInsn(arg: InsnArg, private val dataTarget: Int, private val packed: Boolean) : TargetInsnNode(InsnType.SWITCH, 1) {
+class SwitchInsn(arg: InsnArg, val dataTarget: Int, private val packed: Boolean) : TargetInsnNode(InsnType.SWITCH, 1) {
 
 	private var switchData: SwitchData? = null
 
@@ -124,11 +124,9 @@ class SwitchInsn(arg: InsnArg, private val dataTarget: Int, private val packed: 
 		return sb.toString()
 	}
 
-	fun getDataTarget(): Int = dataTarget
-
 	fun isPacked(): Boolean = packed
 
-	fun getDefaultCaseOffset(): Int = def
+	val defaultCaseOffset: Int get() = def
 
 	private fun requireSwitchData(): SwitchData = switchData ?: throw JadxRuntimeException("Switch data not yet attached")
 

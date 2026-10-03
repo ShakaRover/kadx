@@ -37,11 +37,11 @@ class DeobfLengthCondition : IDeobfCondition {
 		return Action.NO_ACTION
 	}
 
-	override fun check(pkg: PackageNode): Action = checkName(pkg.getName())
+	override fun check(pkg: PackageNode): Action = checkName(pkg.name)
 
 	override fun check(cls: ClassNode): Action = checkName(cls.name)
 
-	override fun check(fld: FieldNode): Action = checkName(fld.getName())
+	override fun check(fld: FieldNode): Action = checkName(fld.name)
 
-	override fun check(mth: MethodNode): Action = checkName(mth.getName())
+	override fun check(mth: MethodNode): Action = checkName(mth.name)
 }

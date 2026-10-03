@@ -18,7 +18,7 @@ import jadx.core.dex.visitors.finaly.traverser.handlers.AbstractBlockTraverserHa
  * - 私有构造参数 `comparatorState` + 显式 `getComparatorState()`，避免属性访问器与
  *   原 Java 方法签名冲突，同时 JVM 表面不变。
  */
-abstract class TraverserState(private val comparatorState: TraverserActivePathState) {
+abstract class TraverserState(val comparatorState: TraverserActivePathState) {
 
 	/**
 	 * 两侧状态的“就绪程度”：
@@ -52,8 +52,6 @@ abstract class TraverserState(private val comparatorState: TraverserActivePathSt
 
 	fun duplicate(comparatorState: TraverserActivePathState): TraverserState = duplicateInternalState(comparatorState)
 
-	fun getComparatorState(): TraverserActivePathState = comparatorState
-
 	/** 缩进友好的多行调试输出，用于日志排查。 */
 	fun toString(indentAmount: Int): String {
 		val baseIndent = " ".repeat(indentAmount)
@@ -74,7 +72,7 @@ abstract class TraverserState(private val comparatorState: TraverserActivePathSt
 		if (centralityState == null) {
 			sb.append("none")
 		} else {
-			sb.append(getCentralityState())
+			sb.append(centralityState)
 		}
 		sb.append(System.lineSeparator())
 
@@ -96,7 +94,7 @@ abstract class TraverserState(private val comparatorState: TraverserActivePathSt
 		return sb.toString()
 	}
 
-	fun getCentralityState(): CentralityState {
+	val centralityState: CentralityState get() {
 		val underlying = getUnderlyingCentralityState()
 		if (underlying == null) {
 			throw UnsupportedOperationException("Centrality state is not supported for " + javaClass.name)
@@ -106,5 +104,5 @@ abstract class TraverserState(private val comparatorState: TraverserActivePathSt
 
 	fun getBlockInsnInfo(): TraverserBlockInfo? = getUnderlyingBlockInsnInfo()
 
-	fun getGlobalState(): GlobalTraverserSourceState = getComparatorState().getGlobalStateFor(this)
+	val globalState: GlobalTraverserSourceState get() = comparatorState.getGlobalStateFor(this)
 }

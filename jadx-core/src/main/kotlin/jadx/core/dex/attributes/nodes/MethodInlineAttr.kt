@@ -22,8 +22,8 @@ import jadx.core.dex.nodes.MethodNode
  * - [insn] / [argsRegNums] 在哨兵实例中为 null，故 getter 如实返回可空类型。
  */
 class MethodInlineAttr private constructor(
-	private val insn: InsnNode?,
-	private val argsRegNums: IntArray?,
+	val insn: InsnNode?,
+	val argsRegNums: IntArray?,
 ) : PinnedAttribute() {
 
 	companion object {
@@ -36,9 +36,8 @@ class MethodInlineAttr private constructor(
 		 * 原 Java 用 `Objects.requireNonNull(replaceInsn)` 做非空检查；
 		 * Kotlin 的非空参数 [replaceInsn] 在入口处即做等价校验。
 		 */
-		@JvmStatic
 		fun markForInline(mth: MethodNode, replaceInsn: InsnNode): MethodInlineAttr {
-			val allArgRegs: List<RegisterArg> = mth.getAllArgRegs()
+			val allArgRegs: List<RegisterArg> = mth.allArgRegs
 			val argsCount = allArgRegs.size
 			val regNums = IntArray(argsCount)
 			for (i in 0 until argsCount) {
@@ -52,7 +51,6 @@ class MethodInlineAttr private constructor(
 		}
 
 		/** 标记方法 [mth] 无需内联，并返回共享哨兵实例 */
-		@JvmStatic
 		fun inlineNotNeeded(mth: MethodNode): MethodInlineAttr {
 			mth.addAttr(INLINE_NOT_NEEDED)
 			return INLINE_NOT_NEEDED
@@ -61,12 +59,6 @@ class MethodInlineAttr private constructor(
 
 	/** 是否为“无需内联”哨兵（哨兵的 [insn] 为 null） */
 	fun notNeeded(): Boolean = insn == null
-
-	/** 内联后用于替换调用点的指令；哨兵实例返回 null */
-	fun getInsn(): InsnNode? = insn
-
-	/** 被调方法各形参的寄存器号；哨兵实例返回 null */
-	fun getArgsRegNums(): IntArray? = argsRegNums
 
 	override val attrType: AType<MethodInlineAttr> get() = AType.METHOD_INLINE
 

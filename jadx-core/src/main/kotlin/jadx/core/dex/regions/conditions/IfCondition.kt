@@ -37,9 +37,9 @@ import java.util.Collections
  * - 原 Java 的 `updated != condition` 等引用比较一律写成 `!==`。
  */
 class IfCondition private constructor(
-	private val mode: Mode,
-	private val args: MutableList<IfCondition>,
-	private val compare: Compare?,
+	val mode: Mode,
+	val args: MutableList<IfCondition>,
+	val compare: Compare?,
 ) : AttrNode() {
 
 	enum class Mode {
@@ -63,10 +63,6 @@ class IfCondition private constructor(
 		c.compare,
 	)
 
-	fun getMode(): Mode = mode
-
-	fun getArgs(): MutableList<IfCondition> = args
-
 	fun first(): IfCondition = args[0]
 
 	fun second(): IfCondition = args[1]
@@ -79,15 +75,13 @@ class IfCondition private constructor(
 
 	fun isCompare(): Boolean = mode == Mode.COMPARE
 
-	fun getCompare(): Compare? = compare
-
-	fun getRegisterArgs(): List<RegisterArg> {
+	val registerArgs: List<RegisterArg> get() {
 		val list = ArrayList<RegisterArg>()
 		if (mode == Mode.COMPARE) {
-			checkNotNull(compare).getInsn().getRegisterArgs(list)
+			checkNotNull(compare).insn.getRegisterArgs(list)
 		} else {
 			for (arg in args) {
-				list.addAll(arg.getRegisterArgs())
+				list.addAll(arg.registerArgs)
 			}
 		}
 		return list
@@ -95,7 +89,7 @@ class IfCondition private constructor(
 
 	fun replaceArg(from: InsnArg, to: InsnArg): Boolean {
 		if (mode == Mode.COMPARE) {
-			return checkNotNull(compare).getInsn().replaceArg(from, to)
+			return checkNotNull(compare).insn.replaceArg(from, to)
 		}
 		for (arg in args) {
 			if (arg.replaceArg(from, to)) {
@@ -107,7 +101,7 @@ class IfCondition private constructor(
 
 	fun visitInsns(visitor: (InsnNode) -> Unit) {
 		if (mode == Mode.COMPARE) {
-			checkNotNull(compare).getInsn().visitInsns(visitor)
+			checkNotNull(compare).insn.visitInsns(visitor)
 		} else {
 			for (arg in args) {
 				arg.visitInsns(visitor)
@@ -121,7 +115,7 @@ class IfCondition private constructor(
 		return list
 	}
 
-	fun getSourceLine(): Int {
+	val sourceLine: Int get() {
 		for (insn in collectInsns()) {
 			val line = insn.getSourceLine()
 			if (line != 0) {
@@ -131,11 +125,11 @@ class IfCondition private constructor(
 		return 0
 	}
 
-	fun getFirstInsn(): InsnNode? {
+	val firstInsn: InsnNode? get() {
 		if (mode == Mode.COMPARE) {
-			return checkNotNull(compare).getInsn()
+			return checkNotNull(compare).insn
 		}
-		return args[0].getFirstInsn()
+		return args[0].firstInsn
 	}
 
 	override fun toString(): String = when (mode) {
@@ -188,7 +182,6 @@ class IfCondition private constructor(
 		 *
 		 * 若块为空则返回 null（原 Java 也允许返回 null）。
 		 */
-		@JvmStatic
 		fun fromIfBlock(header: BlockNode): IfCondition? {
 			val lastInsn = BlockUtils.getLastInsn(header)
 			if (lastInsn == null) {
@@ -197,10 +190,8 @@ class IfCondition private constructor(
 			return fromIfNode(lastInsn as IfNode)
 		}
 
-		@JvmStatic
 		fun fromIfNode(insn: IfNode): IfCondition = IfCondition(Compare(insn))
 
-		@JvmStatic
 		fun ternary(a: IfCondition, b: IfCondition, c: IfCondition): IfCondition = IfCondition(Mode.TERNARY, Arrays.asList(a, b, c))
 
 		/**
@@ -209,9 +200,8 @@ class IfCondition private constructor(
 		 * 若 [a] 已经是同种运算（如 AND），则把 [b] 追加到 [a] 的副本上，
 		 * 避免出现 `(a AND b) AND c` 这种嵌套。
 		 */
-		@JvmStatic
 		fun merge(mode: Mode, a: IfCondition, b: IfCondition): IfCondition {
-			if (a.getMode() == mode) {
+			if (a.mode == mode) {
 				val n = IfCondition(a)
 				n.addArg(b)
 				return n
@@ -220,18 +210,17 @@ class IfCondition private constructor(
 		}
 
 		/** 递归对整个条件树取反（德摩根律：AND/OR 互换，子条件各自取反） */
-		@JvmStatic
 		fun invert(cond: IfCondition): IfCondition {
-			val mode = cond.getMode()
+			val mode = cond.mode
 			return when (mode) {
-				Mode.COMPARE -> IfCondition(checkNotNull(cond.getCompare()).invert())
+				Mode.COMPARE -> IfCondition(checkNotNull(cond.compare).invert())
 
 				Mode.TERNARY -> ternary(cond.first(), not(cond.second()), not(cond.third()))
 
 				Mode.NOT -> cond.first()
 
 				Mode.AND, Mode.OR -> {
-					val args = cond.getArgs()
+					val args = cond.args
 					val newArgs = ArrayList<IfCondition>(args.size)
 					for (arg in args) {
 						newArgs.add(invert(arg))
@@ -242,12 +231,11 @@ class IfCondition private constructor(
 		}
 
 		/** 逻辑非：双重否定消去；COMPARE 直接取反比较；其余包一层 NOT */
-		@JvmStatic
 		fun not(cond: IfCondition): IfCondition {
-			if (cond.getMode() == Mode.NOT) {
+			if (cond.mode == Mode.NOT) {
 				return cond.first()
 			}
-			val compare = cond.getCompare()
+			val compare = cond.compare
 			if (compare != null) {
 				return IfCondition(compare.invert())
 			}
@@ -261,23 +249,22 @@ class IfCondition private constructor(
 		 * 3. 递归化简子条件；
 		 * 4. 消除双重否定，并在否定过多时整体取反。
 		 */
-		@JvmStatic
 		fun simplify(cond: IfCondition): IfCondition {
 			var current = cond
 			if (current.isCompare()) {
-				val c = checkNotNull(current.getCompare())
+				val c = checkNotNull(current.compare)
 				val i = simplifyCmpOp(c)
 				if (i != null) {
 					return i
 				}
-				if (c.getOp() == IfOp.EQ && c.getB().isFalse()) {
+				if (c.op == IfOp.EQ && c.b.isFalse()) {
 					current = IfCondition(Mode.NOT, Collections.singletonList(IfCondition(c.invert())))
 				} else {
 					c.normalize()
 				}
 			}
 			var newArgs: MutableList<IfCondition>? = null
-			val currentArgs = current.getArgs()
+			val currentArgs = current.args
 			for (i in currentArgs.indices) {
 				val arg = currentArgs[i]
 				val simpl = simplify(arg)
@@ -293,23 +280,23 @@ class IfCondition private constructor(
 			val replacedArgs = newArgs
 			if (replacedArgs != null) {
 				// 子条件发生了变化，重建当前节点
-				current = IfCondition(current.getMode(), replacedArgs)
+				current = IfCondition(current.mode, replacedArgs)
 			}
-			if (current.getMode() == Mode.NOT && current.first().getMode() == Mode.NOT) {
+			if (current.mode == Mode.NOT && current.first().mode == Mode.NOT) {
 				current = invert(current.first())
 			}
-			if (current.getMode() == Mode.TERNARY && current.first().getMode() == Mode.NOT) {
+			if (current.mode == Mode.TERNARY && current.first().mode == Mode.NOT) {
 				current = invert(current)
 			}
 
 			// 对包含大量否定的 AND/OR 条件整体取反，输出更自然
-			if (current.getMode() == Mode.OR || current.getMode() == Mode.AND) {
-				val count = current.getArgs().size
+			if (current.mode == Mode.OR || current.mode == Mode.AND) {
+				val count = current.args.size
 				if (count > 1) {
 					var negCount = 0
-					for (arg in current.getArgs()) {
-						if (arg.getMode() == Mode.NOT ||
-							(arg.isCompare() && checkNotNull(arg.getCompare()).getOp() == IfOp.NE)
+					for (arg in current.args) {
+						if (arg.mode == Mode.NOT ||
+							(arg.isCompare() && checkNotNull(arg.compare).op == IfOp.NE)
 						) {
 							negCount++
 						}
@@ -332,31 +319,31 @@ class IfCondition private constructor(
 		 * 若无法化简返回 null。
 		 */
 		private fun simplifyCmpOp(c: Compare): IfCondition? {
-			if (!c.getA().isInsnWrap) {
+			if (!c.a.isInsnWrap) {
 				return null
 			}
-			if (!c.getB().isLiteral) {
+			if (!c.b.isLiteral) {
 				return null
 			}
-			val lit = (c.getB() as LiteralArg).literal
+			val lit = (c.b as LiteralArg).literal
 			if (lit != 0L && lit != 1L) {
 				return null
 			}
 
-			val wrapInsn = (c.getA() as InsnWrapArg).wrapInsn
-			when (wrapInsn.getType()) {
+			val wrapInsn = (c.a as InsnWrapArg).wrapInsn
+			when (wrapInsn.type) {
 				InsnType.CMP_L, InsnType.CMP_G -> {
 					if (lit == 0L) {
-						val insn = c.getInsn()
+						val insn = c.insn
 						insn.changeCondition(insn.getOp(), wrapInsn.getArg(0), wrapInsn.getArg(1))
 					}
 				}
 
 				InsnType.ARITH -> {
-					if (c.getB().getType() == ArgType.BOOLEAN) {
+					if (c.b.getType() == ArgType.BOOLEAN) {
 						val arithOp = (wrapInsn as ArithNode).op
 						if (arithOp == ArithOp.OR || arithOp == ArithOp.AND) {
-							val ifOp = c.getInsn().getOp()
+							val ifOp = c.insn.getOp()
 							val isTrue = (ifOp == IfOp.NE && lit == 0L) || (ifOp == IfOp.EQ && lit == 1L)
 
 							val op = if (isTrue) IfOp.NE else IfOp.EQ

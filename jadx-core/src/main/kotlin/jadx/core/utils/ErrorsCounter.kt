@@ -26,24 +26,21 @@ import java.util.HashSet
  */
 class ErrorsCounter {
 
-	private val errorNodes: MutableSet<IAttributeNode> = HashSet()
+	val errorNodes: MutableSet<IAttributeNode> = HashSet()
 	private var errorsCount: Int = 0
-	private val warnNodes: MutableSet<IAttributeNode> = HashSet()
+	val warnNodes: MutableSet<IAttributeNode> = HashSet()
 	private var warnsCount: Int = 0
 
 	companion object {
 		private val LOG: Logger = LoggerFactory.getLogger(ErrorsCounter::class.java)
 		private val PRINT_MTH_SIZE: Boolean = Consts.DEBUG
 
-		@JvmStatic
-		fun <N> error(node: N, warnMsg: String, th: Throwable?): String where N : IDexNode, N : IAttributeNode = node.root().getErrorsCounter().addError(node, warnMsg, th)
+		fun <N> error(node: N, warnMsg: String, th: Throwable?): String where N : IDexNode, N : IAttributeNode = node.root().errorsCounter.addError(node, warnMsg, th)
 
-		@JvmStatic
 		fun <N> warning(node: N, warnMsg: String) where N : IDexNode, N : IAttributeNode {
-			node.root().getErrorsCounter().addWarning(node, warnMsg)
+			node.root().errorsCounter.addWarning(node, warnMsg)
 		}
 
-		@JvmStatic
 		fun formatMsg(node: IDexNode, msg: String): String = msg + " in " + node.typeName() + ": " + node + ", file: " + node.getInputFileName()
 	}
 
@@ -88,8 +85,8 @@ class ErrorsCounter {
 	}
 
 	fun printReport() {
-		if (getErrorCount() > 0) {
-			LOG.error("{} errors occurred in following nodes:", getErrorCount())
+		if (errorCount > 0) {
+			LOG.error("{} errors occurred in following nodes:", errorCount)
 			val errors = ArrayList<String>(errorNodes.size)
 			for (node in errorNodes) {
 				val nodeName = node.javaClass.simpleName.replace("Node", "")
@@ -105,11 +102,7 @@ class ErrorsCounter {
 		}
 	}
 
-	fun getErrorCount(): Int = errorsCount
+	val errorCount: Int get() = errorsCount
 
 	fun getWarnsCount(): Int = warnsCount
-
-	fun getErrorNodes(): Set<IAttributeNode> = errorNodes
-
-	fun getWarnNodes(): Set<IAttributeNode> = warnNodes
 }

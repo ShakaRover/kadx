@@ -20,12 +20,12 @@ class DebugRegionCounter : AbstractVisitor() {
 	override fun visit(mth: MethodNode) {
 		val visitor = RegionCounterVisitor()
 		DepthRegionTraversal.traverse(mth, visitor)
-		val sortedBlocks = visitor.getSortedEntries()
+		val sortedBlocks = visitor.sortedEntries
 		for (x in sortedBlocks) {
 			println(x.depth.toString() + " : " + x.block.toString() + " // " + x.block.getInstructions().toString())
 		}
 
-		println("nregions :: " + visitor.getNRegions())
+		println("nregions :: " + visitor.NRegions)
 	}
 
 	/** 统计区域深度与数量的访问器 */
@@ -51,12 +51,12 @@ class DebugRegionCounter : AbstractVisitor() {
 		}
 
 		/** 按深度升序排序后返回（稳定排序，等价于原 Java 的 comparingInt） */
-		fun getSortedEntries(): List<BlockDepthEntry> {
+		val sortedEntries: List<BlockDepthEntry> get() {
 			blockDepths.sortBy { it.depth }
 			return blockDepths
 		}
 
-		fun getNRegions(): Int = nregions
+		val NRegions: Int get() = nregions
 	}
 
 	/** 基本块及其所在深度 */

@@ -25,7 +25,7 @@ public class LoadMappingsPass(private val options: RenameMappingsOptions) : Jadx
 
 	override fun init(root: RootNode) {
 		val mappings = loadMapping(root.getArgs())
-		root.getAttributes().add(RenameMappingsData(mappings))
+		root.attributes.add(RenameMappingsData(mappings))
 	}
 
 	private fun loadMapping(args: JadxArgs): MappingTreeView = try {

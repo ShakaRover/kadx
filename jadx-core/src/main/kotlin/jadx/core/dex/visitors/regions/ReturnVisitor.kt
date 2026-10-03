@@ -58,13 +58,13 @@ class ReturnVisitor : AbstractVisitor() {
 
 		/** 块不在任何循环中时才允许删除 return */
 		private fun blockNotInLoop(mth: MethodNode, block: BlockNode): Boolean {
-			if (mth.getLoopsCount() == 0) {
+			if (mth.loopsCount == 0) {
 				return true
 			}
 			if (mth.getLoopForBlock(block) != null) {
 				return false
 			}
-			for (region in getRegionStack()) {
+			for (region in regionStack) {
 				if (region.javaClass == LoopRegion::class.java) {
 					return false
 				}
@@ -80,7 +80,7 @@ class ReturnVisitor : AbstractVisitor() {
 		 */
 		private fun noTrailInstructions(block: BlockNode): Boolean {
 			var curContainer: IContainer = block
-			for (region in getRegionStack()) {
+			for (region in regionStack) {
 				// 分支区域的其他分支不算“后续代码”，直接跳到该区域本身
 				if (region is IBranchRegion) {
 					curContainer = region

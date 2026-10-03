@@ -18,16 +18,16 @@ class JadxPluginsData(
 	private val pluginManager: JadxPluginManager,
 ) : IJadxPlugins {
 
-	override fun getById(pluginId: String): JadxPluginRuntimeData = pluginManager.getResolvedPluginContexts()
+	override fun getById(pluginId: String): JadxPluginRuntimeData = pluginManager.resolvedPluginContexts
 		.firstOrNull { p -> p.getPluginId() == pluginId }
 		?: throw JadxRuntimeException("Plugin with id '$pluginId' not found")
 
-	override fun getProviding(provideId: String): JadxPluginRuntimeData = pluginManager.getResolvedPluginContexts()
+	override fun getProviding(provideId: String): JadxPluginRuntimeData = pluginManager.resolvedPluginContexts
 		.firstOrNull { p -> p.getPluginInfo().getProvides() == provideId }
 		?: throw JadxRuntimeException("Plugin providing '$provideId' not found")
 
 	@Suppress("UNCHECKED_CAST")
-	override fun <P : JadxPlugin> getInstance(pluginCls: Class<P>): P = pluginManager.getResolvedPluginContexts()
+	override fun <P : JadxPlugin> getInstance(pluginCls: Class<P>): P = pluginManager.resolvedPluginContexts
 		.firstOrNull { p -> p.getPluginInstance().javaClass == pluginCls }
 		?.let { p -> p.getPluginInstance() as P }
 		?: throw JadxRuntimeException("Plugin class '$pluginCls' not found")

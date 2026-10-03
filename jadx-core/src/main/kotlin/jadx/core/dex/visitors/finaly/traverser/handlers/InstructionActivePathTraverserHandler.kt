@@ -26,8 +26,8 @@ class InstructionActivePathTraverserHandler(state: TraverserActivePathState) : A
 
 	@Throws(TraverserException::class)
 	override fun handle(): List<TraverserActivePathState> {
-		val comparator: TraverserActivePathState = getComparator()
-		val commonState: TraverserGlobalCommonState = comparator.getGlobalCommonState()
+		val comparator: TraverserActivePathState = comparator
+		val commonState: TraverserGlobalCommonState = comparator.globalCommonState
 
 		val finallyState: TraverserState = comparator.getFinallyState()
 		val candidateState: TraverserState = comparator.getCandidateState()

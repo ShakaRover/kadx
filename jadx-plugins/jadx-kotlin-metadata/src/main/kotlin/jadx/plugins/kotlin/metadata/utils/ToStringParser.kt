@@ -48,8 +48,8 @@ class ToStringParser private constructor(mthToString: MethodNode) {
 			val arg = insn.getArg(1)
 
 			// invoke with const string
-			if (arg.isInsnWrap && arg is InsnWrapArg && arg.wrapInsn.getType() == InsnType.CONST_STR) {
-				val constStr: String? = (arg.wrapInsn as ConstStringNode).getString()
+			if (arg.isInsnWrap && arg is InsnWrapArg && arg.wrapInsn.type == InsnType.CONST_STR) {
+				val constStr: String? = (arg.wrapInsn as ConstStringNode).string
 				handleString(requireNotNull(constStr) { "Failed to get const String" })
 			}
 
@@ -64,7 +64,7 @@ class ToStringParser private constructor(mthToString: MethodNode) {
 				}
 
 				// string formatted argument, for rare cases like Arrays.toString(...)
-				if (assign is InvokeNode && assign.invokeType == InvokeType.STATIC && assign.getArgsCount() == 1) {
+				if (assign is InvokeNode && assign.invokeType == InvokeType.STATIC && assign.argsCount == 1) {
 					val prevArg = assign.getArg(0)
 					if (prevArg.isRegister && prevArg is RegisterArg) {
 						val prevSv = checkNotNull(prevArg.sVar) { "SSA var not set for $prevArg" }
@@ -134,7 +134,7 @@ class ToStringParser private constructor(mthToString: MethodNode) {
 		private fun isAppendInvoke(inst: InsnNode): Boolean = inst is InvokeNode &&
 			inst.callMth.declClass.fullName == Consts.CLASS_STRING_BUILDER &&
 			inst.callMth.name == "append" &&
-			inst.getArgsCount() == 2
+			inst.argsCount == 2
 
 		private fun isToString(inst: InsnNode): Boolean = inst is InvokeNode &&
 			inst.callMth.declClass.fullName == Consts.CLASS_STRING_BUILDER &&

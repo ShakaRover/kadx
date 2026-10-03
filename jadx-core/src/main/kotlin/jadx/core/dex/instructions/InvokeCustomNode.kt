@@ -32,7 +32,7 @@ open class InvokeCustomNode : InvokeNode {
 		super(mth, invokeType, argsCount)
 
 	override fun copy(): InsnNode {
-		val copy = InvokeCustomNode(callMth, invokeType, getArgsCount())
+		val copy = InvokeCustomNode(callMth, invokeType, argsCount)
 		copyCommonParams(copy)
 		copy.implMthInfo = implMthInfo
 		copy.handleType = handleType
@@ -66,9 +66,9 @@ open class InvokeCustomNode : InvokeNode {
 	}
 
 	/** 若内部调用指令是 invoke 类型，返回其调用信息，否则返回 null。 */
-	fun getInvokeCall(): BaseInvokeNode? {
+	val invokeCall: BaseInvokeNode? get() {
 		val call = callInsn ?: return null
-		if (call.getType() == InsnType.INVOKE) {
+		if (call.type == InsnType.INVOKE) {
 			return call as BaseInvokeNode
 		}
 		return null

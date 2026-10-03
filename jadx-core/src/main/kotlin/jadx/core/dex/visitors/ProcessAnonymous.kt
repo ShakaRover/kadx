@@ -129,7 +129,7 @@ class ProcessAnonymous : AbstractVisitor() {
 			}
 			val next = inlineMap[current]
 			if (next == null) {
-				topNode = current.getTopParentClass()
+				topNode = current.topParentClass
 				break
 			}
 			current = next
@@ -145,7 +145,7 @@ class ProcessAnonymous : AbstractVisitor() {
 		}
 		val mutableDeps = deps as MutableList<ClassNode>
 		for (add in added) {
-			mutableDeps.add(add.getTopParentClass())
+			mutableDeps.add(add.topParentClass)
 		}
 	}
 
@@ -180,7 +180,7 @@ class ProcessAnonymous : AbstractVisitor() {
 
 			// 强制匿名类先于外部类处理，外部类的实际使用会在匿名类处理时移除，
 			// 见 ModVisitor.processAnonymousConstructor
-			val topOuterCls = outerCls.getTopParentClass()
+			val topOuterCls = outerCls.topParentClass
 			cls.removeDependency(topOuterCls)
 			ListUtils.safeRemove(outerCls.useIn, cls)
 
@@ -194,7 +194,7 @@ class ProcessAnonymous : AbstractVisitor() {
 		private fun undoAnonymousMark(cls: ClassNode) {
 			val attr = checkNotNull(cls.get(AType.ANONYMOUS_CLASS))
 			val outerCls = attr.outerCls
-			cls.dependencies = ListUtils.safeAdd(cls.dependencies, outerCls.getTopParentClass())
+			cls.dependencies = ListUtils.safeAdd(cls.dependencies, outerCls.topParentClass)
 			outerCls.useIn = ListUtils.safeAdd(outerCls.useIn, cls)
 
 			cls.remove(AType.ANONYMOUS_CLASS)
@@ -247,7 +247,7 @@ class ProcessAnonymous : AbstractVisitor() {
 				// 排除自使用
 				return null
 			}
-			if (ctrUseCls.getTopParentClass() == cls) {
+			if (ctrUseCls.topParentClass == cls) {
 				// 排除内部类中的使用
 				return null
 			}

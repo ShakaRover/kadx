@@ -32,11 +32,9 @@ class BlockSet(private val mth: MethodNode) : Iterable<BlockNode> {
 
 	companion object {
 		/** 创建空集合。 */
-		@JvmStatic
 		fun empty(mth: MethodNode): BlockSet = BlockSet(mth)
 
 		/** 从给定块集合创建（复制内容，不影响原集合）。 */
-		@JvmStatic
 		fun from(mth: MethodNode, blocks: Collection<BlockNode>): BlockSet {
 			val newBS = BlockSet(mth)
 			newBS.addAll(blocks)
@@ -44,7 +42,7 @@ class BlockSet(private val mth: MethodNode) : Iterable<BlockNode> {
 		}
 	}
 
-	private fun mthBlocks(): List<BlockNode> = checkNotNull(mth.getBasicBlocks())
+	private fun mthBlocks(): List<BlockNode> = checkNotNull(mth.basicBlocks)
 
 	operator fun contains(block: BlockNode): Boolean = bs.get(block.pos)
 
@@ -114,14 +112,14 @@ class BlockSet(private val mth: MethodNode) : Iterable<BlockNode> {
 	}
 
 	/** 恰好只有一个元素时返回该元素，否则返回 null。 */
-	fun getOne(): BlockNode? {
+	val one: BlockNode? get() {
 		if (bs.cardinality() == 1) {
 			return mthBlocks()[bs.nextSetBit(0)]
 		}
 		return null
 	}
 
-	fun getFirst(): BlockNode = mthBlocks()[bs.nextSetBit(0)]
+	val first: BlockNode get() = mthBlocks()[bs.nextSetBit(0)]
 
 	override fun forEach(action: Consumer<in BlockNode>) {
 		if (bs.isEmpty()) {

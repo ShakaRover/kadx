@@ -30,14 +30,12 @@ class SignatureParser(private val sign: String) {
 		private const val STOP_CHAR = '\u0000'
 
 		/** 从属性节点读取签名并创建解析器；无签名时返回 null。 */
-		@JvmStatic
 		fun fromNode(node: IAttributeNode): SignatureParser? {
 			val signature = getSignature(node) ?: return null
 			return SignatureParser(signature)
 		}
 
 		/** 读取节点上的签名属性；不存在时返回 null。 */
-		@JvmStatic
 		fun getSignature(node: IAttributeNode): String? {
 			val attr = node.get(JadxAttrType.SIGNATURE) ?: return null
 			return attr.signature

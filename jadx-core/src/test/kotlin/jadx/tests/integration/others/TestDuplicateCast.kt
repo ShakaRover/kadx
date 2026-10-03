@@ -26,13 +26,13 @@ class TestDuplicateCast : IntegrationTest() {
 			.code()
 			.contains("return (int[]) o;")
 
-		val insns: List<InsnNode> = BlockUtils.collectAllInsns(checkNotNull(mth.getBasicBlocks()))
+		val insns: List<InsnNode> = BlockUtils.collectAllInsns(checkNotNull(mth.basicBlocks))
 		assertThat(insns).hasSize(1)
 		val insnNode = insns[0]
-		assertThat(insnNode.getType()).isEqualTo(InsnType.RETURN)
+		assertThat(insnNode.type).isEqualTo(InsnType.RETURN)
 		assertThat(insnNode.getArg(0).isInsnWrap).isTrue()
 		val wrapInsn = (insnNode.getArg(0) as InsnWrapArg).wrapInsn
-		assertThat(wrapInsn.getType()).isEqualTo(InsnType.CHECK_CAST)
+		assertThat(wrapInsn.type).isEqualTo(InsnType.CHECK_CAST)
 		assertThat(wrapInsn.getArg(0).isInsnWrap).isFalse()
 	}
 }

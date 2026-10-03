@@ -58,7 +58,7 @@ class TypeInferenceVisitor : AbstractVisitor() {
 
 	override fun init(root: RootNode) {
 		this.root = root
-		this.typeUpdate = root.getTypeUpdate()
+		this.typeUpdate = root.typeUpdate
 	}
 
 	override fun visit(mth: MethodNode) {
@@ -85,7 +85,7 @@ class TypeInferenceVisitor : AbstractVisitor() {
 	 * 从赋值与使用处收集初始类型边界。
 	 */
 	fun initTypeBounds(mth: MethodNode) {
-		val ssaVars = mth.getSVars()
+		val ssaVars = mth.SVars
 		for (ssaVar in ssaVars) {
 			attachBounds(ssaVar)
 		}
@@ -94,7 +94,7 @@ class TypeInferenceVisitor : AbstractVisitor() {
 		}
 		if (Consts.DEBUG_TYPE_INFERENCE) {
 			for (ssaVar in ssaVars.sorted()) {
-				LOG.debug("Type bounds for {}: {}", ssaVar.toShortString(), ssaVar.typeInfo.getBounds())
+				LOG.debug("Type bounds for {}: {}", ssaVar.toShortString(), ssaVar.typeInfo.bounds)
 			}
 		}
 	}
@@ -103,7 +103,7 @@ class TypeInferenceVisitor : AbstractVisitor() {
 	 * 从使用处猜测类型，并尝试设置到当前变量及所有关联指令。
 	 */
 	fun runTypePropagation(mth: MethodNode): Boolean {
-		val ssaVars = mth.getSVars()
+		val ssaVars = mth.SVars
 		for (ssaVar in ssaVars) {
 			setImmutableType(mth, ssaVar)
 		}
@@ -115,7 +115,7 @@ class TypeInferenceVisitor : AbstractVisitor() {
 
 	private fun setImmutableType(mth: MethodNode, ssaVar: SSAVar) {
 		try {
-			val immutableType = ssaVar.getImmutableType()
+			val immutableType = ssaVar.immutableType
 			if (immutableType != null) {
 				val result = typeUpdate.applyWithWiderIgnSame(mth, ssaVar, immutableType)
 				if (Consts.DEBUG_TYPE_INFERENCE && result == TypeUpdateResult.REJECT) {
@@ -141,7 +141,7 @@ class TypeInferenceVisitor : AbstractVisitor() {
 
 	private fun calculateFromBounds(mth: MethodNode, ssaVar: SSAVar) {
 		val typeInfo = ssaVar.typeInfo
-		val bounds = typeInfo.getBounds()
+		val bounds = typeInfo.bounds
 		val bestTypeOpt = selectBestTypeFromBounds(bounds)
 		if (bestTypeOpt == null) {
 			if (Consts.DEBUG_TYPE_INFERENCE) {
@@ -178,22 +178,22 @@ class TypeInferenceVisitor : AbstractVisitor() {
 
 	private fun attachBounds(ssaVar: SSAVar) {
 		val typeInfo = ssaVar.typeInfo
-		typeInfo.getBounds().clear()
+		typeInfo.bounds.clear()
 		val assign = ssaVar.assign
 		addAssignBound(typeInfo, assign)
 
-		for (regArg in ssaVar.getUseList()) {
+		for (regArg in ssaVar.useList) {
 			addBound(typeInfo, makeUseBound(regArg))
 		}
 	}
 
 	/** 把 PHI 指令各变量的边界合并到结果变量上。 */
 	private fun mergePhiBounds(ssaVar: SSAVar) {
-		for (usedInPhi in ssaVar.getUsedInPhi()) {
-			val bounds = ssaVar.typeInfo.getBounds()
-			bounds.addAll(checkNotNull(usedInPhi.getResult()?.sVar).typeInfo.getBounds())
+		for (usedInPhi in ssaVar.usedInPhi) {
+			val bounds = ssaVar.typeInfo.bounds
+			bounds.addAll(checkNotNull(usedInPhi.getResult()?.sVar).typeInfo.bounds)
 			for (arg in usedInPhi.getArguments()) {
-				bounds.addAll(checkNotNull((arg as RegisterArg).sVar).typeInfo.getBounds())
+				bounds.addAll(checkNotNull((arg as RegisterArg).sVar).typeInfo.bounds)
 			}
 		}
 	}
@@ -203,12 +203,12 @@ class TypeInferenceVisitor : AbstractVisitor() {
 			return
 		}
 		if (bound is ITypeBoundDynamic || bound.getType() !== ArgType.UNKNOWN) {
-			typeInfo.getBounds().add(bound)
+			typeInfo.bounds.add(bound)
 		}
 	}
 
 	private fun addAssignBound(typeInfo: TypeInfo, assign: RegisterArg) {
-		val immutableType = assign.getImmutableType()
+		val immutableType = assign.immutableType
 		if (immutableType != null) {
 			addBound(typeInfo, TypeBoundConst(BoundEnum.ASSIGN, immutableType))
 			return
@@ -219,7 +219,7 @@ class TypeInferenceVisitor : AbstractVisitor() {
 			addBound(typeInfo, TypeBoundConst(BoundEnum.ASSIGN, assign.getInitType()))
 			return
 		}
-		when (insn.getType()) {
+		when (insn.type) {
 			InsnType.NEW_INSTANCE -> {
 				val clsType = (insn as IndexInsnNode).index as ArgType
 				addBound(typeInfo, TypeBoundConst(BoundEnum.ASSIGN, clsType))
@@ -238,7 +238,7 @@ class TypeInferenceVisitor : AbstractVisitor() {
 			InsnType.MOVE_EXCEPTION -> {
 				val excHandlerAttr: ExcHandlerAttr? = insn.get(AType.EXC_HANDLER)
 				if (excHandlerAttr != null) {
-					for (catchType in excHandlerAttr.getHandler().getCatchTypes()) {
+					for (catchType in excHandlerAttr.handler.catchTypes) {
 						addBound(typeInfo, TypeBoundConst(BoundEnum.ASSIGN, catchType.type))
 					}
 				} else {
@@ -270,7 +270,7 @@ class TypeInferenceVisitor : AbstractVisitor() {
 	/** 匿名类构造调用应使用其“基类型”，便于后续内联还原。 */
 	private fun replaceAnonymousType(ctr: ConstructorInsn): ArgType {
 		if (ctr.isNewInstance) {
-			val ctrCls = root.resolveClass(ctr.getClassType())
+			val ctrCls = root.resolveClass(ctr.classType)
 			if (ctrCls != null && ctrCls.contains(AFlag.DONT_GENERATE)) {
 				val baseTypeAttr = ctrCls.get(AType.ANONYMOUS_CLASS)
 				if (baseTypeAttr != null && baseTypeAttr.inlineType == AnonymousClassAttr.InlineType.CONSTRUCTOR) {
@@ -278,7 +278,7 @@ class TypeInferenceVisitor : AbstractVisitor() {
 				}
 			}
 		}
-		return ctr.getClassType().type
+		return ctr.classType.type
 	}
 
 	private fun makeAssignFieldGetBound(insn: IndexInsnNode): ITypeBound {
@@ -295,7 +295,7 @@ class TypeInferenceVisitor : AbstractVisitor() {
 		if (genericReturnType != null) {
 			if (genericReturnType.containsTypeVariable()) {
 				val invokeType = invokeNode.invokeType
-				if (invokeNode.getArgsCount() != 0 && invokeType != InvokeType.STATIC && invokeType != InvokeType.SUPER) {
+				if (invokeNode.argsCount != 0 && invokeType != InvokeType.STATIC && invokeType != InvokeType.SUPER) {
 					return TypeBoundInvokeAssign(root, invokeNode, genericReturnType)
 				}
 			} else {
@@ -313,7 +313,7 @@ class TypeInferenceVisitor : AbstractVisitor() {
 				return invokeUseBound
 			}
 		}
-		if (insn.getType() == InsnType.CHECK_CAST && insn.contains(AFlag.SOFT_CAST)) {
+		if (insn.type == InsnType.CHECK_CAST && insn.contains(AFlag.SOFT_CAST)) {
 			// 忽略软转换
 			return null
 		}
@@ -342,7 +342,7 @@ class TypeInferenceVisitor : AbstractVisitor() {
 	}
 
 	private fun assignImmutableTypes(mth: MethodNode) {
-		for (ssaVar in mth.getSVars()) {
+		for (ssaVar in mth.SVars) {
 			val immutableType = getSsaImmutableType(ssaVar)
 			if (immutableType != null) {
 				ssaVar.markAsImmutable(immutableType)
@@ -359,7 +359,7 @@ class TypeInferenceVisitor : AbstractVisitor() {
 			if (ssaVar.assign.contains(AFlag.IMMUTABLE_TYPE)) {
 				return ssaVar.assign.getInitType()
 			}
-			for (reg in ssaVar.getUseList()) {
+			for (reg in ssaVar.useList) {
 				if (reg.contains(AFlag.IMMUTABLE_TYPE)) {
 					return reg.getInitType()
 				}

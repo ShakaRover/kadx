@@ -51,7 +51,7 @@ class InvokeUpdateCallback(
 				else -> {
 				}
 			}
-			if (!getNextArg()) {
+			if (!nextArg) {
 				return if (allSame) TypeUpdateResult.SAME else TypeUpdateResult.CHANGED
 			}
 			// 只有第一个排队更新把本回调继续挂上
@@ -91,7 +91,7 @@ class InvokeUpdateCallback(
 		return updateCallback(result)
 	}
 
-	private fun getNextArg(): Boolean {
+	private val nextArg: Boolean get() {
 		while (true) {
 			currentArg++
 			val i = currentArg

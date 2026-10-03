@@ -35,10 +35,10 @@ class RegisterArg(val regNum: Int, type: ArgType) :
 		this.type = type
 	}
 
-	fun getImmutableType(): ArgType? {
+	val immutableType: ArgType? get() {
 		val sv = sVarRef
 		if (sv != null) {
-			return sv.getImmutableType()
+			return sv.immutableType
 		}
 		return if (contains(AFlag.IMMUTABLE_TYPE)) type else null
 	}
@@ -117,7 +117,7 @@ class RegisterArg(val regNum: Int, type: ArgType) :
 		return copyCommonParams(dup)
 	}
 
-	fun getAssignInsn(): InsnNode? {
+	val assignInsn: InsnNode? get() {
 		val sv = sVarRef ?: return null
 		return sv.assign.getParentInsn()
 	}

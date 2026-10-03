@@ -18,12 +18,9 @@ object JadxBuildInfo {
 
 	/** 构建数据只读快照 */
 	private class BuildData(
-		private val jadxVersion: String,
-		private val jadxBundleType: String,
+		val jadxVersion: String,
+		val jadxBundleType: String,
 	) {
-		fun getJadxVersion(): String = jadxVersion
-
-		fun getJadxBundleType(): String = jadxBundleType
 
 		override fun toString(): String = "{jadx-version:$jadxVersion, jadx-bundle-type:$jadxBundleType}"
 	}
@@ -49,9 +46,7 @@ object JadxBuildInfo {
 		}
 	}
 
-	@JvmStatic
-	fun getJadxBundleType(): String = BUILD_DATA.getJadxBundleType()
+	fun getJadxBundleType(): String = BUILD_DATA.jadxBundleType
 
-	@JvmStatic
-	fun getJadxVersion(): String = BUILD_DATA.getJadxVersion()
+	fun getJadxVersion(): String = BUILD_DATA.jadxVersion
 }

@@ -116,13 +116,13 @@ class EnumVisitor : AbstractVisitor() {
 		if (superType != null && superType.getObject() == ArgType.ENUM.getObject()) {
 			cls.add(AFlag.REMOVE_SUPER_CLASS)
 		}
-		val classInitMth = cls.getClassInitMth()
+		val classInitMth = cls.classInitMth
 		if (classInitMth == null) {
 			cls.addWarnComment("Enum class init method not found")
 			return false
 		}
 		val staticRegion: Region? = classInitMth.region
-		if (staticRegion == null || checkNotNull(classInitMth.getBasicBlocks()).isEmpty()) {
+		if (staticRegion == null || checkNotNull(classInitMth.basicBlocks).isEmpty()) {
 			return false
 		}
 		// 收集静态方法线性部分的基本块（忽略方法末尾的分支）
@@ -150,7 +150,7 @@ class EnumVisitor : AbstractVisitor() {
 		} else if (arrArg.isRegister) {
 			// Kotlin 1.9+ 的 $ENTRIES 模式：数组寄存器有多个使用点，
 			// 导致 CodeShrinkVisitor 无法内联到 SPUT
-			val assignInsn = (arrArg as RegisterArg).getAssignInsn()
+			val assignInsn = (arrArg as RegisterArg).assignInsn
 			if (assignInsn != null) {
 				enumFields = extractEnumFieldsFromInsn(data, assignInsn)
 			}
@@ -170,7 +170,7 @@ class EnumVisitor : AbstractVisitor() {
 			val fieldNode = enumField.field
 			val name = enumField.nameStr
 			if (name != null &&
-				fieldNode.getAlias() != name &&
+				fieldNode.alias != name &&
 				NameMapper.isValidAndPrintable(name) &&
 				cls.root().getArgs().isRenameValid
 			) {
@@ -230,7 +230,7 @@ class EnumVisitor : AbstractVisitor() {
 		if (valuesCandidates.size > 1) {
 			var valuesOpt: FieldNode? = null
 			for (f in valuesCandidates) {
-				if (f.getName() == "\$VALUES") {
+				if (f.name == "\$VALUES") {
 					valuesOpt = f
 					break
 				}
@@ -254,7 +254,7 @@ class EnumVisitor : AbstractVisitor() {
 
 	private fun processConstructorInsn(data: EnumData, enumField: EnumField, classInitMth: MethodNode) {
 		val co = enumField.constrInsn
-		val enumClsInfo = co.getClassType()
+		val enumClsInfo = co.classType
 		if (enumClsInfo != data.cls.classInfo) {
 			val enumCls = data.cls.root().resolveClass(enumClsInfo)
 			if (enumCls != null) {
@@ -266,11 +266,11 @@ class EnumVisitor : AbstractVisitor() {
 			markArgsForSkip(ctrMth)
 		}
 		val coResArg = co.getResult()
-		if (coResArg == null || checkNotNull(coResArg.sVar).getUseList().size <= 2) {
+		if (coResArg == null || checkNotNull(coResArg.sVar).useList.size <= 2) {
 			data.toRemove.add(co)
 		} else {
 			var varUseFound = false
-			for (useArg in checkNotNull(coResArg.sVar).getUseList()) {
+			for (useArg in checkNotNull(coResArg.sVar).useList) {
 				if (!data.toRemove.contains(useArg.getParentInsn())) {
 					varUseFound = true
 					break
@@ -286,7 +286,7 @@ class EnumVisitor : AbstractVisitor() {
 	}
 
 	private fun extractEnumFieldsFromInsn(enumData: EnumData, wrappedInsn: InsnNode): List<EnumField>? {
-		when (wrappedInsn.getType()) {
+		when (wrappedInsn.type) {
 			InsnType.FILLED_NEW_ARRAY -> return extractEnumFieldsFromFilledArray(enumData, wrappedInsn)
 
 			// 处理 values 数组填充的重定向（Java 15 新增）
@@ -311,13 +311,13 @@ class EnumVisitor : AbstractVisitor() {
 		if (valuesMth == null || valuesMth.isVoidReturn()) {
 			return null
 		}
-		val returnBlock = Utils.getOne(valuesMth.getPreExitBlocks())
+		val returnBlock = Utils.getOne(valuesMth.preExitBlocks)
 		val returnInsn = BlockUtils.getLastInsn(returnBlock)
 		val wrappedInsn = InsnUtils.getWrappedInsn(InsnUtils.getSingleArg(returnInsn)) ?: return null
 		val enumFields = extractEnumFieldsFromInsn(enumData, wrappedInsn)
 		if (enumFields != null && ListUtils.isSingleElement(valuesMth.getUseIn(), enumData.classInitMth)) {
 			valuesMth.add(AFlag.DONT_GENERATE)
-			if (valuesMth.getName() == "\$values") {
+			if (valuesMth.name == "\$values") {
 				// Kotlin 用于初始化 values 的合成方法
 				// 重命名为实际的 values 方法，以便在 $ENTRIES 初始化代码中使用
 				valuesMth.getMethodInfo().alias = "values"
@@ -330,7 +330,7 @@ class EnumVisitor : AbstractVisitor() {
 		val searchField = checkNotNull(data.valuesField).getFieldInfo()
 		for (blockNode in data.staticBlocks) {
 			for (insn in blockNode.getInstructions()) {
-				if (insn.getType() == InsnType.SPUT) {
+				if (insn.type == InsnType.SPUT) {
 					val indexInsnNode = insn as IndexInsnNode
 					val f = indexInsnNode.index as FieldInfo
 					if (f == searchField) {
@@ -362,7 +362,7 @@ class EnumVisitor : AbstractVisitor() {
 	}
 
 	private fun processEnumFieldByWrappedInsn(data: EnumData, wrappedInsn: InsnNode): EnumField? {
-		if (wrappedInsn.getType() == InsnType.SGET) {
+		if (wrappedInsn.type == InsnType.SGET) {
 			return processEnumFieldByField(data, wrappedInsn)
 		}
 		val constructorInsn = castConstructorInsn(wrappedInsn)
@@ -375,7 +375,7 @@ class EnumVisitor : AbstractVisitor() {
 	}
 
 	private fun processEnumFieldByField(data: EnumData, sgetInsn: InsnNode): EnumField? {
-		if (sgetInsn.getType() != InsnType.SGET) {
+		if (sgetInsn.type != InsnType.SGET) {
 			return null
 		}
 		val fieldInfo = (sgetInsn as IndexInsnNode).index as FieldInfo
@@ -384,7 +384,7 @@ class EnumVisitor : AbstractVisitor() {
 
 		val co = getConstructorInsn(sputInsn) ?: return null
 		val sgetResult = sgetInsn.getResult()
-		if (sgetResult == null || checkNotNull(sgetResult.sVar).getUseCount() == 1) {
+		if (sgetResult == null || checkNotNull(sgetResult.sVar).useCount == 1) {
 			data.toRemove.add(sgetInsn)
 		}
 		data.toRemove.add(sputInsn)
@@ -392,17 +392,17 @@ class EnumVisitor : AbstractVisitor() {
 	}
 
 	private fun processEnumFieldByRegister(data: EnumData, arg: RegisterArg): EnumField? {
-		val assignInsn = arg.getAssignInsn()
-		if (assignInsn != null && assignInsn.getType() == InsnType.SGET) {
+		val assignInsn = arg.assignInsn
+		if (assignInsn != null && assignInsn.type == InsnType.SGET) {
 			return processEnumFieldByField(data, assignInsn)
 		}
 
 		val ssaVar = checkNotNull(arg.sVar)
-		if (ssaVar.getUseCount() == 0) {
+		if (ssaVar.useCount == 0) {
 			return null
 		}
 		val constrInsn = ssaVar.assign.getParentInsn()
-		if (constrInsn == null || constrInsn.getType() != InsnType.CONSTRUCTOR) {
+		if (constrInsn == null || constrInsn.type != InsnType.CONSTRUCTOR) {
 			return null
 		}
 		var enumFieldNode = searchEnumField(data, ssaVar)
@@ -422,8 +422,8 @@ class EnumVisitor : AbstractVisitor() {
 	}
 
 	private fun searchEnumField(data: EnumData, ssaVar: SSAVar): FieldNode? {
-		val sputInsn = ssaVar.getUseList()[0].getParentInsn()
-		if (sputInsn == null || sputInsn.getType() != InsnType.SPUT) {
+		val sputInsn = ssaVar.useList[0].getParentInsn()
+		if (sputInsn == null || sputInsn.type != InsnType.SPUT) {
 			return null
 		}
 		val fieldInfo = (sputInsn as IndexInsnNode).index as FieldInfo
@@ -436,7 +436,7 @@ class EnumVisitor : AbstractVisitor() {
 		// 通常构造器签名是 '<init>(Ljava/lang/String;I)V'，有时一个或两个参数会被省略
 		var co = constructorInsn
 		val cls = data.cls
-		val clsInfo = co.getClassType()
+		val clsInfo = co.classType
 		val constrCls = cls.root().resolveClass(clsInfo) ?: return null
 		if (constrCls == cls) {
 			// 允许同类
@@ -449,9 +449,9 @@ class EnumVisitor : AbstractVisitor() {
 		// 通常构造器签名是 '<init>(Ljava/lang/String;I)V'
 		// 有时一个或两个参数会被内联或省略
 		var nameStr: String? = null
-		if (co.getArgsCount() == 0) {
+		if (co.argsCount == 0) {
 			val ctrInsn = searchEnumSuperCtrInsn(ctrMth)
-			if (ctrInsn != null && ctrInsn.getArgsCount() != 0) {
+			if (ctrInsn != null && ctrInsn.argsCount != 0) {
 				nameStr = getConstString(ctrMth.root(), ctrInsn.getArg(0))
 			}
 		} else {
@@ -461,7 +461,7 @@ class EnumVisitor : AbstractVisitor() {
 			co.getRegisterArgs(regs)
 			if (regs.isNotEmpty()) {
 				val replacedCo = inlineExternalRegs(data, co)
-					?: throw JadxRuntimeException("Init of enum field '${enumFieldNode.getName()}' uses external variables")
+					?: throw JadxRuntimeException("Init of enum field '${enumFieldNode.name}' uses external variables")
 				data.toRemove.add(co)
 				co = replacedCo
 			}
@@ -470,12 +470,12 @@ class EnumVisitor : AbstractVisitor() {
 	}
 
 	private fun searchEnumSuperCtrInsn(ctrMth: MethodNode): ConstructorInsn? {
-		for (block in checkNotNull(ctrMth.getBasicBlocks())) {
+		for (block in checkNotNull(ctrMth.basicBlocks)) {
 			for (insn in block.getInstructions()) {
-				if (insn.getType() == InsnType.CONSTRUCTOR) {
+				if (insn.type == InsnType.CONSTRUCTOR) {
 					val ctrCall = insn as ConstructorInsn
 					if (ctrCall.isSuper &&
-						ctrCall.getArgsCount() != 0 &&
+						ctrCall.argsCount != 0 &&
 						ctrCall.callMth.rawFullId == ENUM_SUPER_CONSTRUCTOR_ID
 					) {
 						return ctrCall
@@ -505,13 +505,13 @@ class EnumVisitor : AbstractVisitor() {
 		val cls = data.cls
 		val ssaVar = checkNotNull(reg.sVar)
 		val assignInsn = InsnUtils.checkInsnType(ssaVar.assignInsn, InsnType.CONSTRUCTOR)
-		if (assignInsn == null || (assignInsn as ConstructorInsn).getClassType() != cls.classInfo) {
+		if (assignInsn == null || (assignInsn as ConstructorInsn).classType != cls.classInfo) {
 			return null
 		}
 		var enumField: FieldInfo? = null
-		for (useArg in ssaVar.getUseList()) {
+		for (useArg in ssaVar.useList) {
 			val useInsn = useArg.getParentInsn() ?: return null
-			when (useInsn.getType()) {
+			when (useInsn.type) {
 				InsnType.SPUT -> {
 					val field = (useInsn as IndexInsnNode).index as FieldInfo
 					if (field.declClass != cls.classInfo || field.type != cls.getType()) {
@@ -522,7 +522,7 @@ class EnumVisitor : AbstractVisitor() {
 
 				InsnType.CONSTRUCTOR -> {
 					val useCo = useInsn as ConstructorInsn
-					if (useCo.getClassType() != cls.classInfo) {
+					if (useCo.classType != cls.classInfo) {
 						return null
 					}
 				}
@@ -536,7 +536,7 @@ class EnumVisitor : AbstractVisitor() {
 							return null
 						}
 					} else if (valuesArg.isRegister) {
-						val valuesAssign = (valuesArg as RegisterArg).getAssignInsn()
+						val valuesAssign = (valuesArg as RegisterArg).assignInsn
 						if (valuesAssign !== useInsn) {
 							return null
 						}
@@ -557,7 +557,7 @@ class EnumVisitor : AbstractVisitor() {
 	private fun searchFieldPutInsn(data: EnumData, enumFieldNode: FieldNode): InsnNode? {
 		for (block in data.staticBlocks) {
 			for (sputInsn in block.getInstructions()) {
-				if (sputInsn != null && sputInsn.getType() == InsnType.SPUT) {
+				if (sputInsn != null && sputInsn.type == InsnType.SPUT) {
 					val f = (sputInsn as IndexInsnNode).index as FieldInfo
 					val fieldNode = data.cls.searchField(f)
 					if (fieldNode == enumFieldNode) {
@@ -644,7 +644,7 @@ class EnumVisitor : AbstractVisitor() {
 			return false
 		}
 		val returnInsn = BlockUtils.getOnlyOneInsnFromMth(mth)
-		if (returnInsn == null || returnInsn.getType() != InsnType.RETURN || returnInsn.getArgsCount() != 1) {
+		if (returnInsn == null || returnInsn.type != InsnType.RETURN || returnInsn.argsCount != 1) {
 			return false
 		}
 		val wrappedInsn = InsnUtils.getWrappedInsn(InsnUtils.getSingleArg(returnInsn))
@@ -657,7 +657,7 @@ class EnumVisitor : AbstractVisitor() {
 	}
 
 	private fun simpleValueOfMth(mth: MethodNode, clsType: ArgType): Boolean {
-		val returnInsn = InsnUtils.searchSingleReturnInsn(mth) { insn -> insn.getArgsCount() == 1 } ?: return false
+		val returnInsn = InsnUtils.searchSingleReturnInsn(mth) { insn -> insn.argsCount == 1 } ?: return false
 		val wrappedInsn = InsnUtils.getWrappedInsn(InsnUtils.getSingleArg(returnInsn))
 		val castInsn = InsnUtils.checkInsnType(wrappedInsn, InsnType.CHECK_CAST) as? IndexInsnNode
 		if (castInsn != null && castInsn.index == clsType) {
@@ -682,7 +682,7 @@ class EnumVisitor : AbstractVisitor() {
 		InsnUtils.replaceInsns(
 			mth,
 			{ insn ->
-				if (insn.getType() == InsnType.SGET && insnTest(insn)) {
+				if (insn.type == InsnType.SGET && insnTest(insn)) {
 					val valueMth = if (valuesMethod == null) {
 						getValueMthInfo(mth.root(), clsType)
 					} else {
@@ -721,7 +721,7 @@ class EnumVisitor : AbstractVisitor() {
 	}
 
 	private fun getConstructorInsn(insn: InsnNode): ConstructorInsn? {
-		if (insn.getArgsCount() != 1) {
+		if (insn.argsCount != 1) {
 			return null
 		}
 		val arg = insn.getArg(0)
@@ -729,13 +729,13 @@ class EnumVisitor : AbstractVisitor() {
 			return castConstructorInsn((arg as InsnWrapArg).wrapInsn)
 		}
 		if (arg.isRegister) {
-			return castConstructorInsn((arg as RegisterArg).getAssignInsn())
+			return castConstructorInsn((arg as RegisterArg).assignInsn)
 		}
 		return null
 	}
 
 	private fun castConstructorInsn(coCandidate: InsnNode?): ConstructorInsn? {
-		if (coCandidate != null && coCandidate.getType() == InsnType.CONSTRUCTOR) {
+		if (coCandidate != null && coCandidate.type == InsnType.CONSTRUCTOR) {
 			return coCandidate as ConstructorInsn
 		}
 		return null

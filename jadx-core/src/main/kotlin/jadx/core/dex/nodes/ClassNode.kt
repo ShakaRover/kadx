@@ -49,7 +49,6 @@ class ClassNode(
 		private val LOG = LoggerFactory.getLogger(ClassNode::class.java)
 		private val DECOMPILE_WITH_MODE_SYNC = Any()
 
-		@JvmStatic
 		fun addSyntheticClass(root: RootNode, name: String, accessFlags: Int): ClassNode {
 			val classInfo = ClassInfo.fromName(root, name) ?: throw JadxRuntimeException("Invalid class name: $name")
 			if (root.resolveClass(classInfo) != null) {
@@ -58,7 +57,6 @@ class ClassNode(
 			return addSyntheticClass(root, classInfo, accessFlags)
 		}
 
-		@JvmStatic
 		fun addSyntheticClass(root: RootNode, classInfo: ClassInfo, accessFlags: Int): ClassNode {
 			val cls = ClassNode(root, classInfo, accessFlags)
 			cls.add(AFlag.SYNTHETIC)
@@ -264,11 +262,11 @@ class ClassNode(
 		return true
 	}
 
-	fun checkProcessed(): Boolean = getTopParentClass().state.isProcessComplete()
+	fun checkProcessed(): Boolean = topParentClass.state.isProcessComplete()
 
 	fun ensureProcessed() {
 		if (!checkProcessed()) {
-			val top = getTopParentClass()
+			val top = topParentClass
 			throw JadxRuntimeException("Expected class to be processed at this point, class: $top, state: ${top.state}")
 		}
 	}
@@ -318,13 +316,13 @@ class ClassNode(
 
 	fun unloadFromCache() {
 		if (isInner()) return
-		val codeCache = root.getCodeCache()
+		val codeCache = root.codeCache
 		codeCache.remove(rawName as String)
 	}
 
 	private fun decompile(searchInCache: Boolean): ICodeInfo {
 		if (isInner()) return ICodeInfo.EMPTY
-		val codeCache = root.getCodeCache()
+		val codeCache = root.codeCache
 		val clsRawName = rawName
 		if (searchInCache) {
 			val code = codeCache.get(clsRawName as String)
@@ -354,8 +352,8 @@ class ClassNode(
 		}
 	}
 
-	fun getCodeFromCache(): ICodeInfo? {
-		val codeCache = root.getCodeCache()
+	val codeFromCache: ICodeInfo? get() {
+		val codeCache = root.codeCache
 		val clsRawName = rawName
 		val codeInfo = codeCache.get(clsRawName as String)
 		if (codeInfo == ICodeInfo.EMPTY) return null
@@ -396,7 +394,7 @@ class ClassNode(
 		}
 	}
 
-	fun getGenericTypeParameters(): List<ArgType> = generics
+	val genericTypeParameters: List<ArgType> get() = generics
 
 	fun getType(): ArgType {
 		val clsType = classInfo.type
@@ -435,7 +433,7 @@ class ClassNode(
 
 	fun searchFieldByName(name: String): FieldNode? {
 		for (f in fields) {
-			if (f.getName() == name) return f
+			if (f.name == name) return f
 		}
 		return null
 	}
@@ -513,7 +511,7 @@ class ClassNode(
 		classInfo.changePkg(packageNode.aliasPkgInfo.fullName)
 	}
 
-	fun getTopParentClass(): ClassNode {
+	val topParentClass: ClassNode get() {
 		var parent = parentClass
 		while (parent != this && parent.parentClass != parent) {
 			parent = parent.parentClass
@@ -600,9 +598,9 @@ class ClassNode(
 
 	fun isTopClass(): Boolean = parentClass == this
 
-	fun getClassInitMth(): MethodNode? = searchMethodByShortId("<clinit>()V")
+	val classInitMth: MethodNode? get() = searchMethodByShortId("<clinit>()V")
 
-	fun getDefaultConstructor(): MethodNode? {
+	val defaultConstructor: MethodNode? get() {
 		for (mth in methods) {
 			if (mth.isDefaultConstructor()) return mth
 		}
@@ -626,7 +624,7 @@ class ClassNode(
 
 	val `package`: String get() = classInfo.aliasPkg
 
-	fun getDisassembledCode(): String {
+	val disassembledCode: String get() {
 		if (smali == null) {
 			val code = SimpleCodeWriter(root.args)
 			getDisassembledCode(code)
@@ -657,7 +655,7 @@ class ClassNode(
 	fun getClsData(): IClassData? = clsData
 
 	fun reloadAtCodegenStage() {
-		val topCls = getTopParentClass()
+		val topCls = topParentClass
 		if (topCls.loadStage == LoadStage.CODEGEN_STAGE) {
 			throw JadxRuntimeException("Class not yet loaded at codegen stage: $topCls")
 		}
@@ -674,7 +672,7 @@ class ClassNode(
 		}
 	}
 
-	fun getTotalDepsCount(): Int = dependencies.size + codegenDeps.size
+	val totalDepsCount: Int get() = dependencies.size + codegenDeps.size
 
 	override fun getInputFileName(): String? = inputFileName
 

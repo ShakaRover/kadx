@@ -29,7 +29,6 @@ import java.util.BitSet
  */
 object DominatorTree {
 
-	@JvmStatic
 	fun compute(mth: MethodNode) {
 		val sorted = sortBlocks(mth)
 		// 普通支配树：沿前驱方向迭代（入口块是树的根）
@@ -43,7 +42,7 @@ object DominatorTree {
 	 * 逆后序能保证：除入口外，每个块至少有一个前驱排在自己前面，从而让迭代算法收敛。
 	 */
 	private fun sortBlocks(mth: MethodNode): List<BlockNode> {
-		val blocksCount = checkNotNull(mth.getBasicBlocks()).size
+		val blocksCount = checkNotNull(mth.basicBlocks).size
 		val sorted = ArrayList<BlockNode>(blocksCount)
 		BlockUtils.visitDFS(mth) { b -> sorted.add(b) }
 		if (sorted.size != blocksCount) {
@@ -169,9 +168,8 @@ object DominatorTree {
 	 * 做法：对每个有 >=2 个前驱的块，沿着各前驱的 idom 链向上走，
 	 * 直到走到该块的 idom 为止，沿途经过的块都把当前块加入自己的支配边界。
 	 */
-	@JvmStatic
 	fun computeDominanceFrontier(mth: MethodNode) {
-		val blocks = checkNotNull(mth.getBasicBlocks())
+		val blocks = checkNotNull(mth.basicBlocks)
 		for (block in blocks) {
 			block.domFrontier = null
 		}

@@ -34,11 +34,11 @@ class SSAVar(val regNum: Int, val version: Int, initialAssign: RegisterArg) : Co
 
 	val assignInsn: InsnNode? get() = assign.getParentInsn()
 
-	fun getUseList(): List<RegisterArg> = useListRef
+	val useList: List<RegisterArg> get() = useListRef
 
-	fun getUseCount(): Int = useListRef.size
+	val useCount: Int get() = useListRef.size
 
-	fun getImmutableType(): ArgType? {
+	val immutableType: ArgType? get() {
 		if (isTypeImmutable()) {
 			return assign.getInitType()
 		}
@@ -59,7 +59,7 @@ class SSAVar(val regNum: Int, val version: Int, initialAssign: RegisterArg) : Co
 	}
 
 	fun setType(type: ArgType) {
-		val imType = getImmutableType()
+		val imType = immutableType
 		if (imType != null && imType != type) {
 			throw JadxRuntimeException("Can't change immutable type $imType to $type for $this")
 		}
@@ -107,13 +107,13 @@ class SSAVar(val regNum: Int, val version: Int, initialAssign: RegisterArg) : Co
 		usedInPhiRef = null
 		for (reg in useListRef) {
 			val parentInsn = reg.getParentInsn()
-			if (parentInsn != null && parentInsn.getType() == InsnType.PHI) {
+			if (parentInsn != null && parentInsn.type == InsnType.PHI) {
 				addUsedInPhi(parentInsn as PhiInsn)
 			}
 		}
 	}
 
-	fun getOnlyOneUseInPhi(): PhiInsn? {
+	val onlyOneUseInPhi: PhiInsn? get() {
 		val l = usedInPhiRef
 		if (l != null && l.size == 1) {
 			return l[0]
@@ -121,14 +121,14 @@ class SSAVar(val regNum: Int, val version: Int, initialAssign: RegisterArg) : Co
 		return null
 	}
 
-	fun getUsedInPhi(): List<PhiInsn> = usedInPhiRef ?: emptyList()
+	val usedInPhi: List<PhiInsn> get() = usedInPhiRef ?: emptyList()
 
 	/**
 	 * Concat assign PHI insn and usedInPhi
 	 */
-	fun getPhiList(): List<PhiInsn> {
+	val phiList: List<PhiInsn> get() {
 		val assignInsn = assign.getParentInsn()
-		if (assignInsn != null && assignInsn.getType() == InsnType.PHI) {
+		if (assignInsn != null && assignInsn.type == InsnType.PHI) {
 			val assignPhi = assignInsn as PhiInsn
 			val l = usedInPhiRef
 			if (l == null) {
@@ -145,7 +145,7 @@ class SSAVar(val regNum: Int, val version: Int, initialAssign: RegisterArg) : Co
 
 	fun isAssignInPhi(): Boolean {
 		val a = assignInsn
-		return a != null && a.getType() == InsnType.PHI
+		return a != null && a.type == InsnType.PHI
 	}
 
 	fun isUsedInPhi(): Boolean {
@@ -170,7 +170,7 @@ class SSAVar(val regNum: Int, val version: Int, initialAssign: RegisterArg) : Co
 	fun setCodeVar(codeVar: CodeVar) {
 		codeVarRef = codeVar
 		codeVar.addSsaVar(this)
-		val imType = getImmutableType()
+		val imType = immutableType
 		if (imType != null) {
 			codeVar.type = imType
 		}
@@ -180,7 +180,7 @@ class SSAVar(val regNum: Int, val version: Int, initialAssign: RegisterArg) : Co
 		if (!isTypeImmutable()) {
 			updateType(ArgType.UNKNOWN)
 		}
-		typeInfo.getBounds().clear()
+		typeInfo.bounds.clear()
 		codeVarRef = null
 	}
 

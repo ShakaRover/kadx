@@ -24,7 +24,7 @@ class CentralityState(
 	var allowsNonStartingNode: Boolean,
 ) {
 
-	private val allowableOutputArguments: MutableSet<RegisterArg> = HashSet()
+	val allowableOutputArguments: MutableSet<RegisterArg> = HashSet()
 
 	var allowsCentral: Boolean = true
 
@@ -58,7 +58,7 @@ class CentralityState(
 	 */
 	fun addAllowableOutputs(allowableOutputInsn: InsnNode) {
 		val registerArgs = LinkedList<RegisterArg>()
-		for (arg in allowableOutputInsn.getArgList()) {
+		for (arg in allowableOutputInsn.argList) {
 			if (arg !is RegisterArg) {
 				continue
 			}
@@ -87,7 +87,7 @@ class CentralityState(
 			return false
 		}
 		val registerArgs = ArrayList<RegisterArg>()
-		for (arg in insn.getArgList()) {
+		for (arg in insn.argList) {
 			if (arg is RegisterArg) {
 				registerArgs.add(arg)
 			}
@@ -117,6 +117,4 @@ class CentralityState(
 		state.allowableOutputArguments.addAll(allowableOutputArguments)
 		return state
 	}
-
-	fun getAllowableOutputArguments(): MutableSet<RegisterArg> = allowableOutputArguments
 }

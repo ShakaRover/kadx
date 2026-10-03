@@ -63,7 +63,7 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 		if (modifiedIf != null) {
 			currentIf = modifiedIf
 		} else {
-			if (currentIf.getMergedBlocks().size() <= 1) {
+			if (currentIf.mergedBlocks.size() <= 1) {
 				return null
 			}
 			currentIf = makeIfInfo(mth, block) ?: return null
@@ -80,14 +80,14 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 		stack.push(ifRegion)
 		stack.addExit(outBlock)
 
-		val thenBlock = currentIf.getThenBlock()
+		val thenBlock = currentIf.thenBlock
 		if (thenBlock == null) {
 			// 空的 then 块，虽不常见但可能合法
 			ifRegion.setThenRegion(Region(ifRegion))
 		} else {
 			ifRegion.setThenRegion(regionMaker.makeRegion(thenBlock))
 		}
-		val elseBlock = currentIf.getElseBlock()
+		val elseBlock = currentIf.elseBlock
 		if (elseBlock == null || stack.containsExit(elseBlock)) {
 			ifRegion.setElseRegion(null)
 		} else {
@@ -101,7 +101,7 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 				val instructions = ArrayList<InsnNode>()
 				for (edgeInsnAttr in edgeInsnAttrs) {
 					if (edgeInsnAttr.end == outBlock) {
-						if (currentIf.getMergedBlocks().contains(BlockUtils.followEmptyPath(edgeInsnAttr.start, true))) {
+						if (currentIf.mergedBlocks.contains(BlockUtils.followEmptyPath(edgeInsnAttr.start, true))) {
 							instructions.add(edgeInsnAttr.insn)
 						}
 					}
@@ -119,7 +119,7 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 	}
 
 	fun buildIfInfo(loopRegion: LoopRegion): IfInfo {
-		var condInfo = makeIfInfo(mth, checkNotNull(loopRegion.getHeader()))
+		var condInfo = makeIfInfo(mth, checkNotNull(loopRegion.header))
 		condInfo = searchNestedIf(checkNotNull(condInfo))
 		confirmMerge(condInfo)
 		return condInfo
@@ -127,8 +127,8 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 
 	fun restructureIf(block: BlockNode, info0: IfInfo): IfInfo? {
 		var info = info0
-		val thenBlock = info.getThenBlock()
-		val elseBlock = info.getElseBlock()
+		val thenBlock = info.thenBlock
+		val elseBlock = info.elseBlock
 
 		if (thenBlock == elseBlock) {
 			val ifInfo = IfInfo(info, null, null)
@@ -148,7 +148,7 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 		val badElse = isBadBranchBlock(info, checkNotNull(elseBlock))
 		if (badThen && badElse) {
 			if (Consts.DEBUG_RESTRUCTURE) {
-				LOG.debug("Stop processing blocks after 'if': {}, method: {}", info.getMergedBlocks(), mth)
+				LOG.debug("Stop processing blocks after 'if': {}, method: {}", info.mergedBlocks, mth)
 			}
 			return null
 		}
@@ -163,8 +163,8 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 
 		// getPathCross 可能找不到 outBlock（例如一个分支有 return），需进一步检查
 		if (info.getOutBlock() == null) {
-			val scopeOutBlockThen = findScopeOutBlock(info.getThenBlock())
-			val scopeOutBlockElse = findScopeOutBlock(info.getElseBlock())
+			val scopeOutBlockThen = findScopeOutBlock(info.thenBlock)
+			val scopeOutBlockElse = findScopeOutBlock(info.elseBlock)
 			if (scopeOutBlockThen == null && scopeOutBlockElse != null) {
 				info.setOutBlock(scopeOutBlockElse)
 			} else if (scopeOutBlockThen != null && scopeOutBlockElse == null) {
@@ -196,15 +196,15 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 			if (handler == null) {
 				continue
 			}
-			val topSplitter = handler.getTryBlock()?.getTopSplitter()
+			val topSplitter = handler.tryBlock?.getTopSplitter()
 			if (topSplitter != null && startBlock.isDominator(topSplitter)) {
-				scopeOutBlock = BlockUtils.getTryAndHandlerCrossBlock(mth, handler.getHandler())
+				scopeOutBlock = BlockUtils.getTryAndHandlerCrossBlock(mth, handler.handler)
 				break
 			}
 		}
 		if (scopeOutBlock != null) {
 			// 检查 outBlock 是否仍在 exit 块限制的作用域内
-			for (exit in regionMaker.getStack().getExits()) {
+			for (exit in regionMaker.stack.getExits()) {
 				if (BlockUtils.isPathExists(exit, scopeOutBlock)) {
 					return null
 				}
@@ -216,20 +216,18 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 	companion object {
 		private val LOG: Logger = LoggerFactory.getLogger(IfRegionMaker::class.java)
 
-		@JvmStatic
 		fun makeIfInfo(mth: MethodNode, ifBlock: BlockNode): IfInfo? {
 			val lastInsn = BlockUtils.getLastInsn(ifBlock)
-			if (lastInsn == null || lastInsn.getType() != InsnType.IF) {
+			if (lastInsn == null || lastInsn.type != InsnType.IF) {
 				return null
 			}
 			val ifNode = lastInsn as IfNode
 			val condition = IfCondition.fromIfNode(ifNode)
 			val info = IfInfo(mth, condition, ifNode.getThenBlock(), ifNode.getElseBlock())
-			info.getMergedBlocks().add(ifBlock)
+			info.mergedBlocks.add(ifBlock)
 			return info
 		}
 
-		@JvmStatic
 		fun searchNestedIf(info: IfInfo): IfInfo {
 			val next = mergeNestedIfNodes(info)
 			if (next != null) {
@@ -238,7 +236,6 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 			return info
 		}
 
-		@JvmStatic
 		fun findOutBlock(mth: MethodNode, thenBlock: BlockNode?, elseBlock: BlockNode?): BlockNode? {
 			if (thenBlock === elseBlock) {
 				return thenBlock
@@ -285,7 +282,6 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 			return BlockUtils.getPathCross(mth, thenBlock, elseBlock)
 		}
 
-		@JvmStatic
 		fun isCandidateForOutBlock(mth: MethodNode, thenBlock: BlockNode, elseBlock: BlockNode, candidate: BlockNode): Boolean {
 			if (candidate.getPredecessors().size < 2) {
 				return false
@@ -346,7 +342,7 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 
 		private fun allPathsFromIf(block: BlockNode, info: IfInfo): Boolean {
 			val preds = block.getPredecessors()
-			val ifBlocks = info.getMergedBlocks()
+			val ifBlocks = info.mergedBlocks
 			for (pred in preds) {
 				if (pred.contains(AFlag.LOOP_END)) {
 					// 忽略循环回边
@@ -360,10 +356,9 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 			return true
 		}
 
-		@JvmStatic
 		fun mergeNestedIfNodes(currentIf: IfInfo): IfInfo? {
-			val curThen0 = currentIf.getThenBlock()
-			val curElse0 = currentIf.getElseBlock()
+			val curThen0 = currentIf.thenBlock
+			val curElse0 = currentIf.elseBlock
 			if (curThen0 == curElse0) {
 				return null
 			}
@@ -389,9 +384,9 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 			}
 			var nextIfVar = nextIf
 
-			val assignInlineNeeded = nextIfVar.getForceInlineInsns().isNotEmpty()
+			val assignInlineNeeded = nextIfVar.forceInlineInsns.isNotEmpty()
 			if (assignInlineNeeded) {
-				for (mergedBlock in currentIf.getMergedBlocks()) {
+				for (mergedBlock in currentIf.mergedBlocks) {
 					if (mergedBlock.contains(AFlag.LOOP_START)) {
 						// 不要把赋值内联进循环条件
 						return currentIf
@@ -402,8 +397,8 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 			if (isInversionNeeded(currentIf, nextIfVar)) {
 				nextIfVar = IfInfo.invert(nextIfVar)
 			}
-			val thenPathSame = BlockUtils.isEqualPaths(curThen, nextIfVar.getThenBlock())
-			val elsePathSame = BlockUtils.isEqualPaths(curElse, nextIfVar.getElseBlock())
+			val thenPathSame = BlockUtils.isEqualPaths(curThen, nextIfVar.thenBlock)
+			val elsePathSame = BlockUtils.isEqualPaths(curElse, nextIfVar.elseBlock)
 			if (!thenPathSame && !elsePathSame) {
 				// 复杂条件，做额外检查
 				if (checkConditionBranches(curThen, curElse) || checkConditionBranches(curElse, curThen)) {
@@ -411,7 +406,7 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 				}
 				var otherBranchBlock = if (followThenBranch) curElse else curThen
 				otherBranchBlock = BlockUtils.followEmptyPath(otherBranchBlock)
-				if (!BlockUtils.isPathExists(nextIfVar.getMergedBlocks().getFirst(), otherBranchBlock)) {
+				if (!BlockUtils.isPathExists(nextIfVar.mergedBlocks.first, otherBranchBlock)) {
 					return checkForTernaryInCondition(currentIf)
 				}
 
@@ -442,25 +437,25 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 		}
 
 		private fun checkForTernaryInCondition(currentIf: IfInfo): IfInfo? {
-			val nextThen0 = getNextIf(currentIf, checkNotNull(currentIf.getThenBlock()))
-			val nextElse0 = getNextIf(currentIf, checkNotNull(currentIf.getElseBlock()))
+			val nextThen0 = getNextIf(currentIf, checkNotNull(currentIf.thenBlock))
+			val nextElse0 = getNextIf(currentIf, checkNotNull(currentIf.elseBlock))
 			if (nextThen0 == null || nextElse0 == null) {
 				return null
 			}
-			if (checkNotNull(nextThen0.getMergedBlocks().getFirst().domFrontier) !=
-				checkNotNull(nextElse0.getMergedBlocks().getFirst().domFrontier)
+			if (checkNotNull(nextThen0.mergedBlocks.first.domFrontier) !=
+				checkNotNull(nextElse0.mergedBlocks.first.domFrontier)
 			) {
 				return null
 			}
 			var nextThen = searchNestedIf(nextThen0)
 			var nextElse = searchNestedIf(nextElse0)
-			if (nextThen.getThenBlock() === nextElse.getThenBlock() &&
-				nextThen.getElseBlock() === nextElse.getElseBlock()
+			if (nextThen.thenBlock === nextElse.thenBlock &&
+				nextThen.elseBlock === nextElse.elseBlock
 			) {
 				return mergeTernaryConditions(currentIf, nextThen, nextElse)
 			}
-			if (nextThen.getThenBlock() === nextElse.getElseBlock() &&
-				nextThen.getElseBlock() === nextElse.getThenBlock()
+			if (nextThen.thenBlock === nextElse.elseBlock &&
+				nextThen.elseBlock === nextElse.thenBlock
 			) {
 				nextElse = IfInfo.invert(nextElse)
 				return mergeTernaryConditions(currentIf, nextThen, nextElse)
@@ -470,23 +465,23 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 
 		private fun mergeTernaryConditions(currentIf: IfInfo, nextThen: IfInfo, nextElse: IfInfo): IfInfo {
 			val newCondition = IfCondition.ternary(
-				currentIf.getCondition(),
-				nextThen.getCondition(),
-				nextElse.getCondition(),
+				currentIf.condition,
+				nextThen.condition,
+				nextElse.condition,
 			)
-			val result = IfInfo(currentIf.getMth(), newCondition, nextThen.getThenBlock(), nextThen.getElseBlock())
+			val result = IfInfo(currentIf.mth, newCondition, nextThen.thenBlock, nextThen.elseBlock)
 			result.merge(currentIf, nextThen, nextElse)
 			confirmMerge(result)
 			return result
 		}
 
-		private fun isInversionNeeded(currentIf: IfInfo, nextIf: IfInfo): Boolean = BlockUtils.isEqualPaths(currentIf.getElseBlock(), nextIf.getThenBlock()) ||
-			BlockUtils.isEqualPaths(currentIf.getThenBlock(), nextIf.getElseBlock())
+		private fun isInversionNeeded(currentIf: IfInfo, nextIf: IfInfo): Boolean = BlockUtils.isEqualPaths(currentIf.elseBlock, nextIf.thenBlock) ||
+			BlockUtils.isEqualPaths(currentIf.thenBlock, nextIf.elseBlock)
 
 		private fun canMerge(a: IfInfo, b: IfInfo, followThenBranch: Boolean): Boolean = if (followThenBranch) {
-			BlockUtils.isEqualPaths(a.getElseBlock(), b.getElseBlock())
+			BlockUtils.isEqualPaths(a.elseBlock, b.elseBlock)
 		} else {
-			BlockUtils.isEqualPaths(a.getThenBlock(), b.getThenBlock())
+			BlockUtils.isEqualPaths(a.thenBlock, b.thenBlock)
 		}
 
 		private fun checkConditionBranches(from: BlockNode, to: BlockNode): Boolean {
@@ -494,21 +489,20 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 			return cs.size == 1 && cs.contains(to)
 		}
 
-		@JvmStatic
 		fun mergeIfInfo(first: IfInfo, second: IfInfo, followThenBranch: Boolean): IfInfo {
-			val mth = first.getMth()
-			val skipBlocks = first.getSkipBlocks()
+			val mth = first.mth
+			val skipBlocks = first.skipBlocks
 			val thenBlock: BlockNode?
 			val elseBlock: BlockNode?
 			if (followThenBranch) {
-				thenBlock = second.getThenBlock()
-				elseBlock = getBranchBlock(first.getElseBlock(), second.getElseBlock(), skipBlocks, mth)
+				thenBlock = second.thenBlock
+				elseBlock = getBranchBlock(first.elseBlock, second.elseBlock, skipBlocks, mth)
 			} else {
-				thenBlock = getBranchBlock(first.getThenBlock(), second.getThenBlock(), skipBlocks, mth)
-				elseBlock = second.getElseBlock()
+				thenBlock = getBranchBlock(first.thenBlock, second.thenBlock, skipBlocks, mth)
+				elseBlock = second.elseBlock
 			}
 			val mergeOperation = if (followThenBranch) IfCondition.Mode.AND else IfCondition.Mode.OR
-			val condition = IfCondition.merge(mergeOperation, first.getCondition(), second.getCondition())
+			val condition = IfCondition.merge(mergeOperation, first.condition, second.condition)
 			val result = IfInfo(mth, condition, thenBlock, elseBlock)
 			result.merge(first, second)
 			return result
@@ -553,22 +547,21 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 			throw JadxRuntimeException("Unexpected merge pattern")
 		}
 
-		@JvmStatic
 		fun confirmMerge(info: IfInfo) {
-			if (info.getMergedBlocks().size() > 1) {
-				for (block in info.getMergedBlocks()) {
-					if (block !== info.getMergedBlocks().getFirst()) {
+			if (info.mergedBlocks.size() > 1) {
+				for (block in info.mergedBlocks) {
+					if (block !== info.mergedBlocks.first) {
 						block.add(AFlag.ADDED_TO_REGION)
 					}
 				}
 			}
-			if (info.getSkipBlocks().isNotEmpty()) {
-				for (block in info.getSkipBlocks()) {
+			if (info.skipBlocks.isNotEmpty()) {
+				for (block in info.skipBlocks) {
 					block.add(AFlag.ADDED_TO_REGION)
 				}
-				info.getSkipBlocks().clear()
+				info.skipBlocks.clear()
 			}
-			for (forceInlineInsn in info.getForceInlineInsns()) {
+			for (forceInlineInsn in info.forceInlineInsns) {
 				forceInlineInsn.add(AFlag.FORCE_ASSIGN_INLINE)
 			}
 		}
@@ -583,7 +576,7 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 			if (block.getPredecessors().size == 1) {
 				return true
 			}
-			return info.getMergedBlocks().containsAll(block.getPredecessors())
+			return info.mergedBlocks.containsAll(block.getPredecessors())
 		}
 
 		private fun getNextIfNodeInfo(info: IfInfo, block: BlockNode?): IfInfo? {
@@ -591,8 +584,8 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 				return null
 			}
 			val lastInsn = BlockUtils.getLastInsn(block)
-			if (lastInsn != null && lastInsn.getType() == InsnType.IF) {
-				return makeIfInfo(info.getMth(), block)
+			if (lastInsn != null && lastInsn.type == InsnType.IF) {
+				return makeIfInfo(info.mth, block)
 			}
 			val next = getNextBlockInIfSuccessorChain(block) ?: return null
 			if (next.getPredecessors().size != 1 || next.contains(AFlag.ADDED_TO_REGION)) {
@@ -602,7 +595,7 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 			if (!checkInsnsInline(block, next, forceInlineInsns)) {
 				return null
 			}
-			val nextInfo = makeIfInfo(info.getMth(), next)
+			val nextInfo = makeIfInfo(info.mth, next)
 			if (nextInfo == null) {
 				return getNextIfNodeInfo(info, next)
 			}
@@ -649,7 +642,7 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 			var pass = true
 			for (insn in insns) {
 				val res = insn.getResult() ?: return false
-				val useList = checkNotNull(res.sVar).getUseList()
+				val useList = checkNotNull(res.sVar).useList
 				val useCount = useList.size
 				if (useCount == 0) {
 					return false

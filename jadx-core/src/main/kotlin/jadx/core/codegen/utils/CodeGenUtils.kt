@@ -178,7 +178,7 @@ class CodeGenUtils {
 			val sourceFileAttr: SourceFileAttr? = node.get(JadxAttrType.SOURCE_FILE)
 			if (sourceFileAttr != null) {
 				val fileName = sourceFileAttr.fileName
-				val topClsName = node.getTopParentClass().classInfo.shortName
+				val topClsName = node.topParentClass.classInfo.shortName
 				if (topClsName.contains(fileName)) {
 					// ignore similar name
 					return

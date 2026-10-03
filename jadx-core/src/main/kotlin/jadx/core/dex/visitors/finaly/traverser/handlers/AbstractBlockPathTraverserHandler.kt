@@ -40,8 +40,8 @@ abstract class AbstractBlockPathTraverserHandler : AbstractBlockTraverserHandler
 	}
 
 	/** 读取当前状态（原子引用里的值）。 */
-	fun getState(): TraverserState = stateRef.get()
+	val state: TraverserState get() = stateRef.get()
 
 	/** 暴露原子引用本身，供调用方原地替换状态。 */
-	fun getStateReference(): AtomicReference<out TraverserState> = stateRef
+	val stateReference: AtomicReference<out TraverserState> get() = stateRef
 }

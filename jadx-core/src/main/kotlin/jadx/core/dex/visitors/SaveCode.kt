@@ -25,7 +25,6 @@ import java.nio.charset.StandardCharsets
 object SaveCode {
 	private val LOG = LoggerFactory.getLogger(SaveCode::class.java)
 
-	@JvmStatic
 	fun save(dir: File, cls: ClassNode, code: ICodeInfo?) {
 		if (cls.contains(AFlag.DONT_GENERATE)) {
 			return
@@ -52,12 +51,10 @@ object SaveCode {
 		save(codeStr, File(dir, fileName))
 	}
 
-	@JvmStatic
 	fun save(codeInfo: ICodeInfo, file: File) {
 		save(codeInfo.getCodeStr(), file)
 	}
 
-	@JvmStatic
 	fun save(code: String, file: File) {
 		val outFile = FileUtils.prepareFile(file)
 		try {
@@ -69,7 +66,6 @@ object SaveCode {
 		}
 	}
 
-	@JvmStatic
 	fun getFileExtension(root: RootNode): String {
 		val outputFormat = root.getArgs().outputFormat
 		return when (outputFormat) {

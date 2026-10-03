@@ -495,7 +495,7 @@ class JDebuggerPanel(private val mainWindow: MainWindow) : JPanel() {
 	fun log(msg: String) {
 		val sb = StringBuilder()
 		sb.append(" > ")
-			.append(StringUtils.getDateText())
+			.append(StringUtils.dateText)
 			.append(" ")
 			.append(msg)
 			.append("\n")

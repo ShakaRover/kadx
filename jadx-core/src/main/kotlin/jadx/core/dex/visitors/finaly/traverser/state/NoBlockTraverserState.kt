@@ -16,7 +16,7 @@ import jadx.core.dex.visitors.finaly.traverser.handlers.PredecessorBlockPathTrav
  */
 class NoBlockTraverserState(
 	state: TraverserActivePathState,
-	private val centralityState: CentralityState,
+	private val centralityStateValue: CentralityState,
 	private val sourceBlock: BlockNode,
 ) : TraverserState(state),
 	ISourceBlockState {
@@ -27,19 +27,18 @@ class NoBlockTraverserState(
 
 	override fun isTerminal(): Boolean = false
 
-	override fun getUnderlyingCentralityState(): CentralityState = centralityState
+	override fun getUnderlyingCentralityState(): CentralityState = centralityStateValue
 
 	override fun getUnderlyingBlockInsnInfo(): TraverserBlockInfo? = null
 
 	override fun getSourceBlock(): BlockNode = sourceBlock
 
 	override fun duplicateInternalState(comparatorState: TraverserActivePathState): TraverserState {
-		val dCentralityState = centralityState.duplicate()
+		val dCentralityState = centralityStateValue.duplicate()
 		return NoBlockTraverserState(comparatorState, dCentralityState, sourceBlock)
 	}
 
 	companion object {
-		@JvmStatic
 		fun getFactory(centralityState: CentralityState, sourceBlock: BlockNode): TraverserStateFactory<NoBlockTraverserState> = NoBlockStateFactory(centralityState, sourceBlock)
 	}
 

@@ -37,12 +37,12 @@ import java.util.regex.Pattern
  * 本类持有四张映射表，并提供 [load]（读）、[save]（写）、[fill]（从 dex 树收集）、
  * [apply]（应用到 dex 树）等操作。
  */
-class DeobfPresets private constructor(private val deobfMapFile: Path) {
+class DeobfPresets private constructor(val deobfMapFile: Path) {
 
-	private val pkgPresetMap = HashMap<String, String>()
-	private val clsPresetMap = HashMap<String, String>()
-	private val fldPresetMap = HashMap<String, String>()
-	private val mthPresetMap = HashMap<String, String>()
+	val pkgPresetMap = HashMap<String, String>()
+	val clsPresetMap = HashMap<String, String>()
+	val fldPresetMap = HashMap<String, String>()
+	val mthPresetMap = HashMap<String, String>()
 
 	companion object {
 		private val LOG: Logger = LoggerFactory.getLogger(DeobfPresets::class.java)
@@ -50,7 +50,6 @@ class DeobfPresets private constructor(private val deobfMapFile: Path) {
 		private val MAP_FILE_CHARSET: Charset = StandardCharsets.UTF_8
 
 		/** 构建 [DeobfPresets]：确定映射文件路径并返回实例。 */
-		@JvmStatic
 		fun build(root: RootNode): DeobfPresets {
 			val deobfMapPath = getPathDeobfMapPath(root)
 			if (root.args.generatedRenamesMappingFileMode != GeneratedRenamesMappingFileMode.IGNORE) {
@@ -174,7 +173,7 @@ class DeobfPresets private constructor(private val deobfMapFile: Path) {
 			for (fld in cls.fields) {
 				val fieldInfo = fld.getFieldInfo()
 				if (fieldInfo.hasAlias()) {
-					fldPresetMap[fieldInfo.rawFullId] = fld.getAlias()
+					fldPresetMap[fieldInfo.rawFullId] = fld.alias
 				}
 			}
 			for (mth in cls.methods) {
@@ -235,14 +234,4 @@ class DeobfPresets private constructor(private val deobfMapFile: Path) {
 		fldPresetMap.clear()
 		mthPresetMap.clear()
 	}
-
-	fun getDeobfMapFile(): Path = deobfMapFile
-
-	fun getPkgPresetMap(): Map<String, String> = pkgPresetMap
-
-	fun getClsPresetMap(): Map<String, String> = clsPresetMap
-
-	fun getFldPresetMap(): Map<String, String> = fldPresetMap
-
-	fun getMthPresetMap(): Map<String, String> = mthPresetMap
 }

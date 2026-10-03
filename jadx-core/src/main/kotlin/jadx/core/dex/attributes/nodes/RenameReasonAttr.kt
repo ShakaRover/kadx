@@ -20,7 +20,6 @@ class RenameReasonAttr(private var description: String = "") : IJadxAttribute {
 
 	companion object {
 		/** 获取节点上的重命名原因属性；不存在则创建并挂载一个 */
-		@JvmStatic
 		fun forNode(node: AttrNode): RenameReasonAttr {
 			val renameReasonAttr = node.get(AType.RENAME_REASON)
 			if (renameReasonAttr != null) {

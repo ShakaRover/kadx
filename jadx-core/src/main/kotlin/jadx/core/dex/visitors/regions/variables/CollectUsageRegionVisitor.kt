@@ -25,9 +25,7 @@ import jadx.core.dex.visitors.regions.TracedRegionVisitor
 internal class CollectUsageRegionVisitor : TracedRegionVisitor() {
 
 	private val args: MutableList<RegisterArg> = ArrayList()
-	private val usageMap: MutableMap<SSAVar?, VarUsage> = LinkedHashMap()
-
-	fun getUsageMap(): Map<SSAVar?, VarUsage> = usageMap
+	val usageMap: MutableMap<SSAVar?, VarUsage> = LinkedHashMap()
 
 	override fun processBlockTraced(mth: MethodNode, block: IBlock, curRegion: IRegion) {
 		val usePlace = UsePlace(curRegion, block)
@@ -45,8 +43,8 @@ internal class CollectUsageRegionVisitor : TracedRegionVisitor() {
 		if (region is LoopRegion) {
 			val loopType = region.getType()
 			if (loopType is ForLoop) {
-				processInsn(loopType.getInitInsn(), usePlace)
-				processInsn(loopType.getIncrInsn(), usePlace)
+				processInsn(loopType.initInsn, usePlace)
+				processInsn(loopType.incrInsn, usePlace)
 			}
 		}
 	}
@@ -60,7 +58,7 @@ internal class CollectUsageRegionVisitor : TracedRegionVisitor() {
 		if (result != null && result.isRegister) {
 			if (!result.contains(AFlag.DONT_GENERATE)) {
 				val usage = getUsage(result.sVar)
-				usage.getAssigns().add(usePlace)
+				usage.assigns.add(usePlace)
 			}
 		}
 		// 参数寄存器（读取）
@@ -69,7 +67,7 @@ internal class CollectUsageRegionVisitor : TracedRegionVisitor() {
 		for (arg in args) {
 			if (!arg.contains(AFlag.DONT_GENERATE)) {
 				val usage = getUsage(arg.sVar)
-				usage.getUses().add(usePlace)
+				usage.uses.add(usePlace)
 			}
 		}
 	}

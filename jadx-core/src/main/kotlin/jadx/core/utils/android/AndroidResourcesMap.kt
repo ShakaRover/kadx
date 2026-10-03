@@ -15,12 +15,10 @@ object AndroidResourcesMap {
 	private val RES_MAP: Map<Int, String> = loadBundled()
 
 	/** 按资源 id 查询名称；未知 id 返回 null。 */
-	@JvmStatic
 	fun getResName(resId: Int): String? = RES_MAP[resId]
 
 	/** 返回整张映射表（只读视图）。 */
-	@JvmStatic
-	fun getMap(): Map<Int, String> = RES_MAP
+	val map: Map<Int, String> get() = RES_MAP
 
 	private fun loadBundled(): Map<Int, String> {
 		try {

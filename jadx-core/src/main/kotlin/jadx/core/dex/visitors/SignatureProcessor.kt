@@ -134,7 +134,7 @@ class SignatureProcessor : AbstractVisitor() {
 			}
 			val knownTypeParams: List<ArgType> = if (cls.isInner()) {
 				val list = ArrayList(generics)
-				cls.visitParentClasses { p -> list.addAll(p.getGenericTypeParameters()) }
+				cls.visitParentClasses { p -> list.addAll(p.genericTypeParameters) }
 				list
 			} else {
 				generics
@@ -180,7 +180,7 @@ class SignatureProcessor : AbstractVisitor() {
 			}
 			field.updateType(type)
 		} catch (e: Exception) {
-			cls.addWarnComment("Field signature parse error: " + field.getName(), e)
+			cls.addWarnComment("Field signature parse error: " + field.name, e)
 		}
 	}
 
@@ -257,7 +257,7 @@ class SignatureProcessor : AbstractVisitor() {
 	}
 
 	private fun validateParsedType(parsedType: ArgType, currentType: ArgType): Boolean {
-		val result = root.getTypeCompare().compareTypes(parsedType, currentType)
+		val result = root.typeCompare.compareTypes(parsedType, currentType)
 		if (result == TypeCompareEnum.UNKNOWN &&
 			parsedType.isObject() &&
 			!validateFullClsName(parsedType.getObject())

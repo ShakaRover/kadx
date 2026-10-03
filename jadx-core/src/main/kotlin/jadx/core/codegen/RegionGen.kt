@@ -56,11 +56,11 @@ open class RegionGen(mgen: MethodGen) : InsnGen(mgen, false) {
 	private fun declareVars(code: ICodeWriter, cont: IContainer) {
 		val declVars = cont.get(AType.DECLARE_VARIABLES)
 		if (declVars != null) {
-			for (v in declVars.getVars()) {
+			for (v in declVars.vars) {
 				code.startLine()
 				declareVar(code, v)
 				code.add(';')
-				CodeGenUtils.addCodeComments(code, mth, v.getAnySsaVar().assign)
+				CodeGenUtils.addCodeComments(code, mth, v.anySsaVar.assign)
 			}
 		}
 	}
@@ -92,9 +92,9 @@ open class RegionGen(mgen: MethodGen) : InsnGen(mgen, false) {
 	@Throws(CodegenException::class)
 	fun makeIf(region: IfRegion, code: ICodeWriter, newLine: Boolean) {
 		if (newLine) {
-			code.startLineWithNum(region.getSourceLine())
+			code.startLineWithNum(region.sourceLine)
 		} else {
-			code.attachSourceLine(region.getSourceLine())
+			code.attachSourceLine(region.sourceLine)
 		}
 		val comment = region.contains(AFlag.COMMENT_OUT)
 		if (comment) {
@@ -154,8 +154,8 @@ open class RegionGen(mgen: MethodGen) : InsnGen(mgen, false) {
 
 	@Throws(CodegenException::class)
 	fun makeLoop(region: LoopRegion, code: ICodeWriter) {
-		code.startLineWithNum(region.getSourceLine())
-		val labelAttr = region.getInfo().start.get(AType.LOOP_LABEL)
+		code.startLineWithNum(region.sourceLine)
+		val labelAttr = region.info.start.get(AType.LOOP_LABEL)
 		if (labelAttr != null) {
 			code.add(mgen.nameGen.getLoopLabel(labelAttr)).add(": ")
 		}
@@ -168,7 +168,7 @@ open class RegionGen(mgen: MethodGen) : InsnGen(mgen, false) {
 			code.startLine('}')
 			return
 		}
-		val condInsn = condition.getFirstInsn()
+		val condInsn = condition.firstInsn
 		InsnCodeOffset.attach(code, condInsn)
 
 		val conditionGen = ConditionGen(this)
@@ -176,11 +176,11 @@ open class RegionGen(mgen: MethodGen) : InsnGen(mgen, false) {
 		if (type != null) {
 			if (type is ForLoop) {
 				code.add("for (")
-				makeInsn(type.getInitInsn(), code, Flags.INLINE)
+				makeInsn(type.initInsn, code, Flags.INLINE)
 				code.add("; ")
 				conditionGen.add(code, condition)
 				code.add("; ")
-				makeInsn(type.getIncrInsn(), code, Flags.INLINE)
+				makeInsn(type.incrInsn, code, Flags.INLINE)
 				code.add(") {")
 				CodeGenUtils.addCodeComments(code, mth, condInsn)
 				makeRegionIndent(code, checkNotNull(region.getBody()))
@@ -189,9 +189,9 @@ open class RegionGen(mgen: MethodGen) : InsnGen(mgen, false) {
 			}
 			if (type is ForEachLoop) {
 				code.add("for (")
-				declareVar(code, type.getVarArg())
+				declareVar(code, type.varArg)
 				code.add(" : ")
-				addArg(code, type.getIterableArg(), false)
+				addArg(code, type.iterableArg, false)
 				code.add(") {")
 				CodeGenUtils.addCodeComments(code, mth, condInsn)
 				makeRegionIndent(code, checkNotNull(region.getBody()))
@@ -204,7 +204,7 @@ open class RegionGen(mgen: MethodGen) : InsnGen(mgen, false) {
 			code.add("do {")
 			CodeGenUtils.addCodeComments(code, mth, condInsn)
 			makeRegionIndent(code, checkNotNull(region.getBody()))
-			code.startLineWithNum(region.getSourceLine())
+			code.startLineWithNum(region.sourceLine)
 			code.add("} while (")
 			conditionGen.add(code, condition)
 			code.add(");")
@@ -221,20 +221,20 @@ open class RegionGen(mgen: MethodGen) : InsnGen(mgen, false) {
 	@Throws(CodegenException::class)
 	fun makeSynchronizedRegion(cont: SynchronizedRegion, code: ICodeWriter) {
 		code.startLine("synchronized (")
-		val monitorEnterInsn = cont.getEnterInsn()
+		val monitorEnterInsn = cont.enterInsn
 		addArg(code, monitorEnterInsn.getArg(0))
 		code.add(") {")
 
 		InsnCodeOffset.attach(code, monitorEnterInsn)
 		CodeGenUtils.addCodeComments(code, mth, monitorEnterInsn)
 
-		makeRegionIndent(code, cont.getRegion())
+		makeRegionIndent(code, cont.region)
 		code.startLine('}')
 	}
 
 	@Throws(CodegenException::class)
 	fun makeSwitch(sw: SwitchRegion, code: ICodeWriter) {
-		val insn = checkNotNull(BlockUtils.getLastInsn(sw.getHeader()) as? SwitchInsn) {
+		val insn = checkNotNull(BlockUtils.getLastInsn(sw.header) as? SwitchInsn) {
 			"Switch insn not found in header"
 		}
 		val arg = insn.getArg(0)
@@ -245,7 +245,7 @@ open class RegionGen(mgen: MethodGen) : InsnGen(mgen, false) {
 		CodeGenUtils.addCodeComments(code, mth, insn)
 		code.incIndent()
 
-		for (caseInfo in sw.getCases()) {
+		for (caseInfo in sw.cases) {
 			val keys = caseInfo.keys
 			val c = caseInfo.container
 			for (k in keys) {
@@ -312,7 +312,7 @@ open class RegionGen(mgen: MethodGen) : InsnGen(mgen, false) {
 		InsnCodeOffset.attach(code, insn)
 		CodeGenUtils.addCodeComments(code, mth, insn)
 
-		makeRegionIndent(code, region.getTryRegion())
+		makeRegionIndent(code, region.tryRegion)
 		// TODO: move search of 'allHandler' to 'TryCatchRegion'
 		var allHandler: ExceptionHandler? = null
 		for (entry in region.getCatchRegions().entries) {
@@ -347,7 +347,7 @@ open class RegionGen(mgen: MethodGen) : InsnGen(mgen, false) {
 		if (handler.isCatchAll()) {
 			useClass(code, ArgType.THROWABLE)
 		} else {
-			val it = handler.getCatchTypes().iterator()
+			val it = handler.catchTypes.iterator()
 			if (it.hasNext()) {
 				useClass(code, it.next())
 			}
@@ -373,7 +373,7 @@ open class RegionGen(mgen: MethodGen) : InsnGen(mgen, false) {
 		}
 		code.add(") {")
 
-		InsnCodeOffset.attach(code, handler.getHandlerOffset())
+		InsnCodeOffset.attach(code, handler.handlerOffset)
 		CodeGenUtils.addCodeComments(code, mth, handler.getHandlerBlock())
 
 		makeRegionIndent(code, region)

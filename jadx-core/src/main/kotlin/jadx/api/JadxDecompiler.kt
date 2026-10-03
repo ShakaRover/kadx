@@ -145,7 +145,7 @@ class JadxDecompiler : Closeable {
 		val inputPaths = Utils.collectionMap(args.inputFiles) { it.toPath() }
 		val inputFiles = FileUtils.expandDirs(inputPaths)
 		val start = System.currentTimeMillis()
-		for (plugin in pluginManager.getResolvedPluginContexts()) {
+		for (plugin in pluginManager.resolvedPluginContexts) {
 			for (codeLoader in plugin.getCodeInputs()) {
 				try {
 					// JadxCodeInput.loadFiles 参数类型是显式 java.util.List（为兼容 Java SAM），此处做一次未检查转型
@@ -202,7 +202,7 @@ class JadxDecompiler : Closeable {
 		pluginManager.providesSuggestion("java-input", if (args.isUseDxInput) "java-convert" else "java-input")
 		pluginManager.load(args.pluginLoader)
 		if (LOG.isDebugEnabled) {
-			LOG.debug("Resolved plugins: {}", pluginManager.getResolvedPluginContexts())
+			LOG.debug("Resolved plugins: {}", pluginManager.resolvedPluginContexts)
 		}
 		pluginManager.initResolved()
 		if (LOG.isDebugEnabled) {
@@ -445,18 +445,18 @@ class JadxDecompiler : Closeable {
 
 	fun getErrorsCount(): Int {
 		val rootNode = root ?: return 0
-		return rootNode.getErrorsCounter().getErrorCount()
+		return rootNode.errorsCounter.errorCount
 	}
 
 	fun getWarnsCount(): Int {
 		val rootNode = root ?: return 0
-		return rootNode.getErrorsCounter().getWarnsCount()
+		return rootNode.errorsCounter.getWarnsCount()
 	}
 
 	fun printErrorsReport() {
 		val rootNode = root ?: return
 		checkNotNull(rootNode.getClsp()).printMissingClasses()
-		rootNode.getErrorsCounter().printReport()
+		rootNode.errorsCounter.printReport()
 	}
 
 	/**
@@ -514,7 +514,7 @@ class JadxDecompiler : Closeable {
 			return foundPkg
 		}
 		val clsList = Utils.collectionMap(pkg.getClasses()) { cls -> convertClassNode(cls) }
-		val clsListNoDup = Utils.collectionMap(pkg.getClassesNoDup()) { cls -> convertClassNode(cls) }
+		val clsListNoDup = Utils.collectionMap(pkg.classesNoDup) { cls -> convertClassNode(cls) }
 		val subPkgsCount = pkg.getSubPackages().size
 		val subPkgs = ArrayList<JavaPackage>(subPkgsCount)
 		val javaPkg = JavaPackage(pkg, clsList, clsListNoDup, subPkgs)
@@ -543,7 +543,7 @@ class JadxDecompiler : Closeable {
 			.firstOrNull { cls -> cls.classInfo.fullName == fullName }
 		if (node != null) {
 			return if (node.contains(AFlag.DONT_GENERATE)) {
-				convertClassNode(node.getTopParentClass())
+				convertClassNode(node.topParentClass)
 			} else {
 				convertClassNode(node)
 			}
@@ -660,6 +660,6 @@ class JadxDecompiler : Closeable {
 
 		/** 返回 jadx 版本号。 */
 		@JvmStatic
-		fun getVersion(): String = Jadx.getVersion()
+		fun getVersion(): String = Jadx.version
 	}
 }

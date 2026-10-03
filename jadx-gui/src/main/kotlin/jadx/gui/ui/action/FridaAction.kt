@@ -152,7 +152,7 @@ class FridaAction(codeArea: CodeArea) : JNodeAction(ActionModel.FRIDA_COPY, code
 
 		val methodNodes = javaField.getFieldNode().parentClass.methods
 		for (methodNode in methodNodes) {
-			if (methodNode.getName() == rawFieldName) {
+			if (methodNode.name == rawFieldName) {
 				rawFieldName = "_$rawFieldName"
 				break
 			}
@@ -164,7 +164,7 @@ class FridaAction(codeArea: CodeArea) : JNodeAction(ActionModel.FRIDA_COPY, code
 
 	/** 判断方法是否与同类中其它方法重名（需要 `.overload(...)` 区分）。 */
 	fun isOverloaded(methodNode: MethodNode): Boolean = methodNode.parentClass.methods.any { m ->
-		m.getName() == methodNode.getName() &&
+		m.name == methodNode.name &&
 			methodNode.getMethodInfo().shortId != m.getMethodInfo().shortId
 	}
 

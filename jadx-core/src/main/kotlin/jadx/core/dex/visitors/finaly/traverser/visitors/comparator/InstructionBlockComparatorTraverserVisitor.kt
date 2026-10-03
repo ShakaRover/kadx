@@ -46,8 +46,8 @@ class InstructionBlockComparatorTraverserVisitor : AbstractTraverserComparatorVi
 		val finallyBlock: BlockNode = finallyBlockInfo.block
 		val candidateBlock: BlockNode = candidateBlockInfo.block
 
-		val finallyInsns: List<InsnNode> = finallyBlockInfo.getInsnsSlice()
-		val candidateInsns: List<InsnNode> = candidateBlockInfo.getInsnsSlice()
+		val finallyInsns: List<InsnNode> = finallyBlockInfo.insnsSlice
+		val candidateInsns: List<InsnNode> = candidateBlockInfo.insnsSlice
 		val finallyInsnsSize = finallyInsns.size
 		val candidateInsnsSize = candidateInsns.size
 
@@ -80,7 +80,7 @@ class InstructionBlockComparatorTraverserVisitor : AbstractTraverserComparatorVi
 		val allMatched = matchedInsnsCount == maxIterateCount
 		val noneMatched = matchedInsnsCount == 0
 
-		state.getMatchedInsns().addAll(matchingInsns)
+		state.matchedInsns.addAll(matchingInsns)
 
 		val newState: TraverserActivePathState
 		if (allMatched) {
@@ -110,8 +110,8 @@ class InstructionBlockComparatorTraverserVisitor : AbstractTraverserComparatorVi
 	}
 
 	private fun eitherStateAllowsBlockSkip(finallyState: TraverserState, candidateState: TraverserState): Boolean {
-		val finallyCentralityState = finallyState.getCentralityState()
-		val candidateCentralityState = candidateState.getCentralityState()
+		val finallyCentralityState = finallyState.centralityState
+		val candidateCentralityState = candidateState.centralityState
 
 		return finallyCentralityState.allowsNonStartingNode || candidateCentralityState.allowsNonStartingNode
 	}
@@ -127,8 +127,8 @@ class InstructionBlockComparatorTraverserVisitor : AbstractTraverserComparatorVi
 			finallyBlock: BlockNode,
 			candidateBlock: BlockNode,
 		): TraverserActivePathState {
-			val finallyCentralityState = previousState.getFinallyState().getCentralityState().duplicate()
-			val candidateCentralityState = previousState.getCandidateState().getCentralityState().duplicate()
+			val finallyCentralityState = previousState.getFinallyState().centralityState.duplicate()
+			val candidateCentralityState = previousState.getCandidateState().centralityState.duplicate()
 
 			finallyCentralityState.allowsCentral = false
 			candidateCentralityState.allowsCentral = false
@@ -164,10 +164,10 @@ class InstructionBlockComparatorTraverserVisitor : AbstractTraverserComparatorVi
 			val adjustedBlockInfo: TraverserBlockInfo
 			if (finallyOverruns) {
 				// finally 侧指令比候选侧多
-				val candidateCentralityState = candidateState.getCentralityState().duplicate()
+				val candidateCentralityState = candidateState.centralityState.duplicate()
 				candidateCentralityState.allowsCentral = false
 				candidateCentralityState.allowsNonStartingNode = false
-				val finallyCentralityState = finallyState.getCentralityState()
+				val finallyCentralityState = finallyState.centralityState
 				finallyCentralityState.allowsCentral = false
 				finallyCentralityState.allowsNonStartingNode = false
 
@@ -177,15 +177,15 @@ class InstructionBlockComparatorTraverserVisitor : AbstractTraverserComparatorVi
 				newCandidateStateProducer = NoBlockTraverserState.getFactory(candidateCentralityState, candidateBlock)
 			} else {
 				// 候选侧指令比 finally 侧多
-				val finallyCentralityState = finallyState.getCentralityState().duplicate()
+				val finallyCentralityState = finallyState.centralityState.duplicate()
 				finallyCentralityState.allowsCentral = false
 				finallyCentralityState.allowsNonStartingNode = false
-				val candidateCentralityState = candidateState.getCentralityState()
+				val candidateCentralityState = candidateState.centralityState
 				candidateCentralityState.allowsCentral = false
 				candidateCentralityState.allowsNonStartingNode = false
 
 				insnsDelta = candidateInsnsSize - maxIterateCount
-				candidateState.getCentralityState().allowsCentral = false
+				candidateState.centralityState.allowsCentral = false
 				newCandidateStateProducer = DuplicatedTraverserStateFactory(candidateState)
 				adjustedBlockInfo = checkNotNull(candidateState.getBlockInsnInfo())
 				newFinallyStateProducer = NoBlockTraverserState.getFactory(finallyCentralityState, finallyBlock)
@@ -207,8 +207,8 @@ class InstructionBlockComparatorTraverserVisitor : AbstractTraverserComparatorVi
 			finallyBlock: BlockNode,
 			candidateBlock: BlockNode,
 		): TraverserActivePathState {
-			val finallyCentralityState = finallyState.getCentralityState()
-			val candidateCentralityState = candidateState.getCentralityState()
+			val finallyCentralityState = finallyState.centralityState
+			val candidateCentralityState = candidateState.centralityState
 
 			// 先尝试修复 finally 路径；若后续仍失败，再在后续迭代中尝试修复候选路径。
 			if (finallyCentralityState.allowsNonStartingNode) {

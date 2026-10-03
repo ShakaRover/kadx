@@ -64,7 +64,7 @@ class MethodNode(
 	@get:JvmName("typeParametersValue")
 	lateinit var typeParameters: List<ArgType>
 
-	private val codeReader: ICodeReader?
+	val codeReader: ICodeReader?
 
 	@get:JvmName("insnsCountValue")
 	val insnsCount: Int
@@ -168,7 +168,7 @@ class MethodNode(
 		try {
 			load()
 		} catch (e: DecodeException) {
-			throw JadxRuntimeException("Failed to reload method ${javaClass.name}.${getName()}")
+			throw JadxRuntimeException("Failed to reload method ${javaClass.name}.$name")
 		}
 	}
 
@@ -196,7 +196,7 @@ class MethodNode(
 			regArg.add(AFlag.METHOD_ARGUMENT)
 			regArg.add(AFlag.IMMUTABLE_TYPE)
 			list.add(regArg)
-			p += argType.getRegCount()
+			p += argType.regCount
 		}
 		argsList = list
 	}
@@ -206,7 +206,7 @@ class MethodNode(
 		if (argsStartReg != -1) return argsStartReg
 		var pos = regsCount
 		for (arg in args) {
-			pos -= arg.getRegCount()
+			pos -= arg.regCount
 		}
 		if (!accFlags.isStatic()) {
 			pos--
@@ -238,7 +238,7 @@ class MethodNode(
 	fun isVoidReturn(): Boolean = mthInfo.returnType == ArgType.VOID
 
 	fun collectArgNodes(): List<VarNode> {
-		val codeInfo: ICodeInfo = getTopParentClass().getCode()
+		val codeInfo: ICodeInfo = topParentClass.getCode()
 		val mthDefPos = getDefPosition()
 		val lineEndPos = getLineEndForPos(codeInfo.getCodeStr(), mthDefPos)
 		val argsCount = mthInfo.argsCount
@@ -260,15 +260,15 @@ class MethodNode(
 		return args
 	}
 
-	fun getArgRegs(): List<RegisterArg> {
+	val argRegs: List<RegisterArg> get() {
 		if (argsList == null) {
-			throw JadxRuntimeException("Method arg registers not loaded: $this, class status: ${parentClass.getTopParentClass().state}")
+			throw JadxRuntimeException("Method arg registers not loaded: $this, class status: ${parentClass.topParentClass.state}")
 		}
 		return checkNotNull(argsList)
 	}
 
-	fun getAllArgRegs(): List<RegisterArg> {
-		val argRegs = getArgRegs()
+	val allArgRegs: List<RegisterArg> get() {
+		val argRegs = argRegs
 		if (thisArg != null) {
 			val list = ArrayList<RegisterArg>(argRegs.size + 1)
 			list.add(checkNotNull(thisArg))
@@ -286,13 +286,13 @@ class MethodNode(
 
 	override fun getTypeParameters(): List<ArgType> = typeParameters
 
-	fun getName(): String = mthInfo.name
+	val name: String get() = mthInfo.name
 
-	fun getAlias(): String = mthInfo.alias
+	val alias: String get() = mthInfo.alias
 
 	override fun getDeclaringClass(): ClassNode? = parentClass
 
-	fun getTopParentClass(): ClassNode = parentClass.getTopParentClass()
+	val topParentClass: ClassNode get() = parentClass.topParentClass
 
 	fun isNoCode(): Boolean = noCode
 
@@ -314,7 +314,7 @@ class MethodNode(
 	}
 
 	// 原 Java 方法可能返回 null（块处理前），调用方（如 DebugChecks）会判空，故保留可空返回
-	fun getBasicBlocks(): List<BlockNode>? = blocks
+	val basicBlocks: List<BlockNode>? get() = blocks
 
 	fun setBasicBlocks(blocks: List<BlockNode>) {
 		this.blocks = blocks
@@ -325,9 +325,9 @@ class MethodNode(
 		BlockNode.updateBlockPositions(checkNotNull(blocks))
 	}
 
-	fun getNextBlockCId(): Int = blocksMaxCId++
+	val nextBlockCId: Int get() = blocksMaxCId++
 
-	fun getPreExitBlocks(): List<BlockNode> = checkNotNull(exitBlock).predecessors
+	val preExitBlocks: List<BlockNode> get() = checkNotNull(exitBlock).predecessors
 
 	fun isPreExitBlock(block: BlockNode): Boolean {
 		val successors = block.successors
@@ -370,7 +370,7 @@ class MethodNode(
 		return list
 	}
 
-	fun getLoopsCount(): Int = loops.size
+	val loopsCount: Int get() = loops.size
 
 	fun getLoops(): Iterable<LoopInfo> = loops
 
@@ -388,7 +388,7 @@ class MethodNode(
 
 	fun isNoExceptionHandlers(): Boolean = exceptionHandlers.isEmpty()
 
-	fun getExceptionHandlersCount(): Int = exceptionHandlers.size
+	val exceptionHandlersCount: Int get() = exceptionHandlers.size
 
 	override fun getThrows(): List<ArgType> {
 		val throwsAttr = get(AType.METHOD_THROWS)
@@ -475,7 +475,7 @@ class MethodNode(
 		sVars.remove(ssaVar)
 	}
 
-	fun getSVars(): List<SSAVar> = sVars
+	val SVars: List<SSAVar> get() = sVars
 
 	override fun getRawAccessFlags(): Int = accFlags.rawValue()
 
@@ -493,9 +493,9 @@ class MethodNode(
 
 	override fun getMethodInfo(): MethodInfo = mthInfo
 
-	fun getMethodCodeOffset(): Long = if (noCode) 0 else checkNotNull(codeReader).codeOffset.toLong()
+	val methodCodeOffset: Long get() = if (noCode) 0 else checkNotNull(codeReader).codeOffset.toLong()
 
-	fun getDebugInfo(): IDebugInfo? = if (noCode) null else checkNotNull(codeReader).debugInfo
+	val debugInfo: IDebugInfo? get() = if (noCode) null else checkNotNull(codeReader).debugInfo
 
 	fun ignoreMethod() {
 		add(AFlag.DONT_GENERATE)
@@ -531,13 +531,11 @@ class MethodNode(
 
 	fun getInsnsCount(): Int = insnsCount
 
-	fun getCodeStr(): String = jadx.api.utils.CodeUtils.extractMethodCode(this, getTopParentClass().getCode())
+	val codeStr: String get() = jadx.api.utils.CodeUtils.extractMethodCode(this, topParentClass.getCode())
 
 	override fun isVarArg(): Boolean = accFlags.isVarArgs()
 
 	fun isLoaded(): Boolean = loaded
-
-	fun getCodeReader(): ICodeReader? = codeReader
 
 	// 协变返回类型：保留 Java 原 API 的 List<MethodNode>
 	override fun getUseIn(): List<MethodNode> = useIn
@@ -559,7 +557,7 @@ class MethodNode(
 		this.methodsUsed = HashSet(methodsUsed)
 	}
 
-	fun getUsed(): Set<MethodNode> {
+	val used: Set<MethodNode> get() {
 		removeInvalidMethodsUsed()
 		return methodsUsed
 	}

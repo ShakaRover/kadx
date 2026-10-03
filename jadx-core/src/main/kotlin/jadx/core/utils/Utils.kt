@@ -30,7 +30,6 @@ object Utils {
 	private val JADX_API_PACKAGE: String = JadxDecompiler::class.java.getPackage().name
 	private val STACKTRACE_STOP_CLS_NAME: String = DepthTraversal::class.java.name
 
-	@JvmStatic
 	fun cleanObjectName(obj: String): String {
 		if (obj[0] == 'L') {
 			val last = obj.length - 1
@@ -41,7 +40,6 @@ object Utils {
 		return obj
 	}
 
-	@JvmStatic
 	fun cutObject(obj: String): String {
 		if (obj[0] == 'L') {
 			return obj.substring(1, obj.length - 1)
@@ -49,10 +47,8 @@ object Utils {
 		return obj
 	}
 
-	@JvmStatic
 	fun makeQualifiedObjectName(obj: String): String = 'L' + obj.replace('.', '/') + ';'
 
-	@JvmStatic
 	fun smaliNameToJavaName(descString: String): String {
 		if (descString.isEmpty()) {
 			return descString
@@ -78,7 +74,6 @@ object Utils {
 		return cleanObjectName(obj).replace('$', '.')
 	}
 
-	@JvmStatic
 	fun javaNameToSmaliName(descString: String): String {
 		if (descString.isEmpty()) {
 			return descString
@@ -100,7 +95,6 @@ object Utils {
 		}
 	}
 
-	@JvmStatic
 	fun strRepeat(str: String, count: Int): String {
 		if (count < 1) {
 			return ""
@@ -115,10 +109,8 @@ object Utils {
 		return sb.toString()
 	}
 
-	@JvmStatic
 	fun listToString(objects: Iterable<*>?): String = listToString(objects, ", ")
 
-	@JvmStatic
 	fun listToString(objects: Iterable<*>?, joiner: String): String {
 		if (objects == null) {
 			return ""
@@ -126,22 +118,18 @@ object Utils {
 		return listToString(objects, joiner) { obj -> Objects.toString(obj) }
 	}
 
-	@JvmStatic
 	fun <T> listToString(objects: Iterable<T>, toStr: (T) -> String): String = listToString(objects, ", ", toStr)
 
-	@JvmStatic
 	fun <T> listToString(objects: Iterable<T>, joiner: String, toStr: (T) -> String): String {
 		val sb = StringBuilder()
 		listToString(sb, objects, joiner, toStr)
 		return sb.toString()
 	}
 
-	@JvmStatic
 	fun <T> listToString(sb: StringBuilder, objects: Iterable<T>, joiner: String) {
 		listToString(sb, objects, joiner) { obj -> Objects.toString(obj) }
 	}
 
-	@JvmStatic
 	fun <T> listToString(sb: StringBuilder, objects: Iterable<T>?, joiner: String, toStr: (T) -> String) {
 		if (objects == null) {
 			return
@@ -155,7 +143,6 @@ object Utils {
 		}
 	}
 
-	@JvmStatic
 	fun <T> arrayToStr(arr: Array<T>?): String {
 		val len = arr?.size ?: 0
 		if (len == 0) {
@@ -170,7 +157,6 @@ object Utils {
 		return sb.toString()
 	}
 
-	@JvmStatic
 	fun concatStrings(list: List<String>?): String {
 		if (list == null || list.isEmpty()) {
 			return ""
@@ -183,10 +169,8 @@ object Utils {
 		return sb.toString()
 	}
 
-	@JvmStatic
 	fun currentStackTrace(): String = getStackTrace(Exception())
 
-	@JvmStatic
 	fun currentStackTrace(skipFrames: Int): String {
 		val e = Exception()
 		val stackTrace = e.stackTrace
@@ -197,10 +181,8 @@ object Utils {
 		return getStackTrace(e)
 	}
 
-	@JvmStatic
 	fun getFullStackTrace(throwable: Throwable?): String = getStackTrace(throwable, false)
 
-	@JvmStatic
 	fun getStackTrace(throwable: Throwable?): String = getStackTrace(throwable, true)
 
 	private fun getStackTrace(throwable: Throwable?, filter: Boolean): String {
@@ -216,7 +198,6 @@ object Utils {
 		return sw.buffer.toString()
 	}
 
-	@JvmStatic
 	fun appendStackTrace(code: ICodeWriter, throwable: Throwable?) {
 		if (throwable == null) {
 			return
@@ -280,7 +261,6 @@ object Utils {
 		}
 	}
 
-	@JvmStatic
 	fun <T, R> collectionMap(list: Collection<T>?, mapFunc: (T) -> R): List<R> {
 		if (list == null || list.isEmpty()) {
 			return Collections.emptyList()
@@ -292,7 +272,6 @@ object Utils {
 		return result
 	}
 
-	@JvmStatic
 	fun <T, R> collectionMapNoNull(list: Collection<T>?, mapFunc: (T) -> R): List<R> {
 		if (list == null || list.isEmpty()) {
 			return Collections.emptyList()
@@ -307,7 +286,6 @@ object Utils {
 		return result
 	}
 
-	@JvmStatic
 	fun <T> containsInListByRef(list: List<T>?, element: T): Boolean {
 		if (list == null || list.isEmpty()) {
 			return false
@@ -320,7 +298,6 @@ object Utils {
 		return false
 	}
 
-	@JvmStatic
 	fun <T> indexInListByRef(list: List<T>?, element: T): Int {
 		if (list == null || list.isEmpty()) {
 			return -1
@@ -334,7 +311,6 @@ object Utils {
 		return -1
 	}
 
-	@JvmStatic
 	fun <T> lockList(list: List<T>): List<T> {
 		if (list.isEmpty()) {
 			return Collections.emptyList()
@@ -348,7 +324,6 @@ object Utils {
 	/**
 	 * 返回从 startIndex（含）到列表末尾的子列表。
 	 */
-	@JvmStatic
 	fun <T> listTail(list: List<T>, startIndex: Int): List<T> {
 		if (startIndex == 0) {
 			return list
@@ -360,7 +335,6 @@ object Utils {
 		return list.subList(startIndex, size)
 	}
 
-	@JvmStatic
 	fun <T> mergeLists(first: List<T>?, second: List<T>?): List<T>? {
 		if (first == null || first.isEmpty()) {
 			return second
@@ -374,7 +348,6 @@ object Utils {
 		return result
 	}
 
-	@JvmStatic
 	fun <T> mergeSets(first: Set<T>?, second: Set<T>?): Set<T>? {
 		if (first == null || first.isEmpty()) {
 			return second
@@ -388,7 +361,6 @@ object Utils {
 		return result
 	}
 
-	@JvmStatic
 	fun newConstStringMap(vararg parameters: String): Map<String, String> {
 		val len = parameters.size
 		if (len == 0) {
@@ -407,7 +379,6 @@ object Utils {
 	/**
 	 * 合并两个 map，返回 HashMap；第二个 map 覆盖第一个的同名 key。
 	 */
-	@JvmStatic
 	fun <K, V> mergeMaps(first: Map<K, V>?, second: Map<K, V>?): Map<K, V>? {
 		if (first == null || first.isEmpty()) {
 			return second
@@ -424,7 +395,6 @@ object Utils {
 	/**
 	 * 根据 key 映射函数把值列表转成 map（类似 `Collectors.toMap`）。
 	 */
-	@JvmStatic
 	fun <K, V> groupBy(list: List<V>, mapKey: (V) -> K): Map<K, V> {
 		val map = HashMap<K, V>(list.size)
 		for (v in list) {
@@ -436,12 +406,10 @@ object Utils {
 	/**
 	 * 简单的树 DFS 遍历（不允许有环）。
 	 */
-	@JvmStatic
 	fun <T> treeDfsVisit(root: T, childrenProvider: (T) -> List<T>, visitor: (T) -> Unit) {
 		multiRootTreeDfsVisit(Collections.singletonList(root), childrenProvider, visitor)
 	}
 
-	@JvmStatic
 	fun <T> multiRootTreeDfsVisit(roots: List<T>, childrenProvider: (T) -> List<T>, visitor: (T) -> Unit) {
 		val queue = ArrayDeque(roots)
 		while (true) {
@@ -453,7 +421,6 @@ object Utils {
 		}
 	}
 
-	@JvmStatic
 	fun <T> getOne(list: List<T>?): T? {
 		if (list == null || list.size != 1) {
 			return null
@@ -461,7 +428,6 @@ object Utils {
 		return list[0]
 	}
 
-	@JvmStatic
 	fun <T> getOne(collection: Collection<T>?): T? {
 		if (collection == null || collection.size != 1) {
 			return null
@@ -469,7 +435,6 @@ object Utils {
 		return collection.iterator().next()
 	}
 
-	@JvmStatic
 	fun <T> isSetContainsAny(inputSet: Set<T>, searchKeys: Set<T>): Boolean {
 		for (t in inputSet) {
 			if (searchKeys.contains(t)) {
@@ -479,7 +444,6 @@ object Utils {
 		return false
 	}
 
-	@JvmStatic
 	fun <T> first(list: List<T>): T? {
 		if (list.isEmpty()) {
 			return null
@@ -487,7 +451,6 @@ object Utils {
 		return list[0]
 	}
 
-	@JvmStatic
 	fun <T> first(list: Iterable<T>): T? {
 		val it = list.iterator()
 		if (!it.hasNext()) {
@@ -496,7 +459,6 @@ object Utils {
 		return it.next()
 	}
 
-	@JvmStatic
 	fun <T> last(list: List<T>): T? {
 		if (list.isEmpty()) {
 			return null
@@ -504,7 +466,6 @@ object Utils {
 		return list[list.size - 1]
 	}
 
-	@JvmStatic
 	fun <T> last(list: Iterable<T>): T? {
 		val it = list.iterator()
 		if (!it.hasNext()) {
@@ -518,32 +479,24 @@ object Utils {
 		}
 	}
 
-	@JvmStatic
 	fun <T> getOrElse(obj: T?, defaultObj: T): T = obj ?: defaultObj
 
-	@JvmStatic
 	fun <T> isEmpty(col: Collection<T>?): Boolean = col == null || col.isEmpty()
 
-	@JvmStatic
 	fun <T> notEmpty(col: Collection<T>?): Boolean = col != null && !col.isEmpty()
 
-	@JvmStatic
 	fun <K, V> isEmpty(map: Map<K, V>?): Boolean = map == null || map.isEmpty()
 
-	@JvmStatic
 	fun <T> isEmpty(arr: Array<T>?): Boolean = arr == null || arr.isEmpty()
 
-	@JvmStatic
 	fun <T> notEmpty(arr: Array<T>?): Boolean = arr != null && arr.isNotEmpty()
 
-	@JvmStatic
 	fun checkThreadInterrupt() {
 		if (Thread.currentThread().isInterrupted) {
 			throw JadxRuntimeException("Thread interrupted")
 		}
 	}
 
-	@JvmStatic
 	fun simpleThreadFactory(name: String): ThreadFactory = SimpleThreadFactory(name)
 
 	private class SimpleThreadFactory(private val name: String) : ThreadFactory {
@@ -577,7 +530,6 @@ object Utils {
 	}
 
 	@Deprecated("env vars shouldn't be used in core modules. Prefer parsing in app and passing via jadx args")
-	@JvmStatic
 	fun getEnvVarBool(varName: String, defValue: Boolean): Boolean {
 		val strValue = System.getenv(varName)
 		if (strValue == null) {
@@ -587,13 +539,11 @@ object Utils {
 	}
 
 	@Deprecated("env vars shouldn't be used in core modules. Prefer parsing in app and passing via jadx args")
-	@JvmStatic
 	fun getEnvVarInt(varName: String, defValue: Int): Int {
 		val strValue = System.getenv(varName) ?: return defValue
 		return Integer.parseInt(strValue)
 	}
 
-	@JvmStatic
 	fun safeParseInt(value: String?, defValue: Int): Int {
 		if (value == null || value.isEmpty()) {
 			return defValue
@@ -605,7 +555,6 @@ object Utils {
 		}
 	}
 
-	@JvmStatic
 	fun safeParseInteger(value: String?): Int? {
 		if (value == null || value.isEmpty()) {
 			return null

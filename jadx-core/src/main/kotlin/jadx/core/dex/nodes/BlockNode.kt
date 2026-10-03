@@ -64,7 +64,6 @@ class BlockNode(
 	}
 
 	companion object {
-		@JvmStatic
 		fun updateBlockPositions(blocks: List<BlockNode>) {
 			for (i in blocks.indices) {
 				blocks[i].pos = i
@@ -120,7 +119,7 @@ class BlockNode(
 	 * 已废弃：请使用 [getPos]。保留此方法仅为兼容旧 Java 调用方。
 	 */
 	@Deprecated("Use getPos()")
-	fun getId(): Int = pos
+	val id: Int get() = pos
 
 	fun getDominatesOn(): List<BlockNode> = dominatesOn
 

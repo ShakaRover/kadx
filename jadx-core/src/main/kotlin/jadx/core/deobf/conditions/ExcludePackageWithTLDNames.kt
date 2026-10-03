@@ -37,7 +37,7 @@ class ExcludePackageWithTLDNames : AbstractDeobfCondition() {
 	}
 
 	override fun check(pkg: PackageNode): Action {
-		if (pkg.isRoot() && TLD_SET.contains(pkg.getName())) {
+		if (pkg.isRoot() && TLD_SET.contains(pkg.name)) {
 			return Action.FORBID_RENAME
 		}
 		return Action.NO_ACTION

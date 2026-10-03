@@ -41,7 +41,6 @@ open class InsnNode(
 	}
 
 	companion object {
-		@JvmStatic
 		fun wrapArg(arg: InsnArg): InsnNode {
 			val insn = InsnNode(InsnType.ONE_ARG, 1)
 			insn.addArg(arg)
@@ -49,7 +48,6 @@ open class InsnNode(
 		}
 
 		// 不使用 reified，保留与 Java 静态泛型方法一致的签名，Java 调用方可直接调用 InsnNode.duplicateArg(...)
-		@JvmStatic
 		fun <T : InsnArg> duplicateArg(arg: T?): T? {
 			if (arg == null) return null
 			@Suppress("UNCHECKED_CAST")
@@ -89,15 +87,15 @@ open class InsnNode(
 		}
 	}
 
-	fun getType(): InsnType = insnType
+	val type: InsnType get() = insnType
 
 	fun getResult(): RegisterArg? = result
 
 	fun getArguments(): Iterable<InsnArg> = arguments
 
-	fun getArgList(): List<InsnArg> = arguments
+	val argList: List<InsnArg> get() = arguments
 
-	fun getArgsCount(): Int = arguments.size
+	val argsCount: Int get() = arguments.size
 
 	open fun getArg(n: Int): InsnArg = arguments[n]
 
@@ -307,7 +305,7 @@ open class InsnNode(
 	}
 
 	protected fun <T : InsnNode> copyCommonParams(copy: T): T {
-		if (copy.getArgsCount() == 0) {
+		if (copy.argsCount == 0) {
 			for (arg in arguments) {
 				copy.addArg(arg.duplicate())
 			}
@@ -327,7 +325,7 @@ open class InsnNode(
 		if (javaClass != InsnNode::class.java) {
 			throw JadxRuntimeException("Copy method not implemented in insn class ${javaClass.simpleName}")
 		}
-		return copyCommonParams(InsnNode(insnType, getArgsCount()))
+		return copyCommonParams(InsnNode(insnType, argsCount))
 	}
 
 	fun <T : InsnNode> copyWithoutResult(): T {

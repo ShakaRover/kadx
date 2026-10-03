@@ -11,7 +11,7 @@ class JadxMethodNodeAssertions(mth: MethodNode) : AbstractObjectAssert<JadxMetho
 
 	fun code(): JadxCodeAssertions {
 		isNotNull()
-		val codeStr = actual.getCodeStr()
+		val codeStr = actual.codeStr
 		assertThat(codeStr).isNotBlank()
 		return JadxCodeAssertions(codeStr)
 	}

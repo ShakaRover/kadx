@@ -32,13 +32,13 @@ import jadx.core.utils.exceptions.JadxOverflowException
  */
 class RegionMaker(mth: MethodNode) {
 	private val mth: MethodNode = mth
-	private val stack: RegionStack = RegionStack(mth)
+	val stack: RegionStack = RegionStack(mth)
 
 	private val ifMaker: IfRegionMaker = IfRegionMaker(mth, this)
 	private val loopMaker: LoopRegionMaker = LoopRegionMaker(mth, this, ifMaker)
 
 	private val processedBlocks: BlockSet = BlockSet.empty(mth)
-	private val regionsLimit: Int = checkNotNull(mth.getBasicBlocks()).size * 400
+	private val regionsLimit: Int = checkNotNull(mth.basicBlocks).size * 400
 
 	private var regionsCount = 0
 
@@ -99,7 +99,7 @@ class RegionMaker(mth: MethodNode) {
 
 		val insn = BlockUtils.getLastInsn(block)
 		if (!processed && insn != null) {
-			when (insn.getType()) {
+			when (insn.type) {
 				InsnType.IF -> {
 					next = ifMaker.process(r, block, insn as IfNode, stack)
 					processed = true
@@ -144,14 +144,12 @@ class RegionMaker(mth: MethodNode) {
 	private fun addOneInsnOfType(insns: MutableList<InsnNode>, edgeInsns: List<EdgeInsnAttr>, insnType: InsnType) {
 		for (edgeInsn in edgeInsns) {
 			val insn = edgeInsn.insn
-			if (insn.getType() == insnType) {
+			if (insn.type == insnType) {
 				insns.add(insn)
 				return
 			}
 		}
 	}
-
-	fun getStack(): RegionStack = stack
 
 	fun isProcessed(block: BlockNode): Boolean = processedBlocks.contains(block)
 

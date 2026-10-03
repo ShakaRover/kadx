@@ -74,7 +74,7 @@ class FixTypesVisitor : AbstractVisitor() {
 	private lateinit var resolvers: List<(MethodNode) -> Boolean>
 
 	override fun init(root: RootNode) {
-		typeUpdate = root.getTypeUpdate()
+		typeUpdate = root.typeUpdate
 		typeInference.init(root)
 		resolvers = listOf(
 			this::applyFieldType,
@@ -107,7 +107,7 @@ class FixTypesVisitor : AbstractVisitor() {
 
 	/** 检查方法内所有 SSA 变量的类型是否都已确定。 */
 	private fun checkTypes(mth: MethodNode): Boolean {
-		for (ssaVar in mth.getSVars()) {
+		for (ssaVar in mth.SVars) {
 			val type = ssaVar.typeInfo.getType()
 			if (!type.isTypeKnown()) {
 				return false
@@ -122,7 +122,7 @@ class FixTypesVisitor : AbstractVisitor() {
 			if (!typeSearch.run()) {
 				mth.addWarnComment("Multi-variable type inference failed")
 			}
-			for (ssaVar in mth.getSVars()) {
+			for (ssaVar in mth.SVars) {
 				if (!ssaVar.typeInfo.getType().isTypeKnown()) {
 					return false
 				}
@@ -147,7 +147,7 @@ class FixTypesVisitor : AbstractVisitor() {
 
 	private fun calculateFromBounds(mth: MethodNode, ssaVar: SSAVar): Boolean {
 		val typeInfo = ssaVar.typeInfo
-		val bounds = typeInfo.getBounds()
+		val bounds = typeInfo.bounds
 		val bestTypeOpt = selectBestTypeFromBounds(bounds)
 		if (bestTypeOpt == null) {
 			if (Consts.DEBUG_TYPE_INFERENCE) {
@@ -212,7 +212,7 @@ class FixTypesVisitor : AbstractVisitor() {
 			return list
 		}
 		if (ssaVar != null) {
-			for (b in ssaVar.typeInfo.getBounds()) {
+			for (b in ssaVar.typeInfo.bounds) {
 				val boundType = b.getType()
 				if (boundType.isObject() || boundType.isArray()) {
 					// 已有对象/数组边界，不再尝试基本类型
@@ -232,7 +232,7 @@ class FixTypesVisitor : AbstractVisitor() {
 
 	private fun tryDeduceTypes(mth: MethodNode): Boolean {
 		var fixed = false
-		for (ssaVar in mth.getSVars()) {
+		for (ssaVar in mth.SVars) {
 			if (deduceType(mth, ssaVar)) {
 				fixed = true
 			}
@@ -265,7 +265,7 @@ class FixTypesVisitor : AbstractVisitor() {
 
 	private fun tryRemoveGenerics(mth: MethodNode): Boolean {
 		var resolved = true
-		for (ssaVar in mth.getSVars()) {
+		for (ssaVar in mth.SVars) {
 			val type = ssaVar.typeInfo.getType()
 			if (!type.isTypeKnown() && !ssaVar.isTypeImmutable() && !tryRawType(mth, ssaVar)) {
 				resolved = false
@@ -276,7 +276,7 @@ class FixTypesVisitor : AbstractVisitor() {
 
 	private fun tryRawType(mth: MethodNode, ssaVar: SSAVar): Boolean {
 		val objTypes = LinkedHashSet<ArgType>()
-		for (bound in ssaVar.typeInfo.getBounds()) {
+		for (bound in ssaVar.typeInfo.bounds) {
 			val boundType = bound.getType()
 			if (boundType.isTypeKnown() && boundType.isObject()) {
 				objTypes.add(boundType)
@@ -313,7 +313,7 @@ class FixTypesVisitor : AbstractVisitor() {
 		try {
 			var changed = false
 			// 会新增 SSA 变量，因此不能使用 for-each
-			val sVars = mth.getSVars()
+			val sVars = mth.SVars
 			val varsCount = sVars.size
 			for (i in 0 until varsCount) {
 				val ssaVar = sVars[i]
@@ -331,7 +331,7 @@ class FixTypesVisitor : AbstractVisitor() {
 
 			// 检查发生变化的变量类型是否已经固定
 			var success = true
-			for (ssaVar in mth.getSVars()) {
+			for (ssaVar in mth.SVars) {
 				if (tryFieldTypeWithNewCasts(mth, ssaVar, false)) {
 					success = false
 				}
@@ -354,7 +354,7 @@ class FixTypesVisitor : AbstractVisitor() {
 			return false
 		}
 		val assignInsn = ssaVar.assignInsn ?: return false
-		val insnType = assignInsn.getType()
+		val insnType = assignInsn.type
 		if (insnType != InsnType.IGET && insnType != InsnType.SGET) {
 			return false
 		}
@@ -363,7 +363,7 @@ class FixTypesVisitor : AbstractVisitor() {
 		if (insertCasts) {
 			// 尝试找到使用点并插入 cast
 			var inserted = false
-			for (useArg in ssaVar.getUseList()) {
+			for (useArg in ssaVar.useList) {
 				if (insertExplicitUseCast(mth, ssaVar, useArg, fieldType)) {
 					inserted = true
 				}
@@ -388,7 +388,7 @@ class FixTypesVisitor : AbstractVisitor() {
 		val details = mth.root().getMethodUtils().getMethodDetails(invoke) ?: return false
 		var newCasts = 0
 		var k = -1
-		for (invArg in invoke.getArgList()) {
+		for (invArg in invoke.argList) {
 			if (invArg === instanceArg) {
 				continue
 			}
@@ -417,7 +417,7 @@ class FixTypesVisitor : AbstractVisitor() {
 	 */
 	private fun tryRestoreTypeVarCasts(mth: MethodNode): Boolean {
 		var changed = 0
-		val mthSVars = mth.getSVars()
+		val mthSVars = mth.SVars
 		for (ssaVar in mthSVars) {
 			changed += restoreTypeVarCasts(ssaVar)
 		}
@@ -433,7 +433,7 @@ class FixTypesVisitor : AbstractVisitor() {
 
 	private fun restoreTypeVarCasts(ssaVar: SSAVar): Int {
 		val typeInfo = ssaVar.typeInfo
-		val bounds = typeInfo.getBounds()
+		val bounds = typeInfo.bounds
 		if (!ListUtils.anyMatch(bounds) { it.getType().isGenericType() }) {
 			return 0
 		}
@@ -456,7 +456,7 @@ class FixTypesVisitor : AbstractVisitor() {
 			val castType = cast.getType()
 			val result = typeUpdate.typeCompare.compareTypes(extendType, castType)
 			if (result.isEqual() || result == TypeCompareEnum.NARROW_BY_GENERIC) {
-				cast.getInsn().index = bestType
+				cast.insn.index = bestType
 				fixed++
 			}
 		}
@@ -465,7 +465,7 @@ class FixTypesVisitor : AbstractVisitor() {
 
 	private fun tryInsertCasts(mth: MethodNode): Boolean {
 		var added = 0
-		val mthSVars = mth.getSVars()
+		val mthSVars = mth.SVars
 		val varsCount = mthSVars.size
 		for (i in 0 until varsCount) {
 			val ssaVar = mthSVars[i]
@@ -483,7 +483,7 @@ class FixTypesVisitor : AbstractVisitor() {
 	}
 
 	private fun tryInsertVarCast(mth: MethodNode, ssaVar: SSAVar): Int {
-		for (bound in ssaVar.typeInfo.getBounds()) {
+		for (bound in ssaVar.typeInfo.bounds) {
 			val boundType = bound.getType()
 			if (boundType.isTypeKnown() &&
 				boundType != ssaVar.typeInfo.getType() &&
@@ -502,7 +502,7 @@ class FixTypesVisitor : AbstractVisitor() {
 	}
 
 	private fun insertUseCasts(mth: MethodNode, ssaVar: SSAVar): Int {
-		val useList = ssaVar.getUseList()
+		val useList = ssaVar.useList
 		if (useList.isEmpty()) {
 			return 0
 		}
@@ -520,7 +520,7 @@ class FixTypesVisitor : AbstractVisitor() {
 	private fun insertAssignCast(mth: MethodNode, ssaVar: SSAVar, castType: ArgType): IndexInsnNode? {
 		val assignArg = ssaVar.assign
 		val assignInsn = assignArg.getParentInsn()
-		if (assignInsn == null || assignInsn.getType() == InsnType.PHI) {
+		if (assignInsn == null || assignInsn.type == InsnType.PHI) {
 			return null
 		}
 		val assignBlock = BlockUtils.getBlockByInsn(mth, assignInsn) ?: return null
@@ -534,10 +534,10 @@ class FixTypesVisitor : AbstractVisitor() {
 
 	private fun insertUseCast(mth: MethodNode, useArg: RegisterArg, castType: ArgType): IndexInsnNode? {
 		val useInsn = useArg.getParentInsn()
-		if (useInsn == null || useInsn.getType() == InsnType.PHI) {
+		if (useInsn == null || useInsn.type == InsnType.PHI) {
 			return null
 		}
-		if (useInsn.getType() == InsnType.IF && useInsn.getArg(1).isZeroConst()) {
+		if (useInsn.type == InsnType.IF && useInsn.getArg(1).isZeroConst()) {
 			// 与 null 比较时不需要 cast
 			return null
 		}
@@ -568,7 +568,7 @@ class FixTypesVisitor : AbstractVisitor() {
 
 	private fun trySplitConstInsns(mth: MethodNode): Boolean {
 		var constSplit = false
-		for (ssaVar in ArrayList(mth.getSVars())) {
+		for (ssaVar in ArrayList(mth.SVars)) {
 			if (checkAndSplitConstInsn(mth, ssaVar)) {
 				constSplit = true
 			}
@@ -590,17 +590,17 @@ class FixTypesVisitor : AbstractVisitor() {
 	}
 
 	private fun dupConst(mth: MethodNode, ssaVar: SSAVar): Boolean {
-		val assignInsn = ssaVar.assign.getAssignInsn()
+		val assignInsn = ssaVar.assign.assignInsn
 		if (assignInsn == null || !InsnUtils.isInsnType(assignInsn, InsnType.CONST)) {
 			return false
 		}
-		if (ssaVar.getUseList().size < 2) {
+		if (ssaVar.useList.size < 2) {
 			return false
 		}
 		val assignBlock = BlockUtils.getBlockByInsn(mth, assignInsn) ?: return false
 		assignInsn.remove(AFlag.DONT_INLINE)
 		val insertIndex = 1 + BlockUtils.getInsnIndexInBlock(assignBlock, assignInsn)
-		val useList = ArrayList(ssaVar.getUseList())
+		val useList = ArrayList(ssaVar.useList)
 		val useCount = useList.size
 		for (i in 0 until useCount) {
 			val useArg = useList[i]
@@ -621,14 +621,14 @@ class FixTypesVisitor : AbstractVisitor() {
 
 	/** 为每个 PHI 分别生成一条独立的 CONST 指令。 */
 	private fun splitByPhi(mth: MethodNode, ssaVar: SSAVar): Boolean {
-		if (ssaVar.getUsedInPhi().size < 2) {
+		if (ssaVar.usedInPhi.size < 2) {
 			return false
 		}
-		val assignInsn = ssaVar.assign.getAssignInsn()
+		val assignInsn = ssaVar.assign.assignInsn
 		val constInsn = InsnUtils.checkInsnType(assignInsn, InsnType.CONST) ?: return false
 		val blockNode = BlockUtils.getBlockByInsn(mth, constInsn) ?: return false
 		var first = true
-		for (phiInsn in ssaVar.getUsedInPhi()) {
+		for (phiInsn in ssaVar.usedInPhi) {
 			if (first) {
 				first = false
 				continue
@@ -645,7 +645,7 @@ class FixTypesVisitor : AbstractVisitor() {
 
 	private fun tryInsertAdditionalMove(mth: MethodNode): Boolean {
 		var insnsAdded = 0
-		for (block in checkNotNull(mth.getBasicBlocks())) {
+		for (block in checkNotNull(mth.basicBlocks)) {
 			val phiListAttr = block.get(AType.PHI_LIST)
 			if (phiListAttr != null) {
 				for (phiInsn in phiListAttr.list) {
@@ -699,7 +699,7 @@ class FixTypesVisitor : AbstractVisitor() {
 	}
 
 	private fun insertMovesForPhi(mth: MethodNode, phiInsn: PhiInsn, apply: Boolean): Int {
-		val argsCount = phiInsn.getArgsCount()
+		val argsCount = phiInsn.argsCount
 		var count = 0
 		for (argIndex in 0 until argsCount) {
 			val reg = phiInsn.getArg(argIndex)
@@ -711,11 +711,11 @@ class FixTypesVisitor : AbstractVisitor() {
 			}
 			var add = true
 			val ssaVar = checkNotNull(reg.sVar)
-			val assignInsn = ssaVar.assign.getAssignInsn()
+			val assignInsn = ssaVar.assign.assignInsn
 			if (assignInsn != null) {
-				val assignType = assignInsn.getType()
+				val assignType = assignInsn.type
 				if (assignType == InsnType.CONST ||
-					(assignType == InsnType.MOVE && ssaVar.getUseCount() == 1)
+					(assignType == InsnType.MOVE && ssaVar.useCount == 1)
 				) {
 					add = false
 				}
@@ -751,7 +751,7 @@ class FixTypesVisitor : AbstractVisitor() {
 			return null
 		}
 		val lastInsn = BlockUtils.getLastInsn(blockNode)
-		if (lastInsn != null && BlockSplitter.isSeparate(lastInsn.getType())) {
+		if (lastInsn != null && BlockSplitter.isSeparate(lastInsn.type)) {
 			// 含“分离”指令的块无法插入 move，沿单前驱路径向前找
 			val preds = blockNode.getPredecessors()
 			if (preds.size == 1) {
@@ -764,7 +764,7 @@ class FixTypesVisitor : AbstractVisitor() {
 
 	private fun tryWiderObjects(mth: MethodNode, ssaVar: SSAVar): Boolean {
 		val objTypes = LinkedHashSet<ArgType>()
-		for (bound in ssaVar.typeInfo.getBounds()) {
+		for (bound in ssaVar.typeInfo.bounds) {
 			val boundType = bound.getType()
 			if (boundType.isTypeKnown() && boundType.isObject()) {
 				objTypes.add(boundType)
@@ -788,7 +788,7 @@ class FixTypesVisitor : AbstractVisitor() {
 
 	private fun tryToFixIncompatiblePrimitives(mth: MethodNode): Boolean {
 		var fixed = false
-		val ssaVars = mth.getSVars()
+		val ssaVars = mth.SVars
 		val ssaVarsCount = ssaVars.size
 		// 修正后会新增变量到列表末尾，因此不能用 for-each
 		for (i in 0 until ssaVarsCount) {
@@ -810,7 +810,7 @@ class FixTypesVisitor : AbstractVisitor() {
 			return false
 		}
 		var assigned = false
-		for (bound in typeInfo.getBounds()) {
+		for (bound in typeInfo.bounds) {
 			val boundType = bound.getType()
 			when (bound.getBound()) {
 				BoundEnum.ASSIGN -> {
@@ -832,7 +832,7 @@ class FixTypesVisitor : AbstractVisitor() {
 		}
 
 		var fixed = false
-		for (arg in ArrayList(ssaVar.getUseList())) {
+		for (arg in ArrayList(ssaVar.useList)) {
 			if (fixBooleanUsage(mth, arg)) {
 				fixed = true
 				if (Consts.DEBUG_TYPE_INFERENCE) {
@@ -849,7 +849,7 @@ class FixTypesVisitor : AbstractVisitor() {
 			return false
 		}
 		val insn = boundArg.getParentInsn() ?: return false
-		if (insn.getType() == InsnType.IF) {
+		if (insn.type == InsnType.IF) {
 			return false
 		}
 		val blockNode = BlockUtils.getBlockByInsn(mth, insn) ?: return false
@@ -858,7 +858,7 @@ class FixTypesVisitor : AbstractVisitor() {
 		if (insnIndex == -1) {
 			return false
 		}
-		val insnType = insn.getType()
+		val insnType = insn.type
 		if (insnType == InsnType.CAST) {
 			// 替换 cast
 			val type = (insn as IndexInsnNode).index as ArgType
@@ -868,7 +868,7 @@ class FixTypesVisitor : AbstractVisitor() {
 		}
 		if (insnType == InsnType.ARITH) {
 			val arithInsn = insn as ArithNode
-			if (arithInsn.op == ArithOp.XOR && arithInsn.getArgsCount() == 2) {
+			if (arithInsn.op == ArithOp.XOR && arithInsn.argsCount == 2) {
 				// 把 (boolean ^ 1) 替换为 (!boolean)
 				val secondArg = arithInsn.getArg(1)
 				if (secondArg.isLiteral && (secondArg as LiteralArg).literal == 1L) {
@@ -913,7 +913,7 @@ class FixTypesVisitor : AbstractVisitor() {
 
 	private fun tryToForceImmutableTypes(mth: MethodNode): Boolean {
 		var fixed = false
-		for (ssaVar in mth.getSVars()) {
+		for (ssaVar in mth.SVars) {
 			val type = ssaVar.typeInfo.getType()
 			if (!type.isTypeKnown() && ssaVar.isTypeImmutable()) {
 				if (forceImmutableType(ssaVar)) {
@@ -928,12 +928,12 @@ class FixTypesVisitor : AbstractVisitor() {
 	}
 
 	private fun forceImmutableType(ssaVar: SSAVar): Boolean {
-		for (useArg in ssaVar.getUseList()) {
+		for (useArg in ssaVar.useList) {
 			val parentInsn = useArg.getParentInsn()
 			if (parentInsn != null) {
-				val insnType = parentInsn.getType()
+				val insnType = parentInsn.type
 				if (insnType == InsnType.AGET || insnType == InsnType.APUT) {
-					ssaVar.setType(checkNotNull(ssaVar.getImmutableType()))
+					ssaVar.setType(checkNotNull(ssaVar.immutableType))
 					return true
 				}
 			}

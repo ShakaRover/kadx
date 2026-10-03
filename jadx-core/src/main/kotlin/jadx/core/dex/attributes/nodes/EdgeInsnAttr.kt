@@ -25,13 +25,11 @@ class EdgeInsnAttr private constructor(
 
 	companion object {
 		/** 按 [Edge] 添加边指令 */
-		@JvmStatic
 		fun addEdgeInsn(edge: Edge, insn: InsnNode) {
 			addEdgeInsn(edge.source, edge.target, insn)
 		}
 
 		/** 按起止块添加边指令（两端块都挂载，避免重复） */
-		@JvmStatic
 		fun addEdgeInsn(start: BlockNode, end: BlockNode, insn: InsnNode) {
 			val edgeInsnAttr = EdgeInsnAttr(start, end, insn)
 			if (!start.getAll(AType.EDGE_INSN).contains(edgeInsnAttr)) {

@@ -37,10 +37,10 @@ open class InvokeCustomRawNode : InvokeNode {
 		this.resolve = resolve
 	}
 
-	fun getResolveInvoke(): InvokeNode = resolve
+	val resolveInvoke: InvokeNode get() = resolve
 
 	override fun copy(): InsnNode {
-		val copy = InvokeCustomRawNode(resolve, callMth, invokeType, getArgsCount())
+		val copy = InvokeCustomRawNode(resolve, callMth, invokeType, argsCount)
 		copyCommonParams(copy)
 		copy.callSiteValues = callSiteValues
 		return copy

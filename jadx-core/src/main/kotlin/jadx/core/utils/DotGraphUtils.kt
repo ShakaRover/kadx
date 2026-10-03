@@ -102,7 +102,7 @@ class DotGraphUtils {
 			}
 			processMethodRegion(mth)
 		} else {
-			var blocks = mth.getBasicBlocks()
+			var blocks = mth.basicBlocks
 			if (blocks == null) {
 				val insnArr = mth.instructions
 				if (insnArr == null) {
@@ -133,8 +133,8 @@ class DotGraphUtils {
 		dot.add(
 			escape(
 				mth.getReturnType().toString() + " " +
-					mth.parentClass + '.' + mth.getName() +
-					'(' + Utils.listToString(mth.getAllArgRegs()) + ") ",
+					mth.parentClass + '.' + mth.name +
+					'(' + Utils.listToString(mth.allArgRegs) + ") ",
 			),
 		)
 
@@ -155,7 +155,7 @@ class DotGraphUtils {
 	}
 
 	private fun processMethodRegion(mth: MethodNode) {
-		val regionsBlocks: MutableSet<IBlock> = HashSet(checkNotNull(mth.getBasicBlocks()).size)
+		val regionsBlocks: MutableSet<IBlock> = HashSet(checkNotNull(mth.basicBlocks).size)
 		RegionUtils.getAllRegionBlocks(checkNotNull(mth.region), regionsBlocks)
 		for (handler in mth.getExceptionHandlers()) {
 			val handlerRegion = handler.getHandlerRegion()
@@ -171,7 +171,7 @@ class DotGraphUtils {
 			}
 		}
 
-		for (block in checkNotNull(mth.getBasicBlocks())) {
+		for (block in checkNotNull(mth.basicBlocks)) {
 			if (!regionsBlocks.contains(block)) {
 				processBlock(mth, block, true, false)
 			}
@@ -312,7 +312,7 @@ class DotGraphUtils {
 
 		var falsePath: BlockNode? = null
 		val lastInsn = BlockUtils.getLastInsn(block)
-		if (lastInsn != null && lastInsn.getType() == InsnType.IF) {
+		if (lastInsn != null && lastInsn.type == InsnType.IF) {
 			falsePath = (lastInsn as IfNode).getElseBlock()
 		}
 		for (next in block.getSuccessors()) {
@@ -402,10 +402,8 @@ class DotGraphUtils {
 		private const val MAX_REGION_NAME_LENGTH = 2000
 
 		// 方法 CFG 的默认输出目录
-		@JvmStatic
 		fun getOutDir(mth: MethodNode): File = checkNotNull(mth.root().getArgs().outDir)
 
-		@JvmStatic
 		fun escape(obj: Any?): String {
 			if (obj == null) {
 				return "null"
@@ -413,10 +411,8 @@ class DotGraphUtils {
 			return escape(obj.toString())
 		}
 
-		@JvmStatic
 		fun escape(string: String): String = escape(string, NLQR)
 
-		@JvmStatic
 		fun escape(string: String, newline: String): String = string
 			.replace("\\", "") // TODO replace \"
 			.replace("/", "\\/")
@@ -427,16 +423,12 @@ class DotGraphUtils {
 			.replace("|", "\\|")
 			.replace(Regex("\\R")) { newline }
 
-		@JvmStatic
 		fun classFormatName(cls: ClassNode, longName: Boolean): String = classFormatName(cls.classInfo, longName)
 
-		@JvmStatic
 		fun classFormatName(cls: ClassInfo, longName: Boolean): String = if (longName) cls.aliasFullName else cls.aliasShortName
 
-		@JvmStatic
 		fun methodFormatName(javaMethod: JavaMethod, longName: Boolean): String = methodFormatName(javaMethod.getMethodNode(), longName)
 
-		@JvmStatic
 		fun methodFormatName(methodNode: MethodNode, longName: Boolean): String {
 			if (longName) {
 				val parentClass = methodNode.parentClass
@@ -446,10 +438,9 @@ class DotGraphUtils {
 					'(' + Utils.listToString(argTypes, ", ") { e -> argTypeFormatName(e, parentClass, true) } + "):" +
 					argTypeFormatName(retType, parentClass, true)
 			}
-			return methodNode.getAlias()
+			return methodNode.alias
 		}
 
-		@JvmStatic
 		fun unresolvedMethodFormatName(mthInfo: MethodInfo, longName: Boolean): String {
 			val name = mthInfo.name
 			if (longName) {
@@ -461,13 +452,11 @@ class DotGraphUtils {
 			return name
 		}
 
-		@JvmStatic
 		fun interfaceFormatName(iface: ArgType, cls: ClassNode, longName: Boolean): String {
 			val ifaceInfo = ClassInfo.fromType(cls.root(), iface)
 			return if (longName) ifaceInfo.aliasFullName else ifaceInfo.aliasShortName
 		}
 
-		@JvmStatic
 		fun argTypeFormatName(arg: ArgType, cls: ClassNode, longName: Boolean): String {
 			if (arg.isObject() && !arg.isGenericType()) {
 				val superCls = cls.root().resolveClass(arg)
@@ -478,10 +467,8 @@ class DotGraphUtils {
 			return arg.toString()
 		}
 
-		@JvmStatic
 		fun formatColor(color: Color): String = String.format("\"#%02x%02x%02x\"", color.red, color.green, color.blue)
 
-		@JvmStatic
 		fun toDotNodeName(fullName: String): String = fullName.replace("<", "\\<").replace(">", "\\>")
 	}
 }

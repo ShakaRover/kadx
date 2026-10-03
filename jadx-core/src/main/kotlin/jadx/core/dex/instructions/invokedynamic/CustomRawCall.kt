@@ -30,7 +30,6 @@ class CustomRawCall {
 	companion object {
 
 		/** 构建原始 invoke-custom 节点。 */
-		@JvmStatic
 		fun build(mth: MethodNode, insn: InsnData, isRange: Boolean, values: List<EncodedValue>): InsnNode {
 			val resolveHandle = values[0].value as IMethodHandle
 			val invokeName = values[1].value as String

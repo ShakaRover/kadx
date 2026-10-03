@@ -20,7 +20,7 @@ import org.intellij.lang.annotations.MagicConstant
  */
 class AccessInfo(
 	private val accFlags: Int,
-	private val type: AFType,
+	val type: AFType,
 ) {
 
 	/** 元素类型：类 / 字段 / 方法（影响 `makeString` 的输出内容）。 */
@@ -78,7 +78,7 @@ class AccessInfo(
 	}
 
 	/** 只保留可见性位，返回一个新的 [AccessInfo]。 */
-	fun getVisibility(): AccessInfo = AccessInfo(accFlags and VISIBILITY_FLAGS, type)
+	val visibility: AccessInfo get() = AccessInfo(accFlags and VISIBILITY_FLAGS, type)
 
 	/** 当前可见性是否弱于另一个（private < package-private < protected < public）。 */
 	fun isVisibilityWeakerThan(otherAccInfo: AccessInfo): Boolean {
@@ -142,8 +142,6 @@ class AccessInfo(
 	fun isModuleInfo(): Boolean = (accFlags and AccessFlags.MODULE) != 0
 
 	fun isData(): Boolean = (accFlags and AccessFlags.DATA) != 0
-
-	fun getType(): AFType = type
 
 	/** 生成 Java 源码里的修饰符字符串（如 `public static final `）。 */
 	fun makeString(showHidden: Boolean): String {
@@ -235,7 +233,7 @@ class AccessInfo(
 		if (isProtected()) {
 			return "protected"
 		}
-		throw JadxRuntimeException("Unknown visibility flags: ${getVisibility()}")
+		throw JadxRuntimeException("Unknown visibility flags: $visibility")
 	}
 
 	/** 原始访问标志位掩码。 */

@@ -30,8 +30,8 @@ import java.util.LinkedList
  * - 静态方法 [isImplicitOrMerged] 放入 companion 并标注 `@JvmStatic`。
  */
 class TryCatchBlockAttr(
-	private val id: Int,
-	private val handlers: MutableList<ExceptionHandler>,
+	val id: Int,
+	val handlers: MutableList<ExceptionHandler>,
 	private var blocks: MutableList<BlockNode>,
 ) : IJadxAttribute {
 
@@ -62,7 +62,7 @@ class TryCatchBlockAttr(
 				return false
 			}
 			val insn = insns[0]
-			when (insn.getType()) {
+			when (insn.type) {
 				InsnType.MOVE_EXCEPTION,
 				InsnType.MONITOR_EXIT,
 				-> {
@@ -77,11 +77,7 @@ class TryCatchBlockAttr(
 		return throwFound
 	}
 
-	fun getId(): Int = id
-
-	fun getHandlers(): List<ExceptionHandler> = handlers
-
-	fun getHandlersCount(): Int = handlers.size
+	val handlersCount: Int get() = handlers.size
 
 	fun getBlocks(): List<BlockNode> = blocks
 
@@ -140,12 +136,12 @@ class TryCatchBlockAttr(
 	 * 找不到底部拆分块时，用 try 体所有块与处理器前驱的交集来推断；
 	 * 仍找不到则回退到顶部拆分块。
 	 */
-	fun getHandlerTryEdges(): List<TryEdge> {
+	val handlerTryEdges: List<TryEdge> get() {
 		val mergedHandlers = getMergedHandlers()
 		val edges = ArrayList<TryEdge>(mergedHandlers.size)
 		for (handler in mergedHandlers) {
 			val handlerBlock = checkNotNull(handler.getHandlerBlock())
-			var handlerSplitter = handler.getBottomSplitter()
+			var handlerSplitter = handler.bottomSplitter
 			if (handlerSplitter == null) {
 				// 无法找到底部拆分块时，用处理器前驱中属于 try 体的块推断
 				val allChildren = ListUtils.filter(handlerBlock.getPredecessors()) { getBlocks().contains(it) }
@@ -160,7 +156,7 @@ class TryCatchBlockAttr(
 		return edges
 	}
 
-	fun getFallthroughTryEdges(): List<TryEdge> {
+	val fallthroughTryEdges: List<TryEdge> get() {
 		val edges = LinkedList<TryEdge>()
 		val exploredBlocks = ArrayList<BlockNode>()
 		val exploredTrys = LinkedList<TryCatchBlockAttr>()
@@ -177,7 +173,7 @@ class TryCatchBlockAttr(
 		val mergedHandlers = getMergedHandlers()
 		val searchBlocks = HashSet(getBlocks())
 		for (handler in mergedHandlers) {
-			handler.getBlocks().forEach { searchBlocks.remove(it) }
+			handler.blocks.forEach { searchBlocks.remove(it) }
 		}
 		val sourceBlock = BlockUtils.getTopBlock(ArrayList(searchBlocks))
 		if (sourceBlock != null) {
@@ -186,9 +182,9 @@ class TryCatchBlockAttr(
 		}
 	}
 
-	fun getTryEdges(): List<TryEdge> {
-		val handlerEdges = getHandlerTryEdges()
-		val fallthroughEdges = getFallthroughTryEdges()
+	val tryEdges: List<TryEdge> get() {
+		val handlerEdges = handlerTryEdges
+		val fallthroughEdges = fallthroughTryEdges
 		val edges = ArrayList<TryEdge>(handlerEdges.size + fallthroughEdges.size)
 		edges.addAll(handlerEdges)
 		edges.addAll(fallthroughEdges)
@@ -219,7 +215,7 @@ class TryCatchBlockAttr(
 				val loopStartBlocks = LinkedList<BlockNode>()
 				for (loop in loops) {
 					loopStartBlocks.add(loop.start)
-					val loopEdges = loop.getExitEdges()
+					val loopEdges = loop.exitEdges
 					for (loopEdge in loopEdges) {
 						if (loopEdge.target === successor) {
 							loopStartBlocks.add(loopEdge.source)
@@ -312,20 +308,20 @@ class TryCatchBlockAttr(
 		val hasInnerBlocks = getInnerTryBlocks().isNotEmpty()
 		val mergedHandlers: List<ExceptionHandler>
 		if (hasInnerBlocks) {
-			val list = ArrayList(getHandlers())
+			val list = ArrayList(handlers)
 			for (innerTryBlock in getInnerTryBlocks()) {
-				list.addAll(innerTryBlock.getHandlers())
+				list.addAll(innerTryBlock.handlers)
 			}
 			mergedHandlers = list
 		} else {
-			mergedHandlers = getHandlers()
+			mergedHandlers = handlers
 		}
 		return Collections.unmodifiableList(mergedHandlers)
 	}
 
 	/** 出口边 -> 该边的目标块 */
-	fun getEdgeBlockMap(): Map<TryEdge, BlockNode> {
-		val edges = getTryEdges()
+	val edgeBlockMap: Map<TryEdge, BlockNode> get() {
+		val edges = tryEdges
 		val blockMap = HashMap<TryEdge, BlockNode>()
 		for (edge in edges) {
 			blockMap[edge] = edge.target
@@ -335,7 +331,7 @@ class TryCatchBlockAttr(
 
 	/** 构建出口边的作用域分组映射 */
 	fun getExecutionScopeGroups(mth: MethodNode): TryEdgeScopeGroupMap {
-		val handlerBlocks = getEdgeBlockMap()
+		val handlerBlocks = edgeBlockMap
 		val scopeGroups = TryEdgeScopeGroupMap(mth, this, handlerBlocks.size)
 		scopeGroups.populateFromEdges(handlerBlocks)
 
@@ -357,7 +353,7 @@ class TryCatchBlockAttr(
 			for (scopeEndPredecessor in scopeEndBlock.getPredecessors()) {
 				// 筛选出“非 finally 处理器出口”且目标可到达该前驱的边
 				val matchedHandlerPaths = sourceHandlers
-					.filter { handler -> !(handler.isHandlerExit() && handler.getExceptionHandler() === finallyHandler) }
+					.filter { handler -> !(handler.isHandlerExit() && handler.exceptionHandler === finallyHandler) }
 					.map { handler -> handler.target }
 					.filter { scopeStart -> BlockUtils.isPathExists(scopeStart, scopeEndPredecessor) }
 				if (matchedHandlerPaths.isNotEmpty()) {
@@ -407,7 +403,6 @@ class TryCatchBlockAttr(
 
 	companion object {
 		/** 判断 try 块是否“隐式或已合并”（已合并到外层，或没有任何处理器） */
-		@JvmStatic
-		fun isImplicitOrMerged(tryBlock: TryCatchBlockAttr): Boolean = tryBlock.isMerged() || tryBlock.getHandlers().isEmpty()
+		fun isImplicitOrMerged(tryBlock: TryCatchBlockAttr): Boolean = tryBlock.isMerged() || tryBlock.handlers.isEmpty()
 	}
 }

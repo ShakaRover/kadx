@@ -57,12 +57,12 @@ class DeboxingVisitor : AbstractVisitor() {
 			return
 		}
 		var replaced = false
-		for (blockNode in checkNotNull(mth.getBasicBlocks())) {
+		for (blockNode in checkNotNull(mth.basicBlocks)) {
 			val insnList = blockNode.getInstructions()
 			val count = insnList.size
 			for (i in 0 until count) {
 				val insnNode = insnList[i]
-				if (insnNode.getType() == InsnType.INVOKE) {
+				if (insnNode.type == InsnType.INVOKE) {
 					val replaceInsn = checkForReplace(insnNode as InvokeNode)
 					if (replaceInsn != null) {
 						BlockUtils.replaceInsn(mth, blockNode, i, replaceInsn)
@@ -131,7 +131,7 @@ class DeboxingVisitor : AbstractVisitor() {
 				return false
 			}
 			val assignInsn = ssaVar.assignInsn ?: return false // 方法参数
-			val assignInsnType = assignInsn.getType()
+			val assignInsnType = assignInsn.type
 			if (assignInsnType == InsnType.CONST || assignInsnType == InsnType.MOVE) {
 				if (assignInsn.getArg(0).getType().isObject()) {
 					return false
@@ -143,9 +143,9 @@ class DeboxingVisitor : AbstractVisitor() {
 				return false
 			}
 
-			for (useArg in ssaVar.getUseList()) {
+			for (useArg in ssaVar.useList) {
 				val parentInsn = useArg.getParentInsn() ?: return false
-				if (parentInsn.getType() == InsnType.INVOKE) {
+				if (parentInsn.type == InsnType.INVOKE) {
 					val invokeNode = parentInsn as InvokeNode
 					if (useArg == invokeNode.getInstanceArg()) {
 						return false
@@ -158,7 +158,7 @@ class DeboxingVisitor : AbstractVisitor() {
 
 	private fun collectUseTypes(arg: RegisterArg): MutableSet<ArgType> {
 		val types = HashSet<ArgType>()
-		for (useArg in checkNotNull(arg.sVar).getUseList()) {
+		for (useArg in checkNotNull(arg.sVar).useList) {
 			types.add(useArg.getType())
 			types.add(useArg.getInitType())
 		}

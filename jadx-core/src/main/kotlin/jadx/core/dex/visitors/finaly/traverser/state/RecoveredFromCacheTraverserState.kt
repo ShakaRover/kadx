@@ -12,7 +12,7 @@ import jadx.core.dex.visitors.finaly.traverser.handlers.AbstractBlockTraverserHa
  *
  * **Kotlin 转换说明**：`getFactory` 供 Java 侧静态调用（`@JvmStatic`）。
  */
-class RecoveredFromCacheTraverserState(private val underlying: TraverserState) : TraverserState(underlying.getComparatorState()) {
+class RecoveredFromCacheTraverserState(private val underlying: TraverserState) : TraverserState(underlying.comparatorState) {
 
 	override fun getNextHandler(): AbstractBlockTraverserHandler? = null
 
@@ -31,7 +31,6 @@ class RecoveredFromCacheTraverserState(private val underlying: TraverserState) :
 	fun canContinue(): Boolean = underlying.isTerminal()
 
 	companion object {
-		@JvmStatic
 		fun getFactory(underlying: TraverserState): TraverserStateFactory<RecoveredFromCacheTraverserState> = RecoveredFromCacheStateFactory(underlying)
 	}
 

@@ -35,7 +35,6 @@ object DebugChecks {
 		),
 	)
 
-	@JvmStatic
 	fun insertPasses(passes: List<IDexTreeVisitor>): MutableList<IDexTreeVisitor> {
 		val size = passes.size
 		val list = ArrayList<IDexTreeVisitor>(size * 2)
@@ -49,7 +48,6 @@ object DebugChecks {
 		return list
 	}
 
-	@JvmStatic
 	fun runChecksAfterVisitor(mth: MethodNode, visitor: String) {
 		try {
 			checkMethod(mth)
@@ -58,9 +56,8 @@ object DebugChecks {
 		}
 	}
 
-	@JvmStatic
 	fun checkMethod(mth: MethodNode) {
-		val basicBlocks = mth.getBasicBlocks() ?: return
+		val basicBlocks = mth.basicBlocks ?: return
 		if (basicBlocks.isEmpty()) {
 			return
 		}
@@ -96,10 +93,10 @@ object DebugChecks {
 				checkInsn(mth, block, wrapInsn)
 			}
 		}
-		when (insn.getType()) {
+		when (insn.type) {
 			InsnType.TERNARY -> {
 				val ternaryInsn = insn as TernaryInsn
-				for (arg in ternaryInsn.getCondition().getRegisterArgs()) {
+				for (arg in ternaryInsn.condition.registerArgs) {
 					checkVar(mth, insn, arg)
 				}
 			}
@@ -130,7 +127,7 @@ object DebugChecks {
 	}
 
 	private fun checkBlock(mth: MethodNode, block: BlockNode, source: () -> String) {
-		val basicBlocks = mth.getBasicBlocks()
+		val basicBlocks = mth.basicBlocks
 		if (basicBlocks == null || !basicBlocks.contains(block)) {
 			throw JadxRuntimeException("Block not registered in method: $block from " + source())
 		}
@@ -144,16 +141,16 @@ object DebugChecks {
 			if (reg.contains(AFlag.DONT_GENERATE) || insn.contains(AFlag.DONT_GENERATE)) {
 				return
 			}
-			if (Utils.notEmpty(mth.getSVars())) {
+			if (Utils.notEmpty(mth.SVars)) {
 				throw JadxRuntimeException("Null SSA var in $reg at $insn")
 			}
 			return
 		}
-		if (Utils.indexInListByRef(mth.getSVars(), sVar) == -1) {
+		if (Utils.indexInListByRef(mth.SVars, sVar) == -1) {
 			throw JadxRuntimeException("SSA var not present in method vars list, var: $sVar from insn: $insn")
 		}
 		val resArg = insn.getResult()
-		val useList = sVar.getUseList()
+		val useList = sVar.useList
 		if (resArg === reg) {
 			if (sVar.assignInsn !== insn) {
 				throw JadxRuntimeException(
@@ -171,7 +168,7 @@ object DebugChecks {
 	}
 
 	private fun checkSSAVars(mth: MethodNode) {
-		for (ssaVar in mth.getSVars()) {
+		for (ssaVar in mth.SVars) {
 			val assignArg = ssaVar.assign
 			if (assignArg.contains(AFlag.REMOVE)) {
 				// 忽略已删除的变量
@@ -193,7 +190,7 @@ object DebugChecks {
 					)
 				}
 			}
-			for (arg in ssaVar.getUseList()) {
+			for (arg in ssaVar.useList) {
 				val useInsn = arg.getParentInsn()
 				if (useInsn == null) {
 					throw JadxRuntimeException("Parent insn can't be null for arg in use list of SSAVar: $ssaVar")
@@ -243,17 +240,16 @@ object DebugChecks {
 		}
 	}
 
-	@JvmStatic
 	fun quickCheckPhiInsn(mth: MethodNode) {
-		if (mth.getSVars().isEmpty()) {
+		if (mth.SVars.isEmpty()) {
 			return
 		}
-		for (block in checkNotNull(mth.getBasicBlocks())) {
+		for (block in checkNotNull(mth.basicBlocks)) {
 			val phiListAttr = block.get(AType.PHI_LIST)
 			if (phiListAttr != null) {
 				for (phiInsn in phiListAttr.list) {
 					checkPhiArg(mth, phiInsn, phiInsn.getResult()) { "result" }
-					val argsCount = phiInsn.getArgsCount()
+					val argsCount = phiInsn.argsCount
 					for (i in 0 until argsCount) {
 						val argNum = i
 						checkPhiArg(mth, phiInsn, phiInsn.getArg(argNum)) { "arg_$argNum" }
@@ -274,13 +270,13 @@ object DebugChecks {
 
 	@Suppress("unused")
 	private fun checkPHI(mth: MethodNode) {
-		for (block in checkNotNull(mth.getBasicBlocks())) {
+		for (block in checkNotNull(mth.basicBlocks)) {
 			val phis = ArrayList<PhiInsn>()
 			for (insn in block.getInstructions()) {
-				if (insn.getType() == InsnType.PHI) {
+				if (insn.type == InsnType.PHI) {
 					val phi = insn as PhiInsn
 					phis.add(phi)
-					if (phi.getArgsCount() == 0) {
+					if (phi.argsCount == 0) {
 						throw JadxRuntimeException("No args and binds in PHI")
 					}
 					for (arg in insn.getArguments()) {
@@ -310,10 +306,10 @@ object DebugChecks {
 				}
 			}
 		}
-		for (ssaVar in mth.getSVars()) {
-			for (usedInPhi in ssaVar.getUsedInPhi()) {
+		for (ssaVar in mth.SVars) {
+			for (usedInPhi in ssaVar.usedInPhi) {
 				var found = false
-				for (useArg in ssaVar.getUseList()) {
+				for (useArg in ssaVar.useList) {
 					val parentInsn = useArg.getParentInsn()
 					if (parentInsn != null && parentInsn === usedInPhi) {
 						found = true

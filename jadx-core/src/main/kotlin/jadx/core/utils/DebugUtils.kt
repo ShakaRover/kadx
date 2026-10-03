@@ -42,32 +42,27 @@ object DebugUtils {
 	private val LOG: Logger = LoggerFactory.getLogger(DebugUtils::class.java)
 
 	@JvmField
-	val TEST_MTH_FILTER: (MethodNode) -> Boolean = { mth -> mth.getName() == "test" }
+	val TEST_MTH_FILTER: (MethodNode) -> Boolean = { mth -> mth.name == "test" }
 
-	@JvmStatic
 	fun dump(mth: MethodNode) {
 		dump(mth, "dump")
 	}
 
-	@JvmStatic
 	fun dumpRaw(mth: MethodNode, desc: String, dumpCondition: (MethodNode) -> Boolean) {
 		if (dumpCondition(mth)) {
 			dumpRaw(mth, desc)
 		}
 	}
 
-	@JvmStatic
 	fun dumpRawTest(mth: MethodNode, desc: String) {
 		dumpRaw(mth, desc, TEST_MTH_FILTER)
 	}
 
-	@JvmStatic
 	fun dumpRaw(mth: MethodNode, desc: String) {
 		val out = File("test-graph-$desc-tmp")
 		DotGraphVisitor.dumpRaw().save(out, mth)
 	}
 
-	@JvmStatic
 	fun dumpRawVisitor(desc: String): IDexTreeVisitor = object : AbstractVisitor() {
 		@Throws(JadxException::class)
 		override fun visit(mth: MethodNode) {
@@ -75,7 +70,6 @@ object DebugUtils {
 		}
 	}
 
-	@JvmStatic
 	fun dumpRawVisitor(desc: String, filter: (MethodNode) -> Boolean): IDexTreeVisitor = object : AbstractVisitor() {
 		override fun visit(mth: MethodNode) {
 			if (filter(mth)) {
@@ -84,10 +78,8 @@ object DebugUtils {
 		}
 	}
 
-	@JvmStatic
 	fun dumpRawTestVisitor(desc: String): IDexTreeVisitor = dumpRawVisitor(desc, TEST_MTH_FILTER)
 
-	@JvmStatic
 	fun dump(mth: MethodNode, desc: String) {
 		val out = File("test-graph-$desc-tmp")
 		DotGraphVisitor.dump().save(out, mth)
@@ -95,7 +87,6 @@ object DebugUtils {
 		DotGraphVisitor.dumpRegions().save(out, mth)
 	}
 
-	@JvmStatic
 	fun printRegionsWithBlock(mth: MethodNode, block: BlockNode) {
 		val regions: MutableSet<IRegion> = LinkedHashSet()
 		DepthRegionTraversal.traverse(
@@ -111,7 +102,6 @@ object DebugUtils {
 		LOG.debug(" Found block: {} in regions: {}", block, regions)
 	}
 
-	@JvmStatic
 	fun printRegionsVisitor(): IDexTreeVisitor = object : AbstractVisitor() {
 		@Throws(JadxException::class)
 		override fun visit(mth: MethodNode) {
@@ -119,12 +109,10 @@ object DebugUtils {
 		}
 	}
 
-	@JvmStatic
 	fun printRegions(mth: MethodNode) {
 		printRegions(mth, false)
 	}
 
-	@JvmStatic
 	fun printRegions(mth: MethodNode, printInsns: Boolean) {
 		val mthRegion = mth.region
 		if (mthRegion == null) {
@@ -133,7 +121,6 @@ object DebugUtils {
 		printRegion(mth, mthRegion, printInsns)
 	}
 
-	@JvmStatic
 	fun printRegion(mth: MethodNode, region: IRegion, printInsns: Boolean) {
 		val cw = SimpleCodeWriter()
 		cw.startLine('|').add(mth.toString())
@@ -221,7 +208,6 @@ object DebugUtils {
 		}
 	}
 
-	@JvmStatic
 	fun printMap(map: Map<*, *>, desc: String) {
 		LOG.debug("Map {} (size = {}):", desc, map.size)
 		for ((key, value) in map) {
@@ -229,12 +215,10 @@ object DebugUtils {
 		}
 	}
 
-	@JvmStatic
 	fun printStackTrace(label: String) {
 		LOG.debug("StackTrace: {}\n{}", label, Utils.getFullStackTrace(Exception()))
 	}
 
-	@JvmStatic
 	fun printMethodOverrideTop(root: RootNode) {
 		LOG.debug("Methods override top 10:")
 		val distinctByOverrideCount = distinctByKey<MethodOverrideAttr> { attr -> attr.relatedMthNodes.size }
@@ -258,28 +242,23 @@ object DebugUtils {
 
 	private var execTimes: MutableMap<String, Long>? = null
 
-	@JvmStatic
 	fun initExecTimes() {
 		execTimes = ConcurrentHashMap()
 	}
 
-	@JvmStatic
 	fun mergeExecTimeFromStart(tag: String, startTimeMillis: Long) {
 		mergeExecTime(tag, System.currentTimeMillis() - startTimeMillis)
 	}
 
-	@JvmStatic
 	fun mergeExecTime(tag: String, execTimeMillis: Long) {
 		checkNotNull(execTimes).merge(tag, execTimeMillis) { a, b -> (a ?: 0L) + b }
 	}
 
-	@JvmStatic
 	fun printExecTimes() {
 		println("Exec times:")
 		checkNotNull(execTimes).forEach { (tag, time) -> println(" $tag: ${time}ms") }
 	}
 
-	@JvmStatic
 	fun printExecTimesWithTotal(totalMillis: Long) {
 		println("Exec times: total ${totalMillis}ms")
 		checkNotNull(execTimes).forEach { (tag, time) ->

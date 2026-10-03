@@ -41,14 +41,14 @@ class NameGen(mth: MethodNode, classGen: ClassGen) {
 		val parentClass = mth.parentClass
 		for (field in parentClass.fields) {
 			if (field.isStatic()) {
-				varNames.add(field.getAlias())
+				varNames.add(field.alias)
 			}
 		}
 		for (innerClass in parentClass.innerClasses) {
 			varNames.add(innerClass.classInfo.aliasShortName)
 		}
 		// add all root package names to avoid collisions with full class names
-		varNames.addAll(mth.root().getCacheStorage().rootPkgs)
+		varNames.addAll(mth.root().cacheStorage.rootPkgs)
 	}
 
 	/** 为方法参数 / 局部变量分配唯一名字并写回 CodeVar。 */

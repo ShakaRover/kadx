@@ -432,7 +432,7 @@ class ResTableBinaryParser @JvmOverloads constructor(
 			return renamedKey
 		}
 
-		val fldRef: IFieldInfoRef? = root.getConstValues().getGlobalConstFields()[resRef]
+		val fldRef: IFieldInfoRef? = root.getConstValues().globalConstFields[resRef]
 		val constField = fldRef as? FieldNode
 
 		val newResName = getNewResName(resRef, origKeyName, constField)
@@ -451,10 +451,10 @@ class ResTableBinaryParser @JvmOverloads constructor(
 
 	private fun getNewResName(resRef: Int, origKeyName: String, constField: FieldNode?): String {
 		var newResName: String
-		if (constField == null || constField.getTopParentClass().isSynthetic()) {
+		if (constField == null || constField.topParentClass.isSynthetic()) {
 			newResName = origKeyName
 		} else {
-			newResName = getBetterName(root.getArgs().resourceNameSource, origKeyName, constField.getName())
+			newResName = getBetterName(root.getArgs().resourceNameSource, origKeyName, constField.name)
 		}
 
 		if (root.getArgs().isRenameValid) {

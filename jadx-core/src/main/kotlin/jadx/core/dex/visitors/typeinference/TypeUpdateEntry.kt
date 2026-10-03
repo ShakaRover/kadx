@@ -13,16 +13,10 @@ import jadx.core.dex.instructions.args.InsnArg
  * [compareTo] 按 [seq] 升序比较。
  */
 class TypeUpdateEntry(
-	private val seq: Int,
-	private val arg: InsnArg,
-	private val type: ArgType,
+	val seq: Int,
+	val arg: InsnArg,
+	val type: ArgType,
 ) : Comparable<TypeUpdateEntry> {
-
-	fun getSeq(): Int = seq
-
-	fun getArg(): InsnArg = arg
-
-	fun getType(): ArgType = type
 
 	override fun compareTo(other: TypeUpdateEntry): Int = seq.compareTo(other.seq)
 

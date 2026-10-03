@@ -74,7 +74,7 @@ class LiteralArg private constructor(value: Long, type: ArgType) : InsnArg() {
 
 	override fun toString(): String {
 		try {
-			val value = TypeGen.literalToString(literal, getType(), StringUtils.getInstance(), true, false)
+			val value = TypeGen.literalToString(literal, getType(), StringUtils.instance, true, false)
 			if (getType() == ArgType.BOOLEAN && (value == "true" || value == "false")) {
 				return value
 			}
@@ -86,10 +86,8 @@ class LiteralArg private constructor(value: Long, type: ArgType) : InsnArg() {
 	}
 
 	companion object {
-		@JvmStatic
 		fun make(value: Long, type: ArgType): LiteralArg = LiteralArg(value, type)
 
-		@JvmStatic
 		fun makeWithFixedType(value: Long, type: ArgType): LiteralArg = LiteralArg(value, fixLiteralType(value, type))
 
 		private fun fixLiteralType(value: Long, type: ArgType): ArgType {
@@ -105,10 +103,8 @@ class LiteralArg private constructor(value: Long, type: ArgType) : InsnArg() {
 			return ArgType.NARROW_NUMBERS_NO_BOOL
 		}
 
-		@JvmStatic
 		fun litFalse(): LiteralArg = make(0L, ArgType.BOOLEAN)
 
-		@JvmStatic
 		fun litTrue(): LiteralArg = make(1L, ArgType.BOOLEAN)
 	}
 }

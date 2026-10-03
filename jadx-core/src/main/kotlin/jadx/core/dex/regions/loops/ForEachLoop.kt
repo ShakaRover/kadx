@@ -32,17 +32,17 @@ class ForEachLoop(varArg: RegisterArg, iterableArg: InsnArg) : LoopType() {
 		iterableArgInsn.addArg(iterableArg.duplicate())
 
 		// 循环变量将在 codegen 阶段声明
-		val sVar = checkNotNull(getVarArg().sVar)
+		val sVar = checkNotNull(this.varArg.sVar)
 		sVar.codeVar.isDeclared = true
 	}
 
 	/** 把两条假指令分别注入循环前置块（iterable）与头部块（循环变量） */
 	fun injectFakeInsns(loopRegion: LoopRegion) {
-		loopRegion.getInfo().getPreHeader().instructions.add(iterableArgInsn)
-		checkNotNull(loopRegion.getHeader()).instructions.add(0, varArgInsn)
+		loopRegion.info.preHeader.instructions.add(iterableArgInsn)
+		checkNotNull(loopRegion.header).instructions.add(0, varArgInsn)
 	}
 
-	fun getVarArg(): RegisterArg = checkNotNull(varArgInsn.getResult())
+	val varArg: RegisterArg get() = checkNotNull(varArgInsn.getResult())
 
-	fun getIterableArg(): InsnArg = iterableArgInsn.getArg(0)
+	val iterableArg: InsnArg get() = iterableArgInsn.getArg(0)
 }

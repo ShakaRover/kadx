@@ -54,7 +54,7 @@ class SSATransform : AbstractVisitor() {
 	}
 
 	private fun process(mth: MethodNode) {
-		if (mth.getSVars().isNotEmpty()) {
+		if (mth.SVars.isNotEmpty()) {
 			return
 		}
 		val la = LiveVarAnalysis(mth)
@@ -77,7 +77,7 @@ class SSATransform : AbstractVisitor() {
 	 * 在“活跃”的边界块插入 PHI。
 	 */
 	private fun placePhi(mth: MethodNode, regNum: Int, la: LiveVarAnalysis) {
-		val blocks = checkNotNull(mth.getBasicBlocks())
+		val blocks = checkNotNull(mth.basicBlocks)
 		val blocksCount = blocks.size
 		val hasPhi = BitSet(blocksCount)
 		val processed = BitSet(blocksCount)
@@ -116,7 +116,6 @@ class SSATransform : AbstractVisitor() {
 		 *
 		 * PHI 参数个数等于前驱个数；若该块是方法入口块，还要为 `this`/参数寄存器多留一个槽位。
 		 */
-		@JvmStatic
 		fun addPhi(mth: MethodNode, block: BlockNode, regNum: Int): PhiInsn {
 			var phiList = block.get(AType.PHI_LIST)
 			if (phiList == null) {
@@ -129,7 +128,7 @@ class SSATransform : AbstractVisitor() {
 				if (thisArg != null && thisArg.regNum == regNum) {
 					size++
 				} else {
-					for (arg in mth.getArgRegs()) {
+					for (arg in mth.argRegs) {
 						if (arg.regNum == regNum) {
 							size++
 							break
@@ -157,7 +156,7 @@ class SSATransform : AbstractVisitor() {
 		while (!stack.isEmpty()) {
 			val state = stack.pop()
 			renameVarsInBlock(mth, state)
-			for (dominated in state.getBlock().getDominatesOn()) {
+			for (dominated in state.block.getDominatesOn()) {
 				stack.push(RenameState.copyFrom(state, dominated))
 			}
 		}
@@ -165,7 +164,7 @@ class SSATransform : AbstractVisitor() {
 
 	/** 入口块可能自带 PHI（例如参数/`this` 在入口的合流），先绑定它们的参数。 */
 	private fun initPhiInEnterBlock(initState: RenameState) {
-		val phiList = initState.getBlock().get(AType.PHI_LIST)
+		val phiList = initState.block.get(AType.PHI_LIST)
 		if (phiList != null) {
 			for (phiInsn in phiList.list) {
 				bindPhiArg(initState, phiInsn)
@@ -180,9 +179,9 @@ class SSATransform : AbstractVisitor() {
 	 * 有结果的指令开启新版本；最后把本块版本绑定到后继块的 PHI 参数上。
 	 */
 	private fun renameVarsInBlock(mth: MethodNode, state: RenameState) {
-		val block = state.getBlock()
+		val block = state.block
 		for (insn in block.getInstructions()) {
-			if (insn.getType() != InsnType.PHI) {
+			if (insn.type != InsnType.PHI) {
 				for (arg in insn.getArguments()) {
 					if (!arg.isRegister) {
 						continue
@@ -218,7 +217,7 @@ class SSATransform : AbstractVisitor() {
 	private fun bindPhiArg(state: RenameState, phiInsn: PhiInsn) {
 		val regNum = checkNotNull(phiInsn.getResult()).regNum
 		val v = state.getVar(regNum) ?: return
-		val arg = phiInsn.bindArg(state.getBlock())
+		val arg = phiInsn.bindArg(state.block)
 		v.use(arg)
 		v.addUsedInPhi(phiInsn)
 	}
@@ -228,7 +227,7 @@ class SSATransform : AbstractVisitor() {
 	 * 那些“从 try 中带异常离开”的赋值参数。
 	 */
 	private fun fixLastAssignInTry(mth: MethodNode) {
-		for (block in checkNotNull(mth.getBasicBlocks())) {
+		for (block in checkNotNull(mth.basicBlocks)) {
 			val phiList = block.get(AType.PHI_LIST)
 			if (phiList != null) {
 				val handlerAttr = block.get(AType.EXC_HANDLER)
@@ -242,18 +241,18 @@ class SSATransform : AbstractVisitor() {
 	}
 
 	private fun fixPhiInTryCatch(mth: MethodNode, phi: PhiInsn, handlerAttr: ExcHandlerAttr) {
-		var argsCount = phi.getArgsCount()
+		var argsCount = phi.argsCount
 		var k = 0
 		while (k < argsCount) {
 			val arg = phi.getArg(k)
-			if (shouldSkipInsnResult(mth, arg.getAssignInsn(), handlerAttr)) {
+			if (shouldSkipInsnResult(mth, arg.assignInsn, handlerAttr)) {
 				phi.removeArg(arg)
 				argsCount--
 			} else {
 				k++
 			}
 		}
-		if (phi.getArgsCount() == 0) {
+		if (phi.argsCount == 0) {
 			throw JadxRuntimeException("PHI empty after try-catch fix!")
 		}
 	}
@@ -264,7 +263,7 @@ class SSATransform : AbstractVisitor() {
 			insn.contains(AFlag.TRY_LEAVE)
 		) {
 			val catchAttr = BlockUtils.getCatchAttrForInsn(mth, insn)
-			return catchAttr != null && catchAttr.getHandlers().contains(handlerAttr.getHandler())
+			return catchAttr != null && catchAttr.handlers.contains(handlerAttr.handler)
 		}
 		return false
 	}
@@ -275,13 +274,13 @@ class SSATransform : AbstractVisitor() {
 	 */
 	private fun removeBlockerInsns(mth: MethodNode): Boolean {
 		var removed = false
-		for (block in checkNotNull(mth.getBasicBlocks())) {
+		for (block in checkNotNull(mth.basicBlocks)) {
 			val phiList = block.get(AType.PHI_LIST) ?: continue
 			for (phi in phiList.list) {
 				var i = 0
-				while (i < phi.getArgsCount()) {
+				while (i < phi.argsCount) {
 					val arg = phi.getArg(i)
-					val parentInsn = arg.getAssignInsn()
+					val parentInsn = arg.assignInsn
 					if (parentInsn != null && parentInsn.contains(AFlag.REMOVE)) {
 						phi.removeArg(arg)
 						InsnRemover.remove(mth, block, parentInsn)
@@ -297,7 +296,7 @@ class SSATransform : AbstractVisitor() {
 	/** 反复清理无用 PHI，直到不再变化（带迭代上限保护）。 */
 	private fun tryToFixUselessPhi(mth: MethodNode) {
 		var k = 0
-		val maxTries = mth.getSVars().size * 2
+		val maxTries = mth.SVars.size * 2
 		while (fixUselessPhi(mth)) {
 			if (k++ > maxTries) {
 				throw JadxRuntimeException("Phi nodes fix limit reached!")
@@ -313,17 +312,17 @@ class SSATransform : AbstractVisitor() {
 	private fun fixUselessPhi(mth: MethodNode): Boolean {
 		var changed = false
 		val insnToRemove = ArrayList<PhiInsn>()
-		for (v in mth.getSVars()) {
+		for (v in mth.SVars) {
 			// 结果未被使用的 PHI
-			if (v.getUseCount() == 0) {
+			if (v.useCount == 0) {
 				val assignInsn = v.assign.getParentInsn()
-				if (assignInsn != null && assignInsn.getType() == InsnType.PHI) {
+				if (assignInsn != null && assignInsn.type == InsnType.PHI) {
 					insnToRemove.add(assignInsn as PhiInsn)
 					changed = true
 				}
 			}
 		}
-		for (block in checkNotNull(mth.getBasicBlocks())) {
+		for (block in checkNotNull(mth.basicBlocks)) {
 			val phiList = block.get(AType.PHI_LIST) ?: continue
 			val it = phiList.list.iterator()
 			while (it.hasNext()) {
@@ -340,18 +339,18 @@ class SSATransform : AbstractVisitor() {
 
 	/** 处理“参数全相同”的 PHI：尽量内联成 move，否则删除。 */
 	private fun fixPhiWithSameArgs(mth: MethodNode, block: BlockNode, phi: PhiInsn): Boolean {
-		if (phi.getArgsCount() == 0) {
+		if (phi.argsCount == 0) {
 			val resultVar = checkNotNull(checkNotNull(phi.getResult()).sVar)
-			for (useArg in resultVar.getUseList()) {
+			for (useArg in resultVar.useList) {
 				val useInsn = useArg.getParentInsn()
-				if (useInsn != null && useInsn.getType() == InsnType.PHI) {
+				if (useInsn != null && useInsn.type == InsnType.PHI) {
 					phi.removeArg(useArg)
 				}
 			}
 			InsnRemover.remove(mth, block, phi)
 			return true
 		}
-		val allSame = phi.getArgsCount() == 1 || isSameArgs(phi)
+		val allSame = phi.argsCount == 1 || isSameArgs(phi)
 		if (allSame) {
 			return replacePhiWithMove(mth, block, phi, phi.getArg(0))
 		}
@@ -360,7 +359,7 @@ class SSATransform : AbstractVisitor() {
 			val sameArg = sameVar.assign.duplicate()
 			if (inlinePhiInsn(mth, block, phi, sameArg)) {
 				for (arg in phi.getArguments()) {
-					val moveInsn = (arg as RegisterArg).getAssignInsn()
+					val moveInsn = (arg as RegisterArg).assignInsn
 					if (moveInsn != null) {
 						moveInsn.add(AFlag.REMOVE)
 						InsnRemover.remove(mth, moveInsn)
@@ -376,7 +375,7 @@ class SSATransform : AbstractVisitor() {
 	private fun isSameArgs(phi: PhiInsn): Boolean {
 		var allSame = true
 		var v: SSAVar? = null
-		for (i in 0 until phi.getArgsCount()) {
+		for (i in 0 until phi.argsCount) {
 			val arg = phi.getArg(i)
 			if (v == null) {
 				v = arg.sVar
@@ -394,14 +393,14 @@ class SSATransform : AbstractVisitor() {
 	 */
 	private fun isSameMove(phi: PhiInsn): SSAVar? {
 		var v: SSAVar? = null
-		val argsCount = phi.getArgsCount()
+		val argsCount = phi.argsCount
 		for (i in 0 until argsCount) {
 			val arg = phi.getArg(i)
-			if (checkNotNull(arg.sVar).getUseCount() != 1) {
+			if (checkNotNull(arg.sVar).useCount != 1) {
 				return null
 			}
-			val assignInsn = arg.getAssignInsn()
-			if (assignInsn == null || assignInsn.getType() != InsnType.MOVE) {
+			val assignInsn = arg.assignInsn
+			if (assignInsn == null || assignInsn.type != InsnType.MOVE) {
 				return null
 			}
 			val moveArg = assignInsn.getArg(0)
@@ -419,7 +418,7 @@ class SSATransform : AbstractVisitor() {
 	}
 
 	private fun removePhiList(mth: MethodNode, insnToRemove: MutableList<PhiInsn>): Boolean {
-		for (block in checkNotNull(mth.getBasicBlocks())) {
+		for (block in checkNotNull(mth.basicBlocks)) {
 			val phiList = block.get(AType.PHI_LIST) ?: continue
 			val list = phiList.list
 			for (phiInsn in insnToRemove) {
@@ -483,7 +482,7 @@ class SSATransform : AbstractVisitor() {
 	private fun inlinePhiInsn(mth: MethodNode, block: BlockNode, phi: PhiInsn, inlineArg: RegisterArg): Boolean {
 		val resVar = checkNotNull(phi.getResult()).sVar ?: return false
 		val inlineSVar = inlineArg.sVar ?: return false
-		val useList = resVar.getUseList()
+		val useList = resVar.useList
 		for (useArg in ArrayList(useList)) {
 			val useInsn = useArg.getParentInsn()
 			if (useInsn == null || useInsn === phi) {
@@ -501,7 +500,7 @@ class SSATransform : AbstractVisitor() {
 		}
 		if (block.contains(AType.EXC_HANDLER)) {
 			// 不要内联进异常处理器
-			val assignInsn = inlineArg.getAssignInsn()
+			val assignInsn = inlineArg.assignInsn
 			if (assignInsn != null && !assignInsn.isConstInsn()) {
 				assignInsn.add(AFlag.DONT_INLINE)
 			}
@@ -514,7 +513,7 @@ class SSATransform : AbstractVisitor() {
 	private fun markThisArgs(thisArg: RegisterArg?) {
 		if (thisArg != null) {
 			markOneArgAsThis(thisArg)
-			for (arg in checkNotNull(thisArg.sVar).getUseList()) {
+			for (arg in checkNotNull(thisArg.sVar).useList) {
 				markOneArgAsThis(arg)
 			}
 		}
@@ -529,7 +528,7 @@ class SSATransform : AbstractVisitor() {
 		// 标记所有“被移动过的 this”
 		val parentInsn = arg.getParentInsn()
 		if (parentInsn != null &&
-			parentInsn.getType() == InsnType.MOVE &&
+			parentInsn.type == InsnType.MOVE &&
 			parentInsn.getArg(0) === arg
 		) {
 			val resArg = checkNotNull(parentInsn.getResult())
@@ -542,17 +541,17 @@ class SSATransform : AbstractVisitor() {
 
 	/** PHI 只用于分析，不参与代码生成，完成后从指令列表中移除。 */
 	private fun hidePhiInsns(mth: MethodNode) {
-		for (block in checkNotNull(mth.getBasicBlocks())) {
-			block.instructions.removeIf { insn -> insn.getType() == InsnType.PHI }
+		for (block in checkNotNull(mth.basicBlocks)) {
+			block.instructions.removeIf { insn -> insn.type == InsnType.PHI }
 		}
 	}
 
 	/** 结果未被使用的 invoke 指令，直接去掉其结果（避免生成无意义的变量）。 */
 	private fun removeUnusedInvokeResults(mth: MethodNode) {
-		for (ssaVar in ArrayList(mth.getSVars())) {
-			if (ssaVar.getUseCount() == 0) {
+		for (ssaVar in ArrayList(mth.SVars)) {
+			if (ssaVar.useCount == 0) {
 				val parentInsn = ssaVar.assign.getParentInsn()
-				if (parentInsn != null && parentInsn.getType() == InsnType.INVOKE) {
+				if (parentInsn != null && parentInsn.type == InsnType.INVOKE) {
 					parentInsn.setResult(null)
 					mth.removeSVar(ssaVar)
 				}
