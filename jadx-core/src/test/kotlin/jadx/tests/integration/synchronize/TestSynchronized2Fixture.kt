@@ -1,4 +1,9 @@
-package jadx.tests.integration.synchronize;
+package jadx.tests.integration.synchronize
+
+object TestSynchronized2Fixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.synchronize;
 
 public class TestSynchronized2Fixture {
 
@@ -8,4 +13,6 @@ public class TestSynchronized2Fixture {
 			return obj.toString() != null;
 		}
 	}
+}
+"""
 }

@@ -1,4 +1,9 @@
-package jadx.tests.integration.usethis;
+package jadx.tests.integration.usethis
+
+object TestRedundantThisFixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.usethis;
 
 public class TestRedundantThisFixture {
 
@@ -19,4 +24,6 @@ public class TestRedundantThisFixture {
 			this.field2 = field2;
 		}
 	}
+}
+"""
 }

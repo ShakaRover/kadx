@@ -1,4 +1,9 @@
-package jadx.tests.integration.code;
+package jadx.tests.integration.code
+
+object TestCodeCommentStyleFixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.code;
 
 public class TestCodeCommentStyleFixture {
 
@@ -17,4 +22,6 @@ public class TestCodeCommentStyleFixture {
 		public int javaDocCondensed;
 		public int javaDocCondensedMulti;
 	}
+}
+"""
 }

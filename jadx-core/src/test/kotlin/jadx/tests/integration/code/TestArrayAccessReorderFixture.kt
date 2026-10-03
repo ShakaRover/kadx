@@ -1,4 +1,9 @@
-package jadx.tests.integration.code;
+package jadx.tests.integration.code
+
+object TestArrayAccessReorderFixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.code;
 
 import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
 
@@ -24,4 +29,6 @@ public class TestArrayAccessReorderFixture {
 			assertThat(test(new int[] { 1, 2, 3 })).isEqualTo(new int[] { -15, -10, -5 });
 		}
 	}
+}
+"""
 }

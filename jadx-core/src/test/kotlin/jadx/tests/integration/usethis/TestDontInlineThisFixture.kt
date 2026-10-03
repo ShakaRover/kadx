@@ -1,4 +1,9 @@
-package jadx.tests.integration.usethis;
+package jadx.tests.integration.usethis
+
+object TestDontInlineThisFixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.usethis;
 
 import java.util.Random;
 
@@ -22,4 +27,6 @@ public class TestDontInlineThisFixture {
 		private void method() {
 		}
 	}
+}
+"""
 }

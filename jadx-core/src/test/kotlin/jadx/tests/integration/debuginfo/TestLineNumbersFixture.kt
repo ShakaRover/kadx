@@ -1,4 +1,9 @@
-package jadx.tests.integration.debuginfo;
+package jadx.tests.integration.debuginfo
+
+object TestLineNumbersFixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.debuginfo;
 
 // Fixture extracted from the TestLineNumbers driver.
 // This test asserts absolute source line numbers, so the padding below
@@ -37,4 +42,6 @@ public class TestLineNumbersFixture {
 			}
 		}
 	}
+}
+"""
 }

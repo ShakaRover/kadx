@@ -1,4 +1,9 @@
-package jadx.tests.integration.debuginfo;
+package jadx.tests.integration.debuginfo
+
+object TestReturnSourceLineFixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.debuginfo;
 
 // Fixture extracted from the TestReturnSourceLine driver.
 // The test asserts source line numbers relative to each node, so the
@@ -45,4 +50,6 @@ public class TestReturnSourceLineFixture {
 		private void f() {
 		}
 	}
+}
+"""
 }

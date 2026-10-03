@@ -1,4 +1,9 @@
-package jadx.tests.integration.usethis;
+package jadx.tests.integration.usethis
+
+object TestInlineThis2Fixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.usethis;
 
 import java.util.Objects;
 
@@ -20,4 +25,6 @@ public class TestInlineThis2Fixture {
 		private void method() {
 		}
 	}
+}
+"""
 }

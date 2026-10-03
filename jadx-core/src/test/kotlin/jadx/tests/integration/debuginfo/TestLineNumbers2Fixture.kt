@@ -1,4 +1,9 @@
-package jadx.tests.integration.debuginfo;
+package jadx.tests.integration.debuginfo
+
+object TestLineNumbers2Fixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.debuginfo;
 
 import java.lang.ref.WeakReference;
 
@@ -31,4 +36,6 @@ public class TestLineNumbers2Fixture {
 			return new Object();
 		}
 	}
+}
+"""
 }

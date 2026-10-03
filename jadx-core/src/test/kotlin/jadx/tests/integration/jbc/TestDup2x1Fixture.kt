@@ -1,4 +1,9 @@
-package jadx.tests.integration.jbc;
+package jadx.tests.integration.jbc
+
+object TestDup2x1Fixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.jbc;
 
 public class TestDup2x1Fixture {
 
@@ -10,4 +15,6 @@ public class TestDup2x1Fixture {
 			return this.value = v;
 		}
 	}
+}
+"""
 }

@@ -1,4 +1,9 @@
-package jadx.tests.integration.jbc;
+package jadx.tests.integration.jbc
+
+object TestStackConvertFixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.jbc;
 
 public class TestStackConvertFixture {
 
@@ -15,4 +20,6 @@ public class TestStackConvertFixture {
 			}
 		}
 	}
+}
+"""
 }
