@@ -17,11 +17,11 @@ class ApksCustomResourcesLoader(
 
 		// Load all files ending with .apk
 		zipReader.visitEntries<Any>(file) { entry ->
-			if (entry.getName().endsWith(".apk")) {
-				val tmpFile = entry.getInputStream().use {
+			if (entry.name.endsWith(".apk")) {
+				val tmpFile = entry.inputStream.use {
 					CommonFileUtils.saveToTempFile(it, ".apk").toFile()
 				}
-				loader.defaultLoadFile(list, tmpFile, entry.getName() + "/")
+				loader.defaultLoadFile(list, tmpFile, entry.name + "/")
 				tmpFiles += tmpFile
 			}
 			null

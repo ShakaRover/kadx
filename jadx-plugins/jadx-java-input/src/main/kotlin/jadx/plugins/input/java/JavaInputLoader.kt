@@ -130,10 +130,10 @@ class JavaInputLoader(
 		try {
 			zipReader.open(file).use { zip ->
 				for (entry in zip.entries) {
-					if (entry.isDirectory()) {
+					if (entry.isDirectory) {
 						continue
 					}
-					val entryName = entry.getName()
+					val entryName = entry.name
 					if (entryName.startsWith("META-INF/versions/")) {
 						// skip classes for different java versions
 						continue
@@ -141,9 +141,9 @@ class JavaInputLoader(
 					try {
 						val readers: List<JavaClassReader>
 						if (entry.preferBytes()) {
-							readers = loadReaderFromZipEntry(entry.getBytes(), entryName, name)
+							readers = loadReaderFromZipEntry(entry.bytes, entryName, name)
 						} else {
-							readers = loadReader(entry.getInputStream(), entryName, null, name)
+							readers = loadReader(entry.inputStream, entryName, null, name)
 						}
 						result.addAll(readers)
 					} catch (e: Exception) {

@@ -43,21 +43,22 @@ class JadxZipSecurity : IJadxZipSecurity {
 	var zipBombMinUncompressedSize: Int = 25 * 1024 * 1024
 
 	// 原 Java 版：字段 private int maxEntriesCount + public get/setMaxEntriesCount 访问器。这里属性设为 private，不生成 JVM 访问器方法
-	private var maxEntriesCount = 100_000 // zip 包内最大条目数（默认十万），防止超大/恶意包拖慢解析；Int 类型由初始化值推断
+	private var maxEntriesCountValue = 100_000 // zip 包内最大条目数（默认十万），防止超大/恶意包拖慢解析；Int 类型由初始化值推断
 
 	override fun isValidEntry(entry: IZipEntry): Boolean {
-		return isValidEntryName(entry.getName()) && !isZipBomb(entry) // 名称合法且不是 zip bomb，条目才算有效
+		return isValidEntryName(entry.name) && !isZipBomb(entry) // 名称合法且不是 zip bomb，条目才算有效
 	}
 
 	override fun useLimitedDataStream(): Boolean = useLimitedDataStream
 
-	override fun getMaxEntriesCount(): Int {
-		return maxEntriesCount // 显式实现 IJadxZipSecurity.getMaxEntriesCount()（原 Java 同样有独立 public 方法）
-	}
+	override val maxEntriesCount: Int
+		get() {
+			return maxEntriesCountValue // 显式实现 IJadxZipSecurity.maxEntriesCount（原 Java 同样有独立 public 方法）
+		}
 
 	// Explicit public accessor matching the original Java version: JVM signature setUseLimited... no wait getMaxEntriesCount(int)
 	fun setMaxEntriesCount(maxEntriesCount: Int) {
-		this.maxEntriesCount = maxEntriesCount
+		this.maxEntriesCountValue = maxEntriesCount
 	}
 
 	override fun isValidEntryName(entryName: String): Boolean {
@@ -96,8 +97,8 @@ class JadxZipSecurity : IJadxZipSecurity {
 	}
 
 	fun isZipBomb(entry: IZipEntry): Boolean { // 公开方法：JadxZipParser.java 等外部代码直接调用它判断单个条目
-		val compressedSize = entry.getCompressedSize()
-		val uncompressedSize = entry.getUncompressedSize()
+		val compressedSize = entry.compressedSize
+		val uncompressedSize = entry.uncompressedSize
 		val invalidSize = compressedSize < 0 || uncompressedSize < 0 // 负数尺寸视为非法
 		val possibleZipBomb = uncompressedSize >= zipBombMinUncompressedSize && // 只有解压后足够大的条目才做比例检查
 			compressedSize * zipBombDetectionFactor < uncompressedSize // 压缩比超过 factor 倍 → 疑似 zip bomb
@@ -106,7 +107,7 @@ class JadxZipSecurity : IJadxZipSecurity {
 				"Potential zip bomb attack detected, invalid sizes: compressed {}, uncompressed {}, name {}",
 				compressedSize,
 				uncompressedSize,
-				entry.getName(),
+				entry.name,
 			)
 			return true // true = “是 zip bomb/尺寸非法”，调用方按 isValidEntry 中 !isZipBomb(...) 使用
 		}

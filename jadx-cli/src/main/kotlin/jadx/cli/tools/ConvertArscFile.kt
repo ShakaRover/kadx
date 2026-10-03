@@ -73,7 +73,7 @@ class ConvertArscFile {
 							LOG.error("Failed to load \"resources.arsc\" from {}", resFile)
 							loaded = false
 						} else {
-							entry.getInputStream().use { inputStream: InputStream ->
+							entry.inputStream.use { inputStream: InputStream ->
 								resTableParser.decode(inputStream)
 							}
 						}

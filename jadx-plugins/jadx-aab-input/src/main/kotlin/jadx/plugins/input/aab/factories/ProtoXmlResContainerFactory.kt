@@ -26,7 +26,7 @@ public class ProtoXmlResContainerFactory : IResContainerFactory {
 			return null
 		}
 		val zipEntry = resFile.getZipEntry() ?: return null
-		val isFromAab = zipEntry.getZipFile().path.lowercase().endsWith(".aab")
+		val isFromAab = zipEntry.zipFile.path.lowercase().endsWith(".aab")
 		if (!isFromAab) {
 			return null
 		}

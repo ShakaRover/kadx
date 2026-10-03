@@ -8,27 +8,27 @@ import java.io.InputStream
  */
 interface IZipEntry {
 	/** 条目名称（zip 内的相对路径） */
-	fun getName(): String
+	val name: String
 
 	/** 未压缩的数据字节 */
-	fun getBytes(): ByteArray
+	val bytes: ByteArray
 
 	/** 未压缩数据的输入流 */
-	fun getInputStream(): InputStream
+	val inputStream: InputStream
 
-	fun getCompressedSize(): Long
+	val compressedSize: Long
 
-	fun getUncompressedSize(): Long
+	val uncompressedSize: Long
 
 	/** 是否为目录条目 */
-	fun isDirectory(): Boolean
+	val isDirectory: Boolean
 
 	/** 所属的 zip 文件 */
-	fun getZipFile(): File
+	val zipFile: File
 
 	/**
-	 * Return true if {@link #getBytes()} method is more optimal to use other than
-	 * {@link #getInputStream()}（用字节数组比流更划算时返回 true）
+	 * Return true if [bytes] property is more optimal to use other than
+	 * [inputStream]（用字节数组比流更划算时返回 true）
 	 */
 	fun preferBytes(): Boolean
 }

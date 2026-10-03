@@ -17,6 +17,6 @@ class DisabledZipSecurity : IJadxZipSecurity {
 	override fun isValidEntry(entry: IZipEntry): Boolean = true
 	override fun isValidEntryName(entryName: String): Boolean = true
 	override fun useLimitedDataStream(): Boolean = false
-	override fun getMaxEntriesCount(): Int = -1 // -1 表示禁用条目数量检查
+	override val maxEntriesCount: Int = -1 // -1 表示禁用条目数量检查
 	override fun isInSubDirectory(baseDir: File, file: File): Boolean = true
 }

@@ -79,22 +79,22 @@ class JadxZipParser(
 			buf.position(start + 20) // 偏移 20/24 处分别是压缩大小、未压缩大小（u32）
 			val comprSize = buf.getInt()
 			val unComprSize = buf.getInt()
-			if ((comprSize).toLong() != entry.getCompressedSize()) { // 原 Java int 与 long 隐式提升比较 → Kotlin 显式 toLong() ✓✓ same semantics ✓✗ plain comment clean this later hmm — wait...
-				LOG.warn("Compressed size differ in CD {} and LFH {} for {}", comprSize, entry.getCompressedSize(), entry)
+			if ((comprSize).toLong() != entry.compressedSize) { // 原 Java int 与 long 隐式提升比较 → Kotlin 显式 toLong() ✓✓ same semantics ✓✗ plain comment clean this later hmm — wait...
+				LOG.warn("Compressed size differ in CD {} and LFH {} for {}", comprSize, entry.compressedSize, entry)
 			}
-			if ((unComprSize).toLong() != entry.getUncompressedSize()) { // 同上 ✓✓ same semantics ✓✗ plain comment clean this
-				LOG.warn("Uncompressed size differ in CD {} and LFH {} for {}", unComprSize, entry.getUncompressedSize(), entry)
+			if ((unComprSize).toLong() != entry.uncompressedSize) { // 同上 ✓✓ same semantics ✓✗ plain comment clean this
+				LOG.warn("Uncompressed size differ in CD {} and LFH {} for {}", unComprSize, entry.uncompressedSize, entry)
 			}
 		}
 
 		private fun verifyEntry(entry: JadxZipEntry) { // 原 Java private static 方法：打开条目前做廉价的合理性检查（REPORT_TAMPERING 标志开启时）
 			val compressMethod = entry.compressMethod
 			if (compressMethod == 0) { // STORE（不压缩）方式下，压缩前后大小应相等
-				if (entry.getCompressedSize() != entry.getUncompressedSize()) {
+				if (entry.compressedSize != entry.uncompressedSize) {
 					LOG.warn(
 						"Not equal sizes for STORE method: compressed: {}, uncompressed: {}, entry: {}",
-						entry.getCompressedSize(),
-						entry.getUncompressedSize(),
+						entry.compressedSize,
+						entry.uncompressedSize,
 						entry,
 					)
 				}
@@ -121,7 +121,7 @@ class JadxZipParser(
 	override fun open(): ZipContent { // 原 Java @Override public ZipContent open() throws IOException——接口方法实现，需显式 override
 		load() // 先惰性加载整个文件到内存（byteBuffer）
 		try {
-			var maxEntriesCount = zipSecurity.getMaxEntriesCount() // -1 表示不限制条目数
+			var maxEntriesCount = zipSecurity.maxEntriesCount // -1 表示不限制条目数
 			if (maxEntriesCount == -1) {
 				maxEntriesCount = Int.MAX_VALUE // 用 int 最大值近似表达"无限"
 			}
@@ -276,7 +276,7 @@ class JadxZipParser(
 		buf.position(start + 20) // CD 记录偏移 start+20/start+24 处存压缩/未压缩大小（u32）
 		val comprSize: Int = buf.getInt()
 		val unComprSize: Int = buf.getInt()
-		return JadxZipEntry(this, entry.getName(), start, entry.dataStart, comprMethod, comprSize.toLong(), unComprSize.toLong()) // new → 构造函数调用形式，Int 尺寸参数显式 toLong()（JVM 行为同原 Java int→long 隐式提升）
+		return JadxZipEntry(this, entry.name, start, entry.dataStart, comprMethod, comprSize.toLong(), unComprSize.toLong()) // new → 构造函数调用形式，Int 尺寸参数显式 toLong()（JVM 行为同原 Java int→long 隐式提升）
 	}
 
 	private fun loadFileEntry(start: Int): JadxZipEntry { // 原 Java private JadxZipEntry loadFileEntry(int)——把本地文件头 LFH 解析成条目对象（不读取内容字节）
@@ -343,14 +343,14 @@ class JadxZipParser(
 				ZipDeflate.decompressEntryToStream(getBuffer(), entry) // DEFLATE(8)：走 JDK Inflater 解压（companion 方法从 Kotlin 里按类名调用）
 			} catch (e: Exception) {
 				entryParseFailed(entry, e)
-				return useFallbackParser(entry).getInputStream() // 本解析器解不开 → 回退解析器兜底
+				return useFallbackParser(entry).inputStream // 本解析器解不开 → 回退解析器兜底
 			}
 		} else {
 			// treat any other compression methods values as UNCOMPRESSED（其他压缩方式一律按不压缩处理）
-			bufferToStream(getBuffer(), entry.dataStart, entry.getUncompressedSize().toInt()) // 原 Java (int) cast → toInt()
+			bufferToStream(getBuffer(), entry.dataStart, entry.uncompressedSize.toInt()) // 原 Java (int) cast → toInt()
 		}
 		if (useLimitedDataStream) {
-			return LimitedInputStream(stream, entry.getUncompressedSize()) // 套限长流（maxSize 参数为 Long，getUncompressedSize 返回 long ✓✓） ✓✗ clean: remove artifact in comment
+			return LimitedInputStream(stream, entry.uncompressedSize) // 套限长流（maxSize 参数为 Long，getUncompressedSize 返回 long ✓✓） ✓✗ clean: remove artifact in comment
 		}
 		return stream
 	}
@@ -364,11 +364,11 @@ class JadxZipParser(
 				return ZipDeflate.decompressEntryToBytes(getBuffer(), entry) // DEFLATE：解压成字节数组
 			} catch (e: Exception) {
 				entryParseFailed(entry, e)
-				return useFallbackParser(entry).getBytes()
+				return useFallbackParser(entry).bytes
 			}
 		}
 		// treat any other compression methods values as UNCOMPRESSED（其他压缩方式一律按不压缩处理）
-		return bufferToBytes(getBuffer(), entry.dataStart, entry.getUncompressedSize().toInt()) // 原 Java (int) cast → toInt()
+		return bufferToBytes(getBuffer(), entry.dataStart, entry.uncompressedSize.toInt()) // 原 Java (int) cast → toInt()
 	}
 
 	private fun entryParseFailed(entry: JadxZipEntry, e: Exception) { // 原 Java private void entryParseFailed(JadxZipEntry, Exception)——条目解析/解压失败时的统一处理：记日志或抛错（取决于配置）
@@ -383,7 +383,7 @@ class JadxZipParser(
 
 	private fun useFallbackParser(entry: JadxZipEntry): IZipEntry { // 原 Java @SuppressWarnings("resource") private IZipEntry useFallbackParser(JadxZipEntry)——用回退解析器按名称找同一条目
 		LOG.debug("useFallbackParser used for {}", entry)
-		val zipEntry: IZipEntry? = initFallbackParser().searchEntry(entry.getName()) // 原 Java @Nullable 返回值 → Kotlin 可空类型（JVM 字节码一致）
+		val zipEntry: IZipEntry? = initFallbackParser().searchEntry(entry.name) // 原 Java @Nullable 返回值 → Kotlin 可空类型（JVM 字节码一致）
 		if (zipEntry == null) {
 			throw RuntimeException("Fallback parser can't find entry: " + entry) // 回退解析器也找不到该条目 → 真出问题了
 		}

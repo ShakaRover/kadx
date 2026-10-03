@@ -54,7 +54,7 @@ class JadxSecurity : IJadxSecurity {
 
 	override fun useLimitedDataStream(): Boolean = zipSecurity.useLimitedDataStream()
 
-	override fun getMaxEntriesCount(): Int = zipSecurity.getMaxEntriesCount()
+	override val maxEntriesCount: Int get() = zipSecurity.maxEntriesCount
 
 	override fun verifyAppPackage(appPackage: String?): String? {
 		if (flags.contains(JadxSecurityFlag.VERIFY_APP_PACKAGE) && !NameMapper.isValidFullIdentifier(appPackage)) {

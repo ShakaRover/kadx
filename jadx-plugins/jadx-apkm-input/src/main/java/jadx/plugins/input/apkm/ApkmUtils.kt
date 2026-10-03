@@ -12,7 +12,7 @@ object ApkmUtils {
 		try {
 			zipReader.open(file).use { zip ->
 				val manifestEntry = zip.searchEntry("info.json") ?: return null
-				return InputStreamReader(manifestEntry.getInputStream()).use {
+				return InputStreamReader(manifestEntry.inputStream).use {
 					buildGson().fromJson(it, ApkmManifest::class.java)
 				}
 			}

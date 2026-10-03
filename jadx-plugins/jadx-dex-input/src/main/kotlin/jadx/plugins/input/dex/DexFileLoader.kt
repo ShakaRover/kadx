@@ -149,14 +149,14 @@ public class DexFileLoader(private val options: DexInputOptions) {
 		val zip = zipReader.open(file)
 		try {
 			for (entry in zip.entries) {
-				if (entry.isDirectory()) {
+				if (entry.isDirectory) {
 					continue
 				}
 				try {
 					val readers = if (entry.preferBytes()) {
-						loadFromZipEntry(entry.getBytes(), entry.getName())
+						loadFromZipEntry(entry.bytes, entry.name)
 					} else {
-						load(null, entry.getInputStream(), entry.getName())
+						load(null, entry.inputStream, entry.name)
 					}
 					if (readers.isNotEmpty()) {
 						result.addAll(readers)

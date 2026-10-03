@@ -89,7 +89,7 @@ public class JavaConvertLoader(
 			}
 			zipReader.readEntries(path.toFile()) { entry, inputStream ->
 				try {
-					val entryName = entry.getName()
+					val entryName = entry.name
 					if (entryName.endsWith(".jar")) {
 						val tempJar = CommonFileUtils.saveToTempFile(inputStream, ".jar")
 						result.addTempPath(tempJar)
@@ -113,8 +113,8 @@ public class JavaConvertLoader(
 	private fun repackAndConvertJar(result: ConvertResult, path: Path): Boolean {
 		// 检查 jar 是否需要完整重打包
 		val repackNeeded = zipReader.visitEntries(path.toFile()) { zipEntry ->
-			val entryName = zipEntry.getName()
-			if (zipEntry.isDirectory()) {
+			val entryName = zipEntry.name
+			if (zipEntry.isDirectory) {
 				if (entryName == "BOOT-INF/") {
 					return@visitEntries true // Spring Boot jar
 				}
@@ -139,7 +139,7 @@ public class JavaConvertLoader(
 		JarOutputStream(Files.newOutputStream(jarFile)).use { jo ->
 			zipReader.readEntries(path.toFile()) { entry, inputStream ->
 				try {
-					val entryName = entry.getName()
+					val entryName = entry.name
 					if (entryName.endsWith(".class")) {
 						if (entryName.endsWith("module-info.class") || entryName.startsWith("META-INF/versions/")) {
 							LOG.debug(" exclude: {}", entryName)

@@ -183,10 +183,10 @@ class ResourcesLoader internal constructor(
 	}
 
 	fun addEntry(list: MutableList<ResourceFile>, zipFile: File, entry: IZipEntry, subDir: String) {
-		if (entry.isDirectory()) {
+		if (entry.isDirectory) {
 			return
 		}
-		val name = entry.getName()
+		val name = entry.name
 		val type = ResourceType.getFileType(name)
 		val rf = ResourceFile.createResourceFile(decompiler, subDir + name, type)
 		if (rf != null) {
@@ -214,8 +214,8 @@ class ResourcesLoader internal constructor(
 		fun <T> decodeStream(rf: ResourceFile, decoder: ResourceDecoder<T>): T = try {
 			val zipEntry = rf.getZipEntry()
 			if (zipEntry != null) {
-				zipEntry.getInputStream().use { inputStream ->
-					decoder.decode(zipEntry.getUncompressedSize(), inputStream)
+				zipEntry.inputStream.use { inputStream ->
+					decoder.decode(zipEntry.uncompressedSize, inputStream)
 				}
 			} else {
 				val file = File(rf.getOriginalName())

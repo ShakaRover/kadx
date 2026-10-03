@@ -18,7 +18,7 @@ class ZipContent(private val zipParser: IZipParser, val entries: List<IZipEntry>
 		fun buildNameMap(zipParser: IZipParser, entries: List<IZipEntry>): Map<String, IZipEntry> {
 			val map = HashMap<String, IZipEntry>(entries.size) // 容量按条目数预估，减少扩容次数
 			for (entry in entries) {
-				val name = entry.getName()
+				val name = entry.name
 				val prevEntry: IZipEntry? = map.put(name, entry)
 				if (prevEntry != null) {
 					LOG.warn("Found duplicate entry: {} in {}", name, zipParser) // 同名条目后者覆盖前者，记一条告警

@@ -346,8 +346,8 @@ class JadxPluginsTools private constructor() {
 			val content = zipReader.open(zipFile.toFile())
 			content.use {
 				for (entry in it.entries) {
-					val entryFile = outDir.resolve(entry.getName())
-					copy(entry.getInputStream(), entryFile, REPLACE_EXISTING)
+					val entryFile = outDir.resolve(entry.name)
+					copy(entry.inputStream, entryFile, REPLACE_EXISTING)
 				}
 			}
 		} catch (e: IOException) {

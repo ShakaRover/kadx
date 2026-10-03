@@ -13,19 +13,19 @@ import java.util.zip.ZipEntry
  */
 class FallbackZipEntry(private val parser: FallbackZipParser, val zipEntry: ZipEntry) : IZipEntry {
 
-	override fun getName(): String = zipEntry.getName() // 对应 JDK ZipEntry 的同名方法
+	override val name: String get() = zipEntry.name // 对应 JDK ZipEntry 的同名属性
 
 	override fun preferBytes(): Boolean = false // 回退实现没有预缓存字节，用流读取更划算
 
-	override fun getBytes(): ByteArray = parser.getBytes(this)
+	override val bytes: ByteArray get() = parser.getBytes(this)
 
-	override fun getInputStream(): InputStream = parser.getInputStream(this)
+	override val inputStream: InputStream get() = parser.getInputStream(this)
 
-	override fun getCompressedSize(): Long = zipEntry.getCompressedSize()
+	override val compressedSize: Long get() = zipEntry.compressedSize
 
-	override fun getUncompressedSize(): Long = zipEntry.getSize() // 解压后大小对应 JDK API 的 getSize()
+	override val uncompressedSize: Long get() = zipEntry.size // 解压后大小对应 JDK API 的 size
 
-	override fun isDirectory(): Boolean = zipEntry.isDirectory()
+	override val isDirectory: Boolean get() = zipEntry.isDirectory
 
-	override fun getZipFile(): File = parser.zipFile // 返回解析器持有的 zip 文件
+	override val zipFile: File get() = parser.zipFile // 返回解析器持有的 zip 文件
 }

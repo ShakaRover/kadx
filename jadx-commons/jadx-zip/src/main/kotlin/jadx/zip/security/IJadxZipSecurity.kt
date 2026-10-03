@@ -20,7 +20,7 @@ interface IJadxZipSecurity {
 	fun useLimitedDataStream(): Boolean
 
 	/** 期望的 zip 内条目数上限，超过则打开失败；返回 -1 表示禁用条目数量检查 */
-	fun getMaxEntriesCount(): Int
+	val maxEntriesCount: Int
 
 	/** 系统解析路径后该文件是否仍位于 baseDir 内部（防 ../ 路径穿越） */
 	fun isInSubDirectory(baseDir: File, file: File): Boolean

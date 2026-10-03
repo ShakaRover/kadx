@@ -116,12 +116,12 @@ class JadxPluginsList private constructor() {
 		val gson = buildGson()
 		val entries = ArrayList<JadxPluginListEntry>()
 		ZipReader().visitEntries(tmpListFile.toFile()) { entry ->
-			if (entry.getName().endsWith(".json")) {
+			if (entry.name.endsWith(".json")) {
 				try {
-					val reader = InputStreamReader(entry.getInputStream())
+					val reader = InputStreamReader(entry.inputStream)
 					reader.use { entries.addAll(gson.fromJson(it, listType)) }
 				} catch (e: Exception) {
-					throw RuntimeException("Failed to read plugins list entry: ${entry.getName()}")
+					throw RuntimeException("Failed to read plugins list entry: ${entry.name}")
 				}
 			}
 			null

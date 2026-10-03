@@ -88,7 +88,7 @@ class ApkSignatureNode(private val openFile: File) : JNode() {
 				if (resFile.getType() == ResourceType.MANIFEST) {
 					val zipEntry: IZipEntry? = resFile.getZipEntry()
 					if (zipEntry != null) {
-						apkFile = zipEntry.getZipFile()
+						apkFile = zipEntry.zipFile
 						break
 					}
 				}

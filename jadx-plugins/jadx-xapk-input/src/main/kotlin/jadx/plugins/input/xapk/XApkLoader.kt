@@ -45,7 +45,7 @@ public class XApkLoader(private val context: JadxPluginContext) {
 			}
 			return context.getZipReader().open(xapkFile).use { content ->
 				val manifestEntry = content.searchEntry("manifest.json") ?: return@use null
-				val manifestStr = String(manifestEntry.getBytes(), StandardCharsets.UTF_8)
+				val manifestStr = String(manifestEntry.bytes, StandardCharsets.UTF_8)
 				val xApkManifest = GsonUtils.buildGson().fromJson(manifestStr, XApkManifest::class.java)
 				// splitApks 为 null 时与原 Java 行为一致：抛 NPE 被外层 catch 记录 warn 后返回 null
 				if (xApkManifest.version != 2 || xApkManifest.splitApks!!.isEmpty()) {
@@ -70,14 +70,14 @@ public class XApkLoader(private val context: JadxPluginContext) {
 		val tmpDir = context.files().getPluginTempDir().resolve(dirName)
 		FileUtils.makeDirs(tmpDir)
 		for (entry in content.entries) {
-			if (entry.isDirectory()) {
+			if (entry.isDirectory) {
 				continue
 			}
 			try {
-				val fileName = entry.getName()
+				val fileName = entry.name
 				val file = tmpDir.resolve(fileName)
 				FileUtils.makeDirsForFile(file)
-				entry.getInputStream().use { inputStream ->
+				entry.inputStream.use { inputStream ->
 					Files.copy(inputStream, file, StandardCopyOption.REPLACE_EXISTING)
 				}
 				if (declaredApks.contains(fileName)) {
@@ -86,7 +86,7 @@ public class XApkLoader(private val context: JadxPluginContext) {
 					files.add(file)
 				}
 			} catch (e: Exception) {
-				LOG.error("Failed to unpack XApk entry: {}", entry.getName(), e)
+				LOG.error("Failed to unpack XApk entry: {}", entry.name, e)
 			}
 		}
 		return XApkData(xApkManifest, tmpDir, apks, files)

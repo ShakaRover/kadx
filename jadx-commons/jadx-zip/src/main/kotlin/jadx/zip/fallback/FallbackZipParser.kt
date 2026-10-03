@@ -52,7 +52,7 @@ class FallbackZipParser(file: File, options: ZipReaderOptions) : IZipParser {
 	@Throws(IOException::class)
 	override fun open(): ZipContent {
 		try {
-			var maxEntriesCount = zipSecurity.getMaxEntriesCount() // -1 表示不限制条目数
+			var maxEntriesCount = zipSecurity.maxEntriesCount // -1 表示不限制条目数
 			if (maxEntriesCount == -1) {
 				maxEntriesCount = Int.MAX_VALUE // 用 int 最大值近似表达"无限"
 			}
@@ -87,12 +87,12 @@ class FallbackZipParser(file: File, options: ZipReaderOptions) : IZipParser {
 		try {
 			inputStream.readAllBytes() // 读到 EOF，天然消耗完整个流（readAllBytes() 后流已耗尽）
 			if (inputStream.available() != 0) {
-				throw RuntimeException("Failed to read all bytes for entry: " + entry.getName())
+				throw RuntimeException("Failed to read all bytes for entry: " + entry.name)
 			}
 			val data = inputStream.readAllBytes()
 			return data
 		} catch (e: Exception) {
-			throw RuntimeException("Failed to read bytes for entry: " + entry.getName(), e)
+			throw RuntimeException("Failed to read bytes for entry: " + entry.name, e)
 		} finally {
 			// 对齐 Java try-with-resources 的自动 close；BufferedInputStream.close() 会传递给底层 ZipFile 条目流
 			inputStream.close()
@@ -103,14 +103,14 @@ class FallbackZipParser(file: File, options: ZipReaderOptions) : IZipParser {
 		try {
 			return getEntryStream(entry)
 		} catch (e: Exception) {
-			throw RuntimeException("Failed to open input stream for entry: " + entry.getName(), e)
+			throw RuntimeException("Failed to open input stream for entry: " + entry.name, e)
 		}
 	}
 
 	private fun getEntryStream(entry: FallbackZipEntry): InputStream {
 		val entryStream = zipFileHandle.getInputStream(entry.zipEntry) // 取 JDK ZipEntry 的原始数据流
 		val stream: InputStream = if (useLimitedDataStream) {
-			LimitedInputStream(entryStream, entry.getUncompressedSize()) // 套上限额流，防 zip bomb
+			LimitedInputStream(entryStream, entry.uncompressedSize) // 套上限额流，防 zip bomb
 		} else {
 			entryStream
 		}
