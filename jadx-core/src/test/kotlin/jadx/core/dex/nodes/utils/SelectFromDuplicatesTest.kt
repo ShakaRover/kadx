@@ -57,7 +57,7 @@ class SelectFromDuplicatesTest {
 	private fun buildClassNodeBySource(clsSource: String): ClassNode {
 		val clsInfo = ClassInfo.fromName(root, "ClassFromSource:" + clsSource)
 		val cls = ClassNode.addSyntheticClass(root, clsInfo, 0)
-		cls.inputFileName = clsSource
+		cls.inputFileNameValue = clsSource
 		return cls
 	}
 }

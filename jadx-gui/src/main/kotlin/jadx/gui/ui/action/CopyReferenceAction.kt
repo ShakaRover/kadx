@@ -27,9 +27,9 @@ class CopyReferenceAction(codeArea: CodeArea) : JNodeAction(ActionModel.COPY_REF
 		if (javaNode is JavaClass) {
 			ref = javaNode.getFullName()
 		} else if (javaNode is JavaMethod) {
-			ref = javaNode.getDeclaringClass().getFullName() + '.' + javaNode.getName()
+			ref = javaNode.declaringClass.getFullName() + '.' + javaNode.getName()
 		} else if (javaNode is JavaField) {
-			ref = javaNode.getDeclaringClass().getFullName() + '.' + javaNode.getName()
+			ref = javaNode.declaringClass.getFullName() + '.' + javaNode.getName()
 		} else {
 			LOG.warn("Copy reference not supported for node type: {}", node.javaClass)
 			return

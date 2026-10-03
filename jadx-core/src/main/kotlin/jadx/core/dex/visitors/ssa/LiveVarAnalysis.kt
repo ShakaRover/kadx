@@ -68,7 +68,7 @@ class LiveVarAnalysis(private val mth: MethodNode) {
 			val blockId = block.pos
 			val gen = uses[blockId]
 			val kill = defs[blockId]
-			for (insn in block.getInstructions()) {
+			for (insn in block.instructions) {
 				for (arg in insn.getArguments()) {
 					if (arg.isRegister) {
 						val regNum = (arg as RegisterArg).regNum
@@ -77,7 +77,7 @@ class LiveVarAnalysis(private val mth: MethodNode) {
 						}
 					}
 				}
-				val result = insn.getResult()
+				val result = insn.result
 				if (result != null) {
 					val regNum = result.regNum
 					kill.set(regNum)
@@ -108,7 +108,7 @@ class LiveVarAnalysis(private val mth: MethodNode) {
 				val blockId = block.pos
 				val prevIn = liveInBlocks[blockId]
 				val newIn = BitSet(regsCount)
-				for (successor in block.getSuccessors()) {
+				for (successor in block.successors) {
 					newIn.or(liveInBlocks[successor.pos])
 				}
 				newIn.andNot(defs[blockId])

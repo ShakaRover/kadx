@@ -58,16 +58,13 @@ class MethodNode(
 
 	lateinit var retType: ArgType
 
-	@get:JvmName("argTypesValue")
-	lateinit var argTypes: List<ArgType>
+	lateinit var argTypesValue: List<ArgType>
 
-	@get:JvmName("typeParametersValue")
-	lateinit var typeParameters: List<ArgType>
+	lateinit var typeParametersValue: List<ArgType>
 
 	val codeReader: ICodeReader?
 
-	@get:JvmName("insnsCountValue")
-	val insnsCount: Int
+	val insnsCountValue: Int
 	private var noCode: Boolean
 
 	init {
@@ -75,15 +72,15 @@ class MethodNode(
 		if (reader == null) {
 			noCode = true
 			codeReader = null
-			insnsCount = 0
+			insnsCountValue = 0
 		} else {
 			noCode = false
 			codeReader = reader.copy()
-			insnsCount = reader.unitsCount
+			insnsCountValue = reader.unitsCount
 		}
 		retType = mthInfo.returnType
-		argTypes = mthInfo.argumentsTypes
-		typeParameters = emptyList()
+		argTypesValue = mthInfo.argumentsTypes
+		typeParametersValue = emptyList()
 		unload()
 	}
 
@@ -103,7 +100,7 @@ class MethodNode(
 	private var loops: List<LoopInfo> = emptyList()
 	var region: Region? = null
 
-	private var useIn: List<MethodNode> = emptyList()
+	private var useInValue: List<MethodNode> = emptyList()
 	private var unresolvedUsed: List<MethodInfo> = emptyList()
 	private var methodsUsed: MutableSet<MethodNode> = HashSet()
 	private var callsSelf: Boolean = false
@@ -126,12 +123,12 @@ class MethodNode(
 	}
 
 	fun updateTypes(argTypes: List<ArgType>, retType: ArgType) {
-		this.argTypes = argTypes
+		this.argTypesValue = argTypes
 		this.retType = retType
 	}
 
 	fun updateTypeParameters(typeParameters: List<ArgType>) {
-		this.typeParameters = typeParameters
+		this.typeParametersValue = typeParameters
 	}
 
 	override fun load() {
@@ -140,12 +137,12 @@ class MethodNode(
 			loaded = true
 			if (noCode) {
 				regsCount = 0
-				initArguments(argTypes)
+				initArguments(argTypesValue)
 				return
 			}
 			regsCount = checkNotNull(codeReader).registersCount
 			argsStartReg = checkNotNull(codeReader).argsStartReg
-			initArguments(argTypes)
+			initArguments(argTypesValue)
 			if (contains(AType.JADX_ERROR)) {
 				instructions = EMPTY_INSN_ARRAY
 			} else {
@@ -214,22 +211,23 @@ class MethodNode(
 		return pos
 	}
 
-	override fun getArgTypes(): List<ArgType> {
-		if (argTypes == null) {
-			throw JadxRuntimeException("Method generic types not initialized: $this")
+	override val argTypes: List<ArgType>
+		get() {
+			if (argTypesValue == null) {
+				throw JadxRuntimeException("Method generic types not initialized: $this")
+			}
+			return argTypesValue
 		}
-		return argTypes
-	}
 
 	fun updateArgTypes(newArgTypes: List<ArgType>, comment: String) {
-		addDebugComment("$comment, original types: ${getArgTypes()}")
-		argTypes = Collections.unmodifiableList(newArgTypes)
+		addDebugComment("$comment, original types: $argTypes")
+		argTypesValue = Collections.unmodifiableList(newArgTypes)
 		initArguments(newArgTypes)
 	}
 
-	fun containsGenericArgs(): Boolean = mthInfo.argumentsTypes != getArgTypes()
+	fun containsGenericArgs(): Boolean = mthInfo.argumentsTypes != argTypes
 
-	override fun getReturnType(): ArgType = retType
+	override val returnType: ArgType get() = retType
 
 	fun updateReturnType(type: ArgType) {
 		retType = type
@@ -284,13 +282,13 @@ class MethodNode(
 		add(AFlag.SKIP_FIRST_ARG)
 	}
 
-	override fun getTypeParameters(): List<ArgType> = typeParameters
+	override val typeParameters: List<ArgType> get() = typeParametersValue
 
 	val name: String get() = mthInfo.name
 
 	val alias: String get() = mthInfo.alias
 
-	override fun getDeclaringClass(): ClassNode? = parentClass
+	override val declaringClass: ClassNode? get() = parentClass
 
 	val topParentClass: ClassNode get() = parentClass.topParentClass
 
@@ -390,7 +388,7 @@ class MethodNode(
 
 	val exceptionHandlersCount: Int get() = exceptionHandlers.size
 
-	override fun getThrows(): List<ArgType> {
+	override val throws: List<ArgType> get() {
 		val throwsAttr = get(AType.METHOD_THROWS)
 		if (throwsAttr != null) {
 			return collectionMap(throwsAttr.list) { s: String -> ArgType.`object`(s) }
@@ -477,7 +475,7 @@ class MethodNode(
 
 	val SVars: List<SSAVar> get() = sVars
 
-	override fun getRawAccessFlags(): Int = accFlags.rawValue()
+	override val rawAccessFlags: Int get() = accFlags.rawValue()
 
 	override var accessFlags: AccessInfo
 		get() = accFlags
@@ -489,9 +487,8 @@ class MethodNode(
 
 	override fun typeName(): String = "method"
 
-	override fun getInputFileName(): String? = parentClass.inputFileName
-
-	override fun getMethodInfo(): MethodInfo = mthInfo
+	override val inputFileName: String? get() = parentClass.inputFileName
+	override val methodInfo: MethodInfo get() = mthInfo
 
 	val methodCodeOffset: Long get() = if (noCode) 0 else checkNotNull(codeReader).codeOffset.toLong()
 
@@ -529,19 +526,19 @@ class MethodNode(
 		return -1
 	}
 
-	fun getInsnsCount(): Int = insnsCount
+	val insnsCount: Int get() = insnsCountValue
 
 	val codeStr: String get() = jadx.api.utils.CodeUtils.extractMethodCode(this, topParentClass.getCode())
 
-	override fun isVarArg(): Boolean = accFlags.isVarArgs()
+	override val isVarArg: Boolean get() = accFlags.isVarArgs()
 
-	fun isLoaded(): Boolean = loaded
+	val isLoaded: Boolean get() = loaded
 
 	// 协变返回类型：保留 Java 原 API 的 List<MethodNode>
-	override fun getUseIn(): List<MethodNode> = useIn
+	override val useIn: List<MethodNode> get() = useInValue
 
 	fun setUseIn(useIn: List<MethodNode>) {
-		this.useIn = useIn
+		this.useInValue = useIn
 		for (methodUsedIn in useIn) {
 			methodUsedIn.addUsed(this)
 		}

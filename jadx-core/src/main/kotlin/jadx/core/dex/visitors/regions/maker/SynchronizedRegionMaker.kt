@@ -31,9 +31,9 @@ class SynchronizedRegionMaker(private val mth: MethodNode, private val regionMak
 	fun process(curRegion: IRegion, block: BlockNode, insn: InsnNode, stack: RegionStack): BlockNode? {
 		val synchRegion = SynchronizedRegion(curRegion, insn)
 		@Suppress("UNCHECKED_CAST")
-		(synchRegion.getSubBlocks() as MutableList<IContainer>).add(block)
+		(synchRegion.subBlocks as MutableList<IContainer>).add(block)
 		@Suppress("UNCHECKED_CAST")
-		(curRegion.getSubBlocks() as MutableList<IContainer>).add(synchRegion)
+		(curRegion.subBlocks as MutableList<IContainer>).add(synchRegion)
 
 		val exits: MutableSet<BlockNode> = LinkedHashSet()
 		val cacheSet: MutableSet<BlockNode> = HashSet()
@@ -77,7 +77,7 @@ class SynchronizedRegionMaker(private val mth: MethodNode, private val regionMak
 			}
 		}
 		@Suppress("UNCHECKED_CAST")
-		(synchRegion.getSubBlocks() as MutableList<IContainer>).add(regionMaker.makeRegion(body))
+		(synchRegion.subBlocks as MutableList<IContainer>).add(regionMaker.makeRegion(body))
 		stack.pop()
 		return exit
 	}
@@ -91,7 +91,7 @@ class SynchronizedRegionMaker(private val mth: MethodNode, private val regionMak
 		visited: MutableSet<BlockNode>,
 	) {
 		visited.add(block)
-		for (insn in block.getInstructions()) {
+		for (insn in block.instructions) {
 			if (insn.type == InsnType.MONITOR_EXIT &&
 				insn.argsCount > 0 &&
 				insn.getArg(0) == arg
@@ -101,7 +101,7 @@ class SynchronizedRegionMaker(private val mth: MethodNode, private val regionMak
 				return
 			}
 		}
-		for (node in block.getSuccessors()) {
+		for (node in block.successors) {
 			if (!visited.contains(node)) {
 				traverseMonitorExits(region, arg, node, exits, visited)
 			}
@@ -111,7 +111,7 @@ class SynchronizedRegionMaker(private val mth: MethodNode, private val regionMak
 	/** 从 monitor-enter 出发，沿后继搜索与所有退出路径相交的块 */
 	private fun traverseMonitorExitsCross(block: BlockNode, exits: Set<BlockNode>, visited: MutableSet<BlockNode>): BlockNode? {
 		visited.add(block)
-		for (node in checkNotNull(block.getCleanSuccessors())) {
+		for (node in checkNotNull(block.cleanSuccessors)) {
 			var cross = true
 			for (exitBlock in exits) {
 				val p = BlockUtils.isPathExists(exitBlock, node)
@@ -136,14 +136,14 @@ class SynchronizedRegionMaker(private val mth: MethodNode, private val regionMak
 	companion object {
 		fun removeSynchronized(mth: MethodNode) {
 			val startRegion = checkNotNull(mth.region)
-			val subBlocks = startRegion.getSubBlocks()
+			val subBlocks = startRegion.subBlocks
 			if (subBlocks.isNotEmpty() && subBlocks[0] is SynchronizedRegion) {
 				val synchRegion = subBlocks[0] as SynchronizedRegion
 				val syncInsn = synchRegion.enterInsn
 				if (canRemoveSyncBlock(mth, syncInsn)) {
 					// 用内层区域替换 synchronized 块
 					@Suppress("UNCHECKED_CAST")
-					(startRegion.getSubBlocks() as MutableList<IContainer>).set(0, synchRegion.region)
+					(startRegion.subBlocks as MutableList<IContainer>).set(0, synchRegion.region)
 					// 移除 monitor-enter 指令
 					InsnRemover.remove(mth, syncInsn)
 					// 移除 monitor-exit 指令

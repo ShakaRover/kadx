@@ -78,7 +78,7 @@ open class RegionGen(mgen: MethodGen) : InsnGen(mgen, false) {
 			return
 		}
 
-		for (insn in block.getInstructions()) {
+		for (insn in block.instructions) {
 			if (!insn.contains(AFlag.DONT_GENERATE)) {
 				makeInsn(insn, code)
 			}
@@ -102,10 +102,10 @@ open class RegionGen(mgen: MethodGen) : InsnGen(mgen, false) {
 		}
 
 		code.add("if (")
-		ConditionGen(this).add(code, checkNotNull(region.getCondition()))
+		ConditionGen(this).add(code, checkNotNull(region.condition))
 		code.add(") {")
 		if (code.isMetadataSupported()) {
-			val conditionBlocks = region.getConditionBlocks()
+			val conditionBlocks = region.conditionBlocks
 			if (!conditionBlocks.isEmpty()) {
 				val blockNode = conditionBlocks[0]
 				val lastInsn = BlockUtils.getLastInsn(blockNode)
@@ -113,14 +113,14 @@ open class RegionGen(mgen: MethodGen) : InsnGen(mgen, false) {
 				CodeGenUtils.addCodeComments(code, mth, lastInsn)
 			}
 		}
-		makeRegionIndent(code, checkNotNull(region.getThenRegion()))
+		makeRegionIndent(code, checkNotNull(region.thenRegion))
 		if (comment) {
 			code.startLine("// }")
 		} else {
 			code.startLine('}')
 		}
 
-		val els = region.getElseRegion()
+		val els = region.elseRegion
 		if (RegionUtils.notEmpty(els)) {
 			code.add(" else ")
 			if (connectElseIf(code, checkNotNull(els))) {
@@ -160,11 +160,11 @@ open class RegionGen(mgen: MethodGen) : InsnGen(mgen, false) {
 			code.add(mgen.nameGen.getLoopLabel(labelAttr)).add(": ")
 		}
 
-		val condition = region.getCondition()
+		val condition = region.condition
 		if (condition == null) {
 			// infinite loop
 			code.add("while (true) {")
-			makeRegionIndent(code, checkNotNull(region.getBody()))
+			makeRegionIndent(code, checkNotNull(region.body))
 			code.startLine('}')
 			return
 		}
@@ -172,7 +172,7 @@ open class RegionGen(mgen: MethodGen) : InsnGen(mgen, false) {
 		InsnCodeOffset.attach(code, condInsn)
 
 		val conditionGen = ConditionGen(this)
-		val type = region.getType()
+		val type = region.type
 		if (type != null) {
 			if (type is ForLoop) {
 				code.add("for (")
@@ -183,7 +183,7 @@ open class RegionGen(mgen: MethodGen) : InsnGen(mgen, false) {
 				makeInsn(type.incrInsn, code, Flags.INLINE)
 				code.add(") {")
 				CodeGenUtils.addCodeComments(code, mth, condInsn)
-				makeRegionIndent(code, checkNotNull(region.getBody()))
+				makeRegionIndent(code, checkNotNull(region.body))
 				code.startLine('}')
 				return
 			}
@@ -194,16 +194,16 @@ open class RegionGen(mgen: MethodGen) : InsnGen(mgen, false) {
 				addArg(code, type.iterableArg, false)
 				code.add(") {")
 				CodeGenUtils.addCodeComments(code, mth, condInsn)
-				makeRegionIndent(code, checkNotNull(region.getBody()))
+				makeRegionIndent(code, checkNotNull(region.body))
 				code.startLine('}')
 				return
 			}
 			throw JadxRuntimeException("Unknown loop type: " + type.javaClass)
 		}
-		if (region.isConditionAtEnd()) {
+		if (region.isConditionAtEnd) {
 			code.add("do {")
 			CodeGenUtils.addCodeComments(code, mth, condInsn)
-			makeRegionIndent(code, checkNotNull(region.getBody()))
+			makeRegionIndent(code, checkNotNull(region.body))
 			code.startLineWithNum(region.sourceLine)
 			code.add("} while (")
 			conditionGen.add(code, condition)
@@ -213,7 +213,7 @@ open class RegionGen(mgen: MethodGen) : InsnGen(mgen, false) {
 			conditionGen.add(code, condition)
 			code.add(") {")
 			CodeGenUtils.addCodeComments(code, mth, condInsn)
-			makeRegionIndent(code, checkNotNull(region.getBody()))
+			makeRegionIndent(code, checkNotNull(region.body))
 			code.startLine('}')
 		}
 	}
@@ -308,14 +308,14 @@ open class RegionGen(mgen: MethodGen) : InsnGen(mgen, false) {
 	fun makeTryCatch(region: TryCatchRegion, code: ICodeWriter) {
 		code.startLine("try {")
 
-		val insn = BlockUtils.getFirstInsn(Utils.first(checkNotNull(region.getTryCatchBlock()).getBlocks()))
+		val insn = BlockUtils.getFirstInsn(Utils.first(checkNotNull(region.tryCatchBlock).getBlocks()))
 		InsnCodeOffset.attach(code, insn)
 		CodeGenUtils.addCodeComments(code, mth, insn)
 
 		makeRegionIndent(code, region.tryRegion)
 		// TODO: move search of 'allHandler' to 'TryCatchRegion'
 		var allHandler: ExceptionHandler? = null
-		for (entry in region.getCatchRegions().entries) {
+		for (entry in region.catchRegions.entries) {
 			val handler = entry.key
 			if (handler.isCatchAll()) {
 				if (allHandler != null) {
@@ -329,7 +329,7 @@ open class RegionGen(mgen: MethodGen) : InsnGen(mgen, false) {
 		if (allHandler != null) {
 			makeCatchBlock(code, allHandler)
 		}
-		val finallyRegion = region.getFinallyRegion()
+		val finallyRegion = region.finallyRegion
 		if (finallyRegion != null) {
 			code.startLine("} finally {")
 			makeRegionIndent(code, finallyRegion)

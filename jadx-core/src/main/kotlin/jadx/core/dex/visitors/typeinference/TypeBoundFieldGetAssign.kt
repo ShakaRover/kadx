@@ -42,7 +42,7 @@ class TypeBoundFieldGetAssign(
 
 	private val instanceArg: InsnArg get() = getNode.getArg(0)
 
-	override val arg: RegisterArg? get() = getNode.getResult()
+	override val arg: RegisterArg? get() = getNode.result
 
 	override fun equals(o: Any?): Boolean {
 		if (this === o) {

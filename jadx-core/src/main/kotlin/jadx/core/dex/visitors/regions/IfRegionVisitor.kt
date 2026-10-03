@@ -81,15 +81,15 @@ class IfRegionVisitor : AbstractVisitor() {
 		 * 规则优先级：空分支 > 源码行号提示 > 条件化简 > 分支大小与出口块 > break 指令。
 		 */
 		private fun orderBranches(mth: MethodNode, ifRegion: IfRegion) {
-			if (RegionUtils.isEmpty(ifRegion.getElseRegion())) {
+			if (RegionUtils.isEmpty(ifRegion.elseRegion)) {
 				return
 			}
-			if (RegionUtils.isEmpty(ifRegion.getThenRegion())) {
+			if (RegionUtils.isEmpty(ifRegion.thenRegion)) {
 				invertIfRegion(ifRegion)
 				return
 			}
-			val thenRegion = checkNotNull(ifRegion.getThenRegion())
-			val elseRegion = checkNotNull(ifRegion.getElseRegion())
+			val thenRegion = checkNotNull(ifRegion.thenRegion)
+			val elseRegion = checkNotNull(ifRegion.elseRegion)
 			if (mth.contains(AFlag.USE_LINES_HINTS)) {
 				val thenLine = RegionUtils.getFirstSourceLine(thenRegion)
 				val elseLine = RegionUtils.getFirstSourceLine(elseRegion)
@@ -101,7 +101,7 @@ class IfRegionVisitor : AbstractVisitor() {
 				}
 			}
 			if (ifRegion.simplifyCondition()) {
-				val condition = ifRegion.getCondition()
+				val condition = ifRegion.condition
 				if (condition != null && condition.mode == IfCondition.Mode.NOT) {
 					invertIfRegion(ifRegion)
 				}
@@ -140,8 +140,8 @@ class IfRegionVisitor : AbstractVisitor() {
 				return
 			}
 			// 把 then 分支里的 if 提升出来，形成 else-if 链
-			if (isIfRegion(ifRegion.getThenRegion()) &&
-				!isIfRegion(ifRegion.getElseRegion()) &&
+			if (isIfRegion(ifRegion.thenRegion) &&
+				!isIfRegion(ifRegion.elseRegion) &&
 				!thenExit
 			) {
 				invertIfRegion(ifRegion)
@@ -158,7 +158,7 @@ class IfRegionVisitor : AbstractVisitor() {
 				return true
 			}
 			if (container is IRegion) {
-				val subBlocks = container.getSubBlocks()
+				val subBlocks = container.subBlocks
 				return subBlocks.size == 1 && subBlocks[0] is IfRegion
 			}
 			return false
@@ -166,12 +166,12 @@ class IfRegionVisitor : AbstractVisitor() {
 
 		/** 标记 else-if 链：`else { if (...) ... }` 中的内层 if 打上标记 */
 		private fun markElseIfChains(mth: MethodNode, ifRegion: IfRegion) {
-			if (isSimpleExitBlock(mth, ifRegion.getThenRegion())) {
+			if (isSimpleExitBlock(mth, ifRegion.thenRegion)) {
 				return
 			}
-			val elsRegion = ifRegion.getElseRegion()
+			val elsRegion = ifRegion.elseRegion
 			if (elsRegion is Region) {
-				val subBlocks = elsRegion.getSubBlocks()
+				val subBlocks = elsRegion.subBlocks
 				if (subBlocks.size == 1 && subBlocks[0] is IfRegion) {
 					subBlocks[0].add(AFlag.ELSE_IF_CHAIN)
 					elsRegion.add(AFlag.ELSE_IF_CHAIN)
@@ -184,14 +184,14 @@ class IfRegionVisitor : AbstractVisitor() {
 		 * 则把 else 内容与 then 内容平铺到同一区域。
 		 */
 		private fun removeRedundantElseBlock(mth: MethodNode, ifRegion: IfRegion): Boolean {
-			if (ifRegion.getElseRegion() == null) {
+			if (ifRegion.elseRegion == null) {
 				return false
 			}
-			if (!RegionUtils.hasExitBlock(ifRegion.getThenRegion())) {
+			if (!RegionUtils.hasExitBlock(ifRegion.thenRegion)) {
 				return false
 			}
-			val thenRegion = checkNotNull(ifRegion.getThenRegion())
-			val elseRegion = checkNotNull(ifRegion.getElseRegion())
+			val thenRegion = checkNotNull(ifRegion.thenRegion)
+			val elseRegion = checkNotNull(ifRegion.elseRegion)
 			val lastThanInsn = RegionUtils.getLastInsn(thenRegion)
 			if (InsnUtils.isInsnType(lastThanInsn, InsnType.THROW)) {
 				// throw 之后总是可以省略 else
@@ -220,7 +220,7 @@ class IfRegionVisitor : AbstractVisitor() {
 		}
 
 		private fun invertIfRegion(ifRegion: IfRegion) {
-			val elseRegion = ifRegion.getElseRegion()
+			val elseRegion = ifRegion.elseRegion
 			if (elseRegion != null) {
 				ifRegion.invert()
 			}
@@ -235,7 +235,7 @@ class IfRegionVisitor : AbstractVisitor() {
 				return true
 			}
 			if (container is IRegion) {
-				val subBlocks = container.getSubBlocks()
+				val subBlocks = container.subBlocks
 				return subBlocks.size == 1 && RegionUtils.isExitBlock(mth, subBlocks[0])
 			}
 			return false

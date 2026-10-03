@@ -78,8 +78,8 @@ class TernaryMod private constructor() :
 			if (ifRegion.contains(AFlag.ELSE_IF_CHAIN)) {
 				return false
 			}
-			val thenRegion = ifRegion.getThenRegion() ?: return false
-			val elseRegion = ifRegion.getElseRegion()
+			val thenRegion = ifRegion.thenRegion ?: return false
+			val elseRegion = ifRegion.elseRegion
 			if (elseRegion == null) {
 				return processOneBranchTernary(mth, ifRegion)
 			}
@@ -88,7 +88,7 @@ class TernaryMod private constructor() :
 			if (tb.contains(AFlag.DUPLICATED) || eb.contains(AFlag.DUPLICATED)) {
 				return false
 			}
-			val conditionBlocks = ifRegion.getConditionBlocks()
+			val conditionBlocks = ifRegion.conditionBlocks
 			if (conditionBlocks.isEmpty()) {
 				return false
 			}
@@ -101,8 +101,8 @@ class TernaryMod private constructor() :
 				return false
 			}
 
-			val thenResArg = thenInsn.getResult()
-			val elseResArg = elseInsn.getResult()
+			val thenResArg = thenInsn.result
+			val elseResArg = elseInsn.result
 			if (thenResArg != null && elseResArg != null) {
 				val thenPhi = checkNotNull(thenResArg.sVar).onlyOneUseInPhi
 				val elsePhi = checkNotNull(elseResArg.sVar).onlyOneUseInPhi
@@ -117,14 +117,14 @@ class TernaryMod private constructor() :
 
 				val resArg: RegisterArg
 				if (thenPhi.argsCount == 2) {
-					resArg = checkNotNull(thenPhi.getResult())
+					resArg = checkNotNull(thenPhi.result)
 				} else {
 					resArg = thenResArg
 					thenPhi.removeArg(elseResArg)
 				}
 				val thenArg = InsnArg.wrapInsnIntoArg(thenInsn.copyWithoutResult())
 				val elseArg = InsnArg.wrapInsnIntoArg(elseInsn.copyWithoutResult())
-				val ternInsn = TernaryInsn(checkNotNull(ifRegion.getCondition()), resArg.duplicate(), thenArg, elseArg)
+				val ternInsn = TernaryInsn(checkNotNull(ifRegion.condition), resArg.duplicate(), thenArg, elseArg)
 				val branchLine = maxOf(thenInsn.getSourceLine(), elseInsn.getSourceLine())
 				ternInsn.setSourceLine(maxOf(ifRegion.sourceLine, branchLine))
 
@@ -163,7 +163,7 @@ class TernaryMod private constructor() :
 				tb.remove(AFlag.RETURN)
 				eb.remove(AFlag.RETURN)
 
-				val ternInsn = TernaryInsn(checkNotNull(ifRegion.getCondition()), null, thenArg, elseArg)
+				val ternInsn = TernaryInsn(checkNotNull(ifRegion.condition), null, thenArg, elseArg)
 				val retInsn = InsnNode(InsnType.RETURN, 1)
 				val arg = InsnArg.wrapInsnIntoArg(ternInsn)
 				arg.setType(thenArg.getType())
@@ -206,7 +206,7 @@ class TernaryMod private constructor() :
 		/** 取出“只包含一条指令”的块，作为三目分支的候选 */
 		private fun getTernaryInsnBlock(thenRegion: IContainer?): BlockNode? {
 			if (thenRegion is Region) {
-				val subBlocks = thenRegion.getSubBlocks()
+				val subBlocks = thenRegion.subBlocks
 				if (subBlocks.size == 1) {
 					val container = subBlocks[0]
 					if (container is BlockNode) {
@@ -238,11 +238,11 @@ class TernaryMod private constructor() :
 
 		/** 若多个参数来自同一源码行，则返回 true（用于行号提示校验） */
 		private fun checkLineStats(t: InsnNode, e: InsnNode): Boolean {
-			if (t.getResult() == null || e.getResult() == null) {
+			if (t.result == null || e.result == null) {
 				return false
 			}
-			val tPhi = checkNotNull(checkNotNull(t.getResult()).sVar).onlyOneUseInPhi
-			val ePhi = checkNotNull(checkNotNull(e.getResult()).sVar).onlyOneUseInPhi
+			val tPhi = checkNotNull(checkNotNull(t.result).sVar).onlyOneUseInPhi
+			val ePhi = checkNotNull(checkNotNull(e.result).sVar).onlyOneUseInPhi
 			if (ePhi == null || tPhi !== ePhi) {
 				return false
 			}
@@ -270,11 +270,11 @@ class TernaryMod private constructor() :
 		 * 要求 `r` 只被使用一次。
 		 */
 		private fun processOneBranchTernary(mth: MethodNode, ifRegion: IfRegion): Boolean {
-			val thenRegion = ifRegion.getThenRegion()
+			val thenRegion = ifRegion.thenRegion
 			val block = getTernaryInsnBlock(thenRegion)
 			if (block != null) {
 				val insn = block.instructions[0]
-				val result = insn.getResult()
+				val result = insn.result
 				if (result != null) {
 					replaceWithTernary(mth, ifRegion, block, insn)
 				}
@@ -282,7 +282,7 @@ class TernaryMod private constructor() :
 			return false
 		}
 		private fun replaceWithTernary(mth: MethodNode, ifRegion: IfRegion, block: BlockNode, insn: InsnNode) {
-			val resArg = checkNotNull(insn.getResult())
+			val resArg = checkNotNull(insn.result)
 			if (checkNotNull(resArg.sVar).useList.size != 1) {
 				return
 			}
@@ -299,9 +299,9 @@ class TernaryMod private constructor() :
 			}
 			val other = otherArg ?: return
 			val elseAssign = other.assignInsn
-			val forceInline = mth.isConstructor() || (mth.parentClass.isEnum() && mth.getMethodInfo().isClassInit())
+			val forceInline = mth.isConstructor() || (mth.parentClass.isEnum() && mth.methodInfo.isClassInit())
 			if (!forceInline) {
-				if (elseAssign != null && elseAssign.isConstInsn()) {
+				if (elseAssign != null && elseAssign.isConstInsn) {
 					if (!verifyLineHints(mth, insn, elseAssign)) {
 						return
 					}
@@ -314,15 +314,15 @@ class TernaryMod private constructor() :
 			}
 
 			// 所有检查通过
-			val header = ifRegion.getConditionBlocks()[0]
+			val header = ifRegion.conditionBlocks[0]
 			if (!checkNotNull(ifRegion.parent).replaceSubBlock(ifRegion, header)) {
 				return
 			}
 			val elseArg: InsnArg
-			if (elseAssign != null && elseAssign.isConstInsn()) {
+			if (elseAssign != null && elseAssign.isConstInsn) {
 				// 内联常量
 				elseArg = InsnArg.wrapInsnIntoArg(elseAssign.copyWithoutResult())
-				val elseVar = checkNotNull(checkNotNull(elseAssign.getResult()).sVar)
+				val elseVar = checkNotNull(checkNotNull(elseAssign.result).sVar)
 				if (elseVar.useCount == 1 && elseVar.onlyOneUseInPhi === phiInsn) {
 					InsnRemover.remove(mth, elseAssign)
 				}
@@ -330,8 +330,8 @@ class TernaryMod private constructor() :
 				elseArg = other.duplicate()
 			}
 			val thenArg = InsnArg.wrapInsnIntoArg(insn)
-			val resultArg = checkNotNull(phiInsn.getResult()).duplicate()
-			val ternInsn = TernaryInsn(checkNotNull(ifRegion.getCondition()), resultArg, thenArg, elseArg)
+			val resultArg = checkNotNull(phiInsn.result).duplicate()
+			val ternInsn = TernaryInsn(checkNotNull(ifRegion.condition), resultArg, thenArg, elseArg)
 			ternInsn.simplifyCondition()
 
 			InsnRemover.unbindAllArgs(mth, phiInsn)
@@ -342,7 +342,7 @@ class TernaryMod private constructor() :
 			ternInsn.rebindArgs()
 			header.instructions.add(ternInsn)
 
-			clearConditionBlocks(ifRegion.getConditionBlocks(), header)
+			clearConditionBlocks(ifRegion.conditionBlocks, header)
 
 			// 再次收缩方法
 			CodeShrinkVisitor.shrinkMethod(mth)

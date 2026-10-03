@@ -69,7 +69,7 @@ class ProcessTryCatchRegions : AbstractRegionVisitor() {
 			// 只需在本层查找顶层分割块，无需深入子区域
 			for (tb in tryBlocks) {
 				val topSplitter = tb.getTopSplitter()
-				if (topSplitter != null && region.getSubBlocks().contains(topSplitter)) {
+				if (topSplitter != null && region.subBlocks.contains(topSplitter)) {
 					if (!wrapBlocks(region, tb, topSplitter)) {
 						mth.addWarn("Can't wrap try/catch for region: " + region)
 					}
@@ -88,14 +88,14 @@ class ProcessTryCatchRegions : AbstractRegionVisitor() {
 				return false
 			}
 			if (replaceRegion is LoopRegion) {
-				return wrapBlocks(replaceRegion.getBody(), tb, dominator)
+				return wrapBlocks(replaceRegion.body, tb, dominator)
 			}
 			if (replaceRegion is IBranchRegion) {
 				return wrapBlocks(replaceRegion.parent, tb, dominator)
 			}
 
 			val tryRegion = Region(replaceRegion)
-			val subBlocks = replaceRegion.getSubBlocks()
+			val subBlocks = replaceRegion.subBlocks
 			// 遍历外层区域：凡是从 dominator 可达、且不是异常处理器路径的块，
 			// 都属于 try 体，应放进 tryRegion。
 			for (cont in subBlocks) {
@@ -107,7 +107,7 @@ class ProcessTryCatchRegions : AbstractRegionVisitor() {
 					tryRegion.add(cont)
 				}
 			}
-			if (tryRegion.getSubBlocks().isEmpty()) {
+			if (tryRegion.subBlocks.isEmpty()) {
 				return false
 			}
 
@@ -116,15 +116,15 @@ class ProcessTryCatchRegions : AbstractRegionVisitor() {
 			tryCatchRegion.setTryCatchBlock(tb)
 
 			// 用 try/catch 区域替换原来的第一个子块
-			val firstNode = tryRegion.getSubBlocks()[0]
+			val firstNode = tryRegion.subBlocks[0]
 			if (!replaceRegion.replaceSubBlock(firstNode, tryCatchRegion)) {
 				return false
 			}
 			@Suppress("UNCHECKED_CAST")
-			(subBlocks as MutableList<IContainer>).removeAll(tryRegion.getSubBlocks())
+			(subBlocks as MutableList<IContainer>).removeAll(tryRegion.subBlocks)
 
 			// 修正 tryRegion 子块的父指针
-			for (cont in tryRegion.getSubBlocks()) {
+			for (cont in tryRegion.subBlocks) {
 				if (cont is AbstractRegion) {
 					cont.parent = tryRegion
 				}

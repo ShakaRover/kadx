@@ -53,15 +53,15 @@ class JadxNodeRef(
 		@JvmStatic
 		fun forMth(mth: JavaMethod): JadxNodeRef = JadxNodeRef(
 			RefType.METHOD,
-			getClassRefStr(mth.getDeclaringClass()),
-			mth.getMethodNode().getMethodInfo().shortId,
+			getClassRefStr(mth.declaringClass),
+			mth.getMethodNode().methodInfo.shortId,
 		)
 
 		/** 字段引用（用字段短签名作为 shortId）。 */
 		@JvmStatic
 		fun forFld(fld: JavaField): JadxNodeRef = JadxNodeRef(
 			RefType.FIELD,
-			getClassRefStr(fld.getDeclaringClass()),
+			getClassRefStr(fld.declaringClass),
 			fld.getFieldNode().getFieldInfo().shortId,
 		)
 
@@ -84,7 +84,7 @@ class JadxNodeRef(
 		this.refType = refType
 	}
 
-	override fun getDeclaringClass(): String = checkNotNull(declClass) { "declClass is not set" }
+	override val declaringClass: String get() = checkNotNull(declClass) { "declClass is not set" }
 
 	fun setDeclClass(declClass: String) {
 		this.declClass = declClass
@@ -108,7 +108,7 @@ class JadxNodeRef(
 		if (cmpType != 0) {
 			return cmpType
 		}
-		val cmpClass = getDeclaringClass().compareTo(other.getDeclaringClass())
+		val cmpClass = declaringClass.compareTo(other.declaringClass)
 		if (cmpClass != 0) {
 			return cmpClass
 		}
@@ -132,8 +132,8 @@ class JadxNodeRef(
 	}
 
 	override fun toString(): String = when (getType()) {
-		RefType.CLASS, RefType.PKG -> getDeclaringClass()
-		RefType.FIELD, RefType.METHOD -> getDeclaringClass() + "->" + shortId
+		RefType.CLASS, RefType.PKG -> declaringClass
+		RefType.FIELD, RefType.METHOD -> declaringClass + "->" + shortId
 		else -> "unknown node ref type"
 	}
 }

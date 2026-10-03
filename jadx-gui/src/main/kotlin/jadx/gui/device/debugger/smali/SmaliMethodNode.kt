@@ -89,7 +89,7 @@ class SmaliMethodNode internal constructor() {
 			arr[codeOffset] = pos
 		}
 		val insn = getInsnNode(codeOffset.toLong()) ?: return
-		val r = insn.getResult()
+		val r = insn.result
 		if (r != null) {
 			regList[r.regNum].setStartOffset(codeOffset)
 		}

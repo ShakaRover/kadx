@@ -199,7 +199,7 @@ class RootNode private constructor(
 
 			val sourceList = ArrayList<String?>()
 			for (cn in dupClsList) {
-				sourceList.add(cn.getInputFileName())
+				sourceList.add(cn.inputFileName)
 			}
 			java.util.Collections.sort(sourceList, null as java.util.Comparator<String?>?)
 			val sources = sourceList.joinToString("\n  ")

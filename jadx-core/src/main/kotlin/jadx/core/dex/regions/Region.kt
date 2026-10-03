@@ -21,7 +21,7 @@ class Region(parent: IRegion?) : AbstractRegion(parent) {
 	/** 子容器列表；初始容量 1 覆盖大多数“只有一个子块”的场景 */
 	private val blocks: MutableList<IContainer> = ArrayList(1)
 
-	override fun getSubBlocks(): List<IContainer> = blocks
+	override val subBlocks: List<IContainer> get() = blocks
 
 	/** 追加一个子容器，并把它的父指针指向本区域 */
 	fun add(region: IContainer) {

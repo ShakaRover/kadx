@@ -116,7 +116,7 @@ object BlockExceptionHandler {
 	 */
 	private fun processCatchAttr(mth: MethodNode) {
 		for (block in checkNotNull(mth.basicBlocks)) {
-			for (insn in block.getInstructions()) {
+			for (insn in block.instructions) {
 				if (insn.contains(AType.EXC_CATCH) && !insn.canThrowException()) {
 					insn.remove(AType.EXC_CATCH)
 				}
@@ -126,7 +126,7 @@ object BlockExceptionHandler {
 			val commonCatchAttr = getCommonCatchAttr(block)
 			if (commonCatchAttr != null) {
 				block.addAttr(commonCatchAttr)
-				for (insn in block.getInstructions()) {
+				for (insn in block.instructions) {
 					if (insn.contains(AFlag.TRY_ENTER)) {
 						block.add(AFlag.TRY_ENTER)
 					}
@@ -140,7 +140,7 @@ object BlockExceptionHandler {
 
 	private fun getCommonCatchAttr(block: BlockNode): CatchAttr? {
 		var commonCatchAttr: CatchAttr? = null
-		for (insn in block.getInstructions()) {
+		for (insn in block.instructions) {
 			val catchAttr = insn.get(AType.EXC_CATCH)
 			if (catchAttr != null) {
 				if (commonCatchAttr == null) {
@@ -170,7 +170,7 @@ object BlockExceptionHandler {
 			removeTmpConnection(block)
 
 			val excHandler = excHandlerAttr.handler
-			if (block.getPredecessors().isEmpty()) {
+			if (block.predecessors.isEmpty()) {
 				excHandler.setHandlerBlock(block)
 				block.addAttr(excHandlerAttr)
 				excHandler.addBlock(block)
@@ -371,12 +371,12 @@ object BlockExceptionHandler {
 	private fun wrapBlocksWithTryCatch(mth: MethodNode, tryCatchBlock: TryCatchBlockAttr): Boolean {
 		val blocks = tryCatchBlock.getBlocks()
 		val top = searchTopBlock(mth, blocks)
-		if (top.getPredecessors().isEmpty() && top !== mth.enterBlock) {
+		if (top.predecessors.isEmpty() && top !== mth.enterBlock) {
 			return false
 		}
 		var bottom = searchBottomBlock(mth, blocks)
 		val splitReturn: BlockNode?
-		if (bottom != null && bottom.isReturnBlock()) {
+		if (bottom != null && bottom.isReturnBlock) {
 			if (Consts.DEBUG_EXC_HANDLERS) {
 				LOG.debug("TryCatch #{} bottom block ({}) is return, split", tryCatchBlock.id(), bottom)
 			}
@@ -403,7 +403,7 @@ object BlockExceptionHandler {
 		if (bottom == null || totalHandlerBlocks == 0) {
 			bottomSplitterBlock = null
 		} else {
-			val existBottomSplitter = BlockUtils.getBlockWithFlag(bottom.getSuccessors(), AFlag.EXC_BOTTOM_SPLITTER)
+			val existBottomSplitter = BlockUtils.getBlockWithFlag(bottom.successors, AFlag.EXC_BOTTOM_SPLITTER)
 			val newBottomSplitter = existBottomSplitter ?: BlockSplitter.startNewBlock(mth, -1)
 			newBottomSplitter.add(AFlag.EXC_BOTTOM_SPLITTER)
 			newBottomSplitter.add(AFlag.SYNTHETIC)
@@ -411,7 +411,7 @@ object BlockExceptionHandler {
 			bottomSplitterBlock = newBottomSplitter
 			if (splitReturn != null) {
 				// 把处理器重定向到原始 return 块，避免合成块自环
-				val bottomPreds = BlockSet.from(mth, bottom.getPredecessors())
+				val bottomPreds = BlockSet.from(mth, bottom.predecessors)
 				for (handler in tryCatchBlock.handlers) {
 					if (bottomPreds.intersects(handler.blocks)) {
 						val lastBlock = bottomPreds.intersect(handler.blocks).one
@@ -437,7 +437,7 @@ object BlockExceptionHandler {
 		// 这里把“既从 bottom 可达、又是 bottom 前驱”的边改指向原始路径交叉点，消除假循环。
 		if (bottom != null && bottom.contains(AType.EXC_SPLIT_CROSS)) {
 			val convertBlocks = ArrayList<BlockNode>()
-			for (b in bottom.getPredecessors()) {
+			for (b in bottom.predecessors) {
 				if (BlockUtils.isAnyPathExists(bottom, b)) {
 					convertBlocks.add(b)
 				}
@@ -469,18 +469,18 @@ object BlockExceptionHandler {
 
 	private fun getTopSplitterBlock(mth: MethodNode, top: BlockNode): BlockNode {
 		if (top === mth.enterBlock) {
-			val fixedTop = checkNotNull(mth.enterBlock).getSuccessors()[0]
+			val fixedTop = checkNotNull(mth.enterBlock).successors[0]
 			return BlockSplitter.blockSplitTop(mth, fixedTop)
 		}
-		val existPredTopSplitter = BlockUtils.getBlockWithFlag(top.getPredecessors(), AFlag.EXC_TOP_SPLITTER)
+		val existPredTopSplitter = BlockUtils.getBlockWithFlag(top.predecessors, AFlag.EXC_TOP_SPLITTER)
 		if (existPredTopSplitter != null) {
 			return existPredTopSplitter
 		}
 		// 尝试复用顶部块下方空简单路径上已有的拆分块
-		val cleanSuccessors = checkNotNull(top.getCleanSuccessors())
-		if (cleanSuccessors.size == 1 && top.getInstructions().isEmpty()) {
+		val cleanSuccessors = checkNotNull(top.cleanSuccessors)
+		if (cleanSuccessors.size == 1 && top.instructions.isEmpty()) {
 			val otherTopSplitter = BlockUtils.getBlockWithFlag(cleanSuccessors, AFlag.EXC_TOP_SPLITTER)
-			if (otherTopSplitter != null && otherTopSplitter.getPredecessors().size == 1) {
+			if (otherTopSplitter != null && otherTopSplitter.predecessors.size == 1) {
 				return otherTopSplitter
 			}
 		}
@@ -495,8 +495,8 @@ object BlockExceptionHandler {
 		val topDom = BlockUtils.getCommonDominator(mth, blocks)
 		if (topDom != null) {
 			// 若集合已包含支配者，公共支配会多返回上一级块，此时取其后继
-			if (topDom.getSuccessors().size == 1) {
-				val upBlock = topDom.getSuccessors()[0]
+			if (topDom.successors.size == 1) {
+				val upBlock = topDom.successors[0]
 				if (blocks.contains(upBlock)) {
 					return upBlock
 				}
@@ -507,9 +507,9 @@ object BlockExceptionHandler {
 	}
 
 	private fun adjustTopBlock(topBlock: BlockNode): BlockNode {
-		if (topBlock.getSuccessors().size == 1 && !topBlock.contains(AType.EXC_CATCH)) {
+		if (topBlock.successors.size == 1 && !topBlock.contains(AType.EXC_CATCH)) {
 			// 顶部块可能被其他异常处理器抬高了，这里尝试回退一层
-			return topBlock.getSuccessors()[0]
+			return topBlock.successors[0]
 		}
 		return topBlock
 	}
@@ -523,7 +523,7 @@ object BlockExceptionHandler {
 		// 找不到 -> 集合没有共同后支配者，尝试在集合外找公共交叉块
 		// 注意：出口节点不需要底部块（它们没有数据流出）
 		val pathCross = BlockUtils.getPathCross(mth, blocks) ?: return null
-		val preds = ArrayList(pathCross.getPredecessors())
+		val preds = ArrayList(pathCross.predecessors)
 		preds.removeAll(blocks)
 		val outsidePredecessors = ArrayList<BlockNode>()
 		for (p in preds) {
@@ -532,7 +532,7 @@ object BlockExceptionHandler {
 			}
 		}
 		// 没有集合外前驱，或全部前驱都在集合外（插入合成块没意义）-> 直接返回交叉块
-		if (outsidePredecessors.isEmpty() || outsidePredecessors.size == pathCross.getPredecessors().size) {
+		if (outsidePredecessors.isEmpty() || outsidePredecessors.size == pathCross.predecessors.size) {
 			return pathCross
 		}
 		// 只有部分前驱在集合外 -> 只为集合内路径拆分
@@ -570,7 +570,7 @@ object BlockExceptionHandler {
 		val me = BlockUtils.getLastInsn(block)
 		if (me != null && me.type == InsnType.MOVE_EXCEPTION) {
 			// 为 move-exception 设置正确的异常类型
-			val resArg = InsnArg.reg(checkNotNull(me.getResult()).regNum, argType)
+			val resArg = InsnArg.reg(checkNotNull(me.result).regNum, argType)
 			resArg.copyAttributesFrom(me)
 			me.setResult(resArg)
 			me.add(AFlag.DONT_INLINE)
@@ -587,7 +587,7 @@ object BlockExceptionHandler {
 	private fun removeMonitorExitFromExcHandler(mth: MethodNode, excHandler: ExceptionHandler) {
 		for (excBlock in excHandler.blocks) {
 			val remover = InsnRemover(mth, excBlock)
-			for (insn in excBlock.getInstructions()) {
+			for (insn in excBlock.instructions) {
 				if (insn.type == InsnType.MONITOR_ENTER) {
 					break
 				}
@@ -625,7 +625,7 @@ object BlockExceptionHandler {
 				return false
 			}
 			val block = checkNotNull(handler.getHandlerBlock())
-			if (block.getInstructions().size != 1 ||
+			if (block.instructions.size != 1 ||
 				!BlockUtils.checkLastInsnType(block, InsnType.MOVE_EXCEPTION)
 			) {
 				return false
@@ -637,7 +637,7 @@ object BlockExceptionHandler {
 		}
 		val successorBlocks = ArrayList<BlockNode>()
 		for (h in handlerBlocks) {
-			for (s in h.getSuccessors()) {
+			for (s in h.successors) {
 				if (!successorBlocks.contains(s)) {
 					successorBlocks.add(s)
 				}
@@ -647,12 +647,12 @@ object BlockExceptionHandler {
 			return false
 		}
 		val successorBlock = successorBlocks[0]
-		if (!ListUtils.unorderedEquals(successorBlock.getPredecessors(), handlerBlocks)) {
+		if (!ListUtils.unorderedEquals(successorBlock.predecessors, handlerBlocks)) {
 			return false
 		}
 		val regs = ArrayList<RegisterArg?>()
 		for (h in tryCatch.handlers) {
-			val result = checkNotNull(BlockUtils.getLastInsn(h.getHandlerBlock())).getResult()
+			val result = checkNotNull(BlockUtils.getLastInsn(h.getHandlerBlock())).result
 			if (!regs.contains(result)) {
 				regs.add(result)
 			}

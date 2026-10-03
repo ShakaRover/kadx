@@ -30,7 +30,7 @@ internal class RawUsageData {
 	/** 取某个方法节点的 usage 数据（按“父类 + 方法短 id”索引）。 */
 	fun getMethodData(mth: MethodNode): MthUsageData {
 		val parentClass = mth.parentClass
-		val shortId = mth.getMethodInfo().shortId
+		val shortId = mth.methodInfo.shortId
 		return getClassData(parentClass).mthUsage.getOrPut(shortId) {
 			MthUsageData(MthRef(parentClass.rawName, shortId))
 		}

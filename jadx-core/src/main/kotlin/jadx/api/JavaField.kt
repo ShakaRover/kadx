@@ -25,7 +25,7 @@ class JavaField internal constructor(
 	/** 原始（未去混淆）字段名。 */
 	fun getRawName(): String = field.name
 
-	override fun getDeclaringClass(): JavaClass = parent
+	override val declaringClass: JavaClass get() = parent
 
 	override fun getTopParentClass(): JavaClass = parent.getTopParentClass()
 
@@ -37,7 +37,7 @@ class JavaField internal constructor(
 
 	override fun getDefPos(): Int = field.getDefPosition()
 
-	override fun getUseIn(): List<JavaNode> = getDeclaringClass().getRootDecompiler().convertNodes(field.getUseIn())
+	override val useIn: List<JavaNode> get() = declaringClass.getRootDecompiler().convertNodes(this.field.useIn)
 
 	override fun removeAlias() {
 		field.getFieldInfo().removeAlias()

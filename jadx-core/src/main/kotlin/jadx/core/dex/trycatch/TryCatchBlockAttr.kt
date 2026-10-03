@@ -57,7 +57,7 @@ class TryCatchBlockAttr(
 	fun isThrowOnly(): Boolean {
 		var throwFound = false
 		for (block in blocks) {
-			val insns = block.getInstructions()
+			val insns = block.instructions
 			if (insns.size != 1) {
 				return false
 			}
@@ -144,7 +144,7 @@ class TryCatchBlockAttr(
 			var handlerSplitter = handler.bottomSplitter
 			if (handlerSplitter == null) {
 				// 无法找到底部拆分块时，用处理器前驱中属于 try 体的块推断
-				val allChildren = ListUtils.filter(handlerBlock.getPredecessors()) { getBlocks().contains(it) }
+				val allChildren = ListUtils.filter(handlerBlock.predecessors) { getBlocks().contains(it) }
 				handlerSplitter = BlockUtils.getBottomBlock(allChildren)
 				if (handlerSplitter == null) {
 					handlerSplitter = getTopSplitter()
@@ -198,7 +198,7 @@ class TryCatchBlockAttr(
 		exploredBlocks: MutableList<BlockNode>,
 		exploredTrys: MutableList<TryCatchBlockAttr>,
 	) {
-		for (successor in blk.getSuccessors()) {
+		for (successor in blk.successors) {
 			// 已探索过的分支无需重复计算
 			if (exploredBlocks.contains(successor)) {
 				continue
@@ -254,7 +254,7 @@ class TryCatchBlockAttr(
 				if (emptyPathEndOfSuccessor.contains(AFlag.EXC_TOP_SPLITTER)) {
 					// 该出口进入同一作用域内的另一个 try：把那个 try 的出口边并入本 try
 					val nestedTrys = HashSet<TryCatchBlockAttr>()
-					val allSuccessorsOnTryBody = ListUtils.filter(emptyPathEndOfSuccessor.getSuccessors()) {
+					val allSuccessorsOnTryBody = ListUtils.filter(emptyPathEndOfSuccessor.successors) {
 						it.contains(AFlag.TRY_ENTER)
 					}
 					for (tryBodyEnter in allSuccessorsOnTryBody) {
@@ -350,7 +350,7 @@ class TryCatchBlockAttr(
 	): List<BlockNode> {
 		val searchBlocks = LinkedList<BlockNode>()
 		for ((scopeEndBlock, sourceHandlers) in fallthroughGroups) {
-			for (scopeEndPredecessor in scopeEndBlock.getPredecessors()) {
+			for (scopeEndPredecessor in scopeEndBlock.predecessors) {
 				// 筛选出“非 finally 处理器出口”且目标可到达该前驱的边
 				val matchedHandlerPaths = sourceHandlers
 					.filter { handler -> !(handler.isHandlerExit() && handler.exceptionHandler === finallyHandler) }

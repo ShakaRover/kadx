@@ -111,7 +111,7 @@ class InsnRemover {
 		}
 
 		fun unbindResult(mth: MethodNode?, insn: InsnNode) {
-			val r = insn.getResult() ?: return
+			val r = insn.result ?: return
 			if (mth != null) {
 				val ssaVar = r.sVar
 				// assignInsn 可能已被重新赋值
@@ -243,7 +243,7 @@ class InsnRemover {
 
 		fun removeAllAndUnbind(mth: MethodNode, container: IContainer, insns: List<InsnNode>) {
 			unbindInsns(mth, insns)
-			RegionUtils.visitBlocks(mth, container) { b -> removeAll(asMutable(b.getInstructions()), insns) }
+			RegionUtils.visitBlocks(mth, container) { b -> removeAll(asMutable(b.instructions), insns) }
 		}
 
 		fun removeAllAndUnbind(mth: MethodNode, insns: List<InsnNode>) {
@@ -262,7 +262,7 @@ class InsnRemover {
 			val insnRemover = InsnRemover(mth)
 			val blocks = mth.basicBlocks ?: return
 			for (blockNode in blocks) {
-				for (insn in blockNode.getInstructions()) {
+				for (insn in blockNode.instructions) {
 					if (insn.contains(AFlag.REMOVE)) {
 						insnRemover.addWithoutUnbind(insn)
 					}

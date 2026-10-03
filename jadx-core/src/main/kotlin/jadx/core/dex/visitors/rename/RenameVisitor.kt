@@ -229,7 +229,7 @@ class RenameVisitor : AbstractVisitor() {
 			if (args.isRenameValid) {
 				val names = HashSet<String>(methods.size)
 				for (mth in methods) {
-					val signature = mth.getMethodInfo().makeSignature(true, false)
+					val signature = mth.methodInfo.makeSignature(true, false)
 					if (!names.add(signature) && canRename(mth)) {
 						mth.rename(checkNotNull(aliasProvider.forMethod(mth)))
 						mth.addAttr(RenameReasonAttr("collision with other method in class"))

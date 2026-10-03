@@ -20,17 +20,15 @@ class BlockNode(
 ) : AttrNode(),
 	IBlock,
 	Comparable<BlockNode> {
-	// 以下三个属性均带有同名显式 getter（getInstructions/getPredecessors/getSuccessors），
-	// 因此把属性生成的 getter 改名为 xxxValue，避免 JVM 上出现两个同名方法导致 Java 端歧义
-	@get:JvmName("instructionsValue")
-	val instructions = ArrayList<InsnNode>(2)
+	// instructions 覆盖 IBlock.instructions：属性 getter 直接生成 getInstructions()，
+	// 返回 MutableList（JVM 上擦除为 java.util.List）以便原地增删指令
+	override val instructions: MutableList<InsnNode> = ArrayList(2)
 
-	@get:JvmName("predecessorsValue")
 	var predecessors: List<BlockNode> = ArrayList(1)
 
-	@get:JvmName("successorsValue")
 	var successors: List<BlockNode> = ArrayList(1)
-	private var cleanSuccessors: List<BlockNode>? = null
+	var cleanSuccessors: List<BlockNode>? = null
+		private set
 
 	/** 所有支配节点（不含自身）。原 Java 允许为 null（BlockProcessor.clearBlocksState 会置空），故保留可空 */
 	var doms: BitSet? = EMPTY_BITSET
@@ -49,15 +47,9 @@ class BlockNode(
 	/** Immediate post dominator */
 	var iPostDom: BlockNode? = null
 
-	private var dominatesOn: List<BlockNode> = ArrayList(3)
+	private var dominatesOnList: List<BlockNode> = ArrayList(3)
 
-	override fun getInstructions(): List<InsnNode> = instructions
-
-	fun getPredecessors(): List<BlockNode> = predecessors
-
-	fun getSuccessors(): List<BlockNode> = successors
-
-	fun getCleanSuccessors(): List<BlockNode>? = cleanSuccessors
+	val dominatesOn: List<BlockNode> get() = dominatesOnList
 
 	fun updateCleanSuccessors() {
 		cleanSuccessors = cleanSuccessors(this)
@@ -104,7 +96,7 @@ class BlockNode(
 			successors = lockList(successorsList)
 			cleanSuccessors = if (successorsList === cleanSuccessors) successors else lockList(checkNotNull(cleanSuccessors))
 			predecessors = lockList(predecessors)
-			dominatesOn = lockList(dominatesOn)
+			dominatesOnList = lockList(dominatesOnList)
 			if (domFrontier == null) {
 				throw JadxRuntimeException("Dominance frontier not set for block: $this")
 			}
@@ -121,18 +113,16 @@ class BlockNode(
 	@Deprecated("Use getPos()")
 	val id: Int get() = pos
 
-	fun getDominatesOn(): List<BlockNode> = dominatesOn
-
 	@Suppress("UNCHECKED_CAST")
 	fun addDominatesOn(block: BlockNode) {
-		(dominatesOn as MutableList<BlockNode>).add(block)
+		(dominatesOnList as MutableList<BlockNode>).add(block)
 	}
 
-	fun isSynthetic(): Boolean = contains(AFlag.SYNTHETIC)
+	val isSynthetic: Boolean get() = contains(AFlag.SYNTHETIC)
 
-	fun isReturnBlock(): Boolean = contains(AFlag.RETURN)
+	val isReturnBlock: Boolean get() = contains(AFlag.RETURN)
 
-	fun isMthExitBlock(): Boolean = contains(AFlag.MTH_EXIT_BLOCK)
+	val isMthExitBlock: Boolean get() = contains(AFlag.MTH_EXIT_BLOCK)
 
 	fun isEmpty(): Boolean = instructions.isEmpty()
 

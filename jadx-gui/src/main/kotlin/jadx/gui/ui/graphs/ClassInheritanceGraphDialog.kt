@@ -171,7 +171,7 @@ class ClassInheritanceGraphDialog(mainWindow: MainWindow, private val cls: Class
 					val details = Formatter()
 					details.format(" overrides ")
 					for (baseMthDetails in ovrdAttr.overrideList) {
-						val baseClassName = DotGraphUtils.classFormatName(baseMthDetails.getMethodInfo().declClass, longNames)
+						val baseClassName = DotGraphUtils.classFormatName(baseMthDetails.methodInfo.declClass, longNames)
 						details.format("%s, ", baseClassName)
 					}
 					val detailsString = StringUtils.removeSuffix(details.toString(), ", ")

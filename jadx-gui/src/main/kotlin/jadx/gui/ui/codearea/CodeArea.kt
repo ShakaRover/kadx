@@ -353,7 +353,7 @@ class CodeArea internal constructor(panel: ContentPanel, jnode: JNode) :
 				AnnType.METHOD -> {
 					// 使用构造调用处的类
 					val node = jadxWrapper.getDecompiler().getJavaNodeByCodeAnnotation(codeInfo, ann)
-					node?.getDeclaringClass()
+					node?.declaringClass
 				}
 
 				else -> null

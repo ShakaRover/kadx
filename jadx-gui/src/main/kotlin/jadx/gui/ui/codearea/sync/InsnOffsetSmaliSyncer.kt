@@ -108,7 +108,7 @@ class InsnOffsetSmaliSyncer(private val from: SmaliArea) : IToJavaSyncStrategy {
 			if (value is NodeDeclareRef) {
 				val node = value.getNode()
 				if (node is MethodNode) {
-					if (node.getMethodInfo().rawFullId == smaliLineMthFullID) {
+					if (node.methodInfo.rawFullId == smaliLineMthFullID) {
 						return it
 					}
 				}

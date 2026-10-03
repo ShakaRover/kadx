@@ -193,7 +193,7 @@ class CodeGenUtils {
 			if (cls.checkCommentsLevel(CommentsLevel.INFO) && clsData != null) {
 				val inputFileName = clsData.inputFileName
 				if (inputFileName != null) {
-					val declCls = cls.getDeclaringClass()
+					val declCls = cls.declaringClass
 					val declClsData = declCls?.getClsData()
 					if (declClsData != null && inputFileName == declClsData.inputFileName) {
 						// don't add same comment for inner classes

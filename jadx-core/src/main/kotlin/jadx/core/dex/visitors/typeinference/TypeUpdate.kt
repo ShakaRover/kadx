@@ -33,7 +33,7 @@ import java.util.EnumMap
  * 全部验证通过后才一次性写回（保证原子性），任一环节被拒绝则整体回滚。
  *
  * **Kotlin 转换说明**：
- * - 节点/参数引用比较严格使用 `===`（如 `insn.getResult() === arg`）；
+ * - 节点/参数引用比较严格使用 `===`（如 `insn.result === arg`）；
  * - [typeCompare] 声明为属性，保留 `getTypeCompare()` JVM 方法；
  * - 监听器用 `fun interface` + 方法引用注册（Kotlin SAM 转换）；
  * - 局部变量 `var updateCallback` 重命名为 `val`。
@@ -365,8 +365,8 @@ class TypeUpdate(private val root: RootNode) {
 			val knownTypeVars = typeUtils.getKnownTypeVarsAtMethod(updateInfo.mth)
 			val typeVarsMap = typeUtils.getTypeVariablesMapping(candidateType)
 
-			val returnType = methodDetails.getReturnType()
-			val argTypes = methodDetails.getArgTypes()
+			val returnType = methodDetails.returnType
+			val argTypes = methodDetails.argTypes
 			val argsCount = argTypes.size
 
 			val getReturnType: () -> ArgType?
@@ -386,7 +386,7 @@ class TypeUpdate(private val root: RootNode) {
 	}
 
 	private fun sameFirstArgListener(updateInfo: TypeUpdateInfo, insn: InsnNode, arg: InsnArg, candidateType: ArgType): TypeUpdateResult? {
-		val changeArg = if (isAssign(insn, arg)) insn.getArg(0) else checkNotNull(insn.getResult())
+		val changeArg = if (isAssign(insn, arg)) insn.getArg(0) else checkNotNull(insn.result)
 		if (updateInfo.hasUpdateWithType(changeArg, candidateType)) {
 			return TypeUpdateResult.CHANGED
 		}
@@ -394,7 +394,7 @@ class TypeUpdate(private val root: RootNode) {
 	}
 
 	private fun moveListener(updateInfo: TypeUpdateInfo, insn: InsnNode, arg: InsnArg, candidateType: ArgType): TypeUpdateResult? {
-		val result = insn.getResult() ?: return TypeUpdateResult.CHANGED
+		val result = insn.result ?: return TypeUpdateResult.CHANGED
 		val assignChanged = isAssign(insn, arg)
 		val changeArg = if (assignChanged) insn.getArg(0) else result
 
@@ -430,7 +430,7 @@ class TypeUpdate(private val root: RootNode) {
 	/** 所有参数必须同类型。 */
 	private fun allSameListener(updateInfo: TypeUpdateInfo, insn: InsnNode, arg: InsnArg, candidateType: ArgType): TypeUpdateResult? {
 		if (!isAssign(insn, arg)) {
-			return queueTypeUpdate(updateInfo, checkNotNull(insn.getResult()), candidateType, null)
+			return queueTypeUpdate(updateInfo, checkNotNull(insn.result), candidateType, null)
 		}
 		// 用相同类型更新其它参数
 		val updateCallback = ArgsListUpdateCallback(this, updateInfo, insn.argList, candidateType, false)
@@ -455,7 +455,7 @@ class TypeUpdate(private val root: RootNode) {
 		updateCallback.setArgsFilter { a -> a !== arg }
 		updateCallback.setIgnoreReject(true)
 		if (!isAssign(insn, arg)) {
-			val resultArg = insn.getResult()
+			val resultArg = insn.result
 			if (resultArg != null) {
 				// 从结果开始
 				return queueTypeUpdate(updateInfo, resultArg, candidateType, updateCallback)
@@ -491,7 +491,7 @@ class TypeUpdate(private val root: RootNode) {
 		}
 		if (res == TypeCompareEnum.NARROW_BY_GENERIC && candidateType.containsGeneric()) {
 			// 把泛型类型传播到结果
-			return queueTypeUpdate(updateInfo, checkNotNull(checkCast.getResult()), candidateType, null)
+			return queueTypeUpdate(updateInfo, checkNotNull(checkCast.result), candidateType, null)
 		}
 		val currentType = checkCast.getArg(0).getType()
 		return if (candidateType == currentType) TypeUpdateResult.SAME else TypeUpdateResult.CHANGED
@@ -542,11 +542,11 @@ class TypeUpdate(private val root: RootNode) {
 			val arrayElement = candidateType.getArrayElement() ?: return TypeUpdateResult.REJECT
 			return queueTypeUpdate(
 				updateInfo,
-				checkNotNull(insn.getResult()),
+				checkNotNull(insn.result),
 				arrayElement,
 				ITypeUpdateCallback { result ->
 					if (result == TypeUpdateResult.REJECT) {
-						val resType = checkNotNull(insn.getResult()).getType()
+						val resType = checkNotNull(insn.result).getType()
 						if (resType.isTypeKnown() && resType.isPrimitive()) {
 							val compResult = typeCompare.compareTypes(resType, arrayElement)
 							if (compResult == TypeCompareEnum.WIDER) {
@@ -649,6 +649,6 @@ class TypeUpdate(private val root: RootNode) {
 			}
 		}
 
-		private fun isAssign(insn: InsnNode, arg: InsnArg): Boolean = insn.getResult() === arg
+		private fun isAssign(insn: InsnNode, arg: InsnArg): Boolean = insn.result === arg
 	}
 }

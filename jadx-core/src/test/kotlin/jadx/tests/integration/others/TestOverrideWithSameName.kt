@@ -52,7 +52,7 @@ class TestOverrideWithSameName : SmaliTest() {
 
 		assertThat(checkNotNull(getMethod(bCls, "a").get(AType.METHOD_OVERRIDE)).overrideList)
 			.singleElement()
-			.satisfies(Consumer<IMethodDetails> { mth -> assertThat(mth.getMethodInfo().declClass.shortName).isEqualTo("A") })
+			.satisfies(Consumer<IMethodDetails> { mth -> assertThat(mth.methodInfo.declClass.shortName).isEqualTo("A") })
 
 		val cCls = searchCls(clsNodes, "test.C")
 		assertThat(cCls)
@@ -62,6 +62,6 @@ class TestOverrideWithSameName : SmaliTest() {
 
 		assertThat(checkNotNull(getMethod(cCls, "a").get(AType.METHOD_OVERRIDE)).overrideList)
 			.singleElement()
-			.satisfies(Consumer<IMethodDetails> { mth -> assertThat(mth.getMethodInfo().declClass.shortName).isEqualTo("A") })
+			.satisfies(Consumer<IMethodDetails> { mth -> assertThat(mth.methodInfo.declClass.shortName).isEqualTo("A") })
 	}
 }

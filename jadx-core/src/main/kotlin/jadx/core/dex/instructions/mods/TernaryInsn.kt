@@ -99,5 +99,5 @@ class TernaryInsn : InsnNode {
 	}
 
 	override fun toString(): String = InsnUtils.formatOffset(offset) + ": TERNARY " +
-		getResult() + " = (" + conditionRef + ") ? " + getArg(0) + " : " + getArg(1)
+		result + " = (" + conditionRef + ") ? " + getArg(0) + " : " + getArg(1)
 }

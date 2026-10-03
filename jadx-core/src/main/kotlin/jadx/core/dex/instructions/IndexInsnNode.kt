@@ -42,8 +42,8 @@ class IndexInsnNode(type: InsnType, index: Any?, argCount: Int) : InsnNode(type,
 			val sb = StringBuilder()
 			sb.append(InsnUtils.formatOffset(offset)).append(": ")
 			sb.append(insnType).append(' ')
-			if (getResult() != null) {
-				sb.append(getResult()).append(" = ")
+			if (result != null) {
+				sb.append(result).append(" = ")
 			}
 			sb.append('(').append(InsnUtils.indexToString(index)).append(") ")
 			sb.append(Utils.listToString(getArguments()))

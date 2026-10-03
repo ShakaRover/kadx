@@ -87,7 +87,7 @@ class CommentSearchProvider(
 
 	private fun getRefNode(comment: ICodeComment): JNode? {
 		val nodeRef = comment.getNodeRef()
-		val javaClass = wrapper.searchJavaClassByOrigClassName(nodeRef.getDeclaringClass()) ?: return null
+		val javaClass = wrapper.searchJavaClassByOrigClassName(nodeRef.declaringClass) ?: return null
 		val nodeCache = cacheObject.nodeCache
 		when (nodeRef.getType()) {
 			IJavaNodeRef.RefType.CLASS -> return nodeCache.makeFrom(javaClass)
@@ -102,7 +102,7 @@ class CommentSearchProvider(
 
 			IJavaNodeRef.RefType.METHOD -> {
 				for (mth: JavaMethod in javaClass.getMethods()) {
-					if (mth.getMethodNode().getMethodInfo().shortId == nodeRef.getShortId()) {
+					if (mth.getMethodNode().methodInfo.shortId == nodeRef.getShortId()) {
 						return nodeCache.makeFrom(mth)
 					}
 				}

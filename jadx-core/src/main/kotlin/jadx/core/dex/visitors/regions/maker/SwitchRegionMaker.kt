@@ -57,7 +57,7 @@ class SwitchRegionMaker(private val mth: MethodNode, private val regionMaker: Re
 		val sw = SwitchRegion(currentRegion, block)
 		insn.addAttr(RegionRefAttr(sw))
 		@Suppress("UNCHECKED_CAST")
-		(currentRegion.getSubBlocks() as MutableList<IContainer>).add(sw)
+		(currentRegion.subBlocks as MutableList<IContainer>).add(sw)
 		stack.push(sw)
 
 		val out = calcSwitchOut(block, insn, stack)
@@ -73,7 +73,7 @@ class SwitchRegionMaker(private val mth: MethodNode, private val regionMaker: Re
 	private fun calcSwitchOut(block: BlockNode, insn: SwitchInsn, stack: RegionStack): BlockNode? {
 		// case 块支配边界的并集（无 fallthrough、无 return 时有效）
 		val outs = BlockUtils.newBlocksBitSet(mth)
-		for (s in checkNotNull(block.getCleanSuccessors())) {
+		for (s in checkNotNull(block.cleanSuccessors)) {
 			if (s.contains(AFlag.LOOP_END)) {
 				// 循环末尾的支配边界是循环头，忽略
 				continue
@@ -129,7 +129,7 @@ class SwitchRegionMaker(private val mth: MethodNode, private val regionMaker: Re
 			return allSameReturns(stack)
 		}
 		if (imPostDom === insn.getDefTargetBlock() &&
-			checkNotNull(block.getCleanSuccessors()).contains(imPostDom) &&
+			checkNotNull(block.cleanSuccessors).contains(imPostDom) &&
 			checkNotNull(block.domFrontier).get(imPostDom.pos)
 		) {
 			// 为空的 default 块添加出口以便停止
@@ -150,12 +150,12 @@ class SwitchRegionMaker(private val mth: MethodNode, private val regionMaker: Re
 
 	private fun allSameReturns(stack: RegionStack): BlockNode {
 		val exitBlock = checkNotNull(mth.exitBlock)
-		val preds = exitBlock.getPredecessors()
+		val preds = exitBlock.predecessors
 		val count = preds.size
 		if (count == 1) {
 			return preds[0]
 		}
-		if (mth.getReturnType() == ArgType.VOID) {
+		if (mth.returnType == ArgType.VOID) {
 			for (pred in preds) {
 				val insn = BlockUtils.getLastInsn(pred)
 				if (insn == null || insn.type != InsnType.RETURN) {
@@ -207,7 +207,7 @@ class SwitchRegionMaker(private val mth: MethodNode, private val regionMaker: Re
 			// 识别 fall-through case
 			val caseBlocks = BlockUtils.blocksToBitSet(mth, blocksMap.keys)
 			caseBlocks.clear(out.pos)
-			for (successor in sw.header.getSuccessors()) {
+			for (successor in sw.header.successors) {
 				val df = successor.domFrontier
 				if (df != null && df.intersects(caseBlocks)) {
 					val fallThroughBlock = getOneIntersectionBlock(out, caseBlocks, df)
@@ -285,7 +285,7 @@ class SwitchRegionMaker(private val mth: MethodNode, private val regionMaker: Re
 			if (container is BlockNode) {
 				return BlockUtils.followEmptyPath(container) === outBlock
 			} else if (container is IRegion) {
-				for (subBlock in container.getSubBlocks()) {
+				for (subBlock in container.subBlocks) {
 					if (!canRemove(subBlock, outBlock)) {
 						return false
 					}
@@ -332,16 +332,16 @@ class SwitchRegionMaker(private val mth: MethodNode, private val regionMaker: Re
 	}
 	private fun insertContinueInSwitch(switchBlock: BlockNode, switchOut: BlockNode, loopEnd: BlockNode): Boolean {
 		var inserted = false
-		for (caseBlock in checkNotNull(switchBlock.getCleanSuccessors())) {
+		for (caseBlock in checkNotNull(switchBlock.cleanSuccessors)) {
 			if (checkNotNull(caseBlock.domFrontier).get(loopEnd.pos) && caseBlock !== switchOut) {
 				// 在当前后继到 loop end 的路径上搜索前驱
 				val list: MutableSet<BlockNode> = HashSet(BlockUtils.collectBlocksDominatedBy(mth, caseBlock, caseBlock))
-				if (list.contains(switchOut) || switchOut.getPredecessors().any { list.contains(it) }) {
+				if (list.contains(switchOut) || switchOut.predecessors.any { list.contains(it) }) {
 					// 不需要 continue
 				} else {
-					for (p in loopEnd.getPredecessors()) {
+					for (p in loopEnd.predecessors) {
 						if (list.contains(p) || p === caseBlock) {
-							if (p.isSynthetic()) {
+							if (p.isSynthetic) {
 								p.instructions.add(InsnNode(InsnType.CONTINUE, 0))
 								inserted = true
 							}
@@ -372,9 +372,9 @@ class SwitchRegionMaker(private val mth: MethodNode, private val regionMaker: Re
 							// 顶层区域
 							insertBreak = true
 						} else {
-							val lastContainer = ListUtils.last(region.getSubBlocks())
+							val lastContainer = ListUtils.last(region.subBlocks)
 							if (lastContainer is BlockNode) {
-								for (successor in lastContainer.getSuccessors()) {
+								for (successor in lastContainer.successors) {
 									if (!caseBlocks.contains(successor)) {
 										insertBreak = true
 										break
@@ -384,7 +384,7 @@ class SwitchRegionMaker(private val mth: MethodNode, private val regionMaker: Re
 						}
 						if (insertBreak && canAppendBreak(region)) {
 							@Suppress("UNCHECKED_CAST")
-							(region.getSubBlocks() as MutableList<IContainer>).add(buildBreakContainer(switchRegion))
+							(region.subBlocks as MutableList<IContainer>).add(buildBreakContainer(switchRegion))
 						}
 					}
 				},

@@ -154,7 +154,7 @@ class JavaClass : JavaNode {
 		return result
 	}
 
-	override fun getUseIn(): List<JavaNode> = getRootDecompiler().convertNodes(cls.getUseIn())
+	override val useIn: List<JavaNode> get() = getRootDecompiler().convertNodes(cls.useIn)
 
 	/** 反编译行号 -> 源码行号。 */
 	fun getSourceLine(decompiledLine: Int): Int? = getCodeInfo().getCodeMetadata().getLineMapping()[decompiledLine]
@@ -290,7 +290,7 @@ class JavaClass : JavaNode {
 	/** 类所在包的 Java 视图；包尚未转换时可能为 null。 */
 	fun getJavaPackage(): JavaPackage? = cls.packageNode.javaNode
 
-	override fun getDeclaringClass(): JavaClass? = parent
+	override val declaringClass: JavaClass? get() = parent
 
 	/** 原始顶层父类（不随内联/移动而变化）。 */
 	fun getOriginalTopParentClass(): JavaClass = if (parent == null) this else parent.getOriginalTopParentClass()

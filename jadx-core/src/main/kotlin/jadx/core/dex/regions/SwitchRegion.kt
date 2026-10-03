@@ -33,7 +33,7 @@ class SwitchRegion(parent: IRegion?, val header: BlockNode) :
 	/** 只取各 case 的代码容器（去掉 key） */
 	val caseContainers: List<IContainer> get() = Utils.collectionMap(cases) { it.container }
 
-	override fun getSubBlocks(): List<IContainer> {
+	override val subBlocks: List<IContainer> get() {
 		val all = ArrayList<IContainer>(cases.size + 1)
 		all.add(header)
 		for (caseInfo in cases) {
@@ -42,7 +42,7 @@ class SwitchRegion(parent: IRegion?, val header: BlockNode) :
 		return Collections.unmodifiableList(all)
 	}
 
-	override fun getBranches(): List<IContainer?> = Collections.unmodifiableList(caseContainers)
+	override val branches: List<IContainer?> get() = Collections.unmodifiableList(caseContainers)
 
 	@Throws(CodegenException::class)
 	override fun generate(regionGen: RegionGen, code: ICodeWriter) {
@@ -74,7 +74,7 @@ class SwitchRegion(parent: IRegion?, val header: BlockNode) :
 	class CaseInfo(val keys: List<Any>, val container: IContainer) {
 
 		/** 判断是否为 default 分支：只有一个 key 且等于哨兵常量 */
-		fun isDefaultCase(): Boolean = keys.size == 1 && keys[0] === DEFAULT_CASE_KEY
+		val isDefaultCase: Boolean get() = keys.size == 1 && keys[0] === DEFAULT_CASE_KEY
 	}
 
 	companion object {

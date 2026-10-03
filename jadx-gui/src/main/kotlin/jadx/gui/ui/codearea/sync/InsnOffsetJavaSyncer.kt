@@ -140,7 +140,7 @@ class InsnOffsetJavaSyncer(private val from: CodeArea) :
 					return@searchDown null
 				}
 				val mth = node as MethodNode
-				if (mth.getMethodInfo().rawFullId != mthFullRawID) {
+				if (mth.methodInfo.rawFullId != mthFullRawID) {
 					return@searchDown null
 				}
 				SimpleEntry(offset, ann)
@@ -255,7 +255,7 @@ class InsnOffsetJavaSyncer(private val from: CodeArea) :
 		val ann = from.codeMetadata?.getAt(mthDefPos)
 		val ref = ann as NodeDeclareRef
 		val mth = ref.getNode() as MethodNode
-		return mth.getMethodInfo().rawFullId
+		return mth.methodInfo.rawFullId
 	}
 
 	/**

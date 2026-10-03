@@ -39,7 +39,7 @@ class JMethod(
 
 	override fun getJParent(): JClass = jParent
 
-	val returnType: ArgType get() = mth.getReturnType()
+	val returnType: ArgType get() = mth.returnType
 
 	override fun getRootClass(): JClass = jParent.getRootClass()
 
@@ -88,11 +88,11 @@ class JMethod(
 
 	override fun addUpdateNodes(toUpdate: MutableList<JavaNode>) {
 		toUpdate.add(mth)
-		toUpdate.addAll(mth.getUseIn())
+		toUpdate.addAll(mth.useIn)
 		val overrideRelatedMethods = mth.getOverrideRelatedMethods()
 		toUpdate.addAll(overrideRelatedMethods)
 		for (ovrdMth in overrideRelatedMethods) {
-			toUpdate.addAll(ovrdMth.getUseIn())
+			toUpdate.addAll(ovrdMth.useIn)
 		}
 	}
 
@@ -105,12 +105,12 @@ class JMethod(
 	override fun makeStringHtml(): String = UiUtils.typeFormatHtml(makeBaseString(), returnType)
 
 	override fun makeLongString(): String {
-		val name = mth.getDeclaringClass().getFullName() + '.' + makeBaseString()
+		val name = mth.declaringClass.getFullName() + '.' + makeBaseString()
 		return UiUtils.typeFormat(name, returnType)
 	}
 
 	override fun makeLongStringHtml(): String {
-		val name = mth.getDeclaringClass().getFullName() + '.' + makeBaseString()
+		val name = mth.declaringClass.getFullName() + '.' + makeBaseString()
 		return UiUtils.typeFormatHtml(name, returnType)
 	}
 
@@ -148,7 +148,7 @@ class JMethod(
 		/** 排序：先按所属类，再按方法短签名，最后按定义位置。 */
 		private val COMPARATOR: Comparator<JMethod> = compareBy(
 			{ obj: JMethod -> obj.getJParent() },
-			{ obj: JMethod -> obj.mth.getMethodNode().getMethodInfo().shortId },
+			{ obj: JMethod -> obj.mth.getMethodNode().methodInfo.shortId },
 			{ obj: JMethod -> obj.getPos() },
 		)
 	}

@@ -22,7 +22,7 @@ class DebugRegionCounter : AbstractVisitor() {
 		DepthRegionTraversal.traverse(mth, visitor)
 		val sortedBlocks = visitor.sortedEntries
 		for (x in sortedBlocks) {
-			println(x.depth.toString() + " : " + x.block.toString() + " // " + x.block.getInstructions().toString())
+			println(x.depth.toString() + " : " + x.block.toString() + " // " + x.block.instructions.toString())
 		}
 
 		println("nregions :: " + visitor.NRegions)

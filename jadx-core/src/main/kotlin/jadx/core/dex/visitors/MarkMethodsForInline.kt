@@ -104,11 +104,11 @@ class MarkMethodsForInline : AbstractVisitor() {
 			return when (firstInsn.type) {
 				InsnType.IGET ->
 					mthRegs.size == 1 &&
-						retInsn.getArg(0).isSameVar(firstInsn.getResult()) &&
+						retInsn.getArg(0).isSameVar(firstInsn.result) &&
 						firstInsn.getArg(0).isSameVar(mthRegs[0])
 
 				InsnType.SGET -> mthRegs.isEmpty() &&
-					retInsn.getArg(0).isSameVar(firstInsn.getResult())
+					retInsn.getArg(0).isSameVar(firstInsn.result)
 
 				InsnType.IPUT ->
 					mthRegs.size == 2 &&
@@ -122,7 +122,7 @@ class MarkMethodsForInline : AbstractVisitor() {
 						firstInsn.getArg(0).isSameVar(mthRegs[0])
 
 				InsnType.INVOKE -> {
-					if (!retInsn.getArg(0).isSameVar(firstInsn.getResult())) {
+					if (!retInsn.getArg(0).isSameVar(firstInsn.result)) {
 						return false
 					}
 					ListUtils.orderedEquals(mth.argRegs, firstInsn.argList) { mthArg, insnArg ->

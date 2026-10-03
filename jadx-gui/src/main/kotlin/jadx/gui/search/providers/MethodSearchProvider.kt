@@ -36,7 +36,7 @@ class MethodSearchProvider(
 			val methods = cls.getClassNode().methods
 			if (mthNum < methods.size) {
 				val mth = methods[mthNum++]
-				if (checkMth(mth.getMethodInfo())) {
+				if (checkMth(mth.methodInfo)) {
 					return convert(mth)
 				}
 			} else {

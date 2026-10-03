@@ -66,7 +66,7 @@ class PathEndBlockTraverserVisitor(state: TraverserState) : AbstractBlockTravers
 		validInsnInfo.bottomOffset = validInsnInfo.bottomOffset + bottomDelta
 
 		val sourceBlock: BlockNode = validInsnInfo.block
-		val noInstructionsLeft = validInsnInfo.bottomOffset >= sourceBlock.getInstructions().size
+		val noInstructionsLeft = validInsnInfo.bottomOffset >= sourceBlock.instructions.size
 		return if (noInstructionsLeft) {
 			// 该块已无剩余指令：标记状态去查找前驱，继续搜索重复指令。
 			NoBlockTraverserState(getComparator(), centralityState, sourceBlock)

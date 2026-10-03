@@ -48,7 +48,7 @@ class PostProcessRegions private constructor() : AbstractRegionVisitor() {
 		 * 若最后一个子块是空的基本块，直接把指令塞进该块；否则新建一个 [InsnContainer]。
 		 */
 		private fun insertEdgeInsn(region: Region) {
-			val subBlocks = region.getSubBlocks()
+			val subBlocks = region.subBlocks
 			if (subBlocks.isEmpty()) {
 				return
 			}
@@ -62,7 +62,7 @@ class PostProcessRegions private constructor() : AbstractRegionVisitor() {
 				return
 			}
 			if (last is BlockNode) {
-				if (last.getInstructions().isEmpty()) {
+				if (last.instructions.isEmpty()) {
 					last.instructions.add(insnAttr.insn)
 					return
 				}

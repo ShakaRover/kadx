@@ -48,7 +48,7 @@ class InlineMethods : AbstractVisitor() {
 			return
 		}
 		for (block in checkNotNull(mth.basicBlocks)) {
-			for (insn in block.getInstructions()) {
+			for (insn in block.instructions) {
 				if (insn.type == InsnType.INVOKE) {
 					processInvokeInsn(mth, block, insn as InvokeNode)
 				}
@@ -117,7 +117,7 @@ class InlineMethods : AbstractVisitor() {
 		inlCopy: InsnNode,
 	): Boolean {
 		try {
-			if (callMth.getMethodInfo().argumentsTypes.isNotEmpty()) {
+			if (callMth.methodInfo.argumentsTypes.isNotEmpty()) {
 				// 重映射参数
 				val regs = arrayOfNulls<InsnArg>(callMth.getRegsCount())
 				val regNums = checkNotNull(mia.argsRegNums)
@@ -145,12 +145,12 @@ class InlineMethods : AbstractVisitor() {
 					}
 				}
 			}
-			val resultArg = insn.getResult()
+			val resultArg = insn.result
 			if (resultArg != null) {
 				inlCopy.setResult(resultArg.duplicate())
 			} else if (isAssignNeeded(mia.insn, insn, callMth)) {
 				// 添加伪结果以生成正确的 java 表达式（见测试 TestGetterInlineNegative）
-				inlCopy.setResult(mth.makeSyntheticRegArg(callMth.getReturnType(), "unused"))
+				inlCopy.setResult(mth.makeSyntheticRegArg(callMth.returnType, "unused"))
 			}
 			return true
 		} catch (e: Exception) {
@@ -160,7 +160,7 @@ class InlineMethods : AbstractVisitor() {
 	}
 
 	private fun isAssignNeeded(inlineInsn: InsnNode?, parentInsn: InvokeNode, callMthNode: MethodNode): Boolean {
-		if (parentInsn.getResult() != null) {
+		if (parentInsn.result != null) {
 			return false
 		}
 		if (parentInsn.contains(AFlag.WRAPPED)) {
@@ -173,7 +173,7 @@ class InlineMethods : AbstractVisitor() {
 	}
 
 	private fun updateUsageInfo(mth: MethodNode, inlinedMth: MethodNode, insn: InsnNode?) {
-		val newUseIn = ArrayList(inlinedMth.getUseIn())
+		val newUseIn = ArrayList(inlinedMth.useIn)
 		newUseIn.remove(mth)
 		inlinedMth.setUseIn(newUseIn)
 		insn?.visitInsns(
@@ -184,7 +184,7 @@ class InlineMethods : AbstractVisitor() {
 						val callMth: MethodInfo = (innerInsn as BaseInvokeNode).callMth
 						val callMthNode = mth.root().resolveMethod(callMth)
 						if (callMthNode != null) {
-							callMthNode.setUseIn(ListUtils.safeReplace(ArrayList(callMthNode.getUseIn()), inlinedMth, mth))
+							callMthNode.setUseIn(ListUtils.safeReplace(ArrayList(callMthNode.useIn), inlinedMth, mth))
 							replaceClsUsage(mth, inlinedMth, callMthNode.parentClass)
 						}
 					}
@@ -193,7 +193,7 @@ class InlineMethods : AbstractVisitor() {
 						val fieldInfo = (innerInsn as IndexInsnNode).index as FieldInfo
 						val fieldNode: FieldNode? = mth.root().resolveField(fieldInfo)
 						if (fieldNode != null) {
-							fieldNode.setUseIn(ListUtils.safeReplace(ArrayList(fieldNode.getUseIn()), inlinedMth, mth))
+							fieldNode.setUseIn(ListUtils.safeReplace(ArrayList(fieldNode.useIn), inlinedMth, mth))
 							replaceClsUsage(mth, inlinedMth, fieldNode.parentClass)
 						}
 					}
@@ -206,6 +206,6 @@ class InlineMethods : AbstractVisitor() {
 
 	private fun replaceClsUsage(mth: MethodNode, inlinedMth: MethodNode, parentClass: ClassNode) {
 		parentClass.useInMth = ListUtils.safeReplace(parentClass.useInMth, inlinedMth, mth)
-		parentClass.useIn = ListUtils.safeReplace(parentClass.useIn, inlinedMth.parentClass, mth.parentClass)
+		parentClass.useInValue = ListUtils.safeReplace(parentClass.useIn, inlinedMth.parentClass, mth.parentClass)
 	}
 }

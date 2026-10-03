@@ -25,7 +25,7 @@ class PhiListAttr : IJadxAttribute {
 		val sb = StringBuilder()
 		sb.append("PHI:")
 		for (phiInsn in list) {
-			val resArg: RegisterArg? = phiInsn.getResult()
+			val resArg: RegisterArg? = phiInsn.result
 			if (resArg != null) {
 				sb.append(" r").append(resArg.regNum)
 			}

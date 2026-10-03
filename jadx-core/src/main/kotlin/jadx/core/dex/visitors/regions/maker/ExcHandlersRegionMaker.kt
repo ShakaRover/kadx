@@ -58,7 +58,7 @@ class ExcHandlersRegionMaker(private val mth: MethodNode, private val regionMake
 					if (handler.contains(AFlag.REMOVE)) {
 						continue
 					}
-					val s = splitter.getSuccessors()
+					val s = splitter.successors
 					if (s.isEmpty()) {
 						mth.addDebugComment("No successors for splitter: " + splitter)
 						continue
@@ -89,7 +89,7 @@ class ExcHandlersRegionMaker(private val mth: MethodNode, private val regionMake
 				if (region != null) {
 					val lastBlock = RegionUtils.getLastBlock(region)
 					if (lastBlock is BlockNode) {
-						successorBlocks.addAll(lastBlock.getSuccessors())
+						successorBlocks.addAll(lastBlock.successors)
 					}
 					RegionUtils.getAllRegionBlocks(region, allRegionBlocks)
 				}

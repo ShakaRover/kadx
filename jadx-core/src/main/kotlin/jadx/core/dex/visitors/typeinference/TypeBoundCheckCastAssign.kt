@@ -33,7 +33,7 @@ class TypeBoundCheckCastAssign(
 		return if (result.isNarrow()) argType else castType
 	}
 
-	override val arg: RegisterArg? get() = insn.getResult()
+	override val arg: RegisterArg? get() = insn.result
 
 	override fun toString(): String = "CHECK_CAST_ASSIGN{(" + insn.index + ") " + insn.getArg(0).getType() + "}"
 }

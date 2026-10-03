@@ -39,13 +39,13 @@ class JavaVariable(
 	/** 变量类型（解析类别名之后）。 */
 	fun getType(): ArgType = ArgType.tryToResolveClassAlias(mth.getMethodNode().root(), varNode.getType())
 
-	override fun getDeclaringClass(): JavaClass = mth.getDeclaringClass()
+	override val declaringClass: JavaClass get() = mth.declaringClass
 
 	override fun getTopParentClass(): JavaClass = mth.getTopParentClass()
 
 	override fun getDefPos(): Int = varNode.getDefPosition()
 
-	override fun getUseIn(): List<JavaNode> = listOf<JavaNode>(mth)
+	override val useIn: List<JavaNode> get() = listOf<JavaNode>(mth)
 
 	override fun removeAlias() {
 		varNode.setName(null)

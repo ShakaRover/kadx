@@ -154,7 +154,7 @@ object DepthRegionTraversal {
 
 	/** 逆序压栈，保证出栈顺序与区域原始顺序一致 */
 	private fun addSubBlocksToStack(stack: MutableList<IContainer>, region: IRegion) {
-		val subBlocks = region.getSubBlocks()
+		val subBlocks = region.subBlocks
 		for (i in subBlocks.size - 1 downTo 0) {
 			stack.add(subBlocks[i])
 		}
@@ -171,7 +171,7 @@ object DepthRegionTraversal {
 			if (visitor.visitRegion(mth, region)) {
 				return true
 			}
-			val subBlocks = region.getSubBlocks()
+			val subBlocks = region.subBlocks
 			// 逆序压栈，保持访问顺序
 			for (i in subBlocks.size - 1 downTo 0) {
 				val subBlock = subBlocks[i]

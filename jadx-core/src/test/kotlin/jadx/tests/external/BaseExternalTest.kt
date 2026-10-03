@@ -113,7 +113,7 @@ abstract class BaseExternalTest : TestUtils() {
 	}
 
 	private fun isMthMatch(mth: MethodNode, mthPattern: String): Boolean {
-		val shortId = mth.getMethodInfo().shortId
+		val shortId = mth.methodInfo.shortId
 		return isMatch(shortId, mthPattern)
 	}
 
@@ -130,7 +130,7 @@ abstract class BaseExternalTest : TestUtils() {
 			if (isMthMatch(mth, mthPattern)) {
 				LOG.info(
 					"Print method: {}\n{}\n{}\n{}",
-					mth.getMethodInfo().rawFullId,
+					mth.methodInfo.rawFullId,
 					dashLine,
 					mth.codeStr,
 					dashLine,

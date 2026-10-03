@@ -348,7 +348,7 @@ class JadxDecompiler : Closeable {
 				// 排除合成类
 				continue
 			}
-			var inputFileName = checkNotNull(cls.getInputFileName())
+			var inputFileName = checkNotNull(cls.inputFileName)
 			if (inputFileName.endsWith(".class")) {
 				// 截掉 .class 名称以得到源 .jar 文件
 				// 当前模板："<optional input files>:<.jar>:<full class name>"

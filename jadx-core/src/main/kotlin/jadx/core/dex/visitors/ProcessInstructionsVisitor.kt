@@ -84,7 +84,7 @@ class ProcessInstructionsVisitor : AbstractVisitor() {
 				}
 
 				InsnType.INVOKE -> {
-					if (insn.getResult() == null) {
+					if (insn.result == null) {
 						val retType = (insn as BaseInvokeNode).callMth.returnType
 						mergeMoveResult(insnByOffset, offset, insn, retType)
 					}
@@ -92,7 +92,7 @@ class ProcessInstructionsVisitor : AbstractVisitor() {
 
 				InsnType.STR_CONCAT -> {
 					// invoke-custom 的字符串拼接会直接转成 STR_CONCAT，同样要合并紧随的 move-result
-					if (insn.getResult() == null) {
+					if (insn.result == null) {
 						mergeMoveResult(insnByOffset, offset, insn, ArgType.STRING)
 					}
 				}
@@ -142,7 +142,7 @@ class ProcessInstructionsVisitor : AbstractVisitor() {
 		if (nextInsn.type != InsnType.MOVE_RESULT) {
 			return
 		}
-		val moveRes = nextInsn.getResult()
+		val moveRes = nextInsn.result
 		insn.setResult(checkNotNull(moveRes).duplicate(resType))
 		insn.copyAttributesFrom(nextInsn)
 		removeInsn(insnByOffset, nextInsn)

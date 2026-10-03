@@ -44,9 +44,9 @@ class CleanRegions : AbstractVisitor() {
 	private class RemoveRegionVisitor : AbstractRegionVisitor() {
 		override fun enterRegion(mth: MethodNode, region: IRegion): Boolean {
 			if (region is Region) {
-				// Region.getSubBlocks() 实际返回可变的 ArrayList，这里向下转型以便原地删除
+				// Region.subBlocks 实际返回可变的 ArrayList，这里向下转型以便原地删除
 				@Suppress("UNCHECKED_CAST")
-				(region.getSubBlocks() as MutableList<IContainer>).removeAll { canRemoveRegion(it) }
+				(region.subBlocks as MutableList<IContainer>).removeAll { canRemoveRegion(it) }
 			}
 			return true
 		}
@@ -62,16 +62,16 @@ class CleanRegions : AbstractVisitor() {
 				return true
 			}
 			if (container is BlockNode) {
-				return container.getInstructions().isEmpty()
+				return container.instructions.isEmpty()
 			}
 			if (container is LoopRegion) {
-				if (container.isEndless()) {
+				if (container.isEndless) {
 					// 保留空的无限循环
 					return false
 				}
 			}
 			if (container is IRegion) {
-				val subBlocks = container.getSubBlocks()
+				val subBlocks = container.subBlocks
 				for (subBlock in subBlocks) {
 					if (!canRemoveRegion(subBlock)) {
 						return false

@@ -395,7 +395,7 @@ class TypeSearch(private val mth: MethodNode) {
 		}
 		return object : AbstractTypeConstraint(insn, arg) {
 			override fun check(state: TypeSearchState): Boolean {
-				val resType = state.getArgType(checkNotNull(insn.getResult()))
+				val resType = state.getArgType(checkNotNull(insn.result))
 				val argType = state.getArgType(insn.getArg(0))
 				val res = typeCompare.compareTypes(resType, argType)
 				return res.isEqual() || res.isWider()
@@ -407,7 +407,7 @@ class TypeSearch(private val mth: MethodNode) {
 	private fun makePhiConstraint(insn: InsnNode, arg: RegisterArg): ITypeConstraint {
 		return object : AbstractTypeConstraint(insn, arg) {
 			override fun check(state: TypeSearchState): Boolean {
-				val resType = state.getArgType(checkNotNull(insn.getResult()))
+				val resType = state.getArgType(checkNotNull(insn.result))
 				for (insnArg in insn.getArguments()) {
 					val argType = state.getArgType(insnArg)
 					if (argType != resType) {

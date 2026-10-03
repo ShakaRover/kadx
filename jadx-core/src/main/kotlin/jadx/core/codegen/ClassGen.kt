@@ -361,11 +361,11 @@ class ClassGen(
 			return false
 		}
 		try {
-			if (mth.getUseIn().isEmpty()) {
+			if (mth.useIn.isEmpty()) {
 				mth.add(AFlag.DONT_GENERATE)
 				return true
 			}
-			val useInCompleted = mth.getUseIn().filter { m -> m.topParentClass.state.isProcessComplete() }
+			val useInCompleted = mth.useIn.filter { m -> m.topParentClass.state.isProcessComplete() }
 			if (useInCompleted.isEmpty()) {
 				mth.add(AFlag.DONT_GENERATE)
 				return true
@@ -824,7 +824,7 @@ class ClassGen(
 			for (depCls in deps) {
 				code.startLine("//  ").add(depCls.classInfo.fullName)
 			}
-			val useIn = cls.getUseIn()
+			val useIn = cls.useIn
 			code.startLine("// use in - ").add(useIn.size.toString())
 			for (useCls in useIn) {
 				code.startLine("//  ").add(useCls.classInfo.fullName)
@@ -837,7 +837,7 @@ class ClassGen(
 		}
 
 		internal fun addMthUsageInfo(code: ICodeWriter, mth: MethodNode) {
-			val useInMths = mth.getUseIn()
+			val useInMths = mth.useIn
 			code.startLine("// use in methods - ").add(useInMths.size.toString())
 			for (useMth in useInMths) {
 				code.startLine("//  ").add(useMth.toString())
@@ -845,7 +845,7 @@ class ClassGen(
 		}
 
 		private fun addFieldUsageInfo(code: ICodeWriter, fieldNode: FieldNode) {
-			val useInMths = fieldNode.getUseIn()
+			val useInMths = fieldNode.useIn
 			code.startLine("// use in methods - ").add(useInMths.size.toString())
 			for (useMth in useInMths) {
 				code.startLine("//  ").add(useMth.toString())

@@ -149,7 +149,7 @@ class CallGraphDialog(mainWindow: MainWindow, private val javaMethod: JavaMethod
 		if (depth >= callerDepthLimit) {
 			return
 		}
-		val uses: List<JavaNode> = javaMethod.getUseIn()
+		val uses: List<JavaNode> = javaMethod.useIn
 		for (node in uses) {
 			if (node !is JavaMethod) {
 				continue

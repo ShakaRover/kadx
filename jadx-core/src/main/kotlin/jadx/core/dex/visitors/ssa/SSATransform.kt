@@ -122,7 +122,7 @@ class SSATransform : AbstractVisitor() {
 				phiList = PhiListAttr()
 				block.addAttr(phiList)
 			}
-			var size = block.getPredecessors().size
+			var size = block.predecessors.size
 			if (mth.enterBlock === block) {
 				val thisArg = mth.getThisArg()
 				if (thisArg != null && thisArg.regNum == regNum) {
@@ -156,7 +156,7 @@ class SSATransform : AbstractVisitor() {
 		while (!stack.isEmpty()) {
 			val state = stack.pop()
 			renameVarsInBlock(mth, state)
-			for (dominated in state.block.getDominatesOn()) {
+			for (dominated in state.block.dominatesOn) {
 				stack.push(RenameState.copyFrom(state, dominated))
 			}
 		}
@@ -180,7 +180,7 @@ class SSATransform : AbstractVisitor() {
 	 */
 	private fun renameVarsInBlock(mth: MethodNode, state: RenameState) {
 		val block = state.block
-		for (insn in block.getInstructions()) {
+		for (insn in block.instructions) {
 			if (insn.type != InsnType.PHI) {
 				for (arg in insn.getArguments()) {
 					if (!arg.isRegister) {
@@ -197,12 +197,12 @@ class SSATransform : AbstractVisitor() {
 					v.use(reg)
 				}
 			}
-			val result = insn.getResult()
+			val result = insn.result
 			if (result != null) {
 				state.startVar(result)
 			}
 		}
-		for (s in block.getSuccessors()) {
+		for (s in block.successors) {
 			val phiList = s.get(AType.PHI_LIST)
 			if (phiList == null) {
 				continue
@@ -215,7 +215,7 @@ class SSATransform : AbstractVisitor() {
 
 	/** 把当前块的版本绑定到 PHI 参数（PHI 的参数来自不同前驱）。 */
 	private fun bindPhiArg(state: RenameState, phiInsn: PhiInsn) {
-		val regNum = checkNotNull(phiInsn.getResult()).regNum
+		val regNum = checkNotNull(phiInsn.result).regNum
 		val v = state.getVar(regNum) ?: return
 		val arg = phiInsn.bindArg(state.block)
 		v.use(arg)
@@ -259,7 +259,7 @@ class SSATransform : AbstractVisitor() {
 
 	private fun shouldSkipInsnResult(mth: MethodNode, insn: InsnNode?, handlerAttr: ExcHandlerAttr): Boolean {
 		if (insn != null &&
-			insn.getResult() != null &&
+			insn.result != null &&
 			insn.contains(AFlag.TRY_LEAVE)
 		) {
 			val catchAttr = BlockUtils.getCatchAttrForInsn(mth, insn)
@@ -340,7 +340,7 @@ class SSATransform : AbstractVisitor() {
 	/** 处理“参数全相同”的 PHI：尽量内联成 move，否则删除。 */
 	private fun fixPhiWithSameArgs(mth: MethodNode, block: BlockNode, phi: PhiInsn): Boolean {
 		if (phi.argsCount == 0) {
-			val resultVar = checkNotNull(checkNotNull(phi.getResult()).sVar)
+			val resultVar = checkNotNull(checkNotNull(phi.result).sVar)
 			for (useArg in resultVar.useList) {
 				val useInsn = useArg.getParentInsn()
 				if (useInsn != null && useInsn.type == InsnType.PHI) {
@@ -453,7 +453,7 @@ class SSATransform : AbstractVisitor() {
 		if (phiIndex == -1) {
 			return false
 		}
-		val assign = checkNotNull(phi.getResult()).sVar
+		val assign = checkNotNull(phi.result).sVar
 		val argVar = arg.sVar
 		if (argVar != null) {
 			argVar.removeUse(arg)
@@ -467,7 +467,7 @@ class SSATransform : AbstractVisitor() {
 
 			val m = InsnNode(InsnType.MOVE, 1)
 			m.add(AFlag.SYNTHETIC)
-			m.setResult(phi.getResult())
+			m.setResult(phi.result)
 			m.addArg(arg)
 			checkNotNull(arg.sVar).use(arg)
 			insns[phiIndex] = m
@@ -480,7 +480,7 @@ class SSATransform : AbstractVisitor() {
 	 * 若存在无法替换的使用点（或使用点就是 PHI 自身），则放弃内联。
 	 */
 	private fun inlinePhiInsn(mth: MethodNode, block: BlockNode, phi: PhiInsn, inlineArg: RegisterArg): Boolean {
-		val resVar = checkNotNull(phi.getResult()).sVar ?: return false
+		val resVar = checkNotNull(phi.result).sVar ?: return false
 		val inlineSVar = inlineArg.sVar ?: return false
 		val useList = resVar.useList
 		for (useArg in ArrayList(useList)) {
@@ -501,7 +501,7 @@ class SSATransform : AbstractVisitor() {
 		if (block.contains(AType.EXC_HANDLER)) {
 			// 不要内联进异常处理器
 			val assignInsn = inlineArg.assignInsn
-			if (assignInsn != null && !assignInsn.isConstInsn()) {
+			if (assignInsn != null && !assignInsn.isConstInsn) {
 				assignInsn.add(AFlag.DONT_INLINE)
 			}
 		}
@@ -531,7 +531,7 @@ class SSATransform : AbstractVisitor() {
 			parentInsn.type == InsnType.MOVE &&
 			parentInsn.getArg(0) === arg
 		) {
-			val resArg = checkNotNull(parentInsn.getResult())
+			val resArg = checkNotNull(parentInsn.result)
 			if (resArg.regNum != arg.regNum && !checkNotNull(resArg.sVar).isUsedInPhi()) {
 				markThisArgs(resArg)
 				parentInsn.add(AFlag.DONT_GENERATE)

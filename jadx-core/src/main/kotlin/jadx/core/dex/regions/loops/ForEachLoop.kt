@@ -42,7 +42,7 @@ class ForEachLoop(varArg: RegisterArg, iterableArg: InsnArg) : LoopType() {
 		checkNotNull(loopRegion.header).instructions.add(0, varArgInsn)
 	}
 
-	val varArg: RegisterArg get() = checkNotNull(varArgInsn.getResult())
+	val varArg: RegisterArg get() = checkNotNull(varArgInsn.result)
 
 	val iterableArg: InsnArg get() = iterableArgInsn.getArg(0)
 }

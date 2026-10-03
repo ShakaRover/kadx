@@ -75,7 +75,7 @@ open class IfNode : GotoNode {
 	}
 
 	override fun initBlocks(curBlock: BlockNode) {
-		val successors = curBlock.getSuccessors()
+		val successors = curBlock.successors
 		thenBlock = getBlockByOffset(target, successors)
 		if (successors.size == 1) {
 			elseBlock = thenBlock

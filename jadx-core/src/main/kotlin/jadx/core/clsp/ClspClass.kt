@@ -57,7 +57,7 @@ class ClspClass(
 	fun setMethods(methods: List<ClspMethod>) {
 		val map = HashMap<String, ClspMethod>(methods.size)
 		for (mth in methods) {
-			map[mth.getMethodInfo().shortId] = mth
+			map[mth.methodInfo.shortId] = mth
 		}
 		methodsMap = map
 	}

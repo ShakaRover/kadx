@@ -24,7 +24,7 @@ class SynchronizedRegion(parent: IRegion?, val enterInsn: InsnNode) : AbstractRe
 	/** 被 synchronized 保护的代码体 */
 	val region: Region = Region(this)
 
-	override fun getSubBlocks(): List<IContainer> = region.getSubBlocks()
+	override val subBlocks: List<IContainer> get() = region.subBlocks
 
 	@Throws(CodegenException::class)
 	override fun generate(regionGen: RegionGen, code: ICodeWriter) {

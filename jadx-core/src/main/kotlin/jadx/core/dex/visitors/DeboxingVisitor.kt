@@ -58,7 +58,7 @@ class DeboxingVisitor : AbstractVisitor() {
 		}
 		var replaced = false
 		for (blockNode in checkNotNull(mth.basicBlocks)) {
-			val insnList = blockNode.getInstructions()
+			val insnList = blockNode.instructions
 			val count = insnList.size
 			for (i in 0 until count) {
 				val insnNode = insnList[i]
@@ -77,12 +77,12 @@ class DeboxingVisitor : AbstractVisitor() {
 	}
 
 	private fun checkForReplace(insnNode: InvokeNode): InsnNode? {
-		if (insnNode.invokeType != InvokeType.STATIC || insnNode.getResult() == null) {
+		if (insnNode.invokeType != InvokeType.STATIC || insnNode.result == null) {
 			return null
 		}
 		val callMth = insnNode.callMth
 		if (valueOfMths.contains(callMth)) {
-			val resArg = checkNotNull(insnNode.getResult())
+			val resArg = checkNotNull(insnNode.result)
 			val arg = insnNode.getArg(0)
 			if (arg.isLiteral) {
 				val primitiveType = callMth.argumentsTypes[0]
@@ -137,7 +137,7 @@ class DeboxingVisitor : AbstractVisitor() {
 					return false
 				}
 			}
-			val initType = checkNotNull(assignInsn.getResult()).getInitType()
+			val initType = checkNotNull(assignInsn.result).getInitType()
 			if (initType.isObject() && initType != boxType) {
 				// 某些相关变量是别的对象类型
 				return false

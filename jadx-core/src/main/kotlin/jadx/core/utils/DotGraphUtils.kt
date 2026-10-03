@@ -68,7 +68,7 @@ class DotGraphUtils {
 
 	// 指定输出目录下该方法 CFG 的文件名
 	fun getFullFile(mth: MethodNode, outDir: File): File {
-		val fileName = StringUtils.escape(mth.getMethodInfo().shortId) +
+		val fileName = StringUtils.escape(mth.methodInfo.shortId) +
 			(if (useRegions) ".regions" else "") +
 			(if (rawInsn) ".raw" else "") +
 			".dot"
@@ -92,7 +92,7 @@ class DotGraphUtils {
 
 	fun dumpToString(mth: MethodNode): String? {
 		dot.startLine("digraph \"CFG for")
-		dot.add(escape(mth.getMethodInfo().fullId))
+		dot.add(escape(mth.methodInfo.fullId))
 		dot.add("\" {")
 
 		var enterBlock = mth.enterBlock
@@ -132,7 +132,7 @@ class DotGraphUtils {
 		dot.add(escape(mth.accessFlags.makeString(true)))
 		dot.add(
 			escape(
-				mth.getReturnType().toString() + " " +
+				mth.returnType.toString() + " " +
 					mth.parentClass + '.' + mth.name +
 					'(' + Utils.listToString(mth.allArgRegs) + ") ",
 			),
@@ -186,7 +186,7 @@ class DotGraphUtils {
 			dot.add("\";")
 			dot.startLine("node [shape=record,color=blue];")
 
-			for (c in region.getSubBlocks()) {
+			for (c in region.subBlocks) {
 				processRegion(mth, c, regionsBlocks)
 			}
 
@@ -229,14 +229,14 @@ class DotGraphUtils {
 		if (regionBlocks == null || regionBlocks.isEmpty()) {
 			return
 		}
-		for (floating in block.getSuccessors()) {
-			if (!regionBlocks.contains(floating) && floating.getPredecessors().size <= floating.getSuccessors().size) {
+		for (floating in block.successors) {
+			if (!regionBlocks.contains(floating) && floating.predecessors.size <= floating.successors.size) {
 				processBlock(mth, floating, true, true)
 				regionBlocks.add(floating)
 			}
 		}
-		for (floating in block.getPredecessors()) {
-			if (!regionBlocks.contains(floating) && floating.getPredecessors().size > floating.getSuccessors().size) {
+		for (floating in block.predecessors) {
+			if (!regionBlocks.contains(floating) && floating.predecessors.size > floating.successors.size) {
 				processBlock(mth, floating, true, true)
 				regionBlocks.add(floating)
 			}
@@ -297,7 +297,7 @@ class DotGraphUtils {
 			dot.startLine("\\lpost-doms: ").add(escape(block.postDoms))
 			dot.startLine("\\lpost-idom: ").add(escape(block.iPostDom))
 			dot.startLine("\\ldom-f: ").add(escape(block.domFrontier))
-			dot.startLine("\\ldoms-on: ").add(escape(Utils.listToString(block.getDominatesOn())))
+			dot.startLine("\\ldoms-on: ").add(escape(Utils.listToString(block.dominatesOn)))
 			dot.startLine("\\l")
 		}
 		val insns = insertInsns(mth, block)
@@ -315,13 +315,13 @@ class DotGraphUtils {
 		if (lastInsn != null && lastInsn.type == InsnType.IF) {
 			falsePath = (lastInsn as IfNode).getElseBlock()
 		}
-		for (next in block.getSuccessors()) {
+		for (next in block.successors) {
 			val style = if (next === falsePath) "[style=dashed]" else ""
 			addEdge(block, next, style)
 		}
 
 		if (PRINT_DOMINATORS) {
-			for (c in block.getDominatesOn()) {
+			for (c in block.dominatesOn) {
 				conn.startLine(block.cid.toString() + " -> " + c.cid + "[color=green];")
 			}
 			for (dom in BlockUtils.bitSetToBlocks(mth, checkNotNull(block.domFrontier))) {
@@ -377,13 +377,13 @@ class DotGraphUtils {
 	private fun insertInsns(mth: MethodNode, block: IBlock): String {
 		if (rawInsn) {
 			val sb = StringBuilder()
-			for (insn in block.getInstructions()) {
+			for (insn in block.instructions) {
 				sb.append(escape(insn)).append(NL)
 			}
 			return sb.toString()
 		} else {
 			val code = SimpleCodeWriter()
-			val instructions = block.getInstructions()
+			val instructions = block.instructions
 			MethodGen.addFallbackInsns(code, mth, instructions.toTypedArray(), BLOCK_DUMP)
 			// 这里的指令会多经过一次反转义
 			var str = escape(code.newLine().toString())
@@ -432,8 +432,8 @@ class DotGraphUtils {
 		fun methodFormatName(methodNode: MethodNode, longName: Boolean): String {
 			if (longName) {
 				val parentClass = methodNode.parentClass
-				val argTypes = methodNode.getArgTypes()
-				val retType = methodNode.getReturnType()
+				val argTypes = methodNode.argTypes
+				val retType = methodNode.returnType
 				return classFormatName(parentClass, true) + "." + methodFormatName(methodNode, false) +
 					'(' + Utils.listToString(argTypes, ", ") { e -> argTypeFormatName(e, parentClass, true) } + "):" +
 					argTypeFormatName(retType, parentClass, true)

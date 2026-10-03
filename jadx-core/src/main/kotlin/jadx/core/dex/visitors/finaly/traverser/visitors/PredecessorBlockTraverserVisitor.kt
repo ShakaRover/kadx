@@ -28,7 +28,7 @@ class PredecessorBlockTraverserVisitor(state: TraverserState) : AbstractBlockTra
 		val centralityState: CentralityState = currentState.centralityState
 		val globalState: GlobalTraverserSourceState = currentState.globalState
 
-		val predecessors: List<BlockNode> = block.getPredecessors()
+		val predecessors: List<BlockNode> = block.predecessors
 		val containedPredecessors: List<BlockNode> = ListUtils.filter(predecessors) { globalState.isBlockContained(it) }
 		val predecessorsCount = containedPredecessors.size
 		return when (predecessorsCount) {

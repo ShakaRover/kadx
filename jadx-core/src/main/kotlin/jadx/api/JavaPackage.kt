@@ -82,13 +82,13 @@ class JavaPackage internal constructor(
 	@ApiStatus.Internal
 	fun getPkgNode(): PackageNode = pkgNode
 
-	override fun getDeclaringClass(): JavaClass? = null
+	override val declaringClass: JavaClass? get() = null
 
 	override fun getTopParentClass(): JavaClass? = null
 
 	override fun getDefPos(): Int = 0
 
-	override fun getUseIn(): List<JavaNode> {
+	override val useIn: List<JavaNode> get() {
 		val list = ArrayList<JavaNode>()
 		addUseIn(list)
 		return list

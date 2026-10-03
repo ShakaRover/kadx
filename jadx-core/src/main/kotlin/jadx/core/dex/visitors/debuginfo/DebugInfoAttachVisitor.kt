@@ -152,7 +152,7 @@ class DebugInfoAttachVisitor : AbstractVisitor() {
 					// 已附加到参数，不再附加到结果
 					continue
 				}
-				attachDebugInfo(insn.getResult(), debugInfoAttr, regNum)
+				attachDebugInfo(insn.result, debugInfoAttr, regNum)
 			}
 		}
 

@@ -76,7 +76,7 @@ class MethodUtils(private val root: RootNode) {
 	fun getMethodGenericReturnType(invokeNode: BaseInvokeNode): ArgType? {
 		val methodDetails = getMethodDetails(invokeNode)
 		if (methodDetails != null) {
-			val returnType = methodDetails.getReturnType()
+			val returnType = methodDetails.returnType
 			if (returnType != null && returnType.containsGeneric()) {
 				return returnType
 			}
@@ -101,7 +101,7 @@ class MethodUtils(private val root: RootNode) {
 		val classNode = root.resolveClass(startCls)
 		if (classNode != null) {
 			for (mth in classNode.methods) {
-				if (mthInfo.isOverloadedBy(mth.getMethodInfo())) {
+				if (mthInfo.isOverloadedBy(mth.methodInfo)) {
 					if (collectedMths == null) {
 						return true
 					}
@@ -129,7 +129,7 @@ class MethodUtils(private val root: RootNode) {
 				return false
 			}
 			for (clspMth in clsDetails.methodsMap.values) {
-				if (mthInfo.isOverloadedBy(clspMth.getMethodInfo())) {
+				if (mthInfo.isOverloadedBy(clspMth.methodInfo)) {
 					if (collectedMths == null) {
 						return true
 					}
@@ -159,12 +159,12 @@ class MethodUtils(private val root: RootNode) {
 	fun getMethodOriginDeclClass(mth: MethodNode): ClassInfo {
 		val baseMth = getOverrideBaseMth(mth)
 		if (baseMth != null) {
-			return baseMth.getMethodInfo().declClass
+			return baseMth.methodInfo.declClass
 		}
 		val bridgeAttr = mth.get(AType.BRIDGED_BY)
 		if (bridgeAttr != null) {
 			return getMethodOriginDeclClass(bridgeAttr.bridgeMth)
 		}
-		return mth.getMethodInfo().declClass
+		return mth.methodInfo.declClass
 	}
 }

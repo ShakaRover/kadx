@@ -73,7 +73,7 @@ class InvokeUpdateCallback(
 	fun runQueue(): TypeUpdateResult? {
 		firstQueue = true
 		var result = TypeUpdateResult.SAME
-		val resultArg = invoke.getResult()
+		val resultArg = invoke.result
 		if (resultArg != null && !resultArg.isTypeImmutable()) {
 			val returnType = checkType(knownTypeVars, getReturnType())
 			if (returnType != null) {

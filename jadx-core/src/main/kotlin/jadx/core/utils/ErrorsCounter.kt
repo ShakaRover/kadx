@@ -41,7 +41,7 @@ class ErrorsCounter {
 			node.root().errorsCounter.addWarning(node, warnMsg)
 		}
 
-		fun formatMsg(node: IDexNode, msg: String): String = msg + " in " + node.typeName() + ": " + node + ", file: " + node.getInputFileName()
+		fun formatMsg(node: IDexNode, msg: String): String = msg + " in " + node.typeName() + ": " + node + ", file: " + node.inputFileName
 	}
 
 	@Synchronized
@@ -53,7 +53,7 @@ class ErrorsCounter {
 		var throwable = e
 		var msg = formatMsg(node, error)
 		if (PRINT_MTH_SIZE && node is MethodNode) {
-			val mthSize = "[" + node.getInsnsCount() + "] "
+			val mthSize = "[" + node.insnsCount + "] "
 			msg = mthSize + msg
 			err = mthSize + err
 		}

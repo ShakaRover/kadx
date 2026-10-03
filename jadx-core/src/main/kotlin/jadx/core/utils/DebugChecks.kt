@@ -62,7 +62,7 @@ object DebugChecks {
 			return
 		}
 		for (block in basicBlocks) {
-			for (insn in block.getInstructions()) {
+			for (insn in block.instructions) {
 				checkInsn(mth, block, insn)
 			}
 		}
@@ -72,7 +72,7 @@ object DebugChecks {
 	}
 
 	private fun checkInsn(mth: MethodNode, block: BlockNode, insn: InsnNode) {
-		val res = insn.getResult()
+		val res = insn.result
 		if (res != null) {
 			checkVar(mth, insn, res)
 		}
@@ -87,7 +87,7 @@ object DebugChecks {
 				) {
 					throw JadxRuntimeException("Not generated wrapped insn: \n $wrapInsn,\nouter insn:\n $insn")
 				}
-				if (wrapInsn.getResult() != null && !wrapInsn.contains(AFlag.FORCE_ASSIGN_INLINE)) {
+				if (wrapInsn.result != null && !wrapInsn.contains(AFlag.FORCE_ASSIGN_INLINE)) {
 					throw JadxRuntimeException("Wrapped insn result should be removed: \n $wrapInsn,\nouter insn:\n $insn")
 				}
 				checkInsn(mth, block, wrapInsn)
@@ -105,7 +105,7 @@ object DebugChecks {
 				val ifNode = insn as IfNode
 				if (ifNode.getThenBlock() != ifNode.getElseBlock()) {
 					// 排除临时边
-					val branches = block.getSuccessors().count { b -> !hasTmpEdge(block, b) }
+					val branches = block.successors.count { b -> !hasTmpEdge(block, b) }
 					if (branches != 2) {
 						DebugUtils.dumpRaw(mth, "error")
 						throw JadxRuntimeException(
@@ -149,7 +149,7 @@ object DebugChecks {
 		if (Utils.indexInListByRef(mth.SVars, sVar) == -1) {
 			throw JadxRuntimeException("SSA var not present in method vars list, var: $sVar from insn: $insn")
 		}
-		val resArg = insn.getResult()
+		val resArg = insn.result
 		val useList = sVar.useList
 		if (resArg === reg) {
 			if (sVar.assignInsn !== insn) {
@@ -179,7 +179,7 @@ object DebugChecks {
 				if (insnMissing(mth, assignInsn)) {
 					throw JadxRuntimeException("Insn not found for assign arg in SSAVar: $ssaVar, insn: $assignInsn")
 				}
-				val resArg = assignInsn.getResult()
+				val resArg = assignInsn.result
 				if (resArg == null) {
 					throw JadxRuntimeException("SSA assign insn result missing. SSAVar: $ssaVar, insn: $assignInsn")
 				}
@@ -230,7 +230,7 @@ object DebugChecks {
 			throw JadxRuntimeException("Null parentInsn for reg: $reg")
 		}
 		if (!parentInsn.contains(AFlag.HIDDEN)) {
-			if (parentInsn.getResult() !== reg && !parentInsn.containsArg(reg)) {
+			if (parentInsn.result !== reg && !parentInsn.containsArg(reg)) {
 				throw JadxRuntimeException("Incorrect parentInsn: $parentInsn, must contains arg: $reg")
 			}
 			val parentInsnBlock = BlockUtils.getBlockByInsn(mth, parentInsn)
@@ -248,7 +248,7 @@ object DebugChecks {
 			val phiListAttr = block.get(AType.PHI_LIST)
 			if (phiListAttr != null) {
 				for (phiInsn in phiListAttr.list) {
-					checkPhiArg(mth, phiInsn, phiInsn.getResult()) { "result" }
+					checkPhiArg(mth, phiInsn, phiInsn.result) { "result" }
 					val argsCount = phiInsn.argsCount
 					for (i in 0 until argsCount) {
 						val argNum = i
@@ -272,7 +272,7 @@ object DebugChecks {
 	private fun checkPHI(mth: MethodNode) {
 		for (block in checkNotNull(mth.basicBlocks)) {
 			val phis = ArrayList<PhiInsn>()
-			for (insn in block.getInstructions()) {
+			for (insn in block.instructions) {
 				if (insn.type == InsnType.PHI) {
 					val phi = insn as PhiInsn
 					phis.add(phi)

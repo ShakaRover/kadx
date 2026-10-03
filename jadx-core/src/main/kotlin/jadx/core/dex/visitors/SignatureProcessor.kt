@@ -188,7 +188,7 @@ class SignatureProcessor : AbstractVisitor() {
 		val sp = SignatureParser.fromNode(mth) ?: return
 		try {
 			val typeParameters = sp.consumeGenericTypeParameters()
-			val parsedArgTypes = sp.consumeMethodArgs(mth.getMethodInfo().argsCount)
+			val parsedArgTypes = sp.consumeMethodArgs(mth.methodInfo.argsCount)
 			val parsedRetType = checkNotNull(sp.consumeType())
 
 			if (!validateInnerType(parsedRetType) || !validateInnerType(parsedArgTypes)) {
@@ -212,7 +212,7 @@ class SignatureProcessor : AbstractVisitor() {
 
 	private fun validateAndApplyTypes(mth: MethodNode, sp: SignatureParser, retType: ArgType, argTypes: List<ArgType>): Boolean {
 		try {
-			if (!validateParsedType(retType, mth.getMethodInfo().returnType)) {
+			if (!validateParsedType(retType, mth.methodInfo.returnType)) {
 				mth.addWarnComment("Incorrect return type in method signature: " + sp.getSignature())
 				return false
 			}
@@ -226,7 +226,7 @@ class SignatureProcessor : AbstractVisitor() {
 	}
 
 	private fun checkArgTypes(mth: MethodNode, sp: SignatureParser, parsedArgTypes: List<ArgType>): List<ArgType>? {
-		val mthInfo: MethodInfo = mth.getMethodInfo()
+		val mthInfo: MethodInfo = mth.methodInfo
 		val mthArgTypes = mthInfo.argumentsTypes
 		val len = parsedArgTypes.size
 		if (len != mthArgTypes.size) {

@@ -38,7 +38,7 @@ class UserRenames {
 			val renamesByCls = HashMap<String, MutableList<ICodeRename>>()
 			for (rename in codeData.getRenames()) {
 				if (rename.getCodeRef() == null && rename.getNodeRef().getType() != IJavaNodeRef.RefType.PKG) {
-					renamesByCls.computeIfAbsent(rename.getNodeRef().getDeclaringClass()) { ArrayList() }.add(rename)
+					renamesByCls.computeIfAbsent(rename.getNodeRef().declaringClass) { ArrayList() }.add(rename)
 				}
 			}
 			for ((clsRawName, renames) in renamesByCls) {
@@ -97,7 +97,7 @@ class UserRenames {
 		private fun applyPkgRenames(root: RootNode, renames: List<ICodeRename>) {
 			for (pkgRename in renames) {
 				if (pkgRename.getNodeRef().getType() == IJavaNodeRef.RefType.PKG) {
-					val pkgFullName = pkgRename.getNodeRef().getDeclaringClass()
+					val pkgFullName = pkgRename.getNodeRef().declaringClass
 					val pkgNode = root.resolvePackage(pkgFullName)
 					if (pkgNode == null) {
 						LOG.warn("Package for rename not found: {}", pkgFullName)

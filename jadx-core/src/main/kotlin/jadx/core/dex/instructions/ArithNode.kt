@@ -67,7 +67,7 @@ open class ArithNode(val op: ArithOp, res: RegisterArg?, a: InsnArg, b: InsnArg)
 			// 单参数形式：a += 2
 			sb.append(getArg(0)).append(' ').append(op.symbol).append("= ").append(getArg(1))
 		} else {
-			val result = getResult()
+			val result = result
 			if (result != null) {
 				sb.append(result).append(" = ")
 			}

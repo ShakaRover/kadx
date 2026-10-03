@@ -171,7 +171,7 @@ class PackageNode(
 
 	override fun root(): RootNode = root
 
-	override fun getInputFileName(): String? = ""
+	override val inputFileName: String? get() = ""
 
 	override fun equals(other: Any?): Boolean {
 		if (this === other) return true

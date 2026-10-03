@@ -57,7 +57,7 @@ class FixSwitchOverEnum : AbstractVisitor() {
 		}
 		var changed = false
 		for (block in checkNotNull(mth.basicBlocks)) {
-			for (insn in block.getInstructions()) {
+			for (insn in block.instructions) {
 				if (insn.type == InsnType.SWITCH && !insn.contains(AFlag.REMOVE)) {
 					if (processEnumSwitch(mth, insn as SwitchInsn)) {
 						changed = true
@@ -178,7 +178,7 @@ class FixSwitchOverEnum : AbstractVisitor() {
 			val blocks = clsInitMth.basicBlocks ?: return
 			val mapAttr = EnumMapAttr()
 			for (block in blocks) {
-				for (insn in block.getInstructions()) {
+				for (insn in block.instructions) {
 					if (insn.type == InsnType.APUT) {
 						addToEnumMap(enumCls.root(), mapAttr, insn)
 					}

@@ -43,7 +43,7 @@ class SwitchInsn(arg: InsnArg, val dataTarget: Int, private val packed: Boolean)
 
 	override fun initBlocks(curBlock: BlockNode) {
 		val data = switchData ?: throw JadxRuntimeException("Switch data not yet attached")
-		val successors = curBlock.getSuccessors()
+		val successors = curBlock.successors
 		val targets = data.targets
 		val len = targets.size
 		val blocks = arrayOfNulls<BlockNode>(len)

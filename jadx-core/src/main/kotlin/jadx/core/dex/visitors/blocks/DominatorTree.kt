@@ -32,7 +32,7 @@ object DominatorTree {
 	fun compute(mth: MethodNode) {
 		val sorted = sortBlocks(mth)
 		// 普通支配树：沿前驱方向迭代（入口块是树的根）
-		val doms = build(sorted) { b -> b.getPredecessors() }
+		val doms = build(sorted) { b -> b.predecessors }
 		apply(sorted, doms)
 	}
 
@@ -175,7 +175,7 @@ object DominatorTree {
 		}
 		val blocksCount = blocks.size
 		for (block in blocks) {
-			val preds = block.getPredecessors()
+			val preds = block.predecessors
 			if (preds.size >= 2) {
 				val idom = block.idom
 				for (pred in preds) {

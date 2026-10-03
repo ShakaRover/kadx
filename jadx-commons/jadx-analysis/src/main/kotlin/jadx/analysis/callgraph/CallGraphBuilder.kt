@@ -97,8 +97,8 @@ class CallGraphBuilder(
 				val thisNode = getCallGraphNode(mth, nodes, nodeId)
 
 				// 收集调用当前方法的其他方法（谁调用了这个方法）
-				for (use in mth.getUseIn()) {
-					if (ignorePkg(checkNotNull(use.getDeclaringClass()).classInfo, pkgFilterValue)) {
+				for (use in mth.useIn) {
+					if (ignorePkg(checkNotNull(use.declaringClass).classInfo, pkgFilterValue)) {
 						continue
 					}
 					val useInNode = getCallGraphNode(use, nodes, nodeId)
@@ -148,7 +148,7 @@ class CallGraphBuilder(
 		mth: MethodNode,
 		nodes: MutableMap<MethodInfo, CallGraphNode>,
 		nodeId: AtomicInteger,
-	): CallGraphNode = nodes.computeIfAbsent(mth.getMethodInfo()) {
+	): CallGraphNode = nodes.computeIfAbsent(mth.methodInfo) {
 		CallGraphNode(nodeId.incrementAndGet(), mth)
 	}
 

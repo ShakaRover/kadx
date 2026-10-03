@@ -73,7 +73,7 @@ object MethodRenderHelper {
 		}
 		val base = StringBuilder()
 		if (mth.isConstructor()) {
-			base.append(mth.getDeclaringClass().getName())
+			base.append(mth.declaringClass.getName())
 		} else {
 			base.append(mth.getName())
 		}

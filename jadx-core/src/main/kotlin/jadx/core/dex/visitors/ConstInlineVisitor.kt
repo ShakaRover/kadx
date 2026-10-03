@@ -58,7 +58,7 @@ class ConstInlineVisitor : AbstractVisitor() {
 			val toRemove = ArrayList<InsnNode>()
 			for (block in checkNotNull(mth.basicBlocks)) {
 				toRemove.clear()
-				for (insn in block.getInstructions()) {
+				for (insn in block.instructions) {
 					checkInsn(mth, insn, toRemove)
 				}
 				InsnRemover.removeAllAndUnbind(mth, block, toRemove)
@@ -68,11 +68,11 @@ class ConstInlineVisitor : AbstractVisitor() {
 		private fun checkInsn(mth: MethodNode, insn: InsnNode, toRemove: MutableList<InsnNode>) {
 			if (insn.contains(AFlag.DONT_INLINE) ||
 				insn.contains(AFlag.DONT_GENERATE) ||
-				insn.getResult() == null
+				insn.result == null
 			) {
 				return
 			}
-			val sVar = checkNotNull(checkNotNull(insn.getResult()).sVar)
+			val sVar = checkNotNull(checkNotNull(insn.result).sVar)
 			var constArg: InsnArg
 			var onSuccess: Runnable? = null
 			when (insn.type) {
@@ -138,7 +138,7 @@ class ConstInlineVisitor : AbstractVisitor() {
 		private fun forbidNullArgInline(insn: InsnNode, useArg: RegisterArg): Boolean {
 			if (insn.type == InsnType.MOVE) {
 				// 结果是 null，继续链式检查
-				return forbidNullInlines(checkNotNull(checkNotNull(insn.getResult()).sVar))
+				return forbidNullInlines(checkNotNull(checkNotNull(insn.result).sVar))
 			}
 			if (!canUseNull(insn, useArg)) {
 				useArg.add(AFlag.DONT_INLINE_CONST)
@@ -169,7 +169,7 @@ class ConstInlineVisitor : AbstractVisitor() {
 		}
 
 		private fun replaceConst(mth: MethodNode, constInsn: InsnNode, constArg: InsnArg): Boolean {
-			val ssaVar = checkNotNull(checkNotNull(constInsn.getResult()).sVar)
+			val ssaVar = checkNotNull(checkNotNull(constInsn.result).sVar)
 			if (ssaVar.useCount == 0) {
 				return true
 			}

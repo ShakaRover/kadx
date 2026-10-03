@@ -58,7 +58,7 @@ class TraverserBlockInfo(
 	 * 与原 Java 行为一致。
 	 */
 	val insnsSlice: List<InsnNode> get() {
-		val insns = block.getInstructions()
+		val insns = block.instructions
 		val totalSkippedCount = bottomOffset + topOffset
 		if (totalSkippedCount > insns.size) {
 			throw IndexOutOfBoundsException(

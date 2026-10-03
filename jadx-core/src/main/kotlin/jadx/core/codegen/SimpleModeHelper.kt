@@ -44,7 +44,7 @@ class SimpleModeHelper(private val mth: MethodNode) {
 		for (i in 0 until blocksCount) {
 			val block = blocksList[i]
 			val nextBlock = if (i + 1 == blocksCount) null else blocksList[i + 1]
-			val preds = block.getPredecessors()
+			val preds = block.predecessors
 			val predsCount = preds.size
 			if (predsCount > 1) {
 				startLabel.set(block.id)
@@ -53,7 +53,7 @@ class SimpleModeHelper(private val mth: MethodNode) {
 					if (!block.contains(AFlag.EXC_BOTTOM_SPLITTER)) {
 						startLabel.set(block.id)
 					}
-					if (prev.getSuccessors().size == 1 && !mth.isPreExitBlock(prev)) {
+					if (prev.successors.size == 1 && !mth.isPreExitBlock(prev)) {
 						endGoto.set(prev.id)
 					}
 				}
@@ -83,12 +83,12 @@ class SimpleModeHelper(private val mth: MethodNode) {
 	/** 删除“空指令、有前驱、只有一个后继”的块，并把前驱直接连到后继。 */
 	private fun removeEmptyBlocks() {
 		for (block in checkNotNull(mth.basicBlocks)) {
-			if (block.getInstructions().isEmpty() &&
-				block.getPredecessors().size > 0 &&
-				block.getSuccessors().size == 1
+			if (block.instructions.isEmpty() &&
+				block.predecessors.size > 0 &&
+				block.successors.size == 1
 			) {
-				val successor = block.getSuccessors()[0]
-				val predecessors = block.getPredecessors()
+				val successor = block.successors[0]
+				val predecessors = block.predecessors
 				BlockSplitter.removeConnection(block, successor)
 				if (predecessors.size == 1) {
 					BlockSplitter.replaceConnection(predecessors[0], block, successor)
@@ -128,7 +128,7 @@ class SimpleModeHelper(private val mth: MethodNode) {
 			}
 			lastInsn.normalize()
 		} else {
-			for (successor in block.getSuccessors()) {
+			for (successor in block.successors) {
 				startLabel.set(successor.id)
 			}
 		}

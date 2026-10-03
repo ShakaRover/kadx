@@ -165,7 +165,7 @@ class ExtractFieldInit : AbstractVisitor() {
 
 			var canReorder = true
 			for (block in checkNotNull(mth.basicBlocks)) {
-				for (insn in block.getInstructions()) {
+				for (insn in block.instructions) {
 					var fieldInsn = false
 					if (insn.type == putType) {
 						val putInsn = insn as IndexInsnNode

@@ -100,7 +100,7 @@ class TryCatchEdgeBlockMap : MutableMap<TryEdge, MutableList<BlockNode>> {
 			}
 			for (topSplitter in blocksWithTries) {
 				var block: TryCatchBlockAttr? = null
-				for (topSplitterSuccessor in checkNotNull(topSplitter.getCleanSuccessors())) {
+				for (topSplitterSuccessor in checkNotNull(topSplitter.cleanSuccessors)) {
 					if (topSplitterSuccessor.contains(AType.TRY_BLOCK)) {
 						block = topSplitterSuccessor.get(AType.TRY_BLOCK)
 					}

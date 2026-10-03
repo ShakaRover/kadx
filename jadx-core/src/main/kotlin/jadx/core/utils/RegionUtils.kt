@@ -43,7 +43,7 @@ object RegionUtils {
 		}
 		if (container is IBranchRegion) {
 			// 所有分支都必须有退出边
-			for (br in container.getBranches()) {
+			for (br in container.branches) {
 				if (br == null || !hasExitEdge(br)) {
 					return false
 				}
@@ -51,7 +51,7 @@ object RegionUtils {
 			return true
 		}
 		if (container is IRegion) {
-			val last = Utils.last(container.getSubBlocks())
+			val last = Utils.last(container.subBlocks)
 			return last != null && hasExitEdge(last)
 		}
 		throw JadxRuntimeException(unknownContainerType(container))
@@ -59,7 +59,7 @@ object RegionUtils {
 
 	fun getFirstInsn(container: IContainer): InsnNode? {
 		if (container is IBlock) {
-			val insnList = container.getInstructions()
+			val insnList = container.instructions
 			if (insnList.isEmpty()) {
 				return null
 			}
@@ -67,7 +67,7 @@ object RegionUtils {
 		} else if (container is IBranchRegion) {
 			return null
 		} else if (container is IRegion) {
-			val blocks = container.getSubBlocks()
+			val blocks = container.subBlocks
 			if (blocks.isEmpty()) {
 				return null
 			}
@@ -86,7 +86,7 @@ object RegionUtils {
 		} else if (container is IBranchRegion) {
 			return null
 		} else if (container is IRegion) {
-			val blocks = container.getSubBlocks()
+			val blocks = container.subBlocks
 			if (blocks.isEmpty()) {
 				return null
 			}
@@ -104,7 +104,7 @@ object RegionUtils {
 			return null
 		}
 		if (container is IConditionRegion) {
-			return ListUtils.firstOrNull(container.getConditionBlocks())
+			return ListUtils.firstOrNull(container.conditionBlocks)
 		}
 		if (container is TryCatchRegion) {
 			return getFirstBlockNode(container.tryRegion)
@@ -113,7 +113,7 @@ object RegionUtils {
 			return container.header
 		}
 		if (container is IRegion) {
-			return getFirstBlockNode(container.getSubBlocks())
+			return getFirstBlockNode(container.subBlocks)
 		}
 		throw JadxRuntimeException(unknownContainerType(container))
 	}
@@ -133,13 +133,13 @@ object RegionUtils {
 			return BlockUtils.getFirstSourceLine(container)
 		}
 		if (container is IConditionRegion) {
-			return container.getConditionSourceLine()
+			return container.conditionSourceLine
 		}
 		if (container is IBranchRegion) {
-			return getFirstSourceLine(container.getBranches())
+			return getFirstSourceLine(container.branches)
 		}
 		if (container is IRegion) {
-			return getFirstSourceLine(container.getSubBlocks())
+			return getFirstSourceLine(container.subBlocks)
 		}
 		return 0
 	}
@@ -161,7 +161,7 @@ object RegionUtils {
 
 	fun getLastInsn(container: IContainer): InsnNode? {
 		if (container is IBlock) {
-			val insnList = container.getInstructions()
+			val insnList = container.instructions
 			if (insnList.isEmpty()) {
 				return null
 			}
@@ -169,7 +169,7 @@ object RegionUtils {
 		} else if (container is IBranchRegion) {
 			return null
 		} else if (container is IRegion) {
-			val blocks = container.getSubBlocks()
+			val blocks = container.subBlocks
 			if (blocks.isEmpty()) {
 				return null
 			}
@@ -181,14 +181,14 @@ object RegionUtils {
 
 	fun getLastInsnWithBlock(container: IContainer): BlockInsnPair? {
 		if (container is IBlock) {
-			val lastInsn = ListUtils.last(container.getInstructions())
+			val lastInsn = ListUtils.last(container.instructions)
 			if (lastInsn == null) {
 				return null
 			}
 			return BlockInsnPair(container, lastInsn)
 		}
 		if (container is IBranchRegion) {
-			val branches = container.getBranches()
+			val branches = container.branches
 			val count = branches.count { it != null }
 			if (count == 1) {
 				// 只有一个非空分支
@@ -202,7 +202,7 @@ object RegionUtils {
 			return null
 		}
 		if (container is IRegion) {
-			val blocks = container.getSubBlocks()
+			val blocks = container.subBlocks
 			if (blocks.isEmpty()) {
 				return null
 			}
@@ -217,7 +217,7 @@ object RegionUtils {
 		} else if (container is IBranchRegion) {
 			return null
 		} else if (container is IRegion) {
-			val blocks = container.getSubBlocks()
+			val blocks = container.subBlocks
 			if (blocks.isEmpty()) {
 				return null
 			}
@@ -252,13 +252,13 @@ object RegionUtils {
 			return isInsnExitContainer(rootContainer, container)
 		}
 		if (container is IBranchRegion) {
-			return ListUtils.allMatch(container.getBranches()) { b -> hasExitBlock(b) }
+			return ListUtils.allMatch(container.branches) { b -> hasExitBlock(b) }
 		}
 		if (container is IBlock) {
 			return isInsnExitContainer(rootContainer, container)
 		}
 		if (container is IRegion) {
-			val blocks = container.getSubBlocks()
+			val blocks = container.subBlocks
 			return blocks.isNotEmpty() && hasExitBlock(rootContainer, blocks[blocks.size - 1])
 		}
 		throw JadxRuntimeException(unknownContainerType(container))
@@ -305,7 +305,7 @@ object RegionUtils {
 		if (container is IBlock) {
 			return BlockUtils.checkLastInsnType(container, InsnType.BREAK)
 		} else if (container is IRegion) {
-			val blocks = container.getSubBlocks()
+			val blocks = container.subBlocks
 			return blocks.isNotEmpty() && hasBreakInsn(blocks[blocks.size - 1])
 		} else {
 			throw JadxRuntimeException("Unknown container type: $container")
@@ -314,7 +314,7 @@ object RegionUtils {
 
 	fun insnsCount(container: IContainer): Int {
 		if (container is IBlock) {
-			val insnList = container.getInstructions()
+			val insnList = container.instructions
 			var count = 0
 			for (insn in insnList) {
 				if (insn.contains(AFlag.DONT_GENERATE)) {
@@ -326,7 +326,7 @@ object RegionUtils {
 		}
 		if (container is IRegion) {
 			var count = 0
-			for (block in container.getSubBlocks()) {
+			for (block in container.subBlocks) {
 				count += insnsCount(block)
 			}
 			return count
@@ -336,7 +336,7 @@ object RegionUtils {
 
 	fun collectInsns(mth: MethodNode, container: IContainer): List<InsnNode> {
 		val list = ArrayList<InsnNode>()
-		visitBlocks(mth, container) { block -> list.addAll(block.getInstructions()) }
+		visitBlocks(mth, container) { block -> list.addAll(block.instructions) }
 		return list
 	}
 
@@ -347,7 +347,7 @@ object RegionUtils {
 			return false
 		}
 		if (container is IBlock) {
-			val insnList = container.getInstructions()
+			val insnList = container.instructions
 			for (insnNode in insnList) {
 				if (!insnNode.contains(AFlag.DONT_GENERATE)) {
 					return true
@@ -359,7 +359,7 @@ object RegionUtils {
 			return true
 		}
 		if (container is IRegion) {
-			for (block in container.getSubBlocks()) {
+			for (block in container.subBlocks) {
 				if (notEmpty(block)) {
 					return true
 				}
@@ -373,7 +373,7 @@ object RegionUtils {
 		if (container is IBlock) {
 			blocks.add(container)
 		} else if (container is IRegion) {
-			for (block in container.getSubBlocks()) {
+			for (block in container.subBlocks) {
 				getAllRegionBlocks(block, blocks)
 			}
 		} else {
@@ -385,7 +385,7 @@ object RegionUtils {
 		if (container is IBlock) {
 			return container === block
 		} else if (container is IRegion) {
-			for (b in container.getSubBlocks()) {
+			for (b in container.subBlocks) {
 				if (isRegionContainsBlock(b, block)) {
 					return true
 				}
@@ -398,7 +398,7 @@ object RegionUtils {
 
 	fun getSingleSubBlock(container: IContainer): IContainer? {
 		if (container is Region) {
-			val subBlocks = container.getSubBlocks()
+			val subBlocks = container.subBlocks
 			if (subBlocks.size == 1) {
 				return ignoreSimpleRegionWrapper(subBlocks[0])
 			}
@@ -410,7 +410,7 @@ object RegionUtils {
 		var container = container0
 		while (true) {
 			if (container is Region) {
-				val subBlocks = container.getSubBlocks()
+				val subBlocks = container.subBlocks
 				if (subBlocks.size != 1) {
 					return container
 				}
@@ -449,7 +449,7 @@ object RegionUtils {
 		}
 		if (container is IRegion) {
 			// 遍历子块
-			for (b in container.getSubBlocks()) {
+			for (b in container.subBlocks) {
 				// 处理 try 块
 				val tb: TryCatchBlockAttr? = b.get(AType.TRY_BLOCK)
 				if (tb != null && b is IRegion) {
@@ -500,7 +500,7 @@ object RegionUtils {
 			return if (container === block) container else null
 		}
 		if (container is IRegion) {
-			for (c in container.getSubBlocks()) {
+			for (c in container.subBlocks) {
 				val res = getBlockContainer(c, block)
 				if (res != null) {
 					return if (res is IBlock) container else res
@@ -521,7 +521,7 @@ object RegionUtils {
 			if (firstContainer is IBranchRegion) {
 				return false
 			}
-			val subBlocks = firstContainer.getSubBlocks()
+			val subBlocks = firstContainer.subBlocks
 			return subBlocks.contains(secondBlock)
 		}
 		return false
@@ -536,7 +536,7 @@ object RegionUtils {
 		} else if (cont is IBlock) {
 			return false
 		} else if (cont is IRegion) {
-			for (c in cont.getSubBlocks()) {
+			for (c in cont.subBlocks) {
 				if (!isDominatedBy(dom, c)) {
 					return false
 				}
@@ -558,7 +558,7 @@ object RegionUtils {
 			return false
 		}
 		if (cont is IRegion) {
-			for (c in cont.getSubBlocks()) {
+			for (c in cont.subBlocks) {
 				if (hasPathThroughBlock(block, c)) {
 					return true
 				}
@@ -624,7 +624,7 @@ object RegionUtils {
 
 	fun getNextContainer(mth: MethodNode, region: IRegion): IContainer? {
 		val parent = checkNotNull(region.parent)
-		val subBlocks = parent.getSubBlocks()
+		val subBlocks = parent.subBlocks
 		val index = subBlocks.indexOf(region)
 		if (index == -1 || index + 1 >= subBlocks.size) {
 			return null

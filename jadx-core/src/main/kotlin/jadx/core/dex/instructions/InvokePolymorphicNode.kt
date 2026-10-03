@@ -51,8 +51,8 @@ open class InvokePolymorphicNode : InvokeNode {
 	override fun toString(): String {
 		val sb = StringBuilder()
 		sb.append(InsnUtils.formatOffset(offset)).append(": INVOKE_POLYMORPHIC ")
-		if (getResult() != null) {
-			sb.append(getResult()).append(" = ")
+		if (result != null) {
+			sb.append(result).append(" = ")
 		}
 		if (!appendArgs(sb)) {
 			sb.append('\n')

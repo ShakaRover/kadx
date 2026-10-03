@@ -89,17 +89,17 @@ class UsageDialog private constructor(
 		if (node is JMethod) {
 			val javaMethod: JavaMethod = node.javaMethod
 			for (mth in getMethodWithOverrides(javaMethod)) {
-				map[mth] = mth.getUseIn()
+				map[mth] = mth.useIn
 			}
 			return map
 		}
 		if (node is JClass) {
 			val javaCls: JavaClass = node.getCls()
-			map[javaCls] = javaCls.getUseIn()
+			map[javaCls] = javaCls.useIn
 			// 把构造函数的引用并入类的引用
 			for (javaMth in javaCls.getMethods()) {
 				if (javaMth.isConstructor()) {
-					map[javaMth] = javaMth.getUseIn()
+					map[javaMth] = javaMth.useIn
 				}
 			}
 			return map
@@ -114,7 +114,7 @@ class UsageDialog private constructor(
 			}
 		}
 		val javaNode: JavaNode = checkNotNull(node.getJavaNode())
-		map[javaNode] = javaNode.getUseIn()
+		map[javaNode] = javaNode.useIn
 		return map
 	}
 

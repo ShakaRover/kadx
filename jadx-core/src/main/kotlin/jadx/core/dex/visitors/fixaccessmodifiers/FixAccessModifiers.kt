@@ -70,7 +70,7 @@ class FixAccessModifiers : AbstractVisitor() {
 			return
 		}
 
-		for (useCls in cls.getUseIn()) {
+		for (useCls in cls.useIn) {
 			visibilityUtils.checkVisibility(cls, useCls) { node, visFlag ->
 				changeVisibility(node as NotificationAttrNode, visFlag)
 			}
@@ -83,7 +83,7 @@ class FixAccessModifiers : AbstractVisitor() {
 
 			if (isInline || isCandidateForInline) {
 				val usedInClss = HashSet<ClassNode>()
-				for (uMth in useMth.getUseIn()) {
+				for (uMth in useMth.useIn) {
 					usedInClss.add(uMth.parentClass)
 				}
 
@@ -102,13 +102,13 @@ class FixAccessModifiers : AbstractVisitor() {
 		if (overrideAttr != null && overrideAttr.overrideList.isNotEmpty()) {
 			// 可见性不能比父类方法更窄
 			val parentMD = overrideAttr.overrideList[0]
-			val parentAccInfo = AccessInfo(parentMD.getRawAccessFlags(), AccessInfo.AFType.METHOD)
+			val parentAccInfo = AccessInfo(parentMD.rawAccessFlags, AccessInfo.AFType.METHOD)
 			if (accessFlags.isVisibilityWeakerThan(parentAccInfo)) {
 				changeVisibility(mth, parentAccInfo.visibility.rawValue())
 			}
 		}
 
-		for (useMth in mth.getUseIn()) {
+		for (useMth in mth.useIn) {
 			visibilityUtils.checkVisibility(mth, useMth) { node, visFlag ->
 				changeVisibility(node as NotificationAttrNode, visFlag)
 			}

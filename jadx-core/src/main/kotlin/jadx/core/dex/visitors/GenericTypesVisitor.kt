@@ -35,7 +35,7 @@ class GenericTypesVisitor : AbstractVisitor() {
 			return
 		}
 		for (block in checkNotNull(mth.basicBlocks)) {
-			for (insn in block.getInstructions()) {
+			for (insn in block.instructions) {
 				if (insn.type == InsnType.CONSTRUCTOR) {
 					attachGenericTypesInfo(mth, insn as ConstructorInsn)
 				}
@@ -45,7 +45,7 @@ class GenericTypesVisitor : AbstractVisitor() {
 
 	private fun attachGenericTypesInfo(mth: MethodNode, insn: ConstructorInsn) {
 		try {
-			val resultArg = insn.getResult() ?: return
+			val resultArg = insn.result ?: return
 			val argType = checkNotNull(resultArg.sVar).codeVar.type ?: return
 			val genericTypes = argType.getGenericTypes() ?: return
 			val cls = mth.root().resolveClass(insn.classType)

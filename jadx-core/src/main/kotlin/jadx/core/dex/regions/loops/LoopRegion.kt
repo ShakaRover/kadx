@@ -26,7 +26,7 @@ import jadx.core.utils.exceptions.CodegenException
  * 条件本身由父类 [ConditionRegion] 维护。
  *
  * Kotlin 转换说明：
- * - 原 Java `header.getInstructions()` 需要**原地修改**，所以这里用 BlockNode 的
+ * - 原 Java `header.instructions` 需要**原地修改**，所以这里用 BlockNode 的
  *   `instructions` 属性（可变 ArrayList），而不是只读的 `getInstructions()`；
  * - `getType()/getInfo()` 等保留显式方法名，Java 调用方零改动。
  */
@@ -40,9 +40,9 @@ class LoopRegion(
 	/** 条件判断前需要先执行的块 */
 	private var preCondition: BlockNode? = null
 
-	private var body: IRegion? = null
+	private var bodyRegion: IRegion? = null
 
-	private var type: LoopType? = null
+	private var typeValue: LoopType? = null
 
 	init {
 		if (header != null) {
@@ -51,15 +51,15 @@ class LoopRegion(
 	}
 
 	/** 没有条件头块 => 无限循环 `while (true)` */
-	fun isEndless(): Boolean = header == null
+	val isEndless: Boolean get() = header == null
 
-	fun getBody(): IRegion? = body
+	val body: IRegion? get() = bodyRegion
 
 	fun setBody(body: IRegion?) {
-		this.body = body
+		this.bodyRegion = body
 	}
 
-	fun isConditionAtEnd(): Boolean = conditionAtEnd
+	val isConditionAtEnd: Boolean get() = conditionAtEnd
 
 	/** 设置每次循环判断条件前必须先执行的块 */
 	fun setPreCondition(preCondition: BlockNode) {
@@ -79,7 +79,7 @@ class LoopRegion(
 		if (insns.isEmpty()) {
 			return true
 		}
-		val condition = getCondition() ?: return false
+		val condition = condition ?: return false
 		val conditionArgs = condition.registerArgs
 		if (conditionArgs.isEmpty()) {
 			return false
@@ -87,7 +87,7 @@ class LoopRegion(
 		val size = insns.size
 		for (i in 0 until size) {
 			val insn = insns[i]
-			val res = insn.getResult() ?: return false
+			val res = insn.result ?: return false
 			if (checkNotNull(res.sVar).useCount > 1) {
 				return false
 			}
@@ -136,23 +136,23 @@ class LoopRegion(
 		if (headerLine != 0) {
 			return headerLine
 		}
-		return getConditionSourceLine()
+		return conditionSourceLine
 	}
 
-	fun getType(): LoopType? = type
+	val type: LoopType? get() = typeValue
 
 	fun setType(type: LoopType) {
-		this.type = type
+		this.typeValue = type
 	}
 
-	override fun getSubBlocks(): List<IContainer> {
-		val all = ArrayList<IContainer>(2 + getConditionBlocks().size)
+	override val subBlocks: List<IContainer> get() {
+		val all = ArrayList<IContainer>(2 + conditionBlocks.size)
 		val preCondition = this.preCondition
 		if (preCondition != null) {
 			all.add(preCondition)
 		}
-		all.addAll(getConditionBlocks())
-		val body = this.body
+		all.addAll(conditionBlocks)
+		val body = this.bodyRegion
 		if (body != null) {
 			all.add(body)
 		}

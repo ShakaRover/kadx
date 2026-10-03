@@ -31,7 +31,7 @@ class SelectFromDuplicates {
 				if (bestCls == null) {
 					selectCurrent = true
 				} else {
-					val clsIndex = getClassesIndex(clsNode.getInputFileName())
+					val clsIndex = getClassesIndex(clsNode.inputFileName)
 					if (clsIndex != -1) {
 						if (bestClsIndex != -1) {
 							// 两者都有效时，索引更小的优先
@@ -46,7 +46,7 @@ class SelectFromDuplicates {
 				}
 				if (selectCurrent) {
 					bestCls = clsNode
-					bestClsIndex = getClassesIndex(clsNode.getInputFileName())
+					bestClsIndex = getClassesIndex(clsNode.inputFileName)
 				}
 			}
 			return bestCls

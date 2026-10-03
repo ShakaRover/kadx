@@ -71,7 +71,7 @@ object FixMultiEntryLoops {
 		val header = backEdge.end
 		val headerIDom = header.idom
 		val subEntry = ListUtils.filterOnlyOne(crossEdges) { e -> e.start === headerIDom }
-		if (subEntry == null || !ListUtils.isSingleElement(header.getSuccessors(), subEntry.end)) {
+		if (subEntry == null || !ListUtils.isSingleElement(header.successors, subEntry.end)) {
 			return false
 		}
 		val loopEnd = backEdge.start
@@ -128,7 +128,7 @@ object FixMultiEntryLoops {
 	 */
 	private fun colorDFS(mth: MethodNode, colors: Array<BlockColor>, block: BlockNode) {
 		colors[block.pos] = BlockColor.GRAY
-		for (v in block.getSuccessors()) {
+		for (v in block.successors) {
 			when (colors[v.pos]) {
 				BlockColor.WHITE -> colorDFS(mth, colors, v)
 				BlockColor.GRAY -> mth.addAttr(AType.SPECIAL_EDGE, SpecialEdgeAttr(SpecialEdgeType.BACK_EDGE, block, v))

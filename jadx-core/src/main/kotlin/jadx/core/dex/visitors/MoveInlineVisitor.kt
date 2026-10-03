@@ -43,7 +43,7 @@ class MoveInlineVisitor : AbstractVisitor() {
 			val remover = InsnRemover(mth)
 			for (block in checkNotNull(mth.basicBlocks)) {
 				remover.setBlock(block)
-				for (insn in block.getInstructions()) {
+				for (insn in block.instructions) {
 					if (insn.type != InsnType.MOVE) {
 						continue
 					}
@@ -56,7 +56,7 @@ class MoveInlineVisitor : AbstractVisitor() {
 		}
 
 		private fun processMove(mth: MethodNode, move: InsnNode): Boolean {
-			val resultArg = checkNotNull(move.getResult())
+			val resultArg = checkNotNull(move.result)
 			val moveArg = move.getArg(0)
 			if (resultArg.sameRegAndSVar(moveArg)) {
 				return true
@@ -136,8 +136,8 @@ class MoveInlineVisitor : AbstractVisitor() {
 			InsnRemover.unbindAllArgs(mth, move)
 			InsnRemover.unbindResult(mth, parentInsn)
 
-			val resArg = checkNotNull(parentInsn.getResult())
-			val newResArg = checkNotNull(move.getResult()).duplicate(resArg.getInitType())
+			val resArg = checkNotNull(parentInsn.result)
+			val newResArg = checkNotNull(move.result).duplicate(resArg.getInitType())
 			newResArg.copyAttributesFrom(resArg)
 			parentInsn.setResult(newResArg)
 			return true

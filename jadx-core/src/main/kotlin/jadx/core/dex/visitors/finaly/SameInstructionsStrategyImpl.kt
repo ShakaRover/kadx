@@ -86,7 +86,7 @@ class SameInstructionsStrategyImpl : SameInstructionsStrategy() {
 			if (!assignInsn.isSame(dupAssign)) {
 				return true
 			}
-			if (assignInsn.isConstInsn() && dupAssign.isConstInsn()) {
+			if (assignInsn.isConstInsn && dupAssign.isConstInsn) {
 				// 这里不比较常量值本身，只比较参数列表（原 Java 即如此，保留原始行为）
 				return !Objects.equals(assignInsn.getArguments(), assignInsn.getArguments())
 			}

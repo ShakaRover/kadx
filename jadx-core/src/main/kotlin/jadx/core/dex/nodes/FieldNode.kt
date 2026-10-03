@@ -20,7 +20,7 @@ class FieldNode(
 	var type: ArgType = fieldInfo.type
 	var accFlags: AccessInfo = AccessInfo(accessFlags, AccessInfo.AFType.FIELD)
 
-	private var useIn: List<MethodNode> = emptyList()
+	private var useInValue: List<MethodNode> = emptyList()
 	var javaNode: JavaField? = null
 
 	companion object {
@@ -60,25 +60,25 @@ class FieldNode(
 		fieldInfo.alias = alias
 	}
 
-	override fun getDeclaringClass(): ClassNode? = parentClass
+	override val declaringClass: ClassNode? get() = parentClass
 
 	val topParentClass: ClassNode get() = parentClass.topParentClass
 
 	// 协变返回类型：保留 Java 原 API 的 List<MethodNode>
-	override fun getUseIn(): List<MethodNode> = useIn
+	override val useIn: List<MethodNode> get() = useInValue
 
 	fun setUseIn(useIn: List<MethodNode>) {
-		this.useIn = useIn
+		this.useInValue = useIn
 	}
 
 	@Synchronized
 	fun addUseIn(mth: MethodNode) {
-		useIn = safeAdd(useIn, mth)
+		useInValue = safeAdd(useInValue, mth)
 	}
 
 	override fun typeName(): String = "field"
 
-	override fun getInputFileName(): String? = parentClass.inputFileName
+	override val inputFileName: String? get() = parentClass.inputFileName
 
 	override fun root(): RootNode = parentClass.root()
 

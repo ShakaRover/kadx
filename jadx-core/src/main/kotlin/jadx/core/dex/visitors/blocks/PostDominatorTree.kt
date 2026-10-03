@@ -39,7 +39,7 @@ object PostDominatorTree {
 			}
 			BlockNode.updateBlockPositions(sorted)
 
-			val postDoms = DominatorTree.build(sorted) { b -> b.getSuccessors() }
+			val postDoms = DominatorTree.build(sorted) { b -> b.successors }
 			val firstBlock = sorted[0]
 			firstBlock.postDoms = EmptyBitSet.EMPTY
 			firstBlock.iPostDom = null
@@ -71,7 +71,7 @@ object PostDominatorTree {
 					if (block.postDoms == null) {
 						block.postDoms = EmptyBitSet.EMPTY
 						block.iPostDom = null
-						insnsCount += block.getInstructions().size
+						insnsCount += block.instructions.size
 					}
 				}
 				mth.addInfoComment("Infinite loop detected, blocks: $blocksDelta, insns: $insnsCount")

@@ -119,8 +119,8 @@ class UsageInfoVisitor : AbstractVisitor() {
 
 		private fun processMethod(mth: MethodNode, usageInfo: UsageInfo) {
 			processMethodAnnotations(mth, usageInfo)
-			usageInfo.clsUse(mth, mth.getReturnType())
-			for (argType in mth.getArgTypes()) {
+			usageInfo.clsUse(mth, mth.returnType)
+			for (argType in mth.argTypes) {
 				usageInfo.clsUse(mth, argType)
 			}
 			// TODO: 处理 'throws' 中的异常类
@@ -267,7 +267,7 @@ class UsageInfoVisitor : AbstractVisitor() {
 		}
 
 		fun replaceMethodUsage(mergeIntoMth: MethodNode, sourceMth: MethodNode) {
-			val mergedUsage = ArrayList(ListUtils.distinctMergeSortedLists(mergeIntoMth.getUseIn(), sourceMth.getUseIn()))
+			val mergedUsage = ArrayList(ListUtils.distinctMergeSortedLists(mergeIntoMth.useIn, sourceMth.useIn))
 			mergedUsage.remove(sourceMth)
 			mergeIntoMth.setUseIn(mergedUsage)
 			sourceMth.setUseIn(emptyList())

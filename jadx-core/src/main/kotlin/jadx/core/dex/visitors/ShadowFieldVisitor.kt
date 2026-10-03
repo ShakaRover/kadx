@@ -133,7 +133,7 @@ class ShadowFieldVisitor : AbstractVisitor() {
 
 		private fun fixShadowFieldAccess(mth: MethodNode, fixInfoMap: Map<String, FieldFixInfo>) {
 			for (block in checkNotNull(mth.basicBlocks)) {
-				for (insn in block.getInstructions()) {
+				for (insn in block.instructions) {
 					processInsn(mth, insn, fixInfoMap)
 				}
 			}

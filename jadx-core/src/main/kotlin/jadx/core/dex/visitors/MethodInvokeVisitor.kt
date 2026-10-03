@@ -65,7 +65,7 @@ class MethodInvokeVisitor : AbstractVisitor() {
 			if (block.contains(AFlag.DONT_GENERATE)) {
 				continue
 			}
-			for (insn in block.getInstructions()) {
+			for (insn in block.instructions) {
 				if (insn.contains(AFlag.DONT_GENERATE)) {
 					continue
 				}
@@ -92,8 +92,8 @@ class MethodInvokeVisitor : AbstractVisitor() {
 			}
 			processUnknown(invokeInsn)
 		} else {
-			if (mthDetails.isVarArg()) {
-				val last = Utils.last(mthDetails.getArgTypes())
+			if (mthDetails.isVarArg) {
+				val last = Utils.last(mthDetails.argTypes)
 				if (last != null && last.isArray()) {
 					invokeInsn.add(AFlag.VARARG_CALL)
 				}
@@ -170,8 +170,8 @@ class MethodInvokeVisitor : AbstractVisitor() {
 		if (instanceArg != null) {
 			return instanceArg.getType()
 		}
-		if (invokeInsn.type == InsnType.CONSTRUCTOR && invokeInsn.getResult() != null) {
-			return checkNotNull(invokeInsn.getResult()).getType()
+		if (invokeInsn.type == InsnType.CONSTRUCTOR && invokeInsn.result != null) {
+			return checkNotNull(invokeInsn.result).getType()
 		}
 		return declClsType
 	}
@@ -221,7 +221,7 @@ class MethodInvokeVisitor : AbstractVisitor() {
 	}
 
 	private fun resolveTypeVars(mthDetails: IMethodDetails, typeVarsMapping: Map<ArgType, ArgType>): IMethodDetails {
-		val argTypes = mthDetails.getArgTypes()
+		val argTypes = mthDetails.argTypes
 		val argsCount = argTypes.size
 		var fixed = false
 		val fixedArgTypes = ArrayList<ArgType>(argsCount)
@@ -234,7 +234,7 @@ class MethodInvokeVisitor : AbstractVisitor() {
 				var resolvedType = root.getTypeUtils().replaceTypeVariablesUsingMap(argType, typeVarsMapping)
 				if (resolvedType == null || resolvedType == argType) {
 					// 类型变量已被编译器擦除
-					resolvedType = mthDetails.getMethodInfo().argumentsTypes[argNum]
+					resolvedType = mthDetails.methodInfo.argumentsTypes[argNum]
 				}
 				fixedArgTypes.add(resolvedType)
 				fixed = true
@@ -242,11 +242,11 @@ class MethodInvokeVisitor : AbstractVisitor() {
 				fixedArgTypes.add(argType)
 			}
 		}
-		var returnType = mthDetails.getReturnType()
+		var returnType = mthDetails.returnType
 		if (returnType.containsTypeVariable()) {
 			val resolvedType = root.getTypeUtils().replaceTypeVariablesUsingMap(returnType, typeVarsMapping)
 			if (resolvedType == null || resolvedType.containsTypeVariable()) {
-				returnType = mthDetails.getMethodInfo().returnType
+				returnType = mthDetails.methodInfo.returnType
 				fixed = true
 			}
 		}
@@ -274,7 +274,7 @@ class MethodInvokeVisitor : AbstractVisitor() {
 		val castTypes = ArrayList(compilerVarTypes)
 
 		// 替换未知类型
-		var changed = replaceUnknownTypes(castTypes, mthDetails.getArgTypes())
+		var changed = replaceUnknownTypes(castTypes, mthDetails.argTypes)
 		if (changed && isOverloadResolved(mthDetails, overloadedMethods, castTypes)) {
 			return castTypes
 		}
@@ -283,7 +283,7 @@ class MethodInvokeVisitor : AbstractVisitor() {
 		changed = false
 		for (i in 0 until argsCount) {
 			val castType = castTypes[i]
-			val mthType = mthDetails.getArgTypes()[i]
+			val mthType = mthDetails.argTypes[i]
 			if (!castType.isGeneric() && mthType.isGeneric()) {
 				castTypes[i] = mthType
 				changed = true
@@ -295,7 +295,7 @@ class MethodInvokeVisitor : AbstractVisitor() {
 
 		// 只有一个参数 => cast 就能解析
 		if (argsCount == 1) {
-			return mthDetails.getArgTypes()
+			return mthDetails.argTypes
 		}
 		if (Consts.DEBUG_OVERLOADED_CASTS) {
 			// TODO: 尝试最小化 cast 数量
@@ -308,7 +308,7 @@ class MethodInvokeVisitor : AbstractVisitor() {
 			)
 		}
 		// 无法解析 -> 对所有参数 cast
-		return mthDetails.getArgTypes()
+		return mthDetails.argTypes
 	}
 
 	private fun replaceUnknownTypes(castTypes: MutableList<ArgType>, mthArgTypes: List<ArgType>): Boolean {
@@ -330,7 +330,7 @@ class MethodInvokeVisitor : AbstractVisitor() {
 	 */
 	private fun expandTypes(parentMth: MethodNode, methodDetails: IMethodDetails, castTypes: List<ArgType>): List<ArgType> {
 		val typeCompare: TypeCompare = parentMth.root().typeCompare
-		val mthArgTypes = methodDetails.getArgTypes()
+		val mthArgTypes = methodDetails.argTypes
 		val argsCount = castTypes.size
 		val list = ArrayList<ArgType>(argsCount)
 		for (i in 0 until argsCount) {
@@ -389,7 +389,7 @@ class MethodInvokeVisitor : AbstractVisitor() {
 		types: List<ArgType>,
 		acceptFunction: (TypeCompareEnum) -> Boolean,
 	): Boolean {
-		val mthTypes = methodDetails.getArgTypes()
+		val mthTypes = methodDetails.argTypes
 		val argCount = mthTypes.size
 		if (argCount != types.size) {
 			return false
@@ -446,8 +446,8 @@ class MethodInvokeVisitor : AbstractVisitor() {
 		InsnType.CAST, InsnType.CHECK_CAST -> (insn as IndexInsnNode).indexAsType
 
 		else -> {
-			if (insn.getResult() != null) {
-				checkNotNull(insn.getResult()).getType()
+			if (insn.result != null) {
+				checkNotNull(insn.result).getType()
 			} else {
 				arg.getType()
 			}

@@ -34,7 +34,7 @@ class TypeBoundInvokeAssign(
 		val methodDetails: IMethodDetails? = root.getMethodUtils().getMethodDetails(invokeNode)
 		if (methodDetails != null) {
 			// 虚调用时，用方法声明所在类的类型来解析泛型
-			mthDeclType = methodDetails.getMethodInfo().declClass.type
+			mthDeclType = methodDetails.methodInfo.declClass.type
 		} else {
 			mthDeclType = instanceType
 		}
@@ -58,7 +58,7 @@ class TypeBoundInvokeAssign(
 
 	private val instanceArg: InsnArg get() = invokeNode.getArg(0)
 
-	override val arg: RegisterArg? get() = invokeNode.getResult()
+	override val arg: RegisterArg? get() = invokeNode.result
 
 	override fun equals(o: Any?): Boolean {
 		if (this === o) {

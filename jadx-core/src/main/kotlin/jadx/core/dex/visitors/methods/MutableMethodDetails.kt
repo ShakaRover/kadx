@@ -13,36 +13,36 @@ import jadx.core.dex.nodes.IMethodDetails
  *
  * **Kotlin 转换说明**：原 Java 用 `Collections.unmodifiableList` 包一层，
  * Kotlin 侧只读的 `List` 类型已足够表达“不可改”的意图，故直接持有；
- * 实现接口的 getter 保持显式 `override fun`（接口方法名与属性名不同）。
+ * 接口成员以 Kotlin 属性形式实现（JVM 仍生成同名 getter）。
  */
 class MutableMethodDetails(base: IMethodDetails) : IMethodDetails {
 
-	private val mthInfo: MethodInfo = base.getMethodInfo()
-	private var retType: ArgType = base.getReturnType()
-	private var argTypes: List<ArgType> = base.getArgTypes()
-	private var typeParams: List<ArgType> = base.getTypeParameters()
-	private var throwTypes: List<ArgType> = base.getThrows()
-	private var varArg: Boolean = base.isVarArg()
-	private var accFlags: Int = base.getRawAccessFlags()
+	private val mthInfo: MethodInfo = base.methodInfo
+	private var retType: ArgType = base.returnType
+	private var argTypesList: List<ArgType> = base.argTypes
+	private var typeParams: List<ArgType> = base.typeParameters
+	private var throwTypes: List<ArgType> = base.throws
+	private var varArg: Boolean = base.isVarArg
+	private var accFlags: Int = base.rawAccessFlags
 
-	override fun getMethodInfo(): MethodInfo = mthInfo
+	override val methodInfo: MethodInfo get() = mthInfo
 
-	override fun getReturnType(): ArgType = retType
+	override val returnType: ArgType get() = retType
 
-	override fun getArgTypes(): List<ArgType> = argTypes
+	override val argTypes: List<ArgType> get() = argTypesList
 
-	override fun getTypeParameters(): List<ArgType> = typeParams
+	override val typeParameters: List<ArgType> get() = typeParams
 
-	override fun getThrows(): List<ArgType> = throwTypes
+	override val throws: List<ArgType> get() = throwTypes
 
-	override fun isVarArg(): Boolean = varArg
+	override val isVarArg: Boolean get() = varArg
 
 	fun setRetType(retType: ArgType) {
 		this.retType = retType
 	}
 
 	fun setArgTypes(argTypes: List<ArgType>) {
-		this.argTypes = argTypes
+		this.argTypesList = argTypes
 	}
 
 	fun setTypeParams(typeParams: List<ArgType>) {
@@ -57,7 +57,7 @@ class MutableMethodDetails(base: IMethodDetails) : IMethodDetails {
 		this.varArg = varArg
 	}
 
-	override fun getRawAccessFlags(): Int = accFlags
+	override val rawAccessFlags: Int get() = accFlags
 
 	fun setRawAccessFlags(accFlags: Int) {
 		this.accFlags = accFlags

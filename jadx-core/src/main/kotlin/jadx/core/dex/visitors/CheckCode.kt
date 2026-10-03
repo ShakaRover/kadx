@@ -26,7 +26,7 @@ class CheckCode : AbstractVisitor() {
 
 	@Throws(JadxException::class)
 	override fun visit(mth: MethodNode) {
-		val mthInfo: MethodInfo = mth.getMethodInfo()
+		val mthInfo: MethodInfo = mth.methodInfo
 		if (mthInfo.argumentsTypes.size > 255) {
 			// Java 规范不允许超过 255 个参数
 			if (canRemoveMethod(mth)) {
@@ -39,7 +39,7 @@ class CheckCode : AbstractVisitor() {
 	}
 
 	private fun canRemoveMethod(mth: MethodNode): Boolean {
-		if (mth.getUseIn().isEmpty()) {
+		if (mth.useIn.isEmpty()) {
 			return true
 		}
 		val insns = mth.instructions ?: return true
@@ -71,7 +71,7 @@ class CheckCode : AbstractVisitor() {
 				continue
 			}
 			list.clear()
-			val resultArg: RegisterArg? = insnNode.getResult()
+			val resultArg: RegisterArg? = insnNode.result
 			if (resultArg != null) {
 				list.add(resultArg)
 			}

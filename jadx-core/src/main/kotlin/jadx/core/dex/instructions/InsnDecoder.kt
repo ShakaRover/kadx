@@ -319,7 +319,7 @@ open class InsnDecoder(private val method: MethodNode) {
 			Opcode.RETURN -> return makeInsn(
 				InsnType.RETURN,
 				null,
-				InsnArg.reg(insn, 0, method.getReturnType()),
+				InsnArg.reg(insn, 0, method.returnType),
 			)
 
 			Opcode.MONITOR_ENTER -> return makeInsn(

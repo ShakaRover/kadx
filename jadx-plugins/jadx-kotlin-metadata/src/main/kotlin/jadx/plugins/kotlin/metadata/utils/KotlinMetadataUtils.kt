@@ -128,7 +128,7 @@ object KotlinMetadataUtils {
 				it.classInfo.makeRawFullName() == compType
 			} ?: return null
 
-			val isOnlyInit = compField.getUseIn().size == 1 && compField.getUseIn()[0].getMethodInfo().isClassInit()
+			val isOnlyInit = compField.useIn.size == 1 && compField.useIn[0].methodInfo.isClassInit()
 			val isEmpty = compCls.run { methods.all { it.isConstructor() } && fields.isEmpty() }
 
 			return CompanionRename(

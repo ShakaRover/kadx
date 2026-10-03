@@ -127,7 +127,7 @@ class EnumVisitor : AbstractVisitor() {
 		}
 		// 收集静态方法线性部分的基本块（忽略方法末尾的分支）
 		val staticBlocks = ArrayList<BlockNode>()
-		for (subBlock in staticRegion.getSubBlocks()) {
+		for (subBlock in staticRegion.subBlocks) {
 			if (subBlock is BlockNode) {
 				staticBlocks.add(subBlock)
 			} else {
@@ -199,7 +199,7 @@ class EnumVisitor : AbstractVisitor() {
 			.remove(AccessFlags.ABSTRACT)
 			.remove(AccessFlags.STATIC)
 		for (mth in cls.methods) {
-			if (mth.getMethodInfo().isConstructor()) {
+			if (mth.methodInfo.isConstructor()) {
 				mth.accessFlags = mth.accessFlags.remove(AccessInfo.VISIBILITY_FLAGS)
 			}
 		}
@@ -265,7 +265,7 @@ class EnumVisitor : AbstractVisitor() {
 		if (ctrMth != null) {
 			markArgsForSkip(ctrMth)
 		}
-		val coResArg = co.getResult()
+		val coResArg = co.result
 		if (coResArg == null || checkNotNull(coResArg.sVar).useList.size <= 2) {
 			data.toRemove.add(co)
 		} else {
@@ -315,12 +315,12 @@ class EnumVisitor : AbstractVisitor() {
 		val returnInsn = BlockUtils.getLastInsn(returnBlock)
 		val wrappedInsn = InsnUtils.getWrappedInsn(InsnUtils.getSingleArg(returnInsn)) ?: return null
 		val enumFields = extractEnumFieldsFromInsn(enumData, wrappedInsn)
-		if (enumFields != null && ListUtils.isSingleElement(valuesMth.getUseIn(), enumData.classInitMth)) {
+		if (enumFields != null && ListUtils.isSingleElement(valuesMth.useIn, enumData.classInitMth)) {
 			valuesMth.add(AFlag.DONT_GENERATE)
 			if (valuesMth.name == "\$values") {
 				// Kotlin 用于初始化 values 的合成方法
 				// 重命名为实际的 values 方法，以便在 $ENTRIES 初始化代码中使用
-				valuesMth.getMethodInfo().alias = "values"
+				valuesMth.methodInfo.alias = "values"
 			}
 		}
 		return enumFields
@@ -329,7 +329,7 @@ class EnumVisitor : AbstractVisitor() {
 	private fun getValuesInitInsn(data: EnumData): BlockInsnPair? {
 		val searchField = checkNotNull(data.valuesField).getFieldInfo()
 		for (blockNode in data.staticBlocks) {
-			for (insn in blockNode.getInstructions()) {
+			for (insn in blockNode.instructions) {
 				if (insn.type == InsnType.SPUT) {
 					val indexInsnNode = insn as IndexInsnNode
 					val f = indexInsnNode.index as FieldInfo
@@ -383,7 +383,7 @@ class EnumVisitor : AbstractVisitor() {
 		val sputInsn = searchFieldPutInsn(data, enumFieldNode) ?: return null
 
 		val co = getConstructorInsn(sputInsn) ?: return null
-		val sgetResult = sgetInsn.getResult()
+		val sgetResult = sgetInsn.result
 		if (sgetResult == null || checkNotNull(sgetResult.sVar).useCount == 1) {
 			data.toRemove.add(sgetInsn)
 		}
@@ -471,7 +471,7 @@ class EnumVisitor : AbstractVisitor() {
 
 	private fun searchEnumSuperCtrInsn(ctrMth: MethodNode): ConstructorInsn? {
 		for (block in checkNotNull(ctrMth.basicBlocks)) {
-			for (insn in block.getInstructions()) {
+			for (insn in block.instructions) {
 				if (insn.type == InsnType.CONSTRUCTOR) {
 					val ctrCall = insn as ConstructorInsn
 					if (ctrCall.isSuper &&
@@ -556,7 +556,7 @@ class EnumVisitor : AbstractVisitor() {
 
 	private fun searchFieldPutInsn(data: EnumData, enumFieldNode: FieldNode): InsnNode? {
 		for (block in data.staticBlocks) {
-			for (sputInsn in block.getInstructions()) {
+			for (sputInsn in block.instructions) {
 				if (sputInsn != null && sputInsn.type == InsnType.SPUT) {
 					val f = (sputInsn as IndexInsnNode).index as FieldInfo
 					val fieldNode = data.cls.searchField(f)
@@ -575,7 +575,7 @@ class EnumVisitor : AbstractVisitor() {
 		var valuesMethod: MethodNode? = null
 		// 移除编译器生成的方法
 		for (mth in cls.methods) {
-			val mi = mth.getMethodInfo()
+			val mi = mth.methodInfo
 			if (mi.isClassInit() || mth.isNoCode()) {
 				continue
 			}
@@ -597,13 +597,13 @@ class EnumVisitor : AbstractVisitor() {
 					mth.add(AFlag.DONT_GENERATE)
 				} else {
 					// 自定义 values 方法 => 重命名以解决与枚举方法的冲突
-					mth.getMethodInfo().alias = "valuesCustom"
+					mth.methodInfo.alias = "valuesCustom"
 					mth.addAttr(RenameReasonAttr(mth).append("to resolve conflict with enum method"))
 				}
 			} else if (isValuesMethod(mth, clsType)) {
-				if (mth.getMethodInfo().alias != "values" && mth.getUseIn().isNotEmpty()) {
+				if (mth.methodInfo.alias != "values" && mth.useIn.isNotEmpty()) {
 					// 重命名以使用默认 values 方法
-					mth.getMethodInfo().alias = "values"
+					mth.methodInfo.alias = "values"
 					mth.addAttr(RenameReasonAttr(mth).append("to match enum method name"))
 					mth.add(AFlag.DONT_RENAME)
 				}
@@ -623,7 +623,7 @@ class EnumVisitor : AbstractVisitor() {
 	private fun markArgsForSkip(mth: MethodNode) {
 		// 跳过第一个和第二个参数
 		SkipMethodArgsAttr.skipArg(mth, 0)
-		if (mth.getMethodInfo().argsCount > 1) {
+		if (mth.methodInfo.argsCount > 1) {
 			SkipMethodArgsAttr.skipArg(mth, 1)
 		}
 	}
@@ -639,7 +639,7 @@ class EnumVisitor : AbstractVisitor() {
 	}
 
 	private fun isValuesMethod(mth: MethodNode, clsType: ArgType): Boolean {
-		val retType = mth.getReturnType()
+		val retType = mth.returnType
 		if (!retType.isArray() || retType.getArrayElement() != clsType) {
 			return false
 		}
@@ -668,7 +668,7 @@ class EnumVisitor : AbstractVisitor() {
 	}
 
 	private fun fixValuesAccess(mth: MethodNode, valuesFieldInfo: FieldInfo, clsType: ArgType, valuesMethod: MethodNode?) {
-		val mi = mth.getMethodInfo()
+		val mi = mth.methodInfo
 		if (mi.isConstructor() || mi.isClassInit() || mth.isNoCode() || mth === valuesMethod) {
 			return
 		}
@@ -686,10 +686,10 @@ class EnumVisitor : AbstractVisitor() {
 					val valueMth = if (valuesMethod == null) {
 						getValueMthInfo(mth.root(), clsType)
 					} else {
-						valuesMethod.getMethodInfo()
+						valuesMethod.methodInfo
 					}
 					val invokeNode = InvokeNode(valueMth, InvokeType.STATIC, 0)
-					invokeNode.setResult(insn.getResult())
+					invokeNode.setResult(insn.result)
 					if (valuesMethod == null) {
 						// 强制使用枚举方法（可能与自定义方法重名而被重命名）
 						invokeNode.add(AFlag.FORCE_RAW_NAME)

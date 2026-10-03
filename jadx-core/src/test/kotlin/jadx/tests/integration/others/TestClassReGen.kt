@@ -19,7 +19,7 @@ class TestClassReGen : IntegrationTest() {
 			.containsOnlyOnce("public int test() {")
 
 		cls.innerClasses[0].classInfo.changeShortName("ARenamed")
-		checkNotNull(cls.searchMethodByShortName("test")).getMethodInfo().alias = "testRenamed"
+		checkNotNull(cls.searchMethodByShortName("test")).methodInfo.alias = "testRenamed"
 		checkNotNull(cls.searchFieldByName("intField")).getFieldInfo().alias = "intFieldRenamed"
 
 		assertThat(cls)

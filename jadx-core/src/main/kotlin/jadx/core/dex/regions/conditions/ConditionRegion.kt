@@ -13,8 +13,8 @@ import jadx.core.utils.BlockUtils
  * [conditionBlocks] 用于“回溯”：把条件相关的多个块合并展示，并定位条件所在的源码行。
  *
  * Kotlin 转换说明：
- * - 字段声明为私有属性（[condition]/[conditionBlocks]），对外仍用显式
- *   `getCondition()/getConditionBlocks()` 方法名，避免与 [IConditionRegion] 的抽象方法冲突；
+ * - 字段声明为私有属性（[conditionValue]/[conditionBlocksValue]），对外以 [condition]/[conditionBlocks]
+ *   属性暴露，JVM 上仍生成 `getCondition()/getConditionBlocks()`；
  * - 原 Java 的 `updated != condition` 是引用比较，这里必须写成 `!==`。
  */
 abstract class ConditionRegion(parent: IRegion?) :
@@ -22,34 +22,34 @@ abstract class ConditionRegion(parent: IRegion?) :
 	IConditionRegion {
 
 	/** 条件表达式；可能为 null（例如循环头还没解析出条件） */
-	private var condition: IfCondition? = null
+	private var conditionValue: IfCondition? = null
 
 	/** 参与条件计算的块列表，默认空列表 */
-	private var conditionBlocks: List<BlockNode> = emptyList()
+	private var conditionBlocksValue: List<BlockNode> = emptyList()
 
-	override fun getCondition(): IfCondition? = condition
+	override val condition: IfCondition? get() = conditionValue
 
-	override fun getConditionBlocks(): List<BlockNode> = conditionBlocks
+	override val conditionBlocks: List<BlockNode> get() = conditionBlocksValue
 
 	override fun invertCondition() {
-		val cond = condition
+		val cond = conditionValue
 		if (cond != null) {
-			condition = IfCondition.invert(cond)
+			conditionValue = IfCondition.invert(cond)
 		}
 	}
 
 	override fun simplifyCondition(): Boolean {
-		val cond = condition ?: return false
+		val cond = conditionValue ?: return false
 		val updated = IfCondition.simplify(cond)
 		if (updated !== cond) {
-			condition = updated
+			conditionValue = updated
 			return true
 		}
 		return false
 	}
 
-	override fun getConditionSourceLine(): Int {
-		for (block in conditionBlocks) {
+	override val conditionSourceLine: Int get() {
+		for (block in conditionBlocksValue) {
 			val lastInsn = BlockUtils.getLastInsn(block)
 			if (lastInsn != null) {
 				val sourceLine = lastInsn.getSourceLine()
@@ -67,17 +67,17 @@ abstract class ConditionRegion(parent: IRegion?) :
 	 * [IfInfo.getMergedBlocks] 是位图集合，这里转成普通列表保存，便于后续遍历。
 	 */
 	fun updateCondition(info: IfInfo) {
-		this.condition = info.condition
-		this.conditionBlocks = info.mergedBlocks.toList()
+		this.conditionValue = info.condition
+		this.conditionBlocksValue = info.mergedBlocks.toList()
 	}
 
 	fun updateCondition(condition: IfCondition, conditionBlocks: List<BlockNode>) {
-		this.condition = condition
-		this.conditionBlocks = conditionBlocks
+		this.conditionValue = condition
+		this.conditionBlocksValue = conditionBlocks
 	}
 
 	fun updateCondition(block: BlockNode) {
-		this.condition = IfCondition.fromIfBlock(block)
-		this.conditionBlocks = listOf(block)
+		this.conditionValue = IfCondition.fromIfBlock(block)
+		this.conditionBlocksValue = listOf(block)
 	}
 }

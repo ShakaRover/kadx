@@ -157,12 +157,12 @@ class ExceptionHandler private constructor(val handlerOffset: Int) {
 		}
 
 		var splitter: BlockNode? = null
-		for (handlerPredecessor in checkNotNull(getHandlerBlock()).getPredecessors()) {
+		for (handlerPredecessor in checkNotNull(getHandlerBlock()).predecessors) {
 			if (!handlerPredecessor.contains(AFlag.EXC_BOTTOM_SPLITTER)) {
 				continue
 			}
 
-			for (splitterPredecessor in handlerPredecessor.getPredecessors()) {
+			for (splitterPredecessor in handlerPredecessor.predecessors) {
 				val tryBody = splitterPredecessor.get(AType.TRY_BLOCK)
 				if (tryBody === searchForTryBody) {
 					splitter = handlerPredecessor

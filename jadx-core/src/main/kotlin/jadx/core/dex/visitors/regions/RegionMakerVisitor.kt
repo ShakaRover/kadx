@@ -53,7 +53,7 @@ class RegionMakerVisitor : AbstractVisitor() {
 	private fun processForceInlineInsns(mth: MethodNode) {
 		var needShrink = false
 		for (block in checkNotNull(mth.basicBlocks)) {
-			for (insn in block.getInstructions()) {
+			for (insn in block.instructions) {
 				if (insn.contains(AFlag.FORCE_ASSIGN_INLINE)) {
 					needShrink = true
 					break

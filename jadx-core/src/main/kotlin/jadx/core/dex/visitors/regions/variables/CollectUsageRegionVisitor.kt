@@ -30,9 +30,9 @@ internal class CollectUsageRegionVisitor : TracedRegionVisitor() {
 	override fun processBlockTraced(mth: MethodNode, block: IBlock, curRegion: IRegion) {
 		val usePlace = UsePlace(curRegion, block)
 		regionProcess(usePlace)
-		val len = block.getInstructions().size
+		val len = block.instructions.size
 		for (i in 0 until len) {
-			val insn = block.getInstructions()[i]
+			val insn = block.instructions[i]
 			processInsn(insn, usePlace)
 		}
 	}
@@ -41,7 +41,7 @@ internal class CollectUsageRegionVisitor : TracedRegionVisitor() {
 	private fun regionProcess(usePlace: UsePlace) {
 		val region = usePlace.region
 		if (region is LoopRegion) {
-			val loopType = region.getType()
+			val loopType = region.type
 			if (loopType is ForLoop) {
 				processInsn(loopType.initInsn, usePlace)
 				processInsn(loopType.incrInsn, usePlace)
@@ -54,7 +54,7 @@ internal class CollectUsageRegionVisitor : TracedRegionVisitor() {
 			return
 		}
 		// 结果寄存器（赋值）
-		val result = insn.getResult()
+		val result = insn.result
 		if (result != null && result.isRegister) {
 			if (!result.contains(AFlag.DONT_GENERATE)) {
 				val usage = getUsage(result.sVar)

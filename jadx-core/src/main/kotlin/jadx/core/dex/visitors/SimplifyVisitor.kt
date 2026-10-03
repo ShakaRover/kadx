@@ -153,7 +153,7 @@ class SimplifyVisitor : AbstractVisitor() {
 				val firstArg = insn.getArg(0)
 				if (firstArg.isLiteral) {
 					val constInsn = InsnNode(InsnType.CONST, 1)
-					constInsn.setResult(insn.getResult())
+					constInsn.setResult(insn.result)
 					constInsn.addArg(firstArg)
 					constInsn.copyAttributesFrom(insn)
 					return constInsn
@@ -191,7 +191,7 @@ class SimplifyVisitor : AbstractVisitor() {
 					if (printable >= arr.size - printable) {
 						val constStr = ConstStringNode(String(arr))
 						if (insn.argsCount == 1) {
-							constStr.setResult(insn.getResult())
+							constStr.setResult(insn.result)
 							constStr.copyAttributesFrom(insn)
 							InsnRemover.unbindArgUsage(mth, insn.getArg(0))
 							return constStr
@@ -235,7 +235,7 @@ class SimplifyVisitor : AbstractVisitor() {
 		) {
 			val insnNode = InsnNode(InsnType.MOVE, 1)
 			insnNode.setOffset(castInsn.getOffset())
-			insnNode.setResult(InsnNode.duplicateArg(castInsn.getResult()))
+			insnNode.setResult(InsnNode.duplicateArg(castInsn.result))
 			insnNode.addArg(castArg.duplicate())
 			return insnNode
 		}
@@ -412,11 +412,11 @@ class SimplifyVisitor : AbstractVisitor() {
 			val simplifiedArgs = concatConstArgs(dupArgs)
 			val concatInsn = InsnNode(InsnType.STR_CONCAT, simplifiedArgs)
 			concatInsn.add(AFlag.SYNTHETIC)
-			if (toStrInsn.getResult() == null && !toStrInsn.contains(AFlag.WRAPPED)) {
+			if (toStrInsn.result == null && !toStrInsn.contains(AFlag.WRAPPED)) {
 				// 不赋值给变量的字符串拼接会导致编译错误
 				concatInsn.setResult(mth.makeSyntheticRegArg(ArgType.STRING))
 			} else {
-				concatInsn.setResult(toStrInsn.getResult())
+				concatInsn.setResult(toStrInsn.result)
 			}
 			concatInsn.copyAttributesFrom(toStrInsn)
 			removeStringBuilderInsns(mth, toStrInsn, chain)
@@ -557,7 +557,7 @@ class SimplifyVisitor : AbstractVisitor() {
 				if (litArg.isNegative()) {
 					val negLitArg = litArg.negate()
 					if (negLitArg != null) {
-						val resArg = InsnNode.duplicateArg(arith.getResult())
+						val resArg = InsnNode.duplicateArg(arith.result)
 						val newInsn = ArithNode(ArithOp.SUB, resArg, arith.getArg(0).duplicate(), negLitArg)
 						newInsn.copyAttributesFrom(arith)
 						newInsn.setOffset(arith.getOffset())
@@ -572,7 +572,7 @@ class SimplifyVisitor : AbstractVisitor() {
 				val lit = litArg.literal
 				if (firstArg.getType() == ArgType.BOOLEAN && (lit == 0L || lit == 1L)) {
 					val newInsn = InsnNode(if (lit == 0L) InsnType.MOVE else InsnType.NOT, 1)
-					newInsn.setResult(InsnNode.duplicateArg(arith.getResult()))
+					newInsn.setResult(InsnNode.duplicateArg(arith.result))
 					newInsn.addArg(firstArg.duplicate())
 					newInsn.copyAttributesFrom(arith)
 					newInsn.setOffset(arith.getOffset())

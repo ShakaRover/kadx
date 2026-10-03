@@ -451,7 +451,7 @@ class ResTableBinaryParser @JvmOverloads constructor(
 
 	private fun getNewResName(resRef: Int, origKeyName: String, constField: FieldNode?): String {
 		var newResName: String
-		if (constField == null || constField.topParentClass.isSynthetic()) {
+		if (constField == null || constField.topParentClass.isSynthetic) {
 			newResName = origKeyName
 		} else {
 			newResName = getBetterName(root.getArgs().resourceNameSource, origKeyName, constField.name)

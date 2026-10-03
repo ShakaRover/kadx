@@ -137,12 +137,12 @@ class JsonCodeGen(cls: ClassNode) {
 			}
 			val jsonMth = JsonMethod()
 			jsonMth.name = mth.name
-			if (mth.getMethodInfo().hasAlias()) {
+			if (mth.methodInfo.hasAlias()) {
 				jsonMth.alias = mth.alias
 			}
-			jsonMth.signature = mth.getMethodInfo().shortId
-			jsonMth.returnType = getTypeAlias(classGen, mth.getReturnType())
-			jsonMth.arguments = Utils.collectionMap(mth.getMethodInfo().argumentsTypes) { clsType -> getTypeAlias(classGen, clsType) }
+			jsonMth.signature = mth.methodInfo.shortId
+			jsonMth.returnType = getTypeAlias(classGen, mth.returnType)
+			jsonMth.arguments = Utils.collectionMap(mth.methodInfo.argumentsTypes) { clsType -> getTypeAlias(classGen, clsType) }
 
 			val mthGen = MethodGen(classGen, mth)
 			val cw: ICodeWriter = AnnotatedCodeWriter(args)

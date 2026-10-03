@@ -133,7 +133,7 @@ class MethodThrowsVisitor : AbstractVisitor() {
 						excludedExceptions.add(handler.argType.toString())
 					}
 				}
-				for (insn in block.getInstructions()) {
+				for (insn in block.instructions) {
 					checkInsn(mth, insn, excludedExceptions, skipExceptions)
 				}
 			}
@@ -152,7 +152,7 @@ class MethodThrowsVisitor : AbstractVisitor() {
 					val assignInsn = throwArg.assignInsn
 					if (assignInsn != null &&
 						assignInsn.type == InsnType.MOVE_EXCEPTION &&
-						checkNotNull(assignInsn.getResult()).contains(AFlag.CUSTOM_DECLARE)
+						checkNotNull(assignInsn.result).contains(AFlag.CUSTOM_DECLARE)
 					) {
 						// 该变量来自 catch 语句，忽略对 Throwable 的 rethrow
 						return
@@ -192,10 +192,10 @@ class MethodThrowsVisitor : AbstractVisitor() {
 				val clsDetails = checkNotNull(root.getClsp()).getClsDetails(classInfo.type)
 				if (clsDetails != null) {
 					val cMth = searchOverriddenMethod(clsDetails, signature)
-					if (cMth != null && cMth.getThrows().isNotEmpty()) {
+					if (cMth != null && cMth.throws.isNotEmpty()) {
 						val attr = mth.get(AType.METHOD_THROWS)
 						if (attr != null) {
-							for (argType in cMth.getThrows()) {
+							for (argType in cMth.throws) {
 								visitThrows(mth, argType, excludedExceptions)
 							}
 						}
@@ -263,15 +263,15 @@ class MethodThrowsVisitor : AbstractVisitor() {
 		// 用包含返回值的完整签名精确匹配，抵抗混淆（见测试 'TestOverrideWithSameName'）
 		val shortId = mth.shortId
 		for (supMth in cls.methods) {
-			if (supMth.getMethodInfo().shortId == shortId) {
+			if (supMth.methodInfo.shortId == shortId) {
 				return supMth
 			}
 		}
 		// 用不含返回值、但返回值更宽泛的签名匹配
 		for (supMth in cls.methods) {
-			if (supMth.getMethodInfo().shortId.startsWith(signature) && !supMth.accessFlags.isStatic()) {
+			if (supMth.methodInfo.shortId.startsWith(signature) && !supMth.accessFlags.isStatic()) {
 				val typeCompare: TypeCompare = cls.root().typeCompare
-				val supRetType = supMth.getMethodInfo().returnType
+				val supRetType = supMth.methodInfo.returnType
 				val mthRetType = mth.returnType
 				val res = typeCompare.compareTypes(supRetType, mthRetType)
 				if (res.isWider()) {

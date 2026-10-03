@@ -9,7 +9,7 @@ interface ICodeNode :
 	IAttributeNode,
 	IUsageInfoNode,
 	ICodeNodeRef {
-	fun getDeclaringClass(): ClassNode?
+	val declaringClass: ClassNode?
 
 	var accessFlags: AccessInfo
 }

@@ -101,7 +101,7 @@ class PrepareForCodeGen : AbstractVisitor() {
 
 				InsnType.MOVE -> {
 					// 删除冗余 move：结果未使用且参数名相同 (a = a;)
-					val result = insn.getResult()
+					val result = insn.result
 					if (result != null &&
 						checkNotNull(result.sVar).useCount == 0 &&
 						result.isNameEquals(insn.getArg(0))
@@ -122,7 +122,7 @@ class PrepareForCodeGen : AbstractVisitor() {
 			// 把 'move' 换成其内层 wrapped 指令
 			if (insn.type == InsnType.MOVE && insn.getArg(0).isInsnWrap) {
 				val wrapInsn = (insn.getArg(0) as InsnWrapArg).wrapInsn
-				wrapInsn.setResult(insn.getResult())
+				wrapInsn.setResult(insn.result)
 				wrapInsn.copyAttributesFrom(insn)
 				list[i] = wrapInsn
 			}
@@ -133,7 +133,7 @@ class PrepareForCodeGen : AbstractVisitor() {
 	 * 给非 int 常量加显式类型。
 	 */
 	private fun checkConstUsage(block: BlockNode) {
-		for (blockInsn in block.getInstructions()) {
+		for (blockInsn in block.instructions) {
 			blockInsn.visitInsns(
 				{ insn ->
 					if (!forbidExplicitType(insn.type)) {
@@ -161,7 +161,7 @@ class PrepareForCodeGen : AbstractVisitor() {
 	}
 
 	private fun removeParenthesis(block: BlockNode) {
-		for (insn in block.getInstructions()) {
+		for (insn in block.instructions) {
 			removeParenthesis(insn)
 		}
 	}
@@ -213,12 +213,12 @@ class PrepareForCodeGen : AbstractVisitor() {
 	 * ('a = a + 2' => 'a += 2')
 	 */
 	private fun modifyArith(block: BlockNode) {
-		for (insn in block.getInstructions()) {
+		for (insn in block.instructions) {
 			if (insn.type == InsnType.ARITH &&
 				!insn.contains(AFlag.ARITH_ONEARG) &&
 				!insn.contains(AFlag.DECLARE_VAR)
 			) {
-				val res = insn.getResult()
+				val res = insn.result
 				val arg = insn.getArg(0)
 				var replace = false
 				if (res == arg) {
@@ -276,12 +276,12 @@ class PrepareForCodeGen : AbstractVisitor() {
 
 		// 确认移动
 		InsnList.remove(blockByInsn, ctrInsn)
-		(checkNotNull(mth.region).getSubBlocks() as MutableList<IContainer>).add(0, InsnContainer(ctrInsn))
+		(checkNotNull(mth.region).subBlocks as MutableList<IContainer>).add(0, InsnContainer(ctrInsn))
 	}
 
 	private fun searchConstructorCall(mth: MethodNode): ConstructorInsn? {
 		for (block in checkNotNull(mth.basicBlocks)) {
-			for (insn in block.getInstructions()) {
+			for (insn in block.instructions) {
 				if (insn.type == InsnType.CONSTRUCTOR) {
 					val ctrInsn = insn as ConstructorInsn
 					if (ctrInsn.isSuper || ctrInsn.isThis) {
@@ -389,7 +389,7 @@ class PrepareForCodeGen : AbstractVisitor() {
 	}
 
 	private fun addNullCasts(mth: MethodNode, block: BlockNode) {
-		for (insn in block.getInstructions()) {
+		for (insn in block.instructions) {
 			when (insn.type) {
 				InsnType.INVOKE -> verifyNullCast(mth, (insn as InvokeNode).getInstanceArg())
 				InsnType.ARRAY_LENGTH -> verifyNullCast(mth, insn.getArg(0))

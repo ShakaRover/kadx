@@ -49,7 +49,7 @@ class UsageInfo(private val root: RootNode) : IUsageInfoData {
 
 	override fun apply() {
 		clsDeps.visit { cls, deps -> cls.dependencies = sortedList(deps) }
-		clsUsage.visit { cls, deps -> cls.useIn = sortedList(deps) }
+		clsUsage.visit { cls, deps -> cls.useInValue = sortedList(deps) }
 		clsUseInMth.visit { cls, methods -> cls.useInMth = resolveMthList(sortedList(methods)) }
 		fieldUsage.visit { field, methods -> field.setUseIn(resolveMthList(sortedList(methods))) }
 		mthUsage.visit { mth, methods -> mth.setUseIn(resolveMthList(sortedList(methods))) }
@@ -62,7 +62,7 @@ class UsageInfo(private val root: RootNode) : IUsageInfoData {
 
 	override fun applyForClass(cls: ClassNode) {
 		cls.dependencies = sortedList(clsDeps.getOrDefault(cls, emptySet()))
-		cls.useIn = sortedList(clsUsage.getOrDefault(cls, emptySet()))
+		cls.useInValue = sortedList(clsUsage.getOrDefault(cls, emptySet()))
 		cls.useInMth = resolveMthList(sortedList(clsUseInMth.getOrDefault(cls, emptySet())))
 		for (fld in cls.fields) {
 			fld.setUseIn(resolveMthList(sortedList(fieldUsage.getOrDefault(fld, emptySet()))))
@@ -139,8 +139,8 @@ class UsageInfo(private val root: RootNode) : IUsageInfoData {
 			selfCalls[mth] = true
 		}
 		// 隐式使用
-		clsUse(mth, useMth.getReturnType())
-		for (argType in useMth.getMethodInfo().argumentsTypes) {
+		clsUse(mth, useMth.returnType)
+		for (argType in useMth.methodInfo.argumentsTypes) {
 			clsUse(mth, argType)
 		}
 	}
@@ -224,6 +224,6 @@ class UsageInfo(private val root: RootNode) : IUsageInfoData {
 	}
 
 	private fun resolveMthList(mthNodeList: List<MethodNode>): List<MethodNode> = Utils.collectionMap(mthNodeList) { m ->
-		root.resolveDirectMethod(m.parentClass.rawName, m.getMethodInfo().shortId)
+		root.resolveDirectMethod(m.parentClass.rawName, m.methodInfo.shortId)
 	}
 }

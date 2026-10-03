@@ -72,7 +72,7 @@ class CentralityState(
 		if (allowableOutputArguments.isEmpty()) {
 			return false
 		}
-		val registerArg = insn.getResult() ?: return false
+		val registerArg = insn.result ?: return false
 		for (allowableOutput in allowableOutputArguments) {
 			if (allowableOutput == registerArg) {
 				return true

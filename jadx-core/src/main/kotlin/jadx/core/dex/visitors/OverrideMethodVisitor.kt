@@ -89,7 +89,7 @@ class OverrideMethodVisitor : AbstractVisitor() {
 			return existing
 		}
 		val cls = mth.parentClass
-		val signature = mth.getMethodInfo().makeSignature(false)
+		val signature = mth.methodInfo.makeSignature(false)
 		val overrideList = ArrayList<IMethodDetails>()
 		val baseMethods = HashSet<IMethodDetails>()
 		for (superType in superData.superTypes) {
@@ -140,24 +140,24 @@ class OverrideMethodVisitor : AbstractVisitor() {
 
 	private fun searchOverriddenMethod(cls: ClassNode, mth: MethodNode, signature: String): MethodNode? {
 		// 用包含返回值的完整签名精确匹配，抵抗混淆（见测试 'TestOverrideWithSameName'）
-		val shortId = mth.getMethodInfo().shortId
+		val shortId = mth.methodInfo.shortId
 		for (supMth in cls.methods) {
-			if (supMth.getMethodInfo().shortId == shortId && !supMth.accessFlags.isStatic()) {
+			if (supMth.methodInfo.shortId == shortId && !supMth.accessFlags.isStatic()) {
 				return supMth
 			}
 		}
 		// 用不含返回值、但返回值更宽泛的签名匹配
 		for (supMth in cls.methods) {
-			if (supMth.getMethodInfo().shortId.startsWith(signature) && !supMth.accessFlags.isStatic()) {
+			if (supMth.methodInfo.shortId.startsWith(signature) && !supMth.accessFlags.isStatic()) {
 				val typeCompare: TypeCompare = cls.root().typeCompare
-				val supRetType = supMth.getMethodInfo().returnType
-				val mthRetType = mth.getMethodInfo().returnType
+				val supRetType = supMth.methodInfo.returnType
+				val mthRetType = mth.methodInfo.returnType
 				val res = typeCompare.compareTypes(supRetType, mthRetType)
 				if (res.isWider()) {
 					return supMth
 				}
 				if (res == TypeCompareEnum.UNKNOWN || res == TypeCompareEnum.CONFLICT) {
-					mth.addDebugComment("Possible override for method " + supMth.getMethodInfo().fullId)
+					mth.addDebugComment("Possible override for method " + supMth.methodInfo.fullId)
 				}
 			}
 		}
@@ -340,7 +340,7 @@ class OverrideMethodVisitor : AbstractVisitor() {
 	}
 
 	private fun fixMethodReturnType(mth: MethodNode, baseMth: IMethodDetails, superData: SuperTypesData): Boolean {
-		val returnType = mth.getReturnType()
+		val returnType = mth.returnType
 		if (returnType == ArgType.VOID) {
 			return false
 		}
@@ -352,22 +352,22 @@ class OverrideMethodVisitor : AbstractVisitor() {
 	}
 
 	private fun updateReturnType(mth: MethodNode, baseMth: IMethodDetails, superData: SuperTypesData): Boolean {
-		val baseReturnType = baseMth.getReturnType()
-		if (mth.getReturnType() == baseReturnType) {
+		val baseReturnType = baseMth.returnType
+		if (mth.returnType == baseReturnType) {
 			return false
 		}
 		if (!baseReturnType.containsTypeVariable()) {
 			return false
 		}
 		val typeCompare = mth.root().typeCompare
-		val baseCls = baseMth.getMethodInfo().declClass.type
+		val baseCls = baseMth.methodInfo.declClass.type
 		for (superType in superData.superTypes) {
 			val compareResult = typeCompare.compareTypes(superType, baseCls)
 			if (compareResult == TypeCompareEnum.NARROW_BY_GENERIC) {
 				val targetRetType = mth.root().getTypeUtils().replaceClassGenerics(superType, baseReturnType)
 				if (targetRetType != null &&
 					!targetRetType.containsTypeVariable() &&
-					targetRetType != mth.getReturnType()
+					targetRetType != mth.returnType
 				) {
 					mth.updateReturnType(targetRetType)
 					return true
@@ -378,8 +378,8 @@ class OverrideMethodVisitor : AbstractVisitor() {
 	}
 
 	private fun fixMethodArgTypes(mth: MethodNode, baseMth: IMethodDetails, superData: SuperTypesData): Boolean {
-		val mthArgTypes = mth.getArgTypes()
-		val baseArgTypes = baseMth.getArgTypes()
+		val mthArgTypes = mth.argTypes
+		val baseArgTypes = baseMth.argTypes
 		if (mthArgTypes == baseArgTypes) {
 			return false
 		}
@@ -405,8 +405,8 @@ class OverrideMethodVisitor : AbstractVisitor() {
 	}
 
 	private fun updateArgType(mth: MethodNode, baseMth: IMethodDetails, superData: SuperTypesData, argNum: Int): ArgType? {
-		val arg = mth.getArgTypes()[argNum]
-		val baseArg = baseMth.getArgTypes()[argNum]
+		val arg = mth.argTypes[argNum]
+		val baseArg = baseMth.argTypes[argNum]
 		if (arg == baseArg) {
 			return null
 		}
@@ -414,7 +414,7 @@ class OverrideMethodVisitor : AbstractVisitor() {
 			return null
 		}
 		val typeCompare = mth.root().typeCompare
-		val baseCls = baseMth.getMethodInfo().declClass.type
+		val baseCls = baseMth.methodInfo.declClass.type
 		for (superType in superData.superTypes) {
 			val compareResult = typeCompare.compareTypes(superType, baseCls)
 			if (compareResult == TypeCompareEnum.NARROW_BY_GENERIC) {
@@ -431,18 +431,18 @@ class OverrideMethodVisitor : AbstractVisitor() {
 	}
 
 	private fun checkMethodSignatureCollisions(mth: MethodNode, rename: Boolean) {
-		val mthName = mth.getMethodInfo().alias
-		val newSignature = MethodInfo.makeShortId(mthName, mth.getArgTypes(), null)
+		val mthName = mth.methodInfo.alias
+		val newSignature = MethodInfo.makeShortId(mthName, mth.argTypes, null)
 		for (otherMth in mth.parentClass.methods) {
 			val otherMthName = otherMth.alias
 			if (otherMthName == mthName && otherMth !== mth) {
-				val otherSignature = otherMth.getMethodInfo().makeSignature(true, false)
+				val otherSignature = otherMth.methodInfo.makeSignature(true, false)
 				if (otherSignature == newSignature) {
 					if (rename) {
 						if (otherMth.contains(AFlag.DONT_RENAME) || otherMth.contains(AType.METHOD_OVERRIDE)) {
 							otherMth.addWarnComment("Can't rename method to resolve collision")
 						} else {
-							otherMth.getMethodInfo().alias = makeNewAlias(otherMth)
+							otherMth.methodInfo.alias = makeNewAlias(otherMth)
 							otherMth.addAttr(RenameReasonAttr("avoid collision after fix types in other method"))
 						}
 					}

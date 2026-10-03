@@ -7,7 +7,7 @@ import jadx.api.metadata.ICodeNodeRef
  * Java 侧节点接口：类、方法、字段、变量、包等对外暴露的“Java 视图”都实现它。
  *
  * 这是公共 API（插件与 GUI 会遍历这些节点），方法名与 JVM 签名必须保持不变。
- * 注意：这些方法全部保留为显式函数（而非 Kotlin 属性），以最大程度兼容 Java 调用方。
+ * 接口成员以 Kotlin 属性形式声明时，JVM 上仍生成 `getXxx()`，Java 实现/调用方零改动。
  */
 interface JavaNode {
 
@@ -21,7 +21,7 @@ interface JavaNode {
 	fun getFullName(): String
 
 	/** 声明所在类（包节点返回 null）。 */
-	fun getDeclaringClass(): JavaClass?
+	val declaringClass: JavaClass?
 
 	/** 顶层父类（包节点返回 null）。 */
 	fun getTopParentClass(): JavaClass?
@@ -30,7 +30,7 @@ interface JavaNode {
 	fun getDefPos(): Int
 
 	/** 该节点被哪些节点使用。 */
-	fun getUseIn(): List<JavaNode>
+	val useIn: List<JavaNode>
 
 	/** 移除别名（恢复原始名称）。 */
 	fun removeAlias()

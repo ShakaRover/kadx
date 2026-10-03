@@ -56,7 +56,7 @@ object ResolveJavaJSR {
 
 	private fun resolveForRetBlock(mth: MethodNode, retBlock: BlockNode) {
 		BlockUtils.visitPredecessorsUntil(mth, retBlock) { startBlock ->
-			val preds = startBlock.getPredecessors()
+			val preds = startBlock.predecessors
 			var allJsr = preds.size > 1
 			for (p in preds) {
 				if (!BlockUtils.checkLastInsnType(p, InsnType.JAVA_JSR)) {
@@ -76,7 +76,7 @@ object ResolveJavaJSR {
 	}
 
 	private fun removeInsns(retBlock: BlockNode, startBlock: BlockNode, jsrBlocks: List<BlockNode>) {
-		val retInsn = ListUtils.removeLast(retBlock.getInstructions())
+		val retInsn = ListUtils.removeLast(retBlock.instructions)
 		if (retInsn != null && retInsn.type == InsnType.JAVA_RET) {
 			val retArg: InsnArg = retInsn.getArg(0)
 			if (retArg.isRegister) {
@@ -84,14 +84,14 @@ object ResolveJavaJSR {
 				val startInsn = BlockUtils.getFirstInsn(startBlock)
 				if (startInsn != null &&
 					startInsn.type == InsnType.MOVE &&
-					checkNotNull(startInsn.getResult()).regNum == regNum
+					checkNotNull(startInsn.result).regNum == regNum
 				) {
 					startBlock.instructions.removeAt(0)
 				}
 			}
 		}
 		for (p in jsrBlocks) {
-			ListUtils.removeLast(p.getInstructions())
+			ListUtils.removeLast(p.instructions)
 		}
 	}
 
@@ -108,7 +108,7 @@ object ResolveJavaJSR {
 				first = jsrBlock
 			} else {
 				// 为其余每个 JSR 调用点复制一份子程序块树
-				val pathBlock = BlockUtils.selectOther(startBlock, jsrBlock.getSuccessors())
+				val pathBlock = BlockUtils.selectOther(startBlock, jsrBlock.successors)
 				BlockSplitter.removeConnection(jsrBlock, startBlock)
 				BlockSplitter.removeConnection(jsrBlock, pathBlock)
 				val newBlocks = BlockSplitter.copyBlocksTree(mth, dupBlocks)
@@ -120,7 +120,7 @@ object ResolveJavaJSR {
 		}
 		if (first != null) {
 			// 第一个调用点直接复用原始子程序
-			val pathBlock = BlockUtils.selectOther(startBlock, first.getSuccessors())
+			val pathBlock = BlockUtils.selectOther(startBlock, first.successors)
 			BlockSplitter.removeConnection(first, pathBlock)
 			BlockSplitter.connect(retBlock, pathBlock)
 		}

@@ -83,7 +83,7 @@ class JsonMappingGen private constructor() {
 			jsonCls.methods = mthMappings
 			for (method in methods) {
 				val jsonMethod = JsonMthMapping()
-				val methodInfo = method.getMethodInfo()
+				val methodInfo = method.methodInfo
 				jsonMethod.signature = methodInfo.shortId
 				jsonMethod.name = methodInfo.name
 				jsonMethod.alias = methodInfo.alias

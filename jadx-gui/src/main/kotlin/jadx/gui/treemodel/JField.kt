@@ -58,7 +58,7 @@ class JField(
 
 	override fun addUpdateNodes(toUpdate: MutableList<JavaNode>) {
 		toUpdate.add(field)
-		toUpdate.addAll(field.getUseIn())
+		toUpdate.addAll(field.useIn)
 	}
 
 	override fun reload(mainWindow: MainWindow) {

@@ -68,7 +68,7 @@ class SummaryNode(mainWindow: MainWindow) : JNode() {
 
 		val classes = wrapper.rootNode.getClasses(true)
 		val codeSources = classes
-			.map { it.getInputFileName() ?: "" }
+			.map { it.inputFileName ?: "" }
 			.distinct()
 			.sorted()
 			.toMutableList()
@@ -90,7 +90,7 @@ class SummaryNode(mainWindow: MainWindow) : JNode() {
 
 		val methodsCount = classes.sumOf { cls -> cls.methods.size }
 		val fieldsCount = classes.sumOf { cls -> cls.fields.size }
-		val insnCount = classes.sumOf { cls -> cls.methods.sumOf { it.getInsnsCount() } }
+		val insnCount = classes.sumOf { cls -> cls.methods.sumOf { it.insnsCount } }
 		builder.append("<h3>Counts</h3>")
 		builder.append("<ul>")
 		builder.append("<li>Classes: " + classes.size + "</li>")

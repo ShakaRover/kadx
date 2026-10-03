@@ -191,7 +191,7 @@ class TypeInferenceVisitor : AbstractVisitor() {
 	private fun mergePhiBounds(ssaVar: SSAVar) {
 		for (usedInPhi in ssaVar.usedInPhi) {
 			val bounds = ssaVar.typeInfo.bounds
-			bounds.addAll(checkNotNull(usedInPhi.getResult()?.sVar).typeInfo.bounds)
+			bounds.addAll(checkNotNull(usedInPhi.result?.sVar).typeInfo.bounds)
 			for (arg in usedInPhi.getArguments()) {
 				bounds.addAll(checkNotNull((arg as RegisterArg).sVar).typeInfo.bounds)
 			}
@@ -214,7 +214,7 @@ class TypeInferenceVisitor : AbstractVisitor() {
 			return
 		}
 		val insn = assign.getParentInsn()
-		val result = insn?.getResult()
+		val result = insn?.result
 		if (insn == null || result == null) {
 			addBound(typeInfo, TypeBoundConst(BoundEnum.ASSIGN, assign.getInitType()))
 			return
@@ -282,7 +282,7 @@ class TypeInferenceVisitor : AbstractVisitor() {
 	}
 
 	private fun makeAssignFieldGetBound(insn: IndexInsnNode): ITypeBound {
-		val initType = checkNotNull(insn.getResult()).getInitType()
+		val initType = checkNotNull(insn.result).getInitType()
 		if (initType.containsTypeVariable()) {
 			return TypeBoundFieldGetAssign(root, insn, initType)
 		}
@@ -326,7 +326,7 @@ class TypeInferenceVisitor : AbstractVisitor() {
 		val methodDetails = methodUtils.getMethodDetails(invoke) ?: return null
 		if (instanceArg !== regArg) {
 			val argIndex = invoke.getArgIndex(regArg) - invoke.getFirstArgOffset()
-			val argType = methodDetails.getArgTypes()[argIndex]
+			val argType = methodDetails.argTypes[argIndex]
 			if (!argType.containsTypeVariable()) {
 				return null
 			}

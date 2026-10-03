@@ -11,7 +11,7 @@ class InsnWrapArg internal constructor(insn: InsnNode) : InsnArg() {
 	val wrapInsn: InsnNode = insn
 
 	init {
-		val result = insn.getResult()
+		val result = insn.result
 		type = if (result != null) result.getType() else ArgType.UNKNOWN
 	}
 
@@ -32,7 +32,7 @@ class InsnWrapArg internal constructor(insn: InsnNode) : InsnArg() {
 
 	override fun duplicate(): InsnArg {
 		val wrapInsnCopy = wrapInsn.copyWithoutResult<InsnNode>()
-		val result = wrapInsn.getResult()
+		val result = wrapInsn.result
 		if (result != null && wrapInsn.contains(AFlag.FORCE_ASSIGN_INLINE)) {
 			// keep same SSA var in result arg, this will break previous version, mark it for removal
 			wrapInsnCopy.setResult(result.duplicate())

@@ -171,7 +171,7 @@ class ProcessAnonymous : AbstractVisitor() {
 			if (inlineType == InlineType.INSTANCE_FIELD) {
 				outerCls = cls.useInMth[0].parentClass
 			} else {
-				outerCls = anonymousConstructor.getUseIn()[0].parentClass
+				outerCls = anonymousConstructor.useIn[0].parentClass
 			}
 			outerCls.addInlinedClass(cls)
 			cls.addAttr(AnonymousClassAttr(outerCls, baseType, inlineType))
@@ -195,7 +195,7 @@ class ProcessAnonymous : AbstractVisitor() {
 			val attr = checkNotNull(cls.get(AType.ANONYMOUS_CLASS))
 			val outerCls = attr.outerCls
 			cls.dependencies = ListUtils.safeAdd(cls.dependencies, outerCls.topParentClass)
-			outerCls.useIn = ListUtils.safeAdd(outerCls.useIn, cls)
+			outerCls.useInValue = ListUtils.safeAdd(outerCls.useIn, cls)
 
 			cls.remove(AType.ANONYMOUS_CLASS)
 			cls.remove(AFlag.DONT_GENERATE)
@@ -218,7 +218,7 @@ class ProcessAnonymous : AbstractVisitor() {
 			if (cls.useIn.size == 1 && cls.useInMth.size == 1) {
 				val useMth = cls.useInMth[0]
 				// 允许在枚举类 init 中使用
-				return useMth.getMethodInfo().isClassInit() && useMth.parentClass.isEnum()
+				return useMth.methodInfo.isClassInit() && useMth.parentClass.isEnum()
 			}
 			return false
 		}
@@ -232,13 +232,13 @@ class ProcessAnonymous : AbstractVisitor() {
 		 * @return 决定的内联方式
 		 */
 		private fun checkUsage(cls: ClassNode, ctr: MethodNode): InlineType? {
-			if (ctr.getUseIn().size != 1) {
+			if (ctr.useIn.size != 1) {
 				// 检查是否在所有构造器的公共字段初始化中使用
 				if (!checkForCommonFieldInit(ctr)) {
 					return null
 				}
 			}
-			val ctrUseMth = ctr.getUseIn()[0]
+			val ctrUseMth = ctr.useIn[0]
 			val ctrUseCls = ctrUseMth.parentClass
 			if (ctrUseCls == cls) {
 				if (checkForInstanceFieldUsage(cls, ctr)) {
@@ -255,7 +255,7 @@ class ProcessAnonymous : AbstractVisitor() {
 				return null
 			}
 			for (field in cls.fields) {
-				for (useMth in field.getUseIn()) {
+				for (useMth in field.useIn) {
 					if (badMethodUsage(cls, useMth, field.accessFlags)) {
 						return null
 					}
@@ -269,7 +269,7 @@ class ProcessAnonymous : AbstractVisitor() {
 				if (mth === ctr) {
 					continue
 				}
-				for (useMth in mth.getUseIn()) {
+				for (useMth in mth.useIn) {
 					if (useMth == ctrUseMth) {
 						continue
 					}
@@ -282,8 +282,8 @@ class ProcessAnonymous : AbstractVisitor() {
 		}
 
 		private fun checkForInstanceFieldUsage(cls: ClassNode, ctr: MethodNode): Boolean {
-			val ctrUseMth = ctr.getUseIn()[0]
-			if (!ctrUseMth.getMethodInfo().isClassInit()) {
+			val ctrUseMth = ctr.useIn[0]
+			if (!ctrUseMth.methodInfo.isClassInit()) {
 				return false
 			}
 			if (cls.useInMth.isEmpty()) {
@@ -294,7 +294,7 @@ class ProcessAnonymous : AbstractVisitor() {
 				f.accessFlags.containsFlags(AccessFlags.PUBLIC, AccessFlags.STATIC, AccessFlags.FINAL) &&
 					f.fieldInfo.type == cls.classInfo.type
 			} ?: return false
-			val instFldUseIn = instFld.getUseIn()
+			val instFldUseIn = instFld.useIn
 			if (instFldUseIn.size != 2 ||
 				!instFldUseIn.contains(ctrUseMth) || // 在类初始化中初始化
 				!instFldUseIn.containsAll(cls.useInMth) // 类仅通过该字段使用
@@ -308,7 +308,7 @@ class ProcessAnonymous : AbstractVisitor() {
 				if (field === instFld) {
 					continue
 				}
-				for (useMth in field.getUseIn()) {
+				for (useMth in field.useIn) {
 					if (badMethodUsage(cls, useMth, field.accessFlags)) {
 						return false
 					}
@@ -337,7 +337,7 @@ class ProcessAnonymous : AbstractVisitor() {
 		 * - 同一字段 put（忽略：方法尚未加载）
 		 */
 		private fun checkForCommonFieldInit(ctrMth: MethodNode): Boolean {
-			val ctrUse = ctrMth.getUseIn()
+			val ctrUse = ctrMth.useIn
 			if (ctrUse.isEmpty()) {
 				return false
 			}

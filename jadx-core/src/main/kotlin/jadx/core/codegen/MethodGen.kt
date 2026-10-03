@@ -58,7 +58,7 @@ class MethodGen(classGen: ClassGen, mth: MethodNode) {
 
 	/** 渲染方法定义（修饰符、泛型、返回类型、方法名、参数、throws、注解默认值）。 */
 	fun addDefinition(code: ICodeWriter): Boolean {
-		if (mth.getMethodInfo().isClassInit()) {
+		if (mth.methodInfo.isClassInit()) {
 			code.startLine()
 			code.attachDefinition(mth)
 			code.add("static")
@@ -87,7 +87,7 @@ class MethodGen(classGen: ClassGen, mth: MethodNode) {
 		if (clsAccFlags.isAnnotation()) {
 			ai = ai.remove(AccessFlags.PUBLIC)
 		}
-		if (mth.getMethodInfo().hasAlias() && !ai.isConstructor()) {
+		if (mth.methodInfo.hasAlias() && !ai.isConstructor()) {
 			CodeGenUtils.addRenamedComment(code, mth, mth.name)
 		}
 		if (mth.contains(AFlag.INCONSISTENT_CODE) && mth.checkCommentsLevel(CommentsLevel.ERROR)) {
@@ -112,14 +112,14 @@ class MethodGen(classGen: ClassGen, mth: MethodNode) {
 			code.add("default ")
 		}
 
-		if (classGen.addGenericTypeParameters(code, mth.getTypeParameters(), false)) {
+		if (classGen.addGenericTypeParameters(code, mth.typeParameters, false)) {
 			code.add(' ')
 		}
 		if (ai.isConstructor()) {
 			code.attachDefinition(mth)
 			code.add(classGen.classNode.shortName) // constructor
 		} else {
-			classGen.useType(code, mth.getReturnType())
+			classGen.useType(code, mth.returnType)
 			code.add(' ')
 			val defMth = methodForDefinition
 			code.attachDefinition(defMth)
@@ -162,7 +162,7 @@ class MethodGen(classGen: ClassGen, mth: MethodNode) {
 				code.add(" // ")
 				code.add(
 					Utils.listToString(overrideAttr.overrideList, ", ") { md ->
-						md.getMethodInfo().declClass.aliasFullName
+						md.methodInfo.declClass.aliasFullName
 					},
 				)
 			}
@@ -320,10 +320,10 @@ class MethodGen(classGen: ClassGen, mth: MethodNode) {
 				code.startLine(getLabelName(block)).add(':')
 				code.incIndent()
 			}
-			for (insn in block.getInstructions()) {
+			for (insn in block.instructions) {
 				if (!insn.contains(AFlag.DONT_GENERATE)) {
-					if (insn.getResult() != null) {
-						val codeVar = checkNotNull(checkNotNull(insn.getResult()).sVar).codeVar
+					if (insn.result != null) {
+						val codeVar = checkNotNull(checkNotNull(insn.result).sVar).codeVar
 						if (!codeVar.isDeclared) {
 							insn.add(AFlag.DECLARE_VAR)
 							codeVar.isDeclared = true
@@ -336,7 +336,7 @@ class MethodGen(classGen: ClassGen, mth: MethodNode) {
 				}
 			}
 			if (helper.isNeedEndGoto(block)) {
-				code.startLine("goto ").add(getLabelName(block.getSuccessors()[0]))
+				code.startLine("goto ").add(getLabelName(block.successors[0]))
 			}
 		}
 	}
@@ -352,15 +352,15 @@ class MethodGen(classGen: ClassGen, mth: MethodNode) {
 			.add('.')
 			.add(mth.alias)
 			.add('(')
-			.add(Utils.listToString(mth.getMethodInfo().argumentsTypes))
+			.add(Utils.listToString(mth.methodInfo.argumentsTypes))
 			.add("):")
-			.add(mth.getMethodInfo().returnType.toString())
+			.add(mth.methodInfo.returnType.toString())
 			.add("\");")
 	}
 
 	fun addFallbackMethodCode(code: ICodeWriter, fallbackOption: FallbackOption) {
 		if (fallbackOption == FallbackOption.COMMENTED_DUMP && mth.getCommentsLevel() != CommentsLevel.DEBUG) {
-			val insnCountEstimate = mth.getInsnsCount()
+			val insnCountEstimate = mth.insnsCount
 			if (insnCountEstimate > 200) {
 				code.incIndent()
 				code.startLine("Method dump skipped, instruction units count: $insnCountEstimate")
@@ -442,7 +442,7 @@ class MethodGen(classGen: ClassGen, mth: MethodNode) {
 				code.startLineWithNum(insn.getSourceLine())
 			}
 			InsnCodeOffset.attach(code, insn)
-			val resArg = insn.getResult()
+			val resArg = insn.result
 			if (resArg != null) {
 				val varType = resArg.getInitType()
 				if (varType.isTypeKnown()) {

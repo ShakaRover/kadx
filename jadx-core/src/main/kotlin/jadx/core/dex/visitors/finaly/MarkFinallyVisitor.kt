@@ -205,7 +205,7 @@ class MarkFinallyVisitor : AbstractVisitor() {
 					handlerFinalInsn != null &&
 					bottomBlockLastInsn.type == InsnType.THROW &&
 					bottomBlockLastInsn.argsCount > 0 &&
-					bottomBlockLastInsn.getArg(0) == handlerFinalInsn.getResult()
+					bottomBlockLastInsn.getArg(0) == handlerFinalInsn.result
 				if (!isValidPathExit) {
 					return handlerBlocks
 				}
@@ -266,14 +266,14 @@ class MarkFinallyVisitor : AbstractVisitor() {
 				}
 			}
 			for (finallyBlock in checkNotNull(tryInfo.completeFinallyBlocks)) {
-				if (ListUtils.anyMatch(finallyBlock.getInstructions()) { ignoredFinallyInsns.contains(it) }) {
+				if (ListUtils.anyMatch(finallyBlock.instructions) { ignoredFinallyInsns.contains(it) }) {
 					// 若该块含有未在所有 try 边中找到的指令，则不把它标记为 finally 块。
 					continue
 				}
 				finallyBlock.add(AFlag.FINALLY_INSNS)
 			}
 			for (candidateBlock in checkNotNull(tryInfo.completeCandidateBlocks)) {
-				if (ListUtils.anyMatch(candidateBlock.getInstructions()) { ignoredCandidateInsns.contains(it) }) {
+				if (ListUtils.anyMatch(candidateBlock.instructions) { ignoredCandidateInsns.contains(it) }) {
 					// 若该块含有“未在所有 try 边中找到”的重复指令，则不标记为重复块。
 					continue
 				}
@@ -386,7 +386,7 @@ class MarkFinallyVisitor : AbstractVisitor() {
 
 		/** 递归移除从 [startBlock] 往上的空前驱块。 */
 		private fun removeEmptyUpPath(handlerBlocks: MutableList<BlockNode>, startBlock: BlockNode) {
-			for (pred in startBlock.getPredecessors()) {
+			for (pred in startBlock.predecessors) {
 				if (pred.isEmpty()) {
 					if (handlerBlocks.remove(pred) && !BlockUtils.isBackEdge(pred, startBlock)) {
 						removeEmptyUpPath(handlerBlocks, pred)
@@ -397,7 +397,7 @@ class MarkFinallyVisitor : AbstractVisitor() {
 
 		/** 把 [fromInsn] 的代码变量信息复制到 [toInsn]（结果与各参数）。 */
 		private fun copyCodeVars(fromInsn: InsnNode, toInsn: InsnNode) {
-			copyCodeVars(fromInsn.getResult(), toInsn.getResult())
+			copyCodeVars(fromInsn.result, toInsn.result)
 			val argsCount = fromInsn.argsCount
 			for (i in 0 until argsCount) {
 				copyCodeVars(fromInsn.getArg(i), toInsn.getArg(i))

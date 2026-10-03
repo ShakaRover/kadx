@@ -16,7 +16,7 @@ class MethodNodeAdapter(private val root: RootNode) : DataAdapter<MethodNode> {
 
 	@Throws(IOException::class)
 	override fun write(out: DataOutput, value: MethodNode) {
-		val methodInfo = value.getMethodInfo()
+		val methodInfo = value.methodInfo
 		out.writeUTF(methodInfo.declClass.rawName)
 		out.writeUTF(methodInfo.shortId)
 	}

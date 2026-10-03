@@ -358,7 +358,7 @@ class FixTypesVisitor : AbstractVisitor() {
 		if (insnType != InsnType.IGET && insnType != InsnType.SGET) {
 			return false
 		}
-		val fieldType = checkNotNull(assignInsn.getResult()).getInitType()
+		val fieldType = checkNotNull(assignInsn.result).getInitType()
 		// 应该使用字段类型
 		if (insertCasts) {
 			// 尝试找到使用点并插入 cast
@@ -396,7 +396,7 @@ class FixTypesVisitor : AbstractVisitor() {
 			if (!invArg.isRegister) {
 				continue
 			}
-			val detailsArg = details.getArgTypes()[k]
+			val detailsArg = details.argTypes[k]
 			val invArgType = invArg.getType()
 			val resolvedType = mth.root().getTypeUtils().replaceClassGenerics(fieldType, invArgType, detailsArg)
 			if (resolvedType != null && resolvedType != invArgType) {
@@ -525,7 +525,7 @@ class FixTypesVisitor : AbstractVisitor() {
 		}
 		val assignBlock = BlockUtils.getBlockByInsn(mth, assignInsn) ?: return null
 		assignInsn.setResult(assignArg.duplicateWithNewSSAVar(mth))
-		val castInsn = makeCastInsn(assignArg.duplicate(), checkNotNull(assignInsn.getResult()).duplicate(), castType)
+		val castInsn = makeCastInsn(assignArg.duplicate(), checkNotNull(assignInsn.result).duplicate(), castType)
 		if (!BlockUtils.insertAfterInsn(assignBlock, assignInsn, castInsn)) {
 			return null
 		}
@@ -547,7 +547,7 @@ class FixTypesVisitor : AbstractVisitor() {
 			useArg.duplicate(),
 			castType,
 		)
-		useInsn.replaceArg(useArg, checkNotNull(castInsn.getResult()).duplicate())
+		useInsn.replaceArg(useArg, checkNotNull(castInsn.result).duplicate())
 		val inserted = BlockUtils.insertBeforeInsn(useBlock, useInsn, castInsn)
 		if (!inserted) {
 			return null
@@ -611,7 +611,7 @@ class FixTypesVisitor : AbstractVisitor() {
 			val useInsn = useArg.getParentInsn() ?: continue
 			val newInsn = assignInsn.copyWithNewSsaVar(mth)
 			assignBlock.instructions.add(insertIndex, newInsn)
-			useInsn.replaceArg(useArg, checkNotNull(newInsn.getResult()).duplicate())
+			useInsn.replaceArg(useArg, checkNotNull(newInsn.result).duplicate())
 		}
 		if (Consts.DEBUG_TYPE_INFERENCE) {
 			LOG.debug("Duplicate const insn {} times: {} in {}", useList.size, assignInsn, assignBlock)
@@ -638,7 +638,7 @@ class FixTypesVisitor : AbstractVisitor() {
 			BlockUtils.insertAfterInsn(blockNode, constInsn, copyInsn)
 
 			val phiArg = phiInsn.getArgBySsaVar(ssaVar)
-			phiInsn.replaceArg(checkNotNull(phiArg), checkNotNull(copyInsn.getResult()).duplicate())
+			phiInsn.replaceArg(checkNotNull(phiArg), checkNotNull(copyInsn.result).duplicate())
 		}
 		return true
 	}
@@ -747,13 +747,13 @@ class FixTypesVisitor : AbstractVisitor() {
 	}
 
 	private fun checkBlockForInsnInsert(blockNode: BlockNode): BlockNode? {
-		if (blockNode.isSynthetic()) {
+		if (blockNode.isSynthetic) {
 			return null
 		}
 		val lastInsn = BlockUtils.getLastInsn(blockNode)
 		if (lastInsn != null && BlockSplitter.isSeparate(lastInsn.type)) {
 			// 含“分离”指令的块无法插入 move，沿单前驱路径向前找
-			val preds = blockNode.getPredecessors()
+			val preds = blockNode.predecessors
 			if (preds.size == 1) {
 				return checkBlockForInsnInsert(preds[0])
 			}
@@ -862,7 +862,7 @@ class FixTypesVisitor : AbstractVisitor() {
 		if (insnType == InsnType.CAST) {
 			// 替换 cast
 			val type = (insn as IndexInsnNode).index as ArgType
-			val convertInsn = prepareBooleanConvertInsn(checkNotNull(insn.getResult()), boundArg, type)
+			val convertInsn = prepareBooleanConvertInsn(checkNotNull(insn.result), boundArg, type)
 			BlockUtils.replaceInsn(mth, blockNode, insnIndex, convertInsn)
 			return true
 		}
@@ -883,7 +883,7 @@ class FixTypesVisitor : AbstractVisitor() {
 		val resultArg = boundArg.duplicateWithNewSSAVar(mth)
 		val convertInsn = prepareBooleanConvertInsn(resultArg, boundArg, boundType)
 		insnList.add(insnIndex, convertInsn)
-		insn.replaceArg(boundArg, checkNotNull(convertInsn.getResult()).duplicate())
+		insn.replaceArg(boundArg, checkNotNull(convertInsn.result).duplicate())
 		return true
 	}
 
@@ -892,14 +892,14 @@ class FixTypesVisitor : AbstractVisitor() {
 		notInsn.addArg(boundArg.duplicate())
 		notInsn.add(AFlag.SYNTHETIC)
 
-		val resType = checkNotNull(insn.getResult()).getType()
+		val resType = checkNotNull(insn.result).getType()
 		if (resType.canBePrimitive(PrimitiveType.BOOLEAN)) {
-			notInsn.setResult(insn.getResult())
+			notInsn.setResult(insn.result)
 			return notInsn
 		}
 		val notArg = InsnArg.wrapArg(notInsn)
 		notArg.setType(ArgType.BOOLEAN)
-		val convertInsn = ModVisitor.makeBooleanConvertInsn(checkNotNull(insn.getResult()), notArg, ArgType.INT)
+		val convertInsn = ModVisitor.makeBooleanConvertInsn(checkNotNull(insn.result), notArg, ArgType.INT)
 		convertInsn.add(AFlag.SYNTHETIC)
 		return convertInsn
 	}

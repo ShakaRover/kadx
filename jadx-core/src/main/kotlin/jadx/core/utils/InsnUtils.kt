@@ -123,7 +123,7 @@ object InsnUtils {
 		}
 		val blocks = mth.basicBlocks ?: return null
 		for (block in blocks) {
-			for (insn in block.getInstructions()) {
+			for (insn in block.instructions) {
 				val foundInsn = recursiveInsnCheck(insn, insnType, test)
 				if (foundInsn != null) {
 					return foundInsn
@@ -136,7 +136,7 @@ object InsnUtils {
 	fun replaceInsns(mth: MethodNode, replaceFunction: (InsnNode) -> InsnNode?) {
 		val blocks = mth.basicBlocks ?: return
 		for (block in blocks) {
-			val insns = block.getInstructions()
+			val insns = block.instructions
 			val insnsCount = insns.size
 			for (i in 0 until insnsCount) {
 				val insn = insns[i]
@@ -223,7 +223,7 @@ object InsnUtils {
 	}
 
 	fun dontGenerateIfNotUsed(insn: InsnNode): Boolean {
-		val resArg = insn.getResult()
+		val resArg = insn.result
 		if (resArg != null) {
 			val ssaVar = checkNotNull(resArg.sVar)
 			for (arg in ssaVar.useList) {
@@ -253,7 +253,7 @@ object InsnUtils {
 		if (insn == null) {
 			return false
 		}
-		val result = insn.getResult()
+		val result = insn.result
 		if (result != null && result.sameRegAndSVar(arg)) {
 			return true
 		}

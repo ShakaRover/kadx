@@ -74,7 +74,7 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 		val ifRegion = IfRegion(currentRegion)
 		ifRegion.updateCondition(currentIf)
 		@Suppress("UNCHECKED_CAST")
-		(currentRegion.getSubBlocks() as MutableList<IContainer>).add(ifRegion)
+		(currentRegion.subBlocks as MutableList<IContainer>).add(ifRegion)
 
 		val outBlock = currentIf.getOutBlock()
 		stack.push(ifRegion)
@@ -95,7 +95,7 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 		}
 
 		// 在新的 else 分支插入边指令
-		if (ifRegion.getElseRegion() == null && outBlock != null) {
+		if (ifRegion.elseRegion == null && outBlock != null) {
 			val edgeInsnAttrs = outBlock.getAll(AType.EDGE_INSN)
 			if (edgeInsnAttrs.isNotEmpty()) {
 				val instructions = ArrayList<InsnNode>()
@@ -283,7 +283,7 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 		}
 
 		fun isCandidateForOutBlock(mth: MethodNode, thenBlock: BlockNode, elseBlock: BlockNode, candidate: BlockNode): Boolean {
-			if (candidate.getPredecessors().size < 2) {
+			if (candidate.predecessors.size < 2) {
 				return false
 			}
 
@@ -297,7 +297,7 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 				coverageThenPreds.set(candidate.pos)
 			}
 
-			for (pred in candidate.getPredecessors()) {
+			for (pred in candidate.predecessors) {
 				if (BlockUtils.isPathExists(thenBlock, pred)) {
 					coverageThenPreds.set(pred.pos)
 				}
@@ -319,8 +319,8 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 
 		private fun isBadBranchBlock(info: IfInfo, block: BlockNode): Boolean {
 			// 检查块是否位于循环回边末尾
-			if (block.contains(AFlag.LOOP_START) && block.getPredecessors().size == 1) {
-				val pred = block.getPredecessors()[0]
+			if (block.contains(AFlag.LOOP_START) && block.predecessors.size == 1) {
+				val pred = block.predecessors[0]
 				if (pred.contains(AFlag.LOOP_END)) {
 					val startLoops = block.getAll(AType.LOOP)
 					val endLoops = pred.getAll(AType.LOOP)
@@ -341,7 +341,7 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 		}
 
 		private fun allPathsFromIf(block: BlockNode, info: IfInfo): Boolean {
-			val preds = block.getPredecessors()
+			val preds = block.predecessors
 			val ifBlocks = info.mergedBlocks
 			for (pred in preds) {
 				if (pred.contains(AFlag.LOOP_END)) {
@@ -485,7 +485,7 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 		}
 
 		private fun checkConditionBranches(from: BlockNode, to: BlockNode): Boolean {
-			val cs = checkNotNull(from.getCleanSuccessors())
+			val cs = checkNotNull(from.cleanSuccessors)
 			return cs.size == 1 && cs.contains(to)
 		}
 
@@ -573,10 +573,10 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 		}
 
 		private fun canSelectNext(info: IfInfo, block: BlockNode): Boolean {
-			if (block.getPredecessors().size == 1) {
+			if (block.predecessors.size == 1) {
 				return true
 			}
-			return info.mergedBlocks.containsAll(block.getPredecessors())
+			return info.mergedBlocks.containsAll(block.predecessors)
 		}
 
 		private fun getNextIfNodeInfo(info: IfInfo, block: BlockNode?): IfInfo? {
@@ -588,7 +588,7 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 				return makeIfInfo(info.mth, block)
 			}
 			val next = getNextBlockInIfSuccessorChain(block) ?: return null
-			if (next.getPredecessors().size != 1 || next.contains(AFlag.ADDED_TO_REGION)) {
+			if (next.predecessors.size != 1 || next.contains(AFlag.ADDED_TO_REGION)) {
 				return null
 			}
 			val forceInlineInsns = ArrayList<InsnNode>()
@@ -607,7 +607,7 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 		 * 允许单一后继，或两个后继中一个是 EXC_BOTTOM_SPLITTER 的情况。
 		 */
 		private fun getNextBlockInIfSuccessorChain(block: BlockNode): BlockNode? {
-			val successors = block.getSuccessors()
+			val successors = block.successors
 			if (successors.size > 2 || successors.isEmpty()) {
 				return null
 			}
@@ -627,7 +627,7 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 			val candidate = if (firstIsHandlerPath) second else first
 
 			// 只要后继块没有指令，就继续向后递归
-			if (candidate.getInstructions().isEmpty()) {
+			if (candidate.instructions.isEmpty()) {
 				return getNextBlockInIfSuccessorChain(candidate)
 			}
 			return candidate
@@ -635,13 +635,13 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 
 		/** 检查所有指令是否都能内联 */
 		private fun checkInsnsInline(block: BlockNode, next: BlockNode, forceInlineInsns: MutableList<InsnNode>): Boolean {
-			val insns = block.getInstructions()
+			val insns = block.instructions
 			if (insns.isEmpty()) {
 				return true
 			}
 			var pass = true
 			for (insn in insns) {
-				val res = insn.getResult() ?: return false
+				val res = insn.result ?: return false
 				val useList = checkNotNull(res.sVar).useList
 				val useCount = useList.size
 				if (useCount == 0) {

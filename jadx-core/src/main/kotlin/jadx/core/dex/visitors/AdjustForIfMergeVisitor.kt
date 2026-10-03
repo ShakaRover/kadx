@@ -42,8 +42,8 @@ class AdjustForIfMergeVisitor : AbstractVisitor() {
 
 		for (blk in blocks) {
 			if (areSurroundingsCorrectShape(blk)) {
-				val pred = blk.getPredecessors()[0]
-				val succ = checkNotNull(blk.getCleanSuccessors())[0]
+				val pred = blk.predecessors[0]
+				val succ = checkNotNull(blk.cleanSuccessors)[0]
 
 				if (isSimpleIf(pred) && isSimpleIf(succ)) {
 					val movableInstructions = getMovableInstructions(blk, succ)
@@ -56,9 +56,9 @@ class AdjustForIfMergeVisitor : AbstractVisitor() {
 		}
 	}
 
-	private fun areSurroundingsCorrectShape(blk: BlockNode): Boolean = blk.getPredecessors().size == 1 && checkNotNull(blk.getCleanSuccessors()).size == 1
+	private fun areSurroundingsCorrectShape(blk: BlockNode): Boolean = blk.predecessors.size == 1 && checkNotNull(blk.cleanSuccessors).size == 1
 
-	private fun isSimpleIf(blk: BlockNode): Boolean = blk.getInstructions().size == 1 && blk.getInstructions()[0].type == InsnType.IF
+	private fun isSimpleIf(blk: BlockNode): Boolean = blk.instructions.size == 1 && blk.instructions[0].type == InsnType.IF
 
 	private fun couldMerge(mth: MethodNode, pred: BlockNode, blk: BlockNode, succ: BlockNode): Boolean {
 		// blk→succ 若是回边则不能合并。
@@ -77,7 +77,7 @@ class AdjustForIfMergeVisitor : AbstractVisitor() {
 		// “可移动指令”指既不影响代码生成、也不影响后续块语义的指令。
 		// 目前只处理“同一寄存器的 nop move”，且目标变量不在 succ 块中被使用。
 		val movableInstructions = ArrayList<InsnNode>()
-		for (insn in blk.getInstructions()) {
+		for (insn in blk.instructions) {
 			if (insn.type == InsnType.MOVE) {
 				val arg0 = insn.getArg(0)
 				if (arg0 !is RegisterArg) {
@@ -85,7 +85,7 @@ class AdjustForIfMergeVisitor : AbstractVisitor() {
 					continue
 				}
 				val source = arg0
-				val target = checkNotNull(insn.getResult())
+				val target = checkNotNull(insn.result)
 
 				val uses = checkNotNull(target.sVar).useList
 				for (use in uses) {
@@ -115,7 +115,7 @@ class AdjustForIfMergeVisitor : AbstractVisitor() {
 		Collections.reverse(movableInstructions)
 		for (insn in movableInstructions) {
 			target.instructions.remove(insn)
-			for (succ in checkNotNull(bottomIf.getCleanSuccessors())) {
+			for (succ in checkNotNull(bottomIf.cleanSuccessors)) {
 				succ.instructions.add(0, insn) // 插到开头
 
 				if (succ.contains(AFlag.LOOP_START)) {

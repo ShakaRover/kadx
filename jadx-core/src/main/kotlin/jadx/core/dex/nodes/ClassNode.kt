@@ -60,7 +60,7 @@ class ClassNode(
 		fun addSyntheticClass(root: RootNode, classInfo: ClassInfo, accessFlags: Int): ClassNode {
 			val cls = ClassNode(root, classInfo, accessFlags)
 			cls.add(AFlag.SYNTHETIC)
-			cls.inputFileName = "synthetic"
+			cls.inputFileNameValue = "synthetic"
 			cls.state = ProcessState.PROCESS_COMPLETE
 			root.addClassNode(cls)
 			return cls
@@ -124,8 +124,9 @@ class ClassNode(
 	lateinit var interfaces: List<ArgType>
 	private var generics: List<ArgType> = emptyList()
 
-	@get:JvmName("inputFileNameValue")
-	var inputFileName: String? = null
+	var inputFileNameValue: String? = null
+
+	override val inputFileName: String? get() = inputFileNameValue
 
 	lateinit var methods: List<MethodNode>
 	lateinit var fields: List<FieldNode>
@@ -142,8 +143,9 @@ class ClassNode(
 	var dependencies: List<ClassNode> = emptyList()
 	var codegenDeps: List<ClassNode> = emptyList()
 
-	@get:JvmName("useInValue")
-	var useIn: List<ClassNode> = emptyList()
+	var useInValue: List<ClassNode> = emptyList()
+
+	override val useIn: List<ClassNode> get() = useInValue
 	var useInMth: List<MethodNode> = emptyList()
 
 	private var mthInfoMap: MutableMap<MethodInfo, MethodNode> = HashMap()
@@ -166,7 +168,7 @@ class ClassNode(
 		this.interfaces = ArrayList()
 		this.methods = ArrayList()
 		this.fields = ArrayList()
-		this.inputFileName = null
+		this.inputFileNameValue = null
 		this.packageNode = PackageNode.getForClass(root, classInfo.getPackage(), this)
 	}
 
@@ -176,7 +178,7 @@ class ClassNode(
 			accessFlags = AccessInfo(getAccessFlags(cls), AccessInfo.AFType.CLASS)
 			superClass = checkSuperType(cls)
 			interfaces = collectionMap(cls.interfacesTypes) { ArgType.`object`(it) }
-			inputFileName = cls.inputFileName
+			inputFileNameValue = cls.inputFileName
 
 			val fieldsConsumer = ListConsumer<IFieldData, FieldNode> { fld -> FieldNode.build(this, fld) }
 			val methodsConsumer = ListConsumer<IMethodData, MethodNode> { mth -> MethodNode.build(this, mth) }
@@ -461,7 +463,7 @@ class ClassNode(
 		return null
 	}
 
-	override fun getDeclaringClass(): ClassNode? = if (isInner()) parentClass else null
+	override val declaringClass: ClassNode? get() = if (isInner()) parentClass else null
 
 	fun notInner() {
 		classInfo.notInner(root)
@@ -592,7 +594,7 @@ class ClassNode(
 
 	fun isAnonymous(): Boolean = contains(AType.ANONYMOUS_CLASS)
 
-	fun isSynthetic(): Boolean = contains(AFlag.SYNTHETIC)
+	val isSynthetic: Boolean get() = contains(AFlag.SYNTHETIC)
 
 	fun isInner(): Boolean = parentClass != this
 
@@ -673,11 +675,6 @@ class ClassNode(
 	}
 
 	val totalDepsCount: Int get() = dependencies.size + codegenDeps.size
-
-	override fun getInputFileName(): String? = inputFileName
-
-	// 协变返回类型：保留 Java 原 API 的 List<ClassNode>（而非宽泛的 List<ICodeNode>）
-	override fun getUseIn(): List<ClassNode> = useIn
 
 	override fun getAnnType() = ICodeAnnotation.AnnType.CLASS
 

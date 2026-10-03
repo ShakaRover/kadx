@@ -133,7 +133,7 @@ class SwitchOverStringVisitor :
 			val part1If = data.part1Region as IfRegion
 			val part2Header = checkNotNull(data.getPart2Region()).header
 			var strHashArg: RegisterArg? = null
-			val ifStartBlock = part1If.getConditionBlocks()[0]
+			val ifStartBlock = part1If.conditionBlocks[0]
 			var hashCmpBlock: BlockNode? = getOnlyOneInsnBlock(ifStartBlock)
 			do {
 				val curBlock = hashCmpBlock ?: return false
@@ -204,7 +204,7 @@ class SwitchOverStringVisitor :
 						// 数值在第一个区域之前赋值，找最近的赋值
 						var iDom: BlockNode? = thenBlock.idom
 						while (iDom != null && numValue == null) {
-							for (insn in iDom.getInstructions()) {
+							for (insn in iDom.instructions) {
 								numValue = extractConstNumber(data, insn)
 							}
 							iDom = iDom.idom
@@ -212,7 +212,7 @@ class SwitchOverStringVisitor :
 						if (numValue == null) {
 							return false
 						}
-					} else if (numInsn != null && numArg.sameCodeVar(checkNotNull(numInsn.getResult()))) {
+					} else if (numInsn != null && numArg.sameCodeVar(checkNotNull(numInsn.result))) {
 						numValue = extractConstNumber(data, numInsn)
 					} else {
 						return false
@@ -315,7 +315,7 @@ class SwitchOverStringVisitor :
 		val replaceRegion = SwitchRegion(part1Parent, newHeader)
 		for (caseInfo in data.getNewCases()) {
 			val container = caseInfo.container
-			RegionUtils.visitBlocks(mth, container) { b -> keptInsns.addAll(b.getInstructions()) }
+			RegionUtils.visitBlocks(mth, container) { b -> keptInsns.addAll(b.instructions) }
 			replaceRegion.addCase(Collections.unmodifiableList(caseInfo.keys), container)
 			replaceRegion.updateParent(container, replaceRegion)
 		}
@@ -329,7 +329,7 @@ class SwitchOverStringVisitor :
 			if (part2Region != null) {
 				removeInsns.addAll(RegionUtils.collectInsns(mth, part2Region))
 				@Suppress("UNCHECKED_CAST")
-				(checkNotNull(part2Region.parent).getSubBlocks() as MutableList<IContainer>).remove(part2Region)
+				(checkNotNull(part2Region.parent).subBlocks as MutableList<IContainer>).remove(part2Region)
 			}
 			removeInsns.removeAll(keptInsns)
 			for (insn in removeInsns) {
@@ -373,7 +373,7 @@ class SwitchOverStringVisitor :
 		val constVal = InsnUtils.getConstValueByArg(switchData.mth.root(), numInsn.getArg(0))
 		if (constVal is LiteralArg) {
 			val numArg = switchData.getNumArg()
-			if (numArg != null && numArg.sameCodeVar(checkNotNull(numInsn.getResult()))) {
+			if (numArg != null && numArg.sameCodeVar(checkNotNull(numInsn.result))) {
 				return constVal.literal.toInt()
 			}
 		}
@@ -422,7 +422,7 @@ class SwitchOverStringVisitor :
 	private fun getOnlyOneInsnBlock(b0: BlockNode?): BlockNode? {
 		var b = b0
 		while (b != null) {
-			val size = b.getInstructions().size
+			val size = b.instructions.size
 			if (size == 0) {
 				b = BlockUtils.getNextBlock(b)
 				continue

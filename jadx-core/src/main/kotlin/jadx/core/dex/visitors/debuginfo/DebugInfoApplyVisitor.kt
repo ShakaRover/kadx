@@ -70,7 +70,7 @@ class DebugInfoApplyVisitor : AbstractVisitor() {
 		val parametersAttr = mth.get(JadxAttrType.METHOD_PARAMETERS) ?: return
 		try {
 			val params = parametersAttr.list
-			if (params.size != mth.getMethodInfo().argsCount) {
+			if (params.size != mth.methodInfo.argsCount) {
 				return
 			}
 			var i = 0
@@ -216,7 +216,7 @@ class DebugInfoApplyVisitor : AbstractVisitor() {
 			for (ssaVar in mth.SVars) {
 				for (phiInsn in ssaVar.usedInPhi) {
 					val names = HashSet<String>(1 + phiInsn.argsCount)
-					addArgName(phiInsn.getResult(), names)
+					addArgName(phiInsn.result, names)
 					for (arg in phiInsn.getArguments()) {
 						addArgName(arg, names)
 					}
@@ -240,7 +240,7 @@ class DebugInfoApplyVisitor : AbstractVisitor() {
 		}
 
 		private fun setNameForInsn(phiInsn: PhiInsn, name: String) {
-			checkNotNull(phiInsn.getResult()).name = name
+			checkNotNull(phiInsn.result).name = name
 			for (arg in phiInsn.getArguments()) {
 				if (arg is Named) {
 					arg.name = name

@@ -73,7 +73,7 @@ class CustomLambdaCall {
 			val resNode = buildMethodCall(mth, insn, isRange, values, callMthHandle)
 			val resReg = insn.resultReg
 			if (resReg != -1) {
-				resNode.setResult(InsnArg.reg(resReg, mth.getReturnType()))
+				resNode.setResult(InsnArg.reg(resReg, mth.returnType))
 			}
 			return resNode
 		}

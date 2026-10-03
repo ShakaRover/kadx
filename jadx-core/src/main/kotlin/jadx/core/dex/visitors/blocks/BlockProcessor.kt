@@ -85,7 +85,7 @@ class BlockProcessor : AbstractVisitor() {
 			while (true) {
 				var fixed = false
 				for (block in checkNotNull(mth.basicBlocks)) {
-					if (block.getPredecessors().isEmpty() && block !== mth.enterBlock) {
+					if (block.predecessors.isEmpty() && block !== mth.enterBlock) {
 						if (block.contains(AType.EXC_SPLIT_CROSS) && fixUnreachableSplitCross(mth, block)) {
 							mth.addInfoComment("Removed unreachable split cross block $block")
 							fixed = true
@@ -102,13 +102,13 @@ class BlockProcessor : AbstractVisitor() {
 
 		private fun fixUnreachableSplitCross(mth: MethodNode, splitCross: BlockNode): Boolean {
 			var bottomSplitter: BlockNode? = null
-			for (succ in splitCross.getSuccessors()) {
+			for (succ in splitCross.successors) {
 				if (succ.contains(AFlag.EXC_BOTTOM_SPLITTER)) {
 					bottomSplitter = succ
 					break
 				}
 			}
-			if (bottomSplitter == null || bottomSplitter.getPredecessors().size != 1) {
+			if (bottomSplitter == null || bottomSplitter.predecessors.size != 1) {
 				return false
 			}
 			val removeSet = HashSet<BlockNode>()
@@ -121,7 +121,7 @@ class BlockProcessor : AbstractVisitor() {
 		/** 把所有前驱末尾重复的指令上提到循环头，减少重复代码。 */
 		private fun deduplicateBlockInsns(mth: MethodNode, block: BlockNode): Boolean {
 			if (block.contains(AFlag.LOOP_START) || block.contains(AFlag.LOOP_END)) {
-				val predecessors = block.getPredecessors()
+				val predecessors = block.predecessors
 				val predsCount = predecessors.size
 				if (predsCount > 1) {
 					val lastInsn = BlockUtils.getLastInsn(block)
@@ -188,7 +188,7 @@ class BlockProcessor : AbstractVisitor() {
 			if (insn === otherInsn) {
 				return true
 			}
-			if (insn.isSame(otherInsn) && sameArgs(insn.getResult(), otherInsn.getResult())) {
+			if (insn.isSame(otherInsn) && sameArgs(insn.result, otherInsn.result)) {
 				val argsCount = insn.argsCount
 				for (i in 0 until argsCount) {
 					if (!sameArgs(insn.getArg(i), otherInsn.getArg(i))) {
@@ -240,7 +240,7 @@ class BlockProcessor : AbstractVisitor() {
 		 */
 		private fun markLoops(mth: MethodNode) {
 			for (block in checkNotNull(mth.basicBlocks)) {
-				for (successor in block.getSuccessors()) {
+				for (successor in block.successors) {
 					if (checkNotNull(block.doms).get(successor.pos) || block === successor) {
 						successor.add(AFlag.LOOP_START)
 						block.add(AFlag.LOOP_END)
@@ -318,11 +318,11 @@ class BlockProcessor : AbstractVisitor() {
 			}
 			var changed = false
 			for (retBlock in ArrayList(mth.preExitBlocks)) {
-				val pred = Utils.getOne(retBlock.getPredecessors())
+				val pred = Utils.getOne(retBlock.predecessors)
 				if (pred != null) {
-					val constInsn = Utils.getOne(pred.getInstructions())
-					if (constInsn != null && constInsn.isConstInsn()) {
-						val constArg = constInsn.getResult()
+					val constInsn = Utils.getOne(pred.instructions)
+					if (constInsn != null && constInsn.isConstInsn) {
+						val constArg = constInsn.result
 						val returnInsn = BlockUtils.getLastInsn(retBlock)
 						if (returnInsn != null && returnInsn.type == InsnType.RETURN) {
 							val retArg = returnInsn.getArg(0)
@@ -344,7 +344,7 @@ class BlockProcessor : AbstractVisitor() {
 		}
 
 		private fun mergeConstAndReturnBlocks(mth: MethodNode, retBlock: BlockNode, pred: BlockNode) {
-			pred.instructions.addAll(retBlock.getInstructions())
+			pred.instructions.addAll(retBlock.instructions)
 			pred.copyAttributesFrom(retBlock)
 			BlockSplitter.removeConnection(pred, retBlock)
 			retBlock.instructions.clear()
@@ -382,21 +382,21 @@ class BlockProcessor : AbstractVisitor() {
 		 * 这样有助于恢复 switch 分支顺序与 fallthrough（编译器常把这种 move 块合并掉）。
 		 */
 		private fun duplicateSimpleMoveBlock(mth: MethodNode, block: BlockNode): Boolean {
-			val insns = block.getInstructions()
-			if (insns.size == 1 && block.getSuccessors().size == 1) {
+			val insns = block.instructions
+			if (insns.size == 1 && block.successors.size == 1) {
 				val insn = insns[0]
 				if (insn.type == InsnType.MOVE) {
-					val preds = block.getPredecessors()
+					val preds = block.predecessors
 					val predSize = preds.size
 					if (predSize >= 3 && onlySwitchAndIfInLastInsns(preds)) {
 						// 确认可复制
-						val successor = block.getSuccessors()[0]
+						val successor = block.successors[0]
 						val predsCopy = ArrayList(preds)
 						for (i in 1 until predSize) {
 							val pred = predsCopy[i]
 							val newBlock = BlockSplitter.startNewBlock(mth, -1)
 							newBlock.add(AFlag.SYNTHETIC)
-							for (oldInsn in block.getInstructions()) {
+							for (oldInsn in block.instructions) {
 								val copyInsn = oldInsn.copyWithoutSsa()
 								copyInsn.add(AFlag.SYNTHETIC)
 								newBlock.instructions.add(copyInsn)
@@ -429,7 +429,7 @@ class BlockProcessor : AbstractVisitor() {
 		/** 把循环尾块变成只有一条出口的简单块（便于插入 break 块）。 */
 		private fun simplifyLoopEnd(mth: MethodNode, loop: LoopInfo): Boolean {
 			val loopEnd = loop.end
-			if (loopEnd.getSuccessors().size <= 1) {
+			if (loopEnd.successors.size <= 1) {
 				return false
 			}
 			val newLoopEnd = BlockSplitter.startNewBlock(mth, -1)
@@ -473,7 +473,7 @@ class BlockProcessor : AbstractVisitor() {
 		/** 在循环头之前插入一个简单的前置头块（pre-header）。 */
 		private fun insertPreHeader(mth: MethodNode, loop: LoopInfo): Boolean {
 			val start = loop.start
-			val preds = start.getPredecessors()
+			val preds = start.predecessors
 			val predsCount = preds.size - 1 // 不计算回边
 			if (predsCount == 1) {
 				return false
@@ -530,7 +530,7 @@ class BlockProcessor : AbstractVisitor() {
 		private fun insertBlocksForContinue(mth: MethodNode, loop: LoopInfo): Boolean {
 			val loopEnd = loop.end
 			var change = false
-			val preds = loopEnd.getPredecessors()
+			val preds = loopEnd.predecessors
 			if (preds.size > 1) {
 				for (pred in ArrayList(preds)) {
 					if (!pred.contains(AFlag.SYNTHETIC)) {
@@ -592,7 +592,7 @@ class BlockProcessor : AbstractVisitor() {
 			BlockSplitter.removePredecessors(exitBlock)
 			for (block in checkNotNull(mth.basicBlocks)) {
 				if (block !== exitBlock &&
-					block.getSuccessors().isEmpty() &&
+					block.successors.isEmpty() &&
 					!block.contains(AFlag.REMOVE)
 				) {
 					BlockSplitter.connect(block, exitBlock)
@@ -608,13 +608,13 @@ class BlockProcessor : AbstractVisitor() {
 			) {
 				return false
 			}
-			val preds = returnBlock.getPredecessors()
+			val preds = returnBlock.predecessors
 			if (preds.size < 2) {
 				return false
 			}
 			val returnInsn = BlockUtils.getLastInsn(returnBlock) ?: return false
 			if (returnInsn.argsCount == 1 &&
-				returnBlock.getInstructions().size == 1 &&
+				returnBlock.instructions.size == 1 &&
 				!isArgAssignInPred(preds, returnInsn.getArg(0))
 			) {
 				return false
@@ -629,7 +629,7 @@ class BlockProcessor : AbstractVisitor() {
 					val newRetBlock = BlockSplitter.startNewBlock(mth, -1)
 					newRetBlock.add(AFlag.SYNTHETIC)
 					newRetBlock.add(AFlag.RETURN)
-					for (oldInsn in returnBlock.getInstructions()) {
+					for (oldInsn in returnBlock.instructions) {
 						val copyInsn = oldInsn.copyWithoutSsa()
 						copyInsn.add(AFlag.SYNTHETIC)
 						newRetBlock.instructions.add(copyInsn)
@@ -644,7 +644,7 @@ class BlockProcessor : AbstractVisitor() {
 			if (exitBlock.contains(AFlag.IGNORE_THROW_SPLIT)) {
 				return false
 			}
-			val preds = exitBlock.getPredecessors()
+			val preds = exitBlock.predecessors
 			if (preds.size < 2) {
 				return false
 			}
@@ -682,7 +682,7 @@ class BlockProcessor : AbstractVisitor() {
 				} else {
 					val newThrowBlock = BlockSplitter.startNewBlock(mth, -1)
 					newThrowBlock.add(AFlag.SYNTHETIC)
-					for (oldInsn in exitBlock.getInstructions()) {
+					for (oldInsn in exitBlock.instructions) {
 						val copyInsn = oldInsn.copyWithoutSsa()
 						copyInsn.add(AFlag.SYNTHETIC)
 						newThrowBlock.instructions.add(copyInsn)
@@ -702,8 +702,8 @@ class BlockProcessor : AbstractVisitor() {
 			if (arg.isRegister) {
 				val regNum = (arg as RegisterArg).regNum
 				for (pred in preds) {
-					for (insnNode in pred.getInstructions()) {
-						val result = insnNode.getResult()
+					for (insnNode in pred.instructions) {
+						val result = insnNode.result
 						if (result != null && result.regNum == regNum) {
 							return true
 						}
@@ -716,7 +716,7 @@ class BlockProcessor : AbstractVisitor() {
 		fun removeMarkedBlocks(mth: MethodNode) {
 			val removed = (checkNotNull(mth.basicBlocks) as MutableList<BlockNode>).removeIf { block ->
 				if (block.contains(AFlag.REMOVE)) {
-					if (!block.getPredecessors().isEmpty() || !block.getSuccessors().isEmpty()) {
+					if (!block.predecessors.isEmpty() || !block.successors.isEmpty()) {
 						LOG.warn("Block {} not deleted, method: {}", block, mth)
 					} else {
 						val tryBlockAttr = block.get(AType.TRY_BLOCK)
@@ -748,7 +748,7 @@ class BlockProcessor : AbstractVisitor() {
 		}
 
 		private fun computeUnreachableFromBlock(toRemove: MutableSet<BlockNode>, block: BlockNode, mth: MethodNode) {
-			if (block.getPredecessors().isEmpty() && block !== mth.enterBlock) {
+			if (block.predecessors.isEmpty() && block !== mth.enterBlock) {
 				BlockSplitter.collectSuccessors(block, checkNotNull(mth.enterBlock), toRemove)
 			}
 		}
@@ -761,7 +761,7 @@ class BlockProcessor : AbstractVisitor() {
 			var notEmptyBlocks = 0L
 			var insnsCount = 0
 			for (block in toRemove) {
-				val size = block.getInstructions().size
+				val size = block.instructions.size
 				if (size != 0) {
 					notEmptyBlocks++
 					insnsCount += size
@@ -786,7 +786,7 @@ class BlockProcessor : AbstractVisitor() {
 				block.doms = null
 				block.idom = null
 				block.domFrontier = null
-				(block.getDominatesOn() as MutableList<BlockNode>).clear()
+				(block.dominatesOn as MutableList<BlockNode>).clear()
 			}
 		}
 	}

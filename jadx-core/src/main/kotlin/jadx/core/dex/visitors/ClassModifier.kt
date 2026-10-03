@@ -131,8 +131,8 @@ class ClassModifier : AbstractVisitor() {
 			if (arg.getType() != fieldsCls.classInfo.type) {
 				return false
 			}
-			val block = checkNotNull(checkNotNull(mth.enterBlock).getCleanSuccessors())[0]
-			val instructions = block.getInstructions()
+			val block = checkNotNull(checkNotNull(mth.enterBlock).cleanSuccessors)[0]
+			val instructions = block.instructions
 			if (instructions.isEmpty()) {
 				return false
 			}
@@ -283,7 +283,7 @@ class ClassModifier : AbstractVisitor() {
 			if (wrappedAccFlags.isStatic()) {
 				return false
 			}
-			if (callMth.argsCount != mth.getMethodInfo().argsCount) {
+			if (callMth.argsCount != mth.methodInfo.argsCount) {
 				return false
 			}
 			// 仅重命名来自当前类的方法
@@ -308,7 +308,7 @@ class ClassModifier : AbstractVisitor() {
 			}
 			wrappedMth.addAttr(MethodReplaceAttr(mth))
 			wrappedMth.copyAttributeFrom(mth, AType.METHOD_OVERRIDE)
-			wrappedMth.addDebugComment("Method merged with bridge method: " + mth.getMethodInfo().shortId)
+			wrappedMth.addDebugComment("Method merged with bridge method: " + mth.methodInfo.shortId)
 			return true
 		}
 
@@ -335,7 +335,7 @@ class ClassModifier : AbstractVisitor() {
 			val af = mth.accessFlags
 			val publicConstructor = mth.isConstructor() && af.isPublic()
 			val enumDefConstructor = mth.isConstructor() && mth.parentClass.contains(AFlag.CONVERTED_ENUM)
-			val clsInit = mth.getMethodInfo().isClassInit() && af.isStatic()
+			val clsInit = mth.methodInfo.isClassInit() && af.isStatic()
 			if (publicConstructor || enumDefConstructor || clsInit) {
 				if (!BlockUtils.isAllBlocksEmpty(mth.basicBlocks)) {
 					return

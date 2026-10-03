@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory
  *
  * **什么是 Region？** 反编译器把方法体从“基本块（Block）图”提升为“区域树”：
  * 每个区域代表一段结构化代码（顺序块、if、loop、switch、try/catch、synchronized…）。
- * 区域之间通过 [parent] 形成父子关系，子区域列表由 [getSubBlocks] 给出。
+ * 区域之间通过 [parent] 形成父子关系，子区域列表由 [subBlocks] 给出。
  *
  * 本类只提供两件通用能力：
  * 1. 维护父区域指针 [parent]（[IRegion] 接口声明为可变属性，因此这里用属性覆写）；

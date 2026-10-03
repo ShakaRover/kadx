@@ -73,8 +73,8 @@ class ProcessVariables : AbstractVisitor() {
 			mth,
 			object : AbstractRegionVisitor() {
 				override fun processBlock(mth: MethodNode, container: IBlock) {
-					for (insn in container.getInstructions()) {
-						val resultArg = insn.getResult() ?: continue
+					for (insn in container.instructions) {
+						val resultArg = insn.result ?: continue
 						val ssaVar = resultArg.sVar
 						if (isVarUnused(mth, ssaVar)) {
 							var remove = false
@@ -101,7 +101,7 @@ class ProcessVariables : AbstractVisitor() {
 
 				/** 若结果未使用，整条指令可以删除 */
 				private fun canRemoveInsn(insn: InsnNode): Boolean {
-					if (insn.isConstInsn()) {
+					if (insn.isConstInsn) {
 						return true
 					}
 					return when (insn.type) {
@@ -286,7 +286,7 @@ class ProcessVariables : AbstractVisitor() {
 		val block = checkPlace.block
 		val toCheck: MutableSet<UsePlace> = HashSet(usePlaces)
 		var blockFound = false
-		for (subBlock in region.getSubBlocks()) {
+		for (subBlock in region.subBlocks) {
 			if (!blockFound && subBlock === block) {
 				blockFound = true
 			}
@@ -320,7 +320,7 @@ class ProcessVariables : AbstractVisitor() {
 		) {
 			return false
 		}
-		if (arg != parentInsn.getResult()) {
+		if (arg != parentInsn.result) {
 			return false
 		}
 		parentInsn.add(AFlag.DECLARE_VAR)

@@ -43,7 +43,7 @@ class LoopInfo(
 		val blocks = loopBlocks
 		for (block in blocks) {
 			// exit: successor node not from this loop, (don't change to getCleanSuccessors)
-			for (s in block.getSuccessors()) {
+			for (s in block.successors) {
 				if (!blocks.contains(s) && !s.contains(AType.EXC_HANDLER)) {
 					nodes.add(block)
 				}
@@ -63,7 +63,7 @@ class LoopInfo(
 		val edges = ArrayList<Edge>()
 		val blocks = loopBlocks
 		for (block in blocks) {
-			for (s in block.getSuccessors()) { // don't use clean successors to include loop back edges
+			for (s in block.successors) { // don't use clean successors to include loop back edges
 				if (!blocks.contains(s) && !BlockUtils.isExceptionHandlerPath(s)) {
 					edges.add(Edge(block, s))
 				}
@@ -73,7 +73,7 @@ class LoopInfo(
 	}
 
 	/** 取循环的前置头块（pre-header）：循环头的前驱中不是循环自身的那个块 */
-	val preHeader: BlockNode get() = BlockUtils.selectOther(end, start.getPredecessors())
+	val preHeader: BlockNode get() = BlockUtils.selectOther(end, start.predecessors)
 
 	/**
 	 * 判断 [searchLoop] 是否为本循环的某一层祖先循环。

@@ -44,11 +44,11 @@ class XposedAction(codeArea: CodeArea) : JNodeAction(ActionModel.XPOSED_COPY, co
 	private fun generateMethodSnippet(jMethod: JMethod): String {
 		val javaMethod = jMethod.javaMethod
 		val methodNode = javaMethod.getMethodNode()
-		val methodInfo = methodNode.getMethodInfo()
+		val methodInfo = methodNode.methodInfo
 
 		val xposedMethod: String
 		var args = methodInfo.argumentsTypes.map(::fixTypeContent)
-		val rawClassName = javaMethod.getDeclaringClass().getRawName()
+		val rawClassName = javaMethod.declaringClass.getRawName()
 
 		if (methodNode.isConstructor()) {
 			xposedMethod = "findAndHookConstructor"

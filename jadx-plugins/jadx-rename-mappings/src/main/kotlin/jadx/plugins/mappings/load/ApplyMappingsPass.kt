@@ -63,7 +63,7 @@ public class ApplyMappingsPass : JadxPreparePass {
 				}
 			}
 			for (method in cls.methods) {
-				val methodInfo = method.getMethodInfo()
+				val methodInfo = method.methodInfo
 				val methodName = methodInfo.name
 				val methodDesc = methodInfo.shortId.substring(methodName.length)
 				val methodMapping = classMapping.getMethod(methodName, methodDesc)

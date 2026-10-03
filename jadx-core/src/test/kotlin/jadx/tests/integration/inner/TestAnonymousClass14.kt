@@ -64,8 +64,8 @@ class TestAnonymousClass14 : SmaliTest() {
 			},
 		)
 		assertThat(ctrMth).isNotNull()
-		assertThat(ctrMth.getUseIn()).hasSize(1)
-		assertThat(ctrMth.getUseIn()[0]).isEqualTo(makeTestClsMth)
+		assertThat(ctrMth.useIn).hasSize(1)
+		assertThat(ctrMth.useIn[0]).isEqualTo(makeTestClsMth)
 
 		assertThat(outerCls).checkCodeAnnotationFor("new TestCls();", 4, ctrMth)
 	}

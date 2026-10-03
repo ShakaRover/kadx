@@ -52,14 +52,14 @@ abstract class InsnArg : Typed() {
 					(arg as RegisterArg).setNameIfUnknown(name)
 				} else if (arg.isInsnWrap) {
 					val wrapInsn = (arg as InsnWrapArg).wrapInsn
-					val registerArg = wrapInsn.getResult()
+					val registerArg = wrapInsn.result
 					if (registerArg != null) {
 						registerArg.setNameIfUnknown(name)
 					}
 				}
 			}
 		}
-		val resArg = insn.getResult()
+		val resArg = insn.result
 		val arg = wrapInsnIntoArg(insn)
 		val oldArg = parent.getArg(i)
 		if (arg.getType() == ArgType.UNKNOWN) {
@@ -132,7 +132,7 @@ abstract class InsnArg : Typed() {
 		return null
 	}
 
-	fun isConst(): Boolean = isLiteral || (isInsnWrap && (this as InsnWrapArg).wrapInsn.isConstInsn())
+	fun isConst(): Boolean = isLiteral || (isInsnWrap && (this as InsnWrapArg).wrapInsn.isConstInsn)
 
 	fun isSameConst(other: InsnArg): Boolean {
 		if (isConst() && other.isConst()) {
@@ -223,7 +223,7 @@ abstract class InsnArg : Typed() {
 			val type = insn.type
 			if (type == InsnType.CONST || type == InsnType.MOVE) {
 				if (insn.contains(AFlag.FORCE_ASSIGN_INLINE)) {
-					val resArg = insn.getResult()
+					val resArg = insn.result
 					val arg = wrap(insn)
 					if (resArg != null) {
 						arg.setType(resArg.getType())
@@ -254,7 +254,7 @@ abstract class InsnArg : Typed() {
 		 * This method don't support MOVE and CONST insns!
 		 */
 		fun wrapArg(insn: InsnNode): InsnArg {
-			val resArg = insn.getResult()
+			val resArg = insn.result
 			val arg = wrap(insn)
 			when (insn.type) {
 				InsnType.CONST, InsnType.MOVE -> throw JadxRuntimeException("Don't wrap MOVE or CONST insns: $insn")

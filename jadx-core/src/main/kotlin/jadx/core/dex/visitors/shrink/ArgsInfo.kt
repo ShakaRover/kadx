@@ -88,7 +88,7 @@ internal class ArgsInfo(
 			throw JadxRuntimeException("Invalid inline insn positions: $start - $to")
 		}
 		val movedSet = startInfo.argsSet
-		if (movedSet === EmptyBitSet.EMPTY && startInfo.insn.isConstInsn()) {
+		if (movedSet === EmptyBitSet.EMPTY && startInfo.insn.isConstInsn) {
 			return true
 		}
 		val canReorder = startInfo.canReorder()
@@ -188,7 +188,7 @@ internal class ArgsInfo(
 			if (args.isEmpty) {
 				return false
 			}
-			val result = insn.getResult() ?: return false
+			val result = insn.result ?: return false
 			return args.get(result.regNum)
 		}
 	}

@@ -13,7 +13,7 @@ class InsnContainer(insns: List<InsnNode>) :
 
 	constructor(insn: InsnNode) : this(arrayListOf(insn))
 
-	override fun getInstructions(): List<InsnNode> = insns
+	override val instructions: List<InsnNode> get() = insns
 
 	override fun baseString(): String = "IC"
 

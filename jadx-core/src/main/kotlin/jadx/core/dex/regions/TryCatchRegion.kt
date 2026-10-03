@@ -28,9 +28,9 @@ class TryCatchRegion(parent: IRegion?, val tryRegion: IContainer) :
 	AbstractRegion(parent),
 	IBranchRegion {
 
-	private var catchRegions: MutableMap<ExceptionHandler, IContainer> = Collections.emptyMap()
-	private var finallyRegion: IContainer? = null
-	private var tryCatchBlock: TryCatchBlockAttr? = null
+	private var catchRegionsValue: MutableMap<ExceptionHandler, IContainer> = Collections.emptyMap()
+	private var finallyRegionValue: IContainer? = null
+	private var tryCatchBlockValue: TryCatchBlockAttr? = null
 
 	/**
 	 * 根据 try/catch 属性填充 catch 映射与 finally 区域。
@@ -39,44 +39,44 @@ class TryCatchRegion(parent: IRegion?, val tryRegion: IContainer) :
 	 * 其余按顺序放入 [catchRegions]（用 LinkedHashMap 保持声明顺序）。
 	 */
 	fun setTryCatchBlock(tryCatchBlock: TryCatchBlockAttr) {
-		this.tryCatchBlock = tryCatchBlock
+		this.tryCatchBlockValue = tryCatchBlock
 		val count = tryCatchBlock.handlersCount
 		val regions = LinkedHashMap<ExceptionHandler, IContainer>(count)
 		for (handler in tryCatchBlock.handlers) {
 			val handlerRegion = handler.getHandlerRegion()
 			if (handlerRegion != null) {
 				if (handler.isFinally()) {
-					finallyRegion = handlerRegion
+					finallyRegionValue = handlerRegion
 				} else {
 					regions[handler] = handlerRegion
 				}
 			}
 		}
-		this.catchRegions = regions
+		this.catchRegionsValue = regions
 	}
 
-	fun getCatchRegions(): MutableMap<ExceptionHandler, IContainer> = catchRegions
+	val catchRegions: MutableMap<ExceptionHandler, IContainer> get() = catchRegionsValue
 
-	fun getTryCatchBlock(): TryCatchBlockAttr? = tryCatchBlock
+	val tryCatchBlock: TryCatchBlockAttr? get() = tryCatchBlockValue
 
-	fun getFinallyRegion(): IContainer? = finallyRegion
+	val finallyRegion: IContainer? get() = finallyRegionValue
 
 	fun setFinallyRegion(finallyRegion: IContainer?) {
-		this.finallyRegion = finallyRegion
+		this.finallyRegionValue = finallyRegion
 	}
 
-	override fun getSubBlocks(): List<IContainer> {
-		val all = ArrayList<IContainer>(2 + catchRegions.size)
+	override val subBlocks: List<IContainer> get() {
+		val all = ArrayList<IContainer>(2 + catchRegionsValue.size)
 		all.add(tryRegion)
-		all.addAll(catchRegions.values)
-		val finallyRegion = this.finallyRegion
+		all.addAll(catchRegionsValue.values)
+		val finallyRegion = this.finallyRegionValue
 		if (finallyRegion != null) {
 			all.add(finallyRegion)
 		}
 		return Collections.unmodifiableList(all)
 	}
 
-	override fun getBranches(): List<IContainer?> = getSubBlocks()
+	override val branches: List<IContainer?> get() = subBlocks
 
 	@Throws(CodegenException::class)
 	override fun generate(regionGen: RegionGen, code: ICodeWriter) {
@@ -88,10 +88,10 @@ class TryCatchRegion(parent: IRegion?, val tryRegion: IContainer) :
 	override fun toString(): String {
 		val sb = StringBuilder()
 		sb.append("Try: ").append(tryRegion)
-		if (catchRegions.isNotEmpty()) {
-			sb.append(" catches: ").append(Utils.listToString(catchRegions.values))
+		if (catchRegionsValue.isNotEmpty()) {
+			sb.append(" catches: ").append(Utils.listToString(catchRegionsValue.values))
 		}
-		val finallyRegion = this.finallyRegion
+		val finallyRegion = this.finallyRegionValue
 		if (finallyRegion != null) {
 			sb.append(" finally: ").append(finallyRegion)
 		}

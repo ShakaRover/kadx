@@ -57,9 +57,9 @@ class ConstructorVisitor : AbstractVisitor() {
 			val remover = InsnRemover(mth)
 			for (block in checkNotNull(mth.basicBlocks)) {
 				remover.setBlock(block)
-				val size = block.getInstructions().size
+				val size = block.instructions.size
 				for (i in 0 until size) {
-					val insn = block.getInstructions()[i]
+					val insn = block.instructions[i]
 					if (insn.type == InsnType.INVOKE) {
 						// 注意：不能用 || 短路，processInvoke 必须每次都执行
 						if (processInvoke(mth, block, i, remover)) {
@@ -73,7 +73,7 @@ class ConstructorVisitor : AbstractVisitor() {
 		}
 
 		private fun processInvoke(mth: MethodNode, block: BlockNode, indexInBlock: Int, remover: InsnRemover): Boolean {
-			val inv = block.getInstructions()[indexInBlock] as InvokeNode
+			val inv = block.instructions[indexInBlock] as InvokeNode
 			var callMth = inv.callMth
 			if (!callMth.isConstructor()) {
 				return false
@@ -160,7 +160,7 @@ class ConstructorVisitor : AbstractVisitor() {
 				return newResArg
 			}
 			val newResArg = instArg.duplicateWithNewSSAVar(mth)
-			val useArg = checkNotNull(otherCtr.getResult())
+			val useArg = checkNotNull(otherCtr.result)
 			val otherResArg = useArg.duplicateWithNewSSAVar(mth)
 
 			val phiInsn = SSATransform.addPhi(mth, crossBlock, useArg.regNum)
@@ -204,15 +204,15 @@ class ConstructorVisitor : AbstractVisitor() {
 				return null
 			}
 			val classNode = mth.root().resolveClass(callMth.parentClass.classInfo) ?: return null
-			val instanceArg = co.getResult() ?: return null
+			val instanceArg = co.result ?: return null
 			val passThis = instanceArg.isThis()
 			val ctrId = "<init>(" + (if (passThis) TypeGen.signature(instanceArg.getInitType()) else "") + ")V"
 			val defCtr = classNode.searchMethodByShortId(ctrId)
 			if (defCtr == null || defCtr == callMth || defCtr.accessFlags.isSynthetic()) {
 				return null
 			}
-			val newInsn = ConstructorInsn(defCtr.getMethodInfo(), co.callType)
-			newInsn.setResult(checkNotNull(co.getResult()).duplicate())
+			val newInsn = ConstructorInsn(defCtr.methodInfo, co.callType)
+			newInsn.setResult(checkNotNull(co.result).duplicate())
 			newInsn.inheritMetadata(co)
 			return newInsn
 		}

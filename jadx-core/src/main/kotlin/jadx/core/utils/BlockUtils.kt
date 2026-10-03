@@ -43,7 +43,7 @@ import java.util.Objects
 object BlockUtils {
 
 	/** 空安全的 clean successors 访问（块处理前可能为 null）。 */
-	private fun cleanSuccessors(block: BlockNode): List<BlockNode> = block.getCleanSuccessors() ?: emptyList()
+	private fun cleanSuccessors(block: BlockNode): List<BlockNode> = block.cleanSuccessors ?: emptyList()
 
 	fun getBlockByOffset(offset: Int, casesBlocks: Iterable<BlockNode>): BlockNode {
 		for (block in casesBlocks) {
@@ -93,7 +93,7 @@ object BlockUtils {
 			return true
 		}
 		if (b.contains(AFlag.SYNTHETIC)) {
-			val s = b.getSuccessors()
+			val s = b.successors
 			return s.size == 1 && s[0].contains(AType.EXC_HANDLER)
 		}
 		return false
@@ -133,7 +133,7 @@ object BlockUtils {
 		if (cleanSuccessors(from).contains(to)) {
 			return false // 已检查过
 		}
-		return from.getSuccessors().contains(to)
+		return from.successors.contains(to)
 	}
 
 	fun isFollowBackEdge(block: BlockNode?): Boolean {
@@ -141,7 +141,7 @@ object BlockUtils {
 			return false
 		}
 		if (block.contains(AFlag.LOOP_START)) {
-			val predecessors = block.getPredecessors()
+			val predecessors = block.predecessors
 			if (predecessors.size == 1) {
 				val loopEndBlock = predecessors[0]
 				if (loopEndBlock.contains(AFlag.LOOP_END)) {
@@ -161,7 +161,7 @@ object BlockUtils {
 	 * 判断块中是否包含指定指令（用 `===` 按引用比较）。
 	 */
 	fun blockContains(block: BlockNode, insn: InsnNode): Boolean {
-		for (bi in block.getInstructions()) {
+		for (bi in block.instructions) {
 			if (bi === insn) {
 				return true
 			}
@@ -188,7 +188,7 @@ object BlockUtils {
 	}
 
 	fun getFirstSourceLine(block: IBlock): Int {
-		for (insn in block.getInstructions()) {
+		for (insn in block.instructions) {
 			val line = insn.getSourceLine()
 			if (line != 0) {
 				return line
@@ -201,7 +201,7 @@ object BlockUtils {
 		if (block == null) {
 			return null
 		}
-		val insns = block.getInstructions()
+		val insns = block.instructions
 		if (insns.isEmpty()) {
 			return null
 		}
@@ -212,7 +212,7 @@ object BlockUtils {
 		if (block == null) {
 			return null
 		}
-		val insns = block.getInstructions()
+		val insns = block.instructions
 		if (insns.isEmpty()) {
 			return null
 		}
@@ -227,13 +227,13 @@ object BlockUtils {
 	}
 
 	fun isExitBlock(block: BlockNode): Boolean {
-		val successors = block.getSuccessors()
+		val successors = block.successors
 		if (successors.isEmpty()) {
 			return true
 		}
 		if (successors.size == 1) {
 			val next = successors[0]
-			return next.getSuccessors().isEmpty()
+			return next.successors.isEmpty()
 		}
 		return false
 	}
@@ -283,7 +283,7 @@ object BlockUtils {
 
 	private fun getBlockByWrappedInsn(mth: MethodNode, insn: InsnNode): BlockNode? {
 		for (bn in checkNotNull(mth.basicBlocks)) {
-			for (bi in bn.getInstructions()) {
+			for (bi in bn.instructions) {
 				if (bi === insn || foundWrappedInsn(bi, insn) != null) {
 					return bn
 				}
@@ -302,7 +302,7 @@ object BlockUtils {
 			return null
 		}
 		for (bn in checkNotNull(mth.basicBlocks)) {
-			for (bi in bn.getInstructions()) {
+			for (bi in bn.instructions) {
 				val res = foundWrappedInsn(bi, insn)
 				if (res != null) {
 					return res
@@ -409,7 +409,7 @@ object BlockUtils {
 	}
 
 	fun getPrevBlock(block: BlockNode): BlockNode? {
-		val preds = block.getPredecessors()
+		val preds = block.predecessors
 		return if (preds.size == 1) preds[0] else null
 	}
 
@@ -434,7 +434,7 @@ object BlockUtils {
 	 * 返回从 pathStart 出发路径上的前驱块。
 	 */
 	fun getPrevBlockOnPath(mth: MethodNode, block: BlockNode, pathStart: BlockNode): BlockNode? {
-		val preds = BlockSet.from(mth, block.getPredecessors())
+		val preds = BlockSet.from(mth, block.predecessors)
 		if (preds.contains(pathStart)) {
 			return pathStart
 		}
@@ -494,7 +494,7 @@ object BlockUtils {
 
 	fun collectAllPredecessors(mth: MethodNode, startBlock: BlockNode): List<BlockNode> {
 		val list = ArrayList<BlockNode>(checkNotNull(mth.basicBlocks).size)
-		val nextFunc: (BlockNode) -> List<BlockNode> = { b -> b.getPredecessors() }
+		val nextFunc: (BlockNode) -> List<BlockNode> = { b -> b.predecessors }
 		visitDFS(mth, startBlock, nextFunc) { b -> list.add(b) }
 		return list
 	}
@@ -502,7 +502,7 @@ object BlockUtils {
 	fun collectAllSuccessors(mth: MethodNode, startBlock: BlockNode, clean: Boolean): List<BlockNode> {
 		val list = ArrayList<BlockNode>(checkNotNull(mth.basicBlocks).size)
 		val nextFunc: (BlockNode) -> List<BlockNode> = { b ->
-			if (clean) cleanSuccessors(b) ?: emptyList() else b.getSuccessors()
+			if (clean) cleanSuccessors(b) ?: emptyList() else b.successors
 		}
 		visitDFS(mth, startBlock, nextFunc) { b -> list.add(b) }
 		return list
@@ -533,7 +533,7 @@ object BlockUtils {
 		if (stopCondition(currentBlock)) {
 			return
 		}
-		val successors = if (clean) cleanSuccessors(currentBlock) else currentBlock.getSuccessors()
+		val successors = if (clean) cleanSuccessors(currentBlock) else currentBlock.successors
 		for (successor in successors) {
 			collectAllSuccessorsUntil(mth, blocks, successor, clean, stopCondition)
 		}
@@ -592,11 +592,11 @@ object BlockUtils {
 	}
 
 	fun visitDFS(mth: MethodNode, visitor: (BlockNode) -> Unit) {
-		visitDFS(mth, checkNotNull(mth.enterBlock), { b -> b.getSuccessors() }, visitor)
+		visitDFS(mth, checkNotNull(mth.enterBlock), { b -> b.successors }, visitor)
 	}
 
 	fun visitReverseDFS(mth: MethodNode, visitor: (BlockNode) -> Unit) {
-		visitDFS(mth, checkNotNull(mth.exitBlock), { b -> b.getPredecessors() }, visitor)
+		visitDFS(mth, checkNotNull(mth.exitBlock), { b -> b.predecessors }, visitor)
 	}
 
 	private fun visitDFS(
@@ -640,7 +640,7 @@ object BlockUtils {
 			if (current == null || visitor(current)) {
 				return
 			}
-			for (next in current.getPredecessors()) {
+			for (next in current.predecessors) {
 				val id = next.id
 				if (!visited.get(id)) {
 					visited.set(id)
@@ -665,7 +665,7 @@ object BlockUtils {
 	/**
 	 * 收集从 start 到 end 的一条不含指令的执行路径上的块。
 	 */
-	fun getOneEmptyPath(start: BlockNode, end: BlockNode): List<BlockNode>? = collectPathUntil(start, end, false) { b -> b.getInstructions().isEmpty() || b === end }
+	fun getOneEmptyPath(start: BlockNode, end: BlockNode): List<BlockNode>? = collectPathUntil(start, end, false) { b -> b.instructions.isEmpty() || b === end }
 
 	/**
 	 * 收集从 start 到 end 的一条可能执行路径上的块。
@@ -674,7 +674,7 @@ object BlockUtils {
 
 	private fun addPredecessors(set: MutableSet<BlockNode>, from: BlockNode, until: BlockNode) {
 		set.add(from)
-		for (pred in from.getPredecessors()) {
+		for (pred in from.predecessors) {
 			if (pred !== until && !set.contains(pred)) {
 				addPredecessors(set, pred, until)
 			}
@@ -695,7 +695,7 @@ object BlockUtils {
 		clean: Boolean,
 		pred: (BlockNode) -> Boolean,
 	): Boolean {
-		val nodes = if (clean) cleanSuccessors(from) else from.getSuccessors()
+		val nodes = if (clean) cleanSuccessors(from) else from.successors
 		for (s in nodes) {
 			if (!pred(s)) {
 				continue
@@ -738,7 +738,7 @@ object BlockUtils {
 		clean: Boolean,
 		pred: (BlockNode) -> Boolean,
 	): MutableList<BlockNode>? {
-		val nodes = if (clean) cleanSuccessors(from) else from.getSuccessors()
+		val nodes = if (clean) cleanSuccessors(from) else from.successors
 		for (s in nodes) {
 			if (!pred(s)) {
 				continue
@@ -793,7 +793,7 @@ object BlockUtils {
 	}
 
 	fun isAnyPathExists(start: BlockNode, end: BlockNode): Boolean {
-		if (start === end || end.isDominator(start) || start.getSuccessors().contains(end)) {
+		if (start === end || end.isDominator(start) || start.successors.contains(end)) {
 			return true
 		}
 		return traverseSuccessorsUntil(start, end, BitSet(), false)
@@ -932,7 +932,7 @@ object BlockUtils {
 	 */
 	fun getDomFrontierThroughEdge(edge: Edge): BitSet {
 		val target = edge.target
-		return if (target.getPredecessors().size > 1) {
+		return if (target.predecessors.size > 1) {
 			val dominanceFrontier = BitSet()
 			dominanceFrontier.set(target.pos)
 			dominanceFrontier
@@ -1060,7 +1060,7 @@ object BlockUtils {
 			return
 		}
 		visited.set(child.id)
-		val successors = if (includeExcHandlers) child.getSuccessors() else cleanSuccessors(child)
+		val successors = if (includeExcHandlers) child.successors else cleanSuccessors(child)
 		for (node in successors) {
 			if (node.isDominator(dominator)) {
 				result.add(node)
@@ -1085,10 +1085,10 @@ object BlockUtils {
 	}
 
 	fun getNextSinglePathBlock(block: BlockNode?): BlockNode? {
-		if (block == null || block.getPredecessors().size > 1) {
+		if (block == null || block.predecessors.size > 1) {
 			return null
 		}
-		val successors = block.getSuccessors()
+		val successors = block.successors
 		return if (successors.size == 1) successors[0] else null
 	}
 
@@ -1104,7 +1104,7 @@ object BlockUtils {
 		var currentBlock = getNextBlock(block)
 		while (currentBlock != null &&
 			cleanSuccessors(currentBlock).size < 2 &&
-			currentBlock.getPredecessors().size == 1
+			currentBlock.predecessors.size == 1
 		) {
 			list.add(currentBlock)
 			currentBlock = getNextBlock(currentBlock)
@@ -1116,11 +1116,11 @@ object BlockUtils {
 	 * 从 start 块出发，给所有合成的空前驱块打上 SKIP 标记。
 	 */
 	fun skipPredSyntheticPaths(block: BlockNode) {
-		for (pred in block.getPredecessors()) {
+		for (pred in block.predecessors) {
 			if (pred.contains(AFlag.SYNTHETIC) &&
 				!pred.contains(AFlag.EXC_TOP_SPLITTER) &&
 				!pred.contains(AFlag.EXC_BOTTOM_SPLITTER) &&
-				pred.getInstructions().isEmpty()
+				pred.instructions.isEmpty()
 			) {
 				pred.add(AFlag.DONT_GENERATE)
 				skipPredSyntheticPaths(pred)
@@ -1156,13 +1156,13 @@ object BlockUtils {
 		traversedBlocks: MutableCollection<BlockNode>,
 	) {
 		var start = start0
-		val predecessors = ListUtils.filter(start.getPredecessors()) { traversableBlocks.contains(it) }
+		val predecessors = ListUtils.filter(start.predecessors) { traversableBlocks.contains(it) }
 		for (predecessor in predecessors) {
 			if (!traversableBlocks.contains(predecessor) || traversedBlocks.contains(predecessor)) {
 				continue
 			}
 			traversedBlocks.add(predecessor)
-			if (predecessor.getInstructions().isEmpty()) {
+			if (predecessor.instructions.isEmpty()) {
 				followEmptyUpPathWithinSet(results, start, traversableBlocks, traversedBlocks)
 			} else {
 				results.add(predecessor)
@@ -1189,14 +1189,14 @@ object BlockUtils {
 	private fun getNextBlockOnEmptyPath(block: BlockNode, reverse: Boolean): BlockNode? = getNextBlockOnEmptyPath(block, reverse, true)
 
 	private fun getNextBlockOnEmptyPath(block: BlockNode, reverse: Boolean, cleanOnly: Boolean): BlockNode? {
-		if (!block.getInstructions().isEmpty() ||
-			(!reverse && block.getPredecessors().size > 1) ||
+		if (!block.instructions.isEmpty() ||
+			(!reverse && block.predecessors.size > 1) ||
 			(reverse && cleanSuccessors(block).size > 1)
 		) {
 			return null
 		}
 		val nextBlocks =
-			if (reverse) block.getPredecessors() else (if (cleanOnly) cleanSuccessors(block) else block.getSuccessors())
+			if (reverse) block.predecessors else (if (cleanOnly) cleanSuccessors(block) else block.successors)
 		if (nextBlocks.size != 1) {
 			return null
 		}
@@ -1207,18 +1207,18 @@ object BlockUtils {
 	 * 从 start 到 end 的路径上没有指令、没有分支时返回 true。
 	 */
 	fun isEmptySimplePath(start: BlockNode, end: BlockNode): Boolean {
-		if (start === end && start.getInstructions().isEmpty()) {
+		if (start === end && start.instructions.isEmpty()) {
 			return true
 		}
-		if (!start.getInstructions().isEmpty() || cleanSuccessors(start).size != 1) {
+		if (!start.instructions.isEmpty() || cleanSuccessors(start).size != 1) {
 			return false
 		}
 		var block = getNextBlock(start)
 		while (block != null &&
 			block !== end &&
 			cleanSuccessors(block).size < 2 &&
-			block.getPredecessors().size == 1 &&
-			block.getInstructions().isEmpty()
+			block.predecessors.size == 1 &&
+			block.instructions.isEmpty()
 		) {
 			block = getNextBlock(block)
 		}
@@ -1229,8 +1229,8 @@ object BlockUtils {
 	 * 返回合成块的前驱（或原块）。
 	 */
 	fun skipSyntheticPredecessor(block: BlockNode): BlockNode {
-		if (block.isSynthetic() && block.getInstructions().isEmpty() && block.getPredecessors().size == 1) {
-			return block.getPredecessors()[0]
+		if (block.isSynthetic && block.instructions.isEmpty() && block.predecessors.size == 1) {
+			return block.predecessors[0]
 		}
 		return block
 	}
@@ -1240,7 +1240,7 @@ object BlockUtils {
 			return true
 		}
 		for (block in blocks) {
-			if (!block.getInstructions().isEmpty()) {
+			if (!block.instructions.isEmpty()) {
 				return false
 			}
 		}
@@ -1249,7 +1249,7 @@ object BlockUtils {
 
 	fun collectAllInsns(blocks: List<BlockNode>): List<InsnNode> {
 		val insns = ArrayList<InsnNode>()
-		blocks.forEach { block -> insns.addAll(block.getInstructions()) }
+		blocks.forEach { block -> insns.addAll(block.instructions) }
 		return insns
 	}
 
@@ -1259,7 +1259,7 @@ object BlockUtils {
 	fun collectInsnsWithLimit(blocks: List<BlockNode>, limit: Int): List<InsnNode> {
 		val insns = ArrayList<InsnNode>(limit)
 		for (block in blocks) {
-			val blockInsns = block.getInstructions()
+			val blockInsns = block.instructions
 			val blockSize = blockInsns.size
 			if (blockSize == 0) {
 				continue
@@ -1281,7 +1281,7 @@ object BlockUtils {
 		}
 		var insn: InsnNode? = null
 		for (block in checkNotNull(mth.basicBlocks)) {
-			val blockInsns = block.getInstructions()
+			val blockInsns = block.instructions
 			val blockSize = blockInsns.size
 			if (blockSize == 0) {
 				continue
@@ -1299,17 +1299,17 @@ object BlockUtils {
 
 	fun isFirstInsn(mth: MethodNode, insn: InsnNode): Boolean {
 		val startBlock = followEmptyPath(checkNotNull(mth.enterBlock))
-		if (startBlock.getInstructions().isNotEmpty()) {
-			return startBlock.getInstructions()[0] === insn
+		if (startBlock.instructions.isNotEmpty()) {
+			return startBlock.instructions[0] === insn
 		}
 		// 处理带空块的分支
 		val block = getBlockByInsn(mth, insn) ?: throw JadxRuntimeException("Insn not found in method: $insn")
-		if (block.getInstructions()[0] !== insn) {
+		if (block.instructions[0] !== insn) {
 			return false
 		}
 		val allPathsBlocks = getAllPathsBlocks(checkNotNull(mth.enterBlock), block)
 		for (pathBlock in allPathsBlocks) {
-			if (!pathBlock.getInstructions().isEmpty() && pathBlock !== block) {
+			if (!pathBlock.instructions.isEmpty() && pathBlock !== block) {
 				return false
 			}
 		}
@@ -1320,14 +1320,14 @@ object BlockUtils {
 	 * 用第 i 条指令替换块中的指令，并保留属性/元数据。
 	 */
 	fun replaceInsn(mth: MethodNode, block: BlockNode, i: Int, insn: InsnNode) {
-		val prevInsn = block.getInstructions()[i]
+		val prevInsn = block.instructions[i]
 		insn.copyAttributesFrom(prevInsn)
 		insn.inheritMetadata(prevInsn)
 		insn.setOffset(prevInsn.getOffset())
 		block.instructions[i] = insn
 
-		val result = insn.getResult()
-		val prevResult = prevInsn.getResult()
+		val result = insn.result
+		val prevResult = prevInsn.result
 		if (result != null && prevResult != null && result.sameRegAndSVar(prevResult)) {
 			// 同一寄存器不解绑结果（解绑会从 PHI 移除且不会重新加回）
 			InsnRemover.unbindAllArgs(mth, prevInsn)
@@ -1338,7 +1338,7 @@ object BlockUtils {
 	}
 
 	fun replaceInsn(mth: MethodNode, block: BlockNode, oldInsn: InsnNode, newInsn: InsnNode): Boolean {
-		val instructions = block.getInstructions()
+		val instructions = block.instructions
 		val size = instructions.size
 		for (i in 0 until size) {
 			if (instructions[i] === oldInsn) {
@@ -1351,7 +1351,7 @@ object BlockUtils {
 
 	fun removeInstructions(blocks: List<IBlock>) {
 		for (block in blocks) {
-			(block.getInstructions() as MutableList<InsnNode>).clear()
+			(block.instructions as MutableList<InsnNode>).clear()
 		}
 	}
 
@@ -1374,7 +1374,7 @@ object BlockUtils {
 	}
 
 	fun getInsnIndexInBlock(block: BlockNode, insn: InsnNode): Int {
-		val instructions = block.getInstructions()
+		val instructions = block.instructions
 		val size = instructions.size
 		for (i in 0 until size) {
 			if (instructions[i] === insn) {
@@ -1394,7 +1394,7 @@ object BlockUtils {
 	}
 
 	fun getTopSplitterForHandler(handlerBlock: BlockNode): BlockNode {
-		val block = getBlockWithFlag(handlerBlock.getPredecessors(), AFlag.EXC_TOP_SPLITTER)
+		val block = getBlockWithFlag(handlerBlock.predecessors, AFlag.EXC_TOP_SPLITTER)
 		if (block == null) {
 			throw JadxRuntimeException("Can't find top splitter block for handler:$handlerBlock")
 		}
@@ -1417,7 +1417,7 @@ object BlockUtils {
 			}
 			visited.set(frontier.pos)
 			// 确认 frontier 的前驱来自 try 分支末尾，而非 handler 分支
-			for (pred in frontier.getPredecessors()) {
+			for (pred in frontier.predecessors) {
 				val predFromHandler = allHandlers.any { h -> isPathExists(checkNotNull(h.getHandlerBlock()), pred) }
 				if (!predFromHandler && isPathExists(topSplitter, pred) && frontier !== mth.exitBlock) {
 					return frontier
@@ -1463,11 +1463,11 @@ object BlockUtils {
 	}
 
 	fun isEqualReturnBlocks(b1: BlockNode, b2: BlockNode): Boolean {
-		if (!b1.isReturnBlock() || !b2.isReturnBlock()) {
+		if (!b1.isReturnBlock || !b2.isReturnBlock) {
 			return false
 		}
-		val b1Insns = b1.getInstructions()
-		val b2Insns = b2.getInstructions()
+		val b1Insns = b1.instructions
+		val b2Insns = b2.instructions
 		if (b1Insns.size != 1 || b2Insns.size != 1) {
 			return false
 		}
@@ -1491,8 +1491,8 @@ object BlockUtils {
 	}
 
 	fun isDuplicateBlockPath(first: BlockNode, second: BlockNode): Boolean {
-		if (first.getSuccessors().size == 1 && second.getSuccessors().size == 1 &&
-			first.getSuccessors()[0] == second.getSuccessors()[0]
+		if (first.successors.size == 1 && second.successors.size == 1 &&
+			first.successors[0] == second.successors[0]
 		) {
 			return isSameInsnsBlocks(first, second)
 		}
@@ -1500,8 +1500,8 @@ object BlockUtils {
 	}
 
 	fun isSameInsnsBlocks(first: BlockNode, second: BlockNode): Boolean {
-		val firstInsns = first.getInstructions()
-		val secondInsns = second.getInstructions()
+		val firstInsns = first.instructions
+		val secondInsns = second.instructions
 		if (firstInsns.size != secondInsns.size) {
 			return false
 		}
@@ -1520,7 +1520,7 @@ object BlockUtils {
 		}
 		return first.isSame(second) &&
 			Objects.equals(first.getArguments(), second.getArguments()) &&
-			resultIsSameReg(first.getResult(), second.getResult())
+			resultIsSameReg(first.result, second.result)
 	}
 
 	private fun resultIsSameReg(first: RegisterArg?, second: RegisterArg?): Boolean {

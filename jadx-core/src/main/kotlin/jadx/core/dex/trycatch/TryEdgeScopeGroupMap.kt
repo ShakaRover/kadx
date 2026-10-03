@@ -244,13 +244,13 @@ class TryEdgeScopeGroupMap(
 				continue
 			}
 
-			if (otherEdgeStart.isMthExitBlock()) {
+			if (otherEdgeStart.isMthExitBlock) {
 				scopeRelations[otherEdge] = otherEdgeStart
 				// 一切都汇入出口节点，合并边不再需要
 				mergedEdges.clear()
 				continue
 			}
-			if (edgeStart.isMthExitBlock()) {
+			if (edgeStart.isMthExitBlock) {
 				scopeRelations[otherEdge] = edgeStart
 				mergedEdges.clear()
 				continue

@@ -60,7 +60,7 @@ class ConstructorInsn : BaseInvokeNode {
 		if (classType != mth.parentClass.classInfo) {
 			return CallType.SUPER
 		}
-		if (callMth.shortId == mth.getMethodInfo().shortId) {
+		if (callMth.shortId == mth.methodInfo.shortId) {
 			// 调用自身构造器
 			return CallType.SELF
 		}

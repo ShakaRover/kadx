@@ -105,7 +105,7 @@ class JNodeCache(private val wrapper: JadxWrapper) {
 	}
 
 	private fun convert(cls: JavaClass): JClass {
-		val parentCls = cls.getDeclaringClass()
+		val parentCls = cls.declaringClass
 		if (parentCls === cls) {
 			return JClass(cls, null, this)
 		}
@@ -125,10 +125,10 @@ class JNodeCache(private val wrapper: JadxWrapper) {
 			return convert(node)
 		}
 		if (node is JavaMethod) {
-			return JMethod(node, checkNotNull(makeFrom(node.getDeclaringClass())))
+			return JMethod(node, checkNotNull(makeFrom(node.declaringClass)))
 		}
 		if (node is JavaField) {
-			return JField(node, checkNotNull(makeFrom(node.getDeclaringClass())))
+			return JField(node, checkNotNull(makeFrom(node.declaringClass)))
 		}
 		if (node is JavaVariable) {
 			val jMth = makeFrom(node.getMth()) as JMethod

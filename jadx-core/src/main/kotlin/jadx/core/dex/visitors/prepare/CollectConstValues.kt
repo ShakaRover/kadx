@@ -64,7 +64,7 @@ class CollectConstValues : AbstractVisitor() {
 			if (constVal === EncodedValue.NULL) {
 				return null
 			}
-			if (fld.getUseIn().isNotEmpty()) {
+			if (fld.useIn.isNotEmpty()) {
 				// 字段仍被使用且未被编译器内联，不需要还原为常量
 				return null
 			}

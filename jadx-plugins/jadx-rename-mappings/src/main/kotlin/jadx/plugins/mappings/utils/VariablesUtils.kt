@@ -58,7 +58,7 @@ public object VariablesUtils {
 					} else {
 						LOG.warn(
 							"Local variable not present in bytecode, skipping: {}#{}",
-							mth.getMethodInfo().rawFullId,
+							mth.methodInfo.rawFullId,
 							declRef.getName(),
 						)
 					}

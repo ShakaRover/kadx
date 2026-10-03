@@ -141,24 +141,24 @@ class BlockSplitter : AbstractVisitor() {
 		}
 
 		fun connect(from: BlockNode, to: BlockNode) {
-			if (!from.getSuccessors().contains(to)) {
-				(from.getSuccessors() as MutableList<BlockNode>).add(to)
+			if (!from.successors.contains(to)) {
+				(from.successors as MutableList<BlockNode>).add(to)
 			}
-			if (!to.getPredecessors().contains(from)) {
-				(to.getPredecessors() as MutableList<BlockNode>).add(from)
+			if (!to.predecessors.contains(from)) {
+				(to.predecessors as MutableList<BlockNode>).add(from)
 			}
 		}
 
 		fun removeConnection(from: BlockNode, to: BlockNode) {
-			(from.getSuccessors() as MutableList<BlockNode>).remove(to)
-			(to.getPredecessors() as MutableList<BlockNode>).remove(from)
+			(from.successors as MutableList<BlockNode>).remove(to)
+			(to.predecessors as MutableList<BlockNode>).remove(from)
 		}
 
 		fun removePredecessors(block: BlockNode) {
-			for (pred in block.getPredecessors()) {
-				(pred.getSuccessors() as MutableList<BlockNode>).remove(block)
+			for (pred in block.predecessors) {
+				(pred.successors as MutableList<BlockNode>).remove(block)
 			}
-			(block.getPredecessors() as MutableList<BlockNode>).clear()
+			(block.predecessors as MutableList<BlockNode>).clear()
 		}
 
 		fun replaceConnection(source: BlockNode, oldDest: BlockNode, newDest: BlockNode) {
@@ -181,7 +181,7 @@ class BlockSplitter : AbstractVisitor() {
 
 		fun blockSplitTop(mth: MethodNode, block: BlockNode): BlockNode {
 			val newBlock = startNewBlock(mth, block.startOffset)
-			for (pred in ArrayList(block.getPredecessors())) {
+			for (pred in ArrayList(block.predecessors)) {
 				replaceConnection(pred, block, newBlock)
 				pred.updateCleanSuccessors()
 			}
@@ -192,7 +192,7 @@ class BlockSplitter : AbstractVisitor() {
 
 		fun copyBlockData(from: BlockNode, to: BlockNode) {
 			val toInsns = to.instructions
-			for (insn in from.getInstructions()) {
+			for (insn in from.instructions) {
 				toInsns.add(insn.copyWithoutSsa())
 			}
 			to.copyAttributesFrom(from)
@@ -209,7 +209,7 @@ class BlockSplitter : AbstractVisitor() {
 			}
 			for (block in blocks) {
 				val newBlock = getNewBlock(block, map)
-				for (successor in block.getSuccessors()) {
+				for (successor in block.successors) {
 					val newSuccessor = getNewBlock(successor, map)
 					connect(newBlock, newSuccessor)
 				}
@@ -228,7 +228,7 @@ class BlockSplitter : AbstractVisitor() {
 
 		private fun setupConnectionsFromJumps(mth: MethodNode, blocksMap: Map<Int, BlockNode>) {
 			for (block in checkNotNull(mth.basicBlocks)) {
-				for (insn in block.getInstructions()) {
+				for (insn in block.instructions) {
 					val jumps = insn.getAll(AType.JUMP)
 					for (jump in jumps) {
 						val srcBlock = getBlock(jump.src, blocksMap)
@@ -248,17 +248,17 @@ class BlockSplitter : AbstractVisitor() {
 				return
 			}
 			for (block in checkNotNull(mth.basicBlocks)) {
-				for (insn in block.getInstructions()) {
+				for (insn in block.instructions) {
 					val catchAttr = insn.get(AType.EXC_CATCH) ?: continue
 					for (handler in catchAttr.handlers) {
 						val handlerBlock = getBlock(handler.handlerOffset, blocksMap)
 						if (!handlerBlock.contains(AType.TMP_EDGE)) {
-							val preds = block.getPredecessors()
+							val preds = block.predecessors
 							if (preds.isEmpty()) {
 								throw JadxRuntimeException("Unexpected missing predecessor for block: $block")
 							}
 							val start = if (preds.size == 1) preds[0] else block
-							if (!start.getSuccessors().contains(handlerBlock)) {
+							if (!start.successors.contains(handlerBlock)) {
 								connect(start, handlerBlock)
 								handlerBlock.addAttr(TmpEdgeAttr(start))
 							}
@@ -271,7 +271,7 @@ class BlockSplitter : AbstractVisitor() {
 		private fun setupExitConnections(mth: MethodNode) {
 			val exitBlock = checkNotNull(mth.exitBlock)
 			for (block in checkNotNull(mth.basicBlocks)) {
-				if (block.getSuccessors().isEmpty() && block !== exitBlock) {
+				if (block.successors.isEmpty() && block !== exitBlock) {
 					connect(block, exitBlock)
 					if (BlockUtils.checkLastInsnType(block, InsnType.RETURN)) {
 						block.add(AFlag.RETURN)
@@ -341,7 +341,7 @@ class BlockSplitter : AbstractVisitor() {
 
 		private fun removeJumpAttr(mth: MethodNode) {
 			for (block in checkNotNull(mth.basicBlocks)) {
-				for (insn in block.getInstructions()) {
+				for (insn in block.instructions) {
 					insn.remove(AType.JUMP)
 				}
 			}
@@ -368,45 +368,45 @@ class BlockSplitter : AbstractVisitor() {
 		}
 
 		fun removeEmptyDetachedBlocks(mth: MethodNode): Boolean = (checkNotNull(mth.basicBlocks) as MutableList<BlockNode>).removeIf { block ->
-			block.getInstructions().isEmpty() &&
-				block.getPredecessors().isEmpty() &&
-				block.getSuccessors().isEmpty() &&
+			block.instructions.isEmpty() &&
+				block.predecessors.isEmpty() &&
+				block.successors.isEmpty() &&
 				!block.contains(AFlag.MTH_ENTER_BLOCK) &&
 				!block.contains(AFlag.MTH_EXIT_BLOCK)
 		}
 
 		fun removeEmptyBlock(block: BlockNode): Boolean {
 			if (canRemoveBlock(block)) {
-				if (block.getSuccessors().size == 1) {
-					val successor = block.getSuccessors()[0]
-					for (pred in block.getPredecessors()) {
-						(pred.getSuccessors() as MutableList<BlockNode>).remove(block)
+				if (block.successors.size == 1) {
+					val successor = block.successors[0]
+					for (pred in block.predecessors) {
+						(pred.successors as MutableList<BlockNode>).remove(block)
 						connect(pred, successor)
 						replaceTarget(pred, block, successor)
 						pred.updateCleanSuccessors()
 					}
 					removeConnection(block, successor)
 				} else {
-					for (pred in block.getPredecessors()) {
-						(pred.getSuccessors() as MutableList<BlockNode>).remove(block)
+					for (pred in block.predecessors) {
+						(pred.successors as MutableList<BlockNode>).remove(block)
 						pred.updateCleanSuccessors()
 					}
 				}
 				block.add(AFlag.REMOVE)
-				(block.getSuccessors() as MutableList<BlockNode>).clear()
-				(block.getPredecessors() as MutableList<BlockNode>).clear()
+				(block.successors as MutableList<BlockNode>).clear()
+				(block.predecessors as MutableList<BlockNode>).clear()
 				return true
 			}
 			return false
 		}
 
-		private fun canRemoveBlock(block: BlockNode): Boolean = block.getInstructions().isEmpty() &&
+		private fun canRemoveBlock(block: BlockNode): Boolean = block.instructions.isEmpty() &&
 			block.isAttrStorageEmpty() &&
-			block.getSuccessors().size <= 1 &&
-			!block.getPredecessors().isEmpty() &&
+			block.successors.size <= 1 &&
+			!block.predecessors.isEmpty() &&
 			!block.contains(AFlag.MTH_ENTER_BLOCK) &&
 			!block.contains(AFlag.MTH_EXIT_BLOCK) &&
-			!block.getSuccessors().contains(block) // 无自环
+			!block.successors.contains(block) // 无自环
 
 		fun collectSuccessors(startBlock: BlockNode, methodEnterBlock: BlockNode, toRemove: MutableSet<BlockNode>) {
 			val stack = ArrayDeque<BlockNode>()
@@ -415,8 +415,8 @@ class BlockSplitter : AbstractVisitor() {
 				val block = stack.pop()
 				if (!toRemove.contains(block)) {
 					toRemove.add(block)
-					for (successor in block.getSuccessors()) {
-						if (successor !== methodEnterBlock && toRemove.containsAll(successor.getPredecessors())) {
+					for (successor in block.successors) {
+						if (successor !== methodEnterBlock && toRemove.containsAll(successor.predecessors)) {
 							stack.push(successor)
 						}
 					}
@@ -425,16 +425,16 @@ class BlockSplitter : AbstractVisitor() {
 		}
 
 		fun detachBlock(block: BlockNode) {
-			for (pred in block.getPredecessors()) {
-				(pred.getSuccessors() as MutableList<BlockNode>).remove(block)
+			for (pred in block.predecessors) {
+				(pred.successors as MutableList<BlockNode>).remove(block)
 				pred.updateCleanSuccessors()
 			}
-			for (successor in block.getSuccessors()) {
-				(successor.getPredecessors() as MutableList<BlockNode>).remove(block)
+			for (successor in block.successors) {
+				(successor.predecessors as MutableList<BlockNode>).remove(block)
 			}
 			block.add(AFlag.REMOVE)
-			(block.getPredecessors() as MutableList<BlockNode>).clear()
-			(block.getSuccessors() as MutableList<BlockNode>).clear()
+			(block.predecessors as MutableList<BlockNode>).clear()
+			(block.successors as MutableList<BlockNode>).clear()
 		}
 	}
 

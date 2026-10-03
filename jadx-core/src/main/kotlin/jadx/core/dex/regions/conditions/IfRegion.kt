@@ -20,34 +20,34 @@ class IfRegion(parent: IRegion?) :
 	ConditionRegion(parent),
 	IBranchRegion {
 
-	private var thenRegion: IContainer? = null
-	private var elseRegion: IContainer? = null
+	private var thenRegionValue: IContainer? = null
+	private var elseRegionValue: IContainer? = null
 
-	fun getThenRegion(): IContainer? = thenRegion
+	val thenRegion: IContainer? get() = thenRegionValue
 
 	fun setThenRegion(thenRegion: IContainer?) {
-		this.thenRegion = thenRegion
+		this.thenRegionValue = thenRegion
 	}
 
-	fun getElseRegion(): IContainer? = elseRegion
+	val elseRegion: IContainer? get() = elseRegionValue
 
 	fun setElseRegion(elseRegion: IContainer?) {
-		this.elseRegion = elseRegion
+		this.elseRegionValue = elseRegion
 	}
 
 	/** 条件取反并交换 then / else 分支 */
 	fun invert() {
 		invertCondition()
 		// swap regions
-		val tmp = thenRegion
-		thenRegion = elseRegion
-		elseRegion = tmp
+		val tmp = thenRegionValue
+		thenRegionValue = elseRegionValue
+		elseRegionValue = tmp
 	}
 
-	val sourceLine: Int get() = getConditionSourceLine()
+	val sourceLine: Int get() = conditionSourceLine
 
-	override fun getSubBlocks(): List<IContainer> {
-		val conditionBlocks = getConditionBlocks()
+	override val subBlocks: List<IContainer> get() {
+		val conditionBlocks = conditionBlocks
 		val all = ArrayList<IContainer>(conditionBlocks.size + 2)
 		all.addAll(conditionBlocks)
 		val thenRegion = this.thenRegion
@@ -62,21 +62,21 @@ class IfRegion(parent: IRegion?) :
 	}
 
 	/** 分支列表允许包含 null（表示缺失的分支） */
-	override fun getBranches(): List<IContainer?> {
+	override val branches: List<IContainer?> get() {
 		val branches = ArrayList<IContainer?>(2)
-		branches.add(thenRegion)
-		branches.add(elseRegion)
+		branches.add(thenRegionValue)
+		branches.add(elseRegionValue)
 		return Collections.unmodifiableList(branches)
 	}
 
 	override fun replaceSubBlock(oldBlock: IContainer, newBlock: IContainer): Boolean {
-		if (oldBlock === thenRegion) {
-			thenRegion = newBlock
+		if (oldBlock === thenRegionValue) {
+			thenRegionValue = newBlock
 			updateParent(newBlock, this)
 			return true
 		}
-		if (oldBlock === elseRegion) {
-			elseRegion = newBlock
+		if (oldBlock === elseRegionValue) {
+			elseRegionValue = newBlock
 			updateParent(newBlock, this)
 			return true
 		}
@@ -95,5 +95,5 @@ class IfRegion(parent: IRegion?) :
 		return sb.toString()
 	}
 
-	override fun toString(): String = "IF " + getConditionBlocks() + " THEN: " + thenRegion + " ELSE: " + elseRegion
+	override fun toString(): String = "IF " + conditionBlocks + " THEN: " + thenRegion + " ELSE: " + elseRegion
 }

@@ -193,7 +193,7 @@ class JClass(
 
 	override fun addUpdateNodes(toUpdate: MutableList<JavaNode>) {
 		toUpdate.add(cls)
-		toUpdate.addAll(cls.getUseIn())
+		toUpdate.addAll(cls.useIn)
 	}
 
 	override fun reload(mainWindow: MainWindow) {

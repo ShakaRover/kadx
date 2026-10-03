@@ -49,12 +49,12 @@ internal class UsageData(
 
 	private fun applyForClass(clsUsageData: ClsUsageData, cls: ClassNode) {
 		cls.dependencies = resolveClsList(clsUsageData.clsDeps)
-		cls.useIn = resolveClsList(clsUsageData.clsUsage)
+		cls.useInValue = resolveClsList(clsUsageData.clsUsage)
 		cls.useInMth = resolveMthList(clsUsageData.clsUseInMth)
 
 		val mthUsage = clsUsageData.mthUsage
 		for (mth in cls.methods) {
-			val mthUsageData = mthUsage[mth.getMethodInfo().shortId]
+			val mthUsageData = mthUsage[mth.methodInfo.shortId]
 			if (mthUsageData != null) {
 				mth.setUseIn(resolveMthList(mthUsageData.usage))
 				mth.setUsed(resolveMthList(mthUsageData.uses))

@@ -34,7 +34,7 @@ object KotlinUtils {
 	}
 
 	private fun getFieldGetterMethod(cls: ClassNode, field: FieldInfo): MethodNode? = cls.methods.firstOrNull {
-		it.getReturnType() == field.type &&
+		it.returnType == field.type &&
 			it.argTypes.isEmpty() &&
 			it.insnsCount == 3 &&
 			it.SVars.size == 2 &&
@@ -62,16 +62,16 @@ object KotlinUtils {
 		val insnList = possibleMthList.filter {
 			val exit = it.exitBlock ?: return@filter false
 			val dom = exit.idom ?: return@filter false
-			if (dom.getInstructions().firstOrNull()?.type != InsnType.RETURN) {
+			if (dom.instructions.firstOrNull()?.type != InsnType.RETURN) {
 				return@filter false
 			}
 			val dom2 = dom.idom ?: return@filter false
-			dom2.getInstructions().firstOrNull() is InvokeNode
+			dom2.instructions.firstOrNull() is InvokeNode
 		}
 
 		val remapped = insnList.mapNotNull {
 			val dom2 = checkNotNull(it.exitBlock?.idom?.idom) { "No second dominator" }
-			val insn = dom2.getInstructions().first() as InvokeNode
+			val insn = dom2.instructions.first() as InvokeNode
 			cls.searchMethodByShortId(insn.callMth.shortId)?.run { it to this }
 		}
 

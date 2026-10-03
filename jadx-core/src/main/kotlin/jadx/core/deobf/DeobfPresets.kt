@@ -177,7 +177,7 @@ class DeobfPresets private constructor(val deobfMapFile: Path) {
 				}
 			}
 			for (mth in cls.methods) {
-				val methodInfo = mth.getMethodInfo()
+				val methodInfo = mth.methodInfo
 				if (methodInfo.hasAlias()) {
 					mthPresetMap[methodInfo.rawFullId] = methodInfo.alias
 				}
@@ -197,7 +197,7 @@ class DeobfPresets private constructor(val deobfMapFile: Path) {
 
 				override fun forField(fld: FieldNode): String? = getForFld(fld.getFieldInfo())
 
-				override fun forMethod(mth: MethodNode): String? = getForMth(mth.getMethodInfo())
+				override fun forMethod(mth: MethodNode): String? = getForMth(mth.methodInfo)
 			},
 		)
 	}

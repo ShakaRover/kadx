@@ -67,7 +67,7 @@ class ProcessMethodsForInline : AbstractVisitor() {
 
 		private fun fixClassDependencies(mth: MethodNode) {
 			val parentClass = mth.topParentClass
-			for (useInMth in mth.getUseIn()) {
+			for (useInMth in mth.useIn) {
 				// 移除可能的跨类依赖，强制“含内联方法的类”先于其使用方被处理
 				val useTopCls = useInMth.topParentClass
 				if (useTopCls !== parentClass) {

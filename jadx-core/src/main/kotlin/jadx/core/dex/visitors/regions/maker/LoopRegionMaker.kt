@@ -71,7 +71,7 @@ internal class LoopRegionMaker(
 			return exit
 		}
 		@Suppress("UNCHECKED_CAST")
-		(curRegion.getSubBlocks() as MutableList<IContainer>).add(loopRegion)
+		(curRegion.subBlocks as MutableList<IContainer>).add(loopRegion)
 		val outerRegion = stack.peekRegion()
 		stack.push(loopRegion)
 
@@ -90,13 +90,13 @@ internal class LoopRegionMaker(
 
 		if (exitBlocks.isNotEmpty()) {
 			// 与循环条件相关的块
-			val loopConditionBlocks = loopRegion.getConditionBlocks()
+			val loopConditionBlocks = loopRegion.conditionBlocks
 
 			for (exitEdge in loop.exitEdges) {
 				val exitSource = exitEdge.source
 				if (loopConditionBlocks.contains(exitSource)) {
 					val outBlock = BlockUtils.followEmptyPath(exitEdge.target)
-					for (pred in outBlock.getPredecessors()) {
+					for (pred in outBlock.predecessors) {
 						// 从“顶部”重新搜索出口边
 						for (exitEdgeTop in loop.exitEdges) {
 							if (!loopConditionBlocks.contains(exitEdgeTop.source)) {
@@ -113,7 +113,7 @@ internal class LoopRegionMaker(
 		}
 
 		val out: BlockNode?
-		if (loopRegion.isConditionAtEnd()) {
+		if (loopRegion.isConditionAtEnd) {
 			val thenBlock = condInfo.thenBlock
 			val out0 = if (thenBlock === loop.end || thenBlock === loopStart) condInfo.elseBlock else thenBlock
 			out = BlockUtils.followEmptyPath(checkNotNull(out0))
@@ -151,7 +151,7 @@ internal class LoopRegionMaker(
 				val blocks = HashSet(BlockUtils.getAllPathsBlocks(loopStart, conditionBlock))
 				blocks.remove(conditionBlock)
 				for (block in blocks) {
-					if (block.getInstructions().isEmpty() &&
+					if (block.instructions.isEmpty() &&
 						!block.contains(AFlag.ADDED_TO_REGION) &&
 						!RegionUtils.isRegionContainsBlock(body, block)
 					) {
@@ -193,7 +193,7 @@ internal class LoopRegionMaker(
 			val found: Boolean
 			if (block === loop.start || exitAtLoopEnd || BlockUtils.isEmptySimplePath(loop.start, block)) {
 				found = true
-			} else if (block.getPredecessors().contains(loop.start)) {
+			} else if (block.predecessors.contains(loop.start)) {
 				loopRegion.setPreCondition(loop.start)
 				// 若无法合并前置条件，则说明这不是正确的头块
 				found = loopRegion.checkPreCondition()
@@ -206,7 +206,7 @@ internal class LoopRegionMaker(
 				if (list.size >= 2) {
 					// 若所有后继都跳出所有循环，则是坏条件
 					var allOuter = true
-					for (outerBlock in checkNotNull(block.getCleanSuccessors())) {
+					for (outerBlock in checkNotNull(block.cleanSuccessors)) {
 						val outLoopList = ArrayList(mth.getAllLoopsForBlock(outerBlock))
 						outLoopList.remove(loop)
 						if (outLoopList.isNotEmpty()) {
@@ -237,10 +237,10 @@ internal class LoopRegionMaker(
 			return true
 		}
 		val loopStart = loop.start
-		if (loopStart.getInstructions().isEmpty() && ListUtils.isSingleElement(loopStart.getSuccessors(), exit)) {
+		if (loopStart.instructions.isEmpty() && ListUtils.isSingleElement(loopStart.successors, exit)) {
 			return false
 		}
-		return loopEnd.getInstructions().isEmpty() && ListUtils.isSingleElement(loopEnd.getPredecessors(), exit)
+		return loopEnd.instructions.isEmpty() && ListUtils.isSingleElement(loopEnd.predecessors, exit)
 	}
 
 	/**
@@ -265,7 +265,7 @@ internal class LoopRegionMaker(
 
 		val mainOutBlock = mainExitEdge.target
 		val firstWorkAfterMainExitBlock = BlockUtils.followEmptyPath(mainOutBlock)
-		val firstInstructions = firstWorkAfterMainExitBlock.getInstructions()
+		val firstInstructions = firstWorkAfterMainExitBlock.instructions
 
 		// 若从条件头有直接通往 return 的路径，则所有出口都在循环内
 		if (firstInstructions.size == 1 && firstInstructions[0].type == InsnType.RETURN) {
@@ -310,7 +310,7 @@ internal class LoopRegionMaker(
 
 				// 找交叉点之后第一条带指令的块
 				var firstInstructionBlock = crossing
-				val cInsns = crossing.getInstructions()
+				val cInsns = crossing.instructions
 				if (cInsns.isEmpty()) {
 					firstInstructionBlock = BlockUtils.followEmptyPath(crossing)
 				}
@@ -349,7 +349,7 @@ internal class LoopRegionMaker(
 
 			if (outerLoop != null) {
 				val loopEnd = outerLoop.end
-				val predecessors = loopEnd.getPredecessors()
+				val predecessors = loopEnd.predecessors
 				if (predecessors.size > 1) {
 					for (predecessor in predecessors) {
 						// 若从 exit 可达的前驱无法插入 continue，则不接受
@@ -372,7 +372,7 @@ internal class LoopRegionMaker(
 	private fun noWorkBeforeEnd(firstInstructionBlock: BlockNode, outBlock: BlockNode): Boolean = BlockUtils.isExitBlock(mth, firstInstructionBlock) || firstInstructionBlock === outBlock
 
 	private fun oneBlockOfWorkBeforeEnd(firstInstructionBlock: BlockNode, outBlock: BlockNode): Boolean {
-		val cleanSuccessors = checkNotNull(firstInstructionBlock.getCleanSuccessors())
+		val cleanSuccessors = checkNotNull(firstInstructionBlock.cleanSuccessors)
 		if (cleanSuccessors.isEmpty()) {
 			return false
 		}
@@ -386,7 +386,7 @@ internal class LoopRegionMaker(
 	}
 
 	private fun isNestedIfCross(crossing: BlockNode, edgesToCheck: Queue<Edge>): Boolean {
-		val predecessors = crossing.getPredecessors()
+		val predecessors = crossing.predecessors
 
 		// 找一个支配其他所有前驱的前驱
 		var possibleFirstIF = BlockUtils.followEmptyPath(predecessors[0], true)
@@ -440,7 +440,7 @@ internal class LoopRegionMaker(
 	private fun makeEndlessLoop(curRegion: IRegion, stack: RegionStack, loop: LoopInfo, loopStart: BlockNode): BlockNode? {
 		val loopRegion = LoopRegion(curRegion, loop, null, false)
 		@Suppress("UNCHECKED_CAST")
-		(curRegion.getSubBlocks() as MutableList<IContainer>).add(loopRegion)
+		(curRegion.subBlocks as MutableList<IContainer>).add(loopRegion)
 
 		loopStart.remove(AType.LOOP)
 		regionMaker.clearBlockProcessedState(loopStart)
@@ -490,7 +490,7 @@ internal class LoopRegionMaker(
 			stack.addExit(out)
 			if (out != null && out !== mth.exitBlock) {
 				// 在每条从循环可达的入边上添加 break
-				for (predecessor in out.getPredecessors()) {
+				for (predecessor in out.predecessors) {
 					for (exitEdge in loop.exitEdges) {
 						val target = exitEdge.target
 						if (BlockUtils.isPathExists(target, predecessor) || target === out) {
@@ -508,7 +508,7 @@ internal class LoopRegionMaker(
 			!inExceptionHandlerBlocks(loopEnd)
 		) {
 			@Suppress("UNCHECKED_CAST")
-			(body.getSubBlocks() as MutableList<IContainer>).add(loopEnd)
+			(body.subBlocks as MutableList<IContainer>).add(loopEnd)
 		}
 		loopRegion.setBody(body)
 
@@ -540,8 +540,8 @@ internal class LoopRegionMaker(
 		val simplePath = BlockUtils.buildSimplePath(exit)
 		if (simplePath.isNotEmpty()) {
 			val lastBlock = simplePath[simplePath.size - 1]
-			if (lastBlock.isMthExitBlock() ||
-				lastBlock.isReturnBlock() ||
+			if (lastBlock.isMthExitBlock ||
+				lastBlock.isReturnBlock ||
 				mth.isPreExitBlock(lastBlock)
 			) {
 				return false
@@ -601,7 +601,7 @@ internal class LoopRegionMaker(
 					return false
 				}
 				insertBlock = exit
-				val cs = checkNotNull(exit.getCleanSuccessors())
+				val cs = checkNotNull(exit.cleanSuccessors)
 				exit = if (cs.size == 1) cs[0] else null
 			}
 		}
@@ -650,7 +650,7 @@ internal class LoopRegionMaker(
 	companion object {
 		private fun insertContinue(loop: LoopInfo) {
 			val loopEnd = loop.end
-			val predecessors = loopEnd.getPredecessors()
+			val predecessors = loopEnd.predecessors
 			if (predecessors.size <= 1) {
 				return
 			}
@@ -674,7 +674,7 @@ internal class LoopRegionMaker(
 			) {
 				return false
 			}
-			val preds = pred.getPredecessors()
+			val preds = pred.predecessors
 			if (preds.isEmpty()) {
 				return false
 			}

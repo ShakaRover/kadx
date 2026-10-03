@@ -84,10 +84,10 @@ class LoopRegionVisitor :
 		private val LOG: Logger = LoggerFactory.getLogger(LoopRegionVisitor::class.java)
 
 		private fun processLoopRegion(mth: MethodNode, loopRegion: LoopRegion): Boolean {
-			if (loopRegion.isConditionAtEnd()) {
+			if (loopRegion.isConditionAtEnd) {
 				return false
 			}
-			val condition = loopRegion.getCondition() ?: return false
+			val condition = loopRegion.condition ?: return false
 			if (checkForIndexedLoop(mth, loopRegion, condition)) {
 				return true
 			}
@@ -98,7 +98,7 @@ class LoopRegionVisitor :
 		private fun checkForIndexedLoop(mth: MethodNode, loopRegion: LoopRegion, condition: IfCondition): Boolean {
 			val loopEndBlock = loopRegion.info.end
 			val incrInsn = BlockUtils.getLastInsn(BlockUtils.skipSyntheticPredecessor(loopEndBlock)) ?: return false
-			val incrArg = incrInsn.getResult() ?: return false
+			val incrArg = incrInsn.result ?: return false
 			val incrSVar = incrArg.sVar ?: return false
 			if (!incrSVar.isUsedInPhi()) {
 				return false
@@ -114,7 +114,7 @@ class LoopRegionVisitor :
 			) {
 				return false
 			}
-			val arg = phiInsn.getResult() ?: return false
+			val arg = phiInsn.result ?: return false
 			val condArgs = condition.registerArgs
 			if (!condArgs.contains(arg) || checkNotNull(arg.sVar).isUsedInPhi()) {
 				return false
@@ -215,7 +215,7 @@ class LoopRegionVisitor :
 			if (arrayArg != arrGetInsn.getArg(0)) {
 				return null
 			}
-			var iterVar: RegisterArg? = arrGetInsn.getResult()
+			var iterVar: RegisterArg? = arrGetInsn.result
 			if (iterVar != null) {
 				if (!usedOnlyInLoop(mth, loopRegion, iterVar)) {
 					return null
@@ -237,7 +237,7 @@ class LoopRegionVisitor :
 			}
 
 			// 确认是数组 for-each
-			checkNotNull(incrInsn.getResult()).add(AFlag.DONT_GENERATE)
+			checkNotNull(incrInsn.result).add(AFlag.DONT_GENERATE)
 			condArg.add(AFlag.DONT_GENERATE)
 			bCondArg.add(AFlag.DONT_GENERATE)
 			arrGetInsn.add(AFlag.DONT_GENERATE)
@@ -290,7 +290,7 @@ class LoopRegionVisitor :
 						return false
 					}
 					if (parentInsn.type == InsnType.CHECK_CAST) {
-						val res = parentInsn.getResult() ?: return false
+						val res = parentInsn.result ?: return false
 						if (!fixIterableType(mth, iterableArg, res)) {
 							return false
 						}
@@ -303,7 +303,7 @@ class LoopRegionVisitor :
 							toSkip.add(parentInsn)
 						}
 					} else {
-						val res = nextCall.getResult() ?: return false
+						val res = nextCall.result ?: return false
 						res.remove(AFlag.REMOVE) // 从被内联的指令中恢复变量
 						nextCall.add(AFlag.DONT_GENERATE)
 						if (!fixIterableType(mth, iterableArg, res)) {
@@ -317,7 +317,7 @@ class LoopRegionVisitor :
 					return false
 				}
 			} else {
-				val res = checkNotNull(nextCall).getResult() ?: return false
+				val res = checkNotNull(nextCall).result ?: return false
 				if (!usedOnlyInLoop(mth, loopRegion, res)) {
 					return false
 				}
@@ -329,7 +329,7 @@ class LoopRegionVisitor :
 			}
 
 			checkNotNull(assignInsn).add(AFlag.DONT_GENERATE)
-			checkNotNull(checkNotNull(assignInsn).getResult()).add(AFlag.DONT_GENERATE)
+			checkNotNull(checkNotNull(assignInsn).result).add(AFlag.DONT_GENERATE)
 
 			for (insnNode in toSkip) {
 				insnNode.setResult(null)
@@ -412,7 +412,7 @@ class LoopRegionVisitor :
 		/** 判断变量的赋值是否都发生在循环内部 */
 		private fun assignOnlyInLoop(mth: MethodNode, loopRegion: LoopRegion, arg: RegisterArg): Boolean {
 			val assignInsn = arg.assignInsn ?: return true
-			if (!argInLoop(mth, loopRegion, checkNotNull(assignInsn.getResult()))) {
+			if (!argInLoop(mth, loopRegion, checkNotNull(assignInsn.result))) {
 				return false
 			}
 			if (assignInsn is PhiInsn) {

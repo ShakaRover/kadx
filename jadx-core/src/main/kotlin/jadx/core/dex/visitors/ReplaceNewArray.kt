@@ -50,7 +50,7 @@ class ReplaceNewArray : AbstractVisitor() {
 		while (true) {
 			var changed = false
 			for (block in checkNotNull(mth.basicBlocks)) {
-				val insnList = block.getInstructions()
+				val insnList = block.instructions
 				val size = insnList.size
 				for (i in 0 until size) {
 					changed = processInsn(mth, insnList, i, remover) || changed
@@ -97,7 +97,7 @@ class ReplaceNewArray : AbstractVisitor() {
 			val allowMissingKeys = arrType.getArrayDimension() == 1 && elemType.isPrimitive()
 			val minLen = if (allowMissingKeys) len / 2 else len
 
-			val arrArg = newArrayInsn.getResult()
+			val arrArg = newArrayInsn.result
 			val useList = checkNotNull(checkNotNull(arrArg).sVar).useList
 			if (useList.size < minLen) {
 				return false

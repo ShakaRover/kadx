@@ -169,7 +169,7 @@ class ModVisitor : AbstractVisitor() {
 			val parentClass = mth.parentClass
 			for (block in checkNotNull(mth.basicBlocks)) {
 				remover.setBlock(block)
-				val insnsList = block.getInstructions()
+				val insnsList = block.instructions
 				val size = insnsList.size
 				for (i in 0 until size) {
 					val insn = insnsList[i]
@@ -183,7 +183,7 @@ class ModVisitor : AbstractVisitor() {
 						InsnType.NEW_ARRAY -> {
 							// 若下一条是 'fill-array'，则替换为填充数组
 							val newArrInsn = insn as NewArrayNode
-							val nextInsn = getFirstUseSkipMove(insn.getResult())
+							val nextInsn = getFirstUseSkipMove(insn.result)
 							if (nextInsn != null && nextInsn.type == InsnType.FILL_ARRAY) {
 								val fillArrInsn = nextInsn as FillArrayInsn
 								if (checkArrSizes(mth, newArrInsn, fillArrInsn)) {
@@ -297,9 +297,9 @@ class ModVisitor : AbstractVisitor() {
 			// 把 boolean 到 (byte/char/short/long/double/float) 的 cast 替换为三元运算
 			val castArg = insn.getArg(0)
 			if (castArg.getType() == ArgType.BOOLEAN) {
-				val type = checkNotNull(insn.getResult()).getType()
+				val type = checkNotNull(insn.result).getType()
 				if (type.isPrimitive()) {
-					val ternary = makeBooleanConvertInsn(checkNotNull(insn.getResult()), castArg, type)
+					val ternary = makeBooleanConvertInsn(checkNotNull(insn.result), castArg, type)
 					BlockUtils.replaceInsn(mth, block, i, ternary)
 				}
 			}
@@ -324,7 +324,7 @@ class ModVisitor : AbstractVisitor() {
 		 * 把 CMP 指令内联到 'if' 中，便于后续条件合并。
 		 */
 		private fun inlineCMPInsns(mth: MethodNode, block: BlockNode, i: Int, insn: InsnNode, remover: InsnRemover) {
-			val resArg = checkNotNull(insn.getResult())
+			val resArg = checkNotNull(insn.result)
 			val useList = checkNotNull(resArg.sVar).useList
 			if (ListUtils.allMatch(useList) { use -> InsnUtils.isInsnType(use.getParentInsn(), InsnType.IF) }) {
 				for (useArg in ArrayList(useList)) {
@@ -361,7 +361,7 @@ class ModVisitor : AbstractVisitor() {
 			}
 			val castType = insn.index as ArgType
 			if (!ArgType.isCastNeeded(mth.root(), castArg.getType(), castType)) {
-				val result = checkNotNull(insn.getResult())
+				val result = checkNotNull(insn.result)
 				result.setType(castArg.getType())
 
 				val move = InsnNode(InsnType.MOVE, 1)
@@ -374,7 +374,7 @@ class ModVisitor : AbstractVisitor() {
 			if (prevCast != null) {
 				// 把前一个 cast 替换为 move
 				val move = InsnNode(InsnType.MOVE, 1)
-				move.setResult(prevCast.getResult())
+				move.setResult(prevCast.result)
 				move.addArg(prevCast.getArg(0))
 				BlockUtils.replaceInsn(mth, block, prevCast, move)
 			}
@@ -403,7 +403,7 @@ class ModVisitor : AbstractVisitor() {
 		private fun removeStep(mth: MethodNode, remover: InsnRemover) {
 			for (block in checkNotNull(mth.basicBlocks)) {
 				remover.setBlock(block)
-				for (insn in block.getInstructions()) {
+				for (insn in block.instructions) {
 					when (insn.type) {
 						InsnType.NOP, InsnType.GOTO, InsnType.NEW_INSTANCE -> remover.addAndUnbind(insn)
 
@@ -423,7 +423,7 @@ class ModVisitor : AbstractVisitor() {
 			do {
 				changed = false
 				for (block in checkNotNull(mth.basicBlocks)) {
-					for (insn in block.getInstructions()) {
+					for (insn in block.instructions) {
 						if (insn.type == InsnType.MOVE &&
 							insn.isAttrStorageEmpty() &&
 							isResultArgNotUsed(insn)
@@ -438,7 +438,7 @@ class ModVisitor : AbstractVisitor() {
 		}
 
 		private fun isResultArgNotUsed(insn: InsnNode): Boolean {
-			val result = insn.getResult()
+			val result = insn.result
 			if (result != null) {
 				val ssaVar = checkNotNull(result.sVar)
 				return ssaVar.useCount == 0
@@ -459,7 +459,7 @@ class ModVisitor : AbstractVisitor() {
 			}
 			if (f != null) {
 				val inode = IndexInsnNode(InsnType.SGET, f.getFieldInfo(), 0)
-				inode.setResult(insn.getResult())
+				inode.setResult(insn.result)
 				BlockUtils.replaceInsn(mth, block, i, inode)
 				addFieldUsage(f, mth)
 			}
@@ -496,7 +496,7 @@ class ModVisitor : AbstractVisitor() {
 			}
 			val attr = callMthDetails.get(AType.SKIP_MTH_ARGS)
 			if (attr != null) {
-				val argsCount = minOf(callMthDetails.getMethodInfo().argsCount, co.argsCount)
+				val argsCount = minOf(callMthDetails.methodInfo.argsCount, co.argsCount)
 				for (i in 0 until argsCount) {
 					if (attr.isSkip(i)) {
 						anonymousCallArgMod(co.getArg(i))
@@ -530,7 +530,7 @@ class ModVisitor : AbstractVisitor() {
 			val useArg = sVar.useList[0]
 			val parentInsn = useArg.getParentInsn() ?: return null
 			if (useCount == 1 && parentInsn.type == InsnType.MOVE) {
-				return getFirstUseSkipMove(parentInsn.getResult())
+				return getFirstUseSkipMove(parentInsn.result)
 			}
 			return parentInsn
 		}
@@ -563,7 +563,7 @@ class ModVisitor : AbstractVisitor() {
 
 			val list = insn.getLiteralArgs(elType)
 			val filledArr = FilledNewArrayNode(elType, list.size)
-			filledArr.setResult(checkNotNull(newArrayNode.getResult()).duplicate())
+			filledArr.setResult(checkNotNull(newArrayNode.result).duplicate())
 			for (arg in list) {
 				val f = mth.parentClass.getConstFieldByLiteralArg(arg)
 				if (f != null) {
@@ -582,7 +582,7 @@ class ModVisitor : AbstractVisitor() {
 			val excHandler = excHandlerAttr.handler
 
 			// 结果参数同时用于本指令和异常处理器
-			val resArg = checkNotNull(insn.getResult())
+			val resArg = checkNotNull(insn.result)
 			val type = excHandler.argType
 			val name = if (excHandler.isCatchAll()) "th" else "e"
 			if (resArg.name == null) {
@@ -595,7 +595,7 @@ class ModVisitor : AbstractVisitor() {
 			} else if (sVar.isUsedInPhi()) {
 				// 异常变量被移到外部变量 => 替换为 'move' 指令
 				val moveInsn = InsnNode(InsnType.MOVE, 1)
-				moveInsn.setResult(insn.getResult())
+				moveInsn.setResult(insn.result)
 				val namedArg = NamedArg(name, type)
 				moveInsn.addArg(namedArg)
 				excHandler.setArg(namedArg)

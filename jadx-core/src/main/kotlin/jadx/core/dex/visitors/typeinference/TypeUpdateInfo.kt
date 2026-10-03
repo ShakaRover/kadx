@@ -34,7 +34,7 @@ class TypeUpdateInfo(
 	private val updateMap: MutableMap<InsnArg, TypeUpdateEntry> = IdentityHashMap()
 	private val queue: MutableList<TypeUpdateRequest> = ArrayList()
 	private val callbackQueue: MutableList<TypeUpdateRequest> = ArrayList()
-	private val updatesLimitCount: Int = mth.getInsnsCount() * args.typeUpdatesLimitCount
+	private val updatesLimitCount: Int = mth.insnsCount * args.typeUpdatesLimitCount
 	private var updateSeq = 0
 
 	fun queueRequest(request: TypeUpdateRequest) {

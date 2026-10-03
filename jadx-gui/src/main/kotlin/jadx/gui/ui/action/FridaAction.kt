@@ -78,7 +78,7 @@ class FridaAction(codeArea: CodeArea) : JNodeAction(ActionModel.FRIDA_COPY, code
 
 	private fun getMethodSnippet(javaMethod: JavaMethod, jc: JClass): String {
 		val mth = javaMethod.getMethodNode()
-		val methodInfo = mth.getMethodInfo()
+		val methodInfo = mth.methodInfo
 		val methodName: String
 		val newMethodName: String
 		if (methodInfo.isConstructor()) {
@@ -164,7 +164,7 @@ class FridaAction(codeArea: CodeArea) : JNodeAction(ActionModel.FRIDA_COPY, code
 	/** 判断方法是否与同类中其它方法重名（需要 `.overload(...)` 区分）。 */
 	fun isOverloaded(methodNode: MethodNode): Boolean = methodNode.parentClass.methods.any { m ->
 		m.name == methodNode.name &&
-			methodNode.getMethodInfo().shortId != m.getMethodInfo().shortId
+			methodNode.methodInfo.shortId != m.methodInfo.shortId
 	}
 
 	private fun parseArgType(x: ArgType): String {

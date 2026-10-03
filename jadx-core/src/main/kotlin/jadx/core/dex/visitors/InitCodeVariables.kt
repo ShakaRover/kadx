@@ -125,7 +125,7 @@ class InitCodeVariables : AbstractVisitor() {
 				return
 			}
 			for (phiInsn in phiInsnList) {
-				val resultVar = checkNotNull(phiInsn.getResult()).sVar
+				val resultVar = checkNotNull(phiInsn.result).sVar
 				if (resultVar != null && vars.add(resultVar)) {
 					collectConnectedVars(resultVar.phiList, vars)
 				}

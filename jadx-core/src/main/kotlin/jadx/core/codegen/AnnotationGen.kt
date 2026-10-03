@@ -115,7 +115,7 @@ class AnnotationGen(private val cls: ClassNode, private val classGen: ClassGen) 
 	}
 
 	fun addThrows(mth: MethodNode, code: ICodeWriter) {
-		val throwList = mth.getThrows()
+		val throwList = mth.throws
 		if (!throwList.isEmpty()) {
 			code.add(" throws ")
 			val it = throwList.iterator()

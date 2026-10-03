@@ -55,18 +55,18 @@ public class MappingExporter(private val root: RootNode) {
 		for (codeRename in codeData.getRenames()) {
 			val nodeRef = codeRename.getNodeRef()
 			when (nodeRef.getType()) {
-				RefType.CLASS -> mappedClasses.add(nodeRef.getDeclaringClass())
+				RefType.CLASS -> mappedClasses.add(nodeRef.declaringClass)
 
-				RefType.FIELD -> mappedFields.add(nodeRef.getDeclaringClass() + nodeRef.getShortId())
+				RefType.FIELD -> mappedFields.add(nodeRef.declaringClass + nodeRef.getShortId())
 
 				RefType.METHOD -> {
 					val codeRef = codeRename.getCodeRef()
 					if (codeRef == null) {
-						mappedMethods.add(nodeRef.getDeclaringClass() + nodeRef.getShortId())
+						mappedMethods.add(nodeRef.declaringClass + nodeRef.getShortId())
 					} else {
-						methodsWithMappedElements.add(nodeRef.getDeclaringClass() + nodeRef.getShortId())
+						methodsWithMappedElements.add(nodeRef.declaringClass + nodeRef.getShortId())
 						mappedMethodArgsAndVars[
-							nodeRef.getDeclaringClass() +
+							nodeRef.declaringClass +
 								nodeRef.getShortId() +
 								codeRef,
 						] = codeRename.getNewName()
@@ -81,7 +81,7 @@ public class MappingExporter(private val root: RootNode) {
 			val codeRef = codeComment.getCodeRef()
 			val shortId = nodeRef.getShortId()
 			comments[
-				nodeRef.getDeclaringClass() +
+				nodeRef.declaringClass +
 					if (shortId == null) {
 						""
 					} else {
@@ -90,7 +90,7 @@ public class MappingExporter(private val root: RootNode) {
 					},
 			] = codeComment.getComment()
 			if (codeRef != null) {
-				methodsWithMappedElements.add(nodeRef.getDeclaringClass() + nodeRef.getShortId())
+				methodsWithMappedElements.add(nodeRef.declaringClass + nodeRef.getShortId())
 			}
 		}
 
@@ -142,7 +142,7 @@ public class MappingExporter(private val root: RootNode) {
 				}
 
 				for (mth in cls.methods) {
-					val methodInfo = mth.getMethodInfo()
+					val methodInfo = mth.methodInfo
 					val methodName = methodInfo.name
 					val methodDesc = methodInfo.shortId.substring(methodName.length)
 					if (methodInfo.hasAlias() && mappedMethods.contains(rawClassName + methodInfo.shortId)) {

@@ -7,5 +7,5 @@ interface IDexNode : IRenameNode {
 
 	fun root(): RootNode
 
-	fun getInputFileName(): String?
+	val inputFileName: String?
 }

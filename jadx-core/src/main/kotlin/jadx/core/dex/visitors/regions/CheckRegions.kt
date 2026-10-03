@@ -56,7 +56,7 @@ class CheckRegions : AbstractVisitor() {
 						!container.contains(AFlag.RETURN) &&
 						!container.contains(AFlag.REMOVE) &&
 						!container.contains(AFlag.SYNTHETIC) &&
-						!container.getInstructions().isEmpty()
+						!container.instructions.isEmpty()
 					) {
 						LOG.debug("Duplicated block: {} - {}", mth, container)
 					}
@@ -66,7 +66,7 @@ class CheckRegions : AbstractVisitor() {
 		if (checkNotNull(mth.basicBlocks).size != blocksInRegions.size) {
 			for (block in checkNotNull(mth.basicBlocks)) {
 				if (!blocksInRegions.contains(block) &&
-					!block.getInstructions().isEmpty() &&
+					!block.instructions.isEmpty() &&
 					!block.contains(AFlag.ADDED_TO_REGION) &&
 					!block.contains(AFlag.DONT_GENERATE) &&
 					!block.contains(AFlag.REMOVE)
@@ -86,7 +86,7 @@ class CheckRegions : AbstractVisitor() {
 						val loopHeader = region.header
 						if (loopHeader != null &&
 							!loopHeader.contains(AFlag.ALLOW_MULTIPLE_INSNS_LOOP_COND) &&
-							loopHeader.getInstructions().size != 1
+							loopHeader.instructions.size != 1
 						) {
 							mth.addWarn("Incorrect condition in loop: " + loopHeader)
 						}
@@ -107,7 +107,7 @@ class CheckRegions : AbstractVisitor() {
 			code.newLine()
 			val mg = MethodGen.getFallbackMethodGen(mth)
 			val ig = InsnGen(mg, true)
-			for (insn in block.getInstructions()) {
+			for (insn in block.instructions) {
 				try {
 					ig.makeInsn(insn, code)
 				} catch (e: CodegenException) {

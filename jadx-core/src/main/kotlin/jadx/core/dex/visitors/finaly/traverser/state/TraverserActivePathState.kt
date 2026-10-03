@@ -34,7 +34,7 @@ class TraverserActivePathState {
 		private val matchedIndices: MutableSet<Int>
 
 		init {
-			val insnCount = block.getInstructions().size
+			val insnCount = block.instructions.size
 			matchedIndices = HashSet(insnCount)
 			for (i in 0 until insnCount) {
 				matchedIndices.add(i)
@@ -182,8 +182,8 @@ class TraverserActivePathState {
 		finallyBlocks: List<BlockNode>,
 		candidateBlocks: List<BlockNode>,
 	) {
-		val shouldFinallyAllowFirstBlockSkip = finallyBlockTerminus.getInstructions().isNotEmpty()
-		val shouldCandidateAllowFirstBlockSkip = candidateBlockTerminus.getInstructions().isNotEmpty()
+		val shouldFinallyAllowFirstBlockSkip = finallyBlockTerminus.instructions.isNotEmpty()
+		val shouldCandidateAllowFirstBlockSkip = candidateBlockTerminus.instructions.isNotEmpty()
 		val finallyCentralityState = CentralityState(sameInstructionsStrategy, shouldFinallyAllowFirstBlockSkip)
 		val candidateCentralityState = CentralityState(sameInstructionsStrategy, shouldCandidateAllowFirstBlockSkip)
 

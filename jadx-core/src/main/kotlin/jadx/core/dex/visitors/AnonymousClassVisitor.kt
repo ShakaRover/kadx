@@ -75,10 +75,10 @@ class AnonymousClassVisitor : AbstractVisitor() {
 		}
 
 		private fun getArgsToFieldsMapping(mth: MethodNode, usedInsns: MutableList<InsnNode>): Map<InsnArg, FieldNode> {
-			val callMth: MethodInfo = mth.getMethodInfo()
+			val callMth: MethodInfo = mth.methodInfo
 			val cls = mth.parentClass
 			val argList = mth.argRegs
-			val outerCls = mth.getUseIn()[0].parentClass
+			val outerCls = mth.useIn[0].parentClass
 			var startArg = 0
 			if (callMth.argsCount != 0 && callMth.argumentsTypes[0] == outerCls.classInfo.type) {
 				startArg = 1
@@ -120,7 +120,7 @@ class AnonymousClassVisitor : AbstractVisitor() {
 			val useArg = sVar.useList[0]
 			val parentInsn = useArg.getParentInsn() ?: return null
 			if (parentInsn.type == InsnType.MOVE) {
-				return getParentInsnSkipMove(checkNotNull(parentInsn.getResult()))
+				return getParentInsnSkipMove(checkNotNull(parentInsn.result))
 			}
 			return parentInsn
 		}

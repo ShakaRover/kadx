@@ -37,7 +37,7 @@ class PhiInsn : InsnNode {
 
 	/** 为前驱块 [pred] 创建一个新的寄存器参数并绑定。 */
 	fun bindArg(pred: BlockNode): RegisterArg {
-		val result = checkNotNull(getResult())
+		val result = checkNotNull(result)
 		val arg = InsnArg.reg(result.regNum, result.getInitType())
 		bindArg(arg, pred)
 		return arg

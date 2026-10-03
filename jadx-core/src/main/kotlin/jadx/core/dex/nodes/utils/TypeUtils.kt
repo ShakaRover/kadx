@@ -138,7 +138,7 @@ class TypeUtils(private val root: RootNode) {
 		private fun collectKnownTypeVarsAtMethod(mth: MethodNode): Set<ArgType> {
 			val typeVars: MutableSet<ArgType> = HashSet()
 			typeVars.addAll(getKnownTypeVarsAtClass(mth.parentClass))
-			typeVars.addAll(mth.getTypeParameters())
+			typeVars.addAll(mth.typeParameters)
 			return if (typeVars.isEmpty()) emptySet() else typeVars
 		}
 	}
@@ -226,10 +226,10 @@ class TypeUtils(private val root: RootNode) {
 	fun getTypeVarMappingForInvoke(invokeInsn: BaseInvokeNode): Map<ArgType, ArgType> {
 		val mthDetails = root.getMethodUtils().getMethodDetails(invokeInsn) ?: return emptyMap()
 		val map = HashMap<ArgType, ArgType>(1 + invokeInsn.argsCount)
-		addTypeVarMapping(map, mthDetails.getReturnType(), invokeInsn.getResult())
-		val argCount = Math.min(mthDetails.getArgTypes().size, invokeInsn.argsCount - invokeInsn.getFirstArgOffset())
+		addTypeVarMapping(map, mthDetails.returnType, invokeInsn.result)
+		val argCount = Math.min(mthDetails.argTypes.size, invokeInsn.argsCount - invokeInsn.getFirstArgOffset())
 		for (i in 0 until argCount) {
-			addTypeVarMapping(map, mthDetails.getArgTypes()[i], invokeInsn.getArg(i + invokeInsn.getFirstArgOffset()))
+			addTypeVarMapping(map, mthDetails.argTypes[i], invokeInsn.getArg(i + invokeInsn.getFirstArgOffset()))
 		}
 		return map
 	}
@@ -247,7 +247,7 @@ class TypeUtils(private val root: RootNode) {
 
 	/** 用调用指令的实参类型替换方法泛型变量（当前仅处理直接匹配的参数）。 */
 	fun replaceMethodGenerics(invokeInsn: BaseInvokeNode, details: IMethodDetails, typeWithGeneric: ArgType): ArgType? {
-		val methodArgTypes = details.getArgTypes()
+		val methodArgTypes = details.argTypes
 		if (methodArgTypes.isEmpty()) {
 			return null
 		}

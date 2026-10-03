@@ -86,7 +86,7 @@ class ReturnVisitor : AbstractVisitor() {
 					curContainer = region
 					continue
 				}
-				val subBlocks = region.getSubBlocks()
+				val subBlocks = region.subBlocks
 				if (subBlocks.isNotEmpty()) {
 					val itSubBlock = subBlocks.listIterator(subBlocks.size)
 					while (itSubBlock.hasPrevious()) {
@@ -108,9 +108,9 @@ class ReturnVisitor : AbstractVisitor() {
 		 */
 		private fun isEmpty(container: IContainer): Boolean {
 			if (container is IBlock) {
-				return container.getInstructions().isEmpty() || container.contains(AFlag.RETURN)
+				return container.instructions.isEmpty() || container.contains(AFlag.RETURN)
 			} else if (container is IRegion) {
-				for (block in container.getSubBlocks()) {
+				for (block in container.subBlocks) {
 					if (!isEmpty(block)) {
 						return false
 					}

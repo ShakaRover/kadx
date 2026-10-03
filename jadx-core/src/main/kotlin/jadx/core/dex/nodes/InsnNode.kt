@@ -21,9 +21,9 @@ open class InsnNode(
 	protected val insnType: InsnType,
 	argsCount: Int = 0,
 ) : LineAttrNode() {
-	@get:JvmName("resultValue")
-	@set:JvmName("setResultValue")
-	var result: RegisterArg? = null
+	var resultValue: RegisterArg? = null
+
+	val result: RegisterArg? get() = resultValue
 
 	// 参数列表。显式 getter getArguments() 返回 Iterable，故属性生成的 getter 改名为 argumentsValue 以避免 JVM 同名冲突
 	@get:JvmName("argumentsValue")
@@ -56,7 +56,7 @@ open class InsnNode(
 	}
 
 	fun setResult(res: RegisterArg?) {
-		result = res
+		resultValue = res
 		if (res != null) {
 			res.setParentInsn(this)
 			val ssaVar = res.sVar
@@ -88,8 +88,6 @@ open class InsnNode(
 	}
 
 	val type: InsnType get() = insnType
-
-	fun getResult(): RegisterArg? = result
 
 	fun getArguments(): Iterable<InsnArg> = arguments
 
@@ -177,12 +175,12 @@ open class InsnNode(
 		}
 	}
 
-	fun isConstInsn(): Boolean = when (insnType) {
+	val isConstInsn: Boolean get() = when (insnType) {
 		InsnType.CONST, InsnType.CONST_STR, InsnType.CONST_CLASS -> true
 		else -> false
 	}
 
-	fun isExitEdgeInsn(): Boolean = when (insnType) {
+	val isExitEdgeInsn: Boolean get() = when (insnType) {
 		InsnType.RETURN, InsnType.THROW, InsnType.CONTINUE, InsnType.BREAK -> true
 		else -> false
 	}

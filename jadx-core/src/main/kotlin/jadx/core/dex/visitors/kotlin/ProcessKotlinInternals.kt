@@ -218,7 +218,7 @@ class ProcessKotlinInternals : AbstractVisitor() {
 			var mthCount = 0
 			for (mth in cls.methods) {
 				if (mth.accessFlags.isStatic() &&
-					mth.getMethodInfo().shortId.endsWith(KOTLIN_VARNAME_SOURCE_MTH1)
+					mth.methodInfo.shortId.endsWith(KOTLIN_VARNAME_SOURCE_MTH1)
 				) {
 					mthCount++
 				}
@@ -232,9 +232,9 @@ class ProcessKotlinInternals : AbstractVisitor() {
 				if (!mth.accessFlags.isStatic()) {
 					continue
 				}
-				val shortId = mth.getMethodInfo().shortId
+				val shortId = mth.methodInfo.shortId
 				if (shortId.endsWith(KOTLIN_VARNAME_SOURCE_MTH1) || shortId.endsWith(KOTLIN_VARNAME_SOURCE_MTH2)) {
-					set.add(mth.getMethodInfo())
+					set.add(mth.methodInfo)
 				}
 			}
 			return set

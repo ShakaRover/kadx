@@ -105,7 +105,7 @@ class Smali private constructor() {
 			val topCls = cls.topParentClass
 			val code = SmaliWriter(topCls)
 			val smali = Smali()
-			smali.isJavaBytecode = topCls.getInputFileName()?.endsWith(".class") == true // TODO: add flag to api
+			smali.isJavaBytecode = topCls.inputFileName?.endsWith(".class") == true // TODO: add flag to api
 			smali.writeClass(code, topCls)
 			smali.codeInfo = code.finish()
 			return smali
@@ -162,7 +162,7 @@ class Smali private constructor() {
 						}
 					}
 				}
-				val regArg = insn.getResult()
+				val regArg = insn.result
 				if (regArg != null) {
 					return regArg.regNum
 				}
@@ -312,7 +312,7 @@ class Smali private constructor() {
 				nodes[insn.offset.toLong()] = node
 			}
 			line.write(smali)
-			insnMap[methodNode.getMethodInfo().rawFullId] = line.smaliMthNode
+			insnMap[methodNode.methodInfo.rawFullId] = line.smaliMthNode
 
 			smali.decIndent()
 		}

@@ -78,7 +78,7 @@ class SwitchBreakVisitor : AbstractVisitor() {
 					return
 				}
 			}
-			val branches = (region as IBranchRegion).getBranches()
+			val branches = (region as IBranchRegion).branches
 			var removeCommonBreak = true // 所有分支都有 exit 指令时，公共 break 不可达
 			val forBreakRemove = ArrayList<BlockParentContainer>()
 			for (branch in branches) {
@@ -93,7 +93,7 @@ class SwitchBreakVisitor : AbstractVisitor() {
 					val parent = checkNotNull(RegionUtils.getBlockContainer(branch, block))
 					forBreakRemove.add(BlockParentContainer(parent, block))
 					removeCommonBreak = false
-				} else if (!lastInsn.isExitEdgeInsn()) {
+				} else if (!lastInsn.isExitEdgeInsn) {
 					removeCommonBreak = false
 				}
 			}
@@ -119,7 +119,7 @@ class SwitchBreakVisitor : AbstractVisitor() {
 	/** 删除不可达的 break：若最后一个块是 break，且其前一条指令已是 exit 指令 */
 	private class RemoveUnreachableBreak : BaseSwitchRegionVisitor() {
 		override fun processRegion(mth: MethodNode, region: IRegion) {
-			val subBlocks = region.getSubBlocks()
+			val subBlocks = region.subBlocks
 			val lastContainer = ListUtils.last(subBlocks)
 			if (lastContainer is IBlock) {
 				if (isBreakBlock(lastContainer) && isPrevInsnIsExit(lastContainer, subBlocks)) {
@@ -130,18 +130,18 @@ class SwitchBreakVisitor : AbstractVisitor() {
 
 		private fun isPrevInsnIsExit(breakBlock: IBlock, subBlocks: List<IContainer>): Boolean {
 			var prevInsn: InsnNode? = null
-			if (breakBlock.getInstructions().size > 1) {
+			if (breakBlock.instructions.size > 1) {
 				// 同一块内的前一条指令
-				val insns = breakBlock.getInstructions()
+				val insns = breakBlock.instructions
 				prevInsn = insns[insns.size - 2]
 			} else if (subBlocks.size > 1) {
 				val prev = subBlocks[subBlocks.size - 2]
 				if (prev is IBlock) {
-					val insns = prev.getInstructions()
+					val insns = prev.instructions
 					prevInsn = ListUtils.last(insns)
 				}
 			}
-			return prevInsn != null && prevInsn.isExitEdgeInsn()
+			return prevInsn != null && prevInsn.isExitEdgeInsn
 		}
 	}
 
@@ -195,12 +195,12 @@ class SwitchBreakVisitor : AbstractVisitor() {
 			if (addBreakRegion.contains(region)) {
 				addBreakRegion.remove(region)
 				@Suppress("UNCHECKED_CAST")
-				(region.getSubBlocks() as MutableList<IContainer>).add(SwitchRegionMaker.buildBreakContainer(currentSwitchRef))
+				(region.subBlocks as MutableList<IContainer>).add(SwitchRegionMaker.buildBreakContainer(currentSwitchRef))
 			}
 			if (cleanupSet.contains(region)) {
 				cleanupSet.remove(region)
 				@Suppress("UNCHECKED_CAST")
-				(region.getSubBlocks() as MutableList<IContainer>).removeAll { it.contains(AFlag.REMOVE) }
+				(region.subBlocks as MutableList<IContainer>).removeAll { it.contains(AFlag.REMOVE) }
 			}
 		}
 
@@ -223,7 +223,7 @@ class SwitchBreakVisitor : AbstractVisitor() {
 
 		protected fun isBreakBlock(block: IBlock?): Boolean {
 			if (block != null) {
-				val lastInsn = ListUtils.last(block.getInstructions())
+				val lastInsn = ListUtils.last(block.instructions)
 				if (lastInsn != null && lastInsn.type == InsnType.BREAK) {
 					val regionRefAttr: RegionRefAttr? = lastInsn.get(AType.REGION_REF)
 					return regionRefAttr != null && regionRefAttr.region === currentSwitchRef
@@ -233,7 +233,7 @@ class SwitchBreakVisitor : AbstractVisitor() {
 		}
 
 		protected fun removeBreak(breakBlock: IBlock, parentContainer: IContainer) {
-			val instructions = breakBlock.getInstructions()
+			val instructions = breakBlock.instructions
 			val last = ListUtils.last(instructions)
 			if (last != null && last.type == InsnType.BREAK) {
 				ListUtils.removeLast(instructions)

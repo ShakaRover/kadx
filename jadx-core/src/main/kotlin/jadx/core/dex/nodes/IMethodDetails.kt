@@ -8,33 +8,33 @@ import jadx.core.utils.Utils.listToString
 import jadx.core.utils.Utils.notEmpty
 
 interface IMethodDetails : IJadxAttribute {
-	fun getMethodInfo(): MethodInfo
+	val methodInfo: MethodInfo
 
-	fun getReturnType(): ArgType
+	val returnType: ArgType
 
-	fun getArgTypes(): List<ArgType>
+	val argTypes: List<ArgType>
 
-	fun getTypeParameters(): List<ArgType>
+	val typeParameters: List<ArgType>
 
-	fun getThrows(): List<ArgType>
+	val throws: List<ArgType>
 
-	fun isVarArg(): Boolean
+	val isVarArg: Boolean
 
-	fun getRawAccessFlags(): Int
+	val rawAccessFlags: Int
 
 	override val attrType get() = AType.METHOD_DETAILS
 
 	override fun toAttrString(): String {
 		val sb = StringBuilder("MD:")
-		if (notEmpty(getTypeParameters())) {
-			sb.append('<').append(listToString(getTypeParameters())).append(">:")
+		if (notEmpty(typeParameters)) {
+			sb.append('<').append(listToString(typeParameters)).append(">:")
 		}
-		sb.append('(').append(listToString(getArgTypes())).append(')').append(':')
-		sb.append(getReturnType())
-		if (isVarArg()) {
+		sb.append('(').append(listToString(argTypes)).append(')').append(':')
+		sb.append(returnType)
+		if (isVarArg) {
 			sb.append(" VARARG")
 		}
-		val throwsList = getThrows()
+		val throwsList = throws
 		if (notEmpty(throwsList)) {
 			sb.append(" throws ").append(listToString(throwsList))
 		}

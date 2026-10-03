@@ -261,7 +261,7 @@ class CodeShrinkVisitor : AbstractVisitor() {
 				args.set(arg.regNum)
 			}
 			var startCheck = false
-			for (insn in assignBlock.getInstructions()) {
+			for (insn in assignBlock.instructions) {
 				if (startCheck && (!insn.canReorder() || ArgsInfo.usedArgAssign(insn, args))) {
 					return false
 				}
@@ -285,13 +285,13 @@ class CodeShrinkVisitor : AbstractVisitor() {
 					// 跳过不生成代码的块
 					continue
 				}
-				for (insn in block.getInstructions()) {
+				for (insn in block.instructions) {
 					if (!insn.canReorder() || ArgsInfo.usedArgAssign(insn, args)) {
 						return false
 					}
 				}
 			}
-			for (insn in useBlock.getInstructions()) {
+			for (insn in useBlock.instructions) {
 				if (insn === useInsn) {
 					return true
 				}
@@ -303,7 +303,7 @@ class CodeShrinkVisitor : AbstractVisitor() {
 		}
 
 		private fun simplifyMoveInsns(mth: MethodNode, block: BlockNode) {
-			val insns = block.getInstructions()
+			val insns = block.instructions
 			val size = insns.size
 			for (i in 0 until size) {
 				val insn = insns[i]
@@ -313,7 +313,7 @@ class CodeShrinkVisitor : AbstractVisitor() {
 					if (arg.isInsnWrap) {
 						val wrapInsn = (arg as InsnWrapArg).wrapInsn
 						InsnRemover.unbindResult(mth, wrapInsn)
-						wrapInsn.setResult(checkNotNull(insn.getResult()).duplicate())
+						wrapInsn.setResult(checkNotNull(insn.result).duplicate())
 						wrapInsn.inheritMetadata(insn)
 						wrapInsn.setOffset(insn.getOffset())
 						wrapInsn.remove(AFlag.WRAPPED)

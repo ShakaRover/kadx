@@ -138,11 +138,11 @@ class ClsSet(private val root: RootNode) {
 			return
 		}
 		val clspMethod = ClspMethod(
-			mth.getMethodInfo(),
-			mth.getArgTypes(),
-			mth.getReturnType(),
-			mth.getTypeParameters(),
-			mth.getThrows(),
+			mth.methodInfo,
+			mth.argTypes,
+			mth.returnType,
+			mth.typeParameters,
+			mth.throws,
 			accessFlags.rawValue(),
 		)
 		methods.add(clspMethod)
@@ -388,16 +388,16 @@ class ClsSet(private val root: RootNode) {
 		}
 
 		private fun writeMethod(out: DataOutputStream, method: ClspMethod, names: Map<String, ClspClass>) {
-			val methodInfo = method.getMethodInfo()
+			val methodInfo = method.methodInfo
 			writeString(out, methodInfo.name)
 			writeArgTypesList(out, methodInfo.argumentsTypes, names)
 			writeArgType(out, methodInfo.returnType, names)
 
-			writeArgTypesList(out, if (method.containsGenericArgs()) method.getArgTypes() else emptyList(), names)
-			writeArgType(out, method.getReturnType(), names)
-			writeArgTypesList(out, method.getTypeParameters(), names)
-			out.writeInt(method.getRawAccessFlags())
-			writeArgTypesList(out, method.getThrows(), names)
+			writeArgTypesList(out, if (method.containsGenericArgs()) method.argTypes else emptyList(), names)
+			writeArgType(out, method.returnType, names)
+			writeArgTypesList(out, method.typeParameters, names)
+			out.writeInt(method.rawAccessFlags)
+			writeArgTypesList(out, method.throws, names)
 		}
 
 		private fun writeArgTypesList(out: DataOutputStream, list: List<ArgType>, names: Map<String, ClspClass>) {

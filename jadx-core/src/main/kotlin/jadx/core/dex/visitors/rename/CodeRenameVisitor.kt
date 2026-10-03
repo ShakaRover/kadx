@@ -71,7 +71,7 @@ class CodeRenameVisitor : AbstractVisitor() {
 			val map = HashMap<String, MutableList<ICodeRename>>()
 			for (r in data.getRenames()) {
 				if (r.getCodeRef() != null) {
-					map.computeIfAbsent(r.getNodeRef().getDeclaringClass()) { ArrayList() }.add(r)
+					map.computeIfAbsent(r.getNodeRef().declaringClass) { ArrayList() }.add(r)
 				}
 			}
 			this.clsRenamesMap = map

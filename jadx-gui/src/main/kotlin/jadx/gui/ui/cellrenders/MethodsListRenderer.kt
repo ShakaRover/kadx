@@ -46,7 +46,7 @@ class MethodsListRenderer :
 		isSelected: Boolean,
 		cellHasFocus: Boolean,
 	): Component {
-		label.text = UiUtils.typeFormatHtml(MethodRenderHelper.makeBaseString(value), value.getReturnType())
+		label.text = UiUtils.typeFormatHtml(MethodRenderHelper.makeBaseString(value), value.returnType)
 		label.icon = MethodRenderHelper.getIcon(value)
 
 		checkBox.isSelected = isSelected

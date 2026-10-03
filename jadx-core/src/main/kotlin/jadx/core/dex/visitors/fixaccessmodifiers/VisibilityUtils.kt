@@ -24,8 +24,8 @@ import jadx.core.utils.exceptions.JadxRuntimeException
 internal class VisibilityUtils(private val root: RootNode) {
 
 	fun checkVisibility(targetNode: ICodeNode, callerNode: ICodeNode, callback: OnBadVisibilityCallback) {
-		val targetCls = if (targetNode is ClassNode) targetNode else checkNotNull(targetNode.getDeclaringClass())
-		val callerCls = if (callerNode is ClassNode) callerNode else checkNotNull(callerNode.getDeclaringClass())
+		val targetCls = if (targetNode is ClassNode) targetNode else checkNotNull(targetNode.declaringClass)
+		val callerCls = if (callerNode is ClassNode) callerNode else checkNotNull(callerNode.declaringClass)
 
 		if (targetCls == callerCls || inSameTopClass(targetCls, callerCls)) {
 			return
@@ -45,7 +45,7 @@ internal class VisibilityUtils(private val root: RootNode) {
 				}
 
 				if (nodeVisFlags.isPrivate() || nodeVisFlags.isPackagePrivate()) {
-					val nodeDeclaringCls = node.getDeclaringClass()
+					val nodeDeclaringCls = node.declaringClass
 					val expectedVisFlag = if (nodeDeclaringCls != null && isSuperType(callerCls, nodeDeclaringCls)) {
 						AccessFlags.PROTECTED
 					} else {
@@ -53,7 +53,7 @@ internal class VisibilityUtils(private val root: RootNode) {
 					}
 					callback.onBadVisibility(node, expectedVisFlag)
 				} else if (nodeVisFlags.isProtected()) {
-					val nodeDeclaringCls = node.getDeclaringClass()
+					val nodeDeclaringCls = node.declaringClass
 					if (nodeDeclaringCls == null || !isSuperType(callerCls, nodeDeclaringCls)) {
 						callback.onBadVisibility(node, AccessFlags.PUBLIC)
 					}
@@ -69,7 +69,7 @@ internal class VisibilityUtils(private val root: RootNode) {
 		var currentNode: ICodeNode? = targetNode
 		while (currentNode != null) {
 			action(currentNode)
-			currentNode = currentNode.getDeclaringClass()
+			currentNode = currentNode.declaringClass
 		}
 	}
 

@@ -83,8 +83,8 @@ open class InvokeCustomNode : InvokeNode {
 	override fun toString(): String {
 		val sb = StringBuilder()
 		sb.append(InsnUtils.formatOffset(offset)).append(": INVOKE_CUSTOM ")
-		if (getResult() != null) {
-			sb.append(getResult()).append(" = ")
+		if (result != null) {
+			sb.append(result).append(" = ")
 		}
 		appendArgs(sb)
 		appendAttributes(sb)

@@ -20,7 +20,7 @@ class TestConstReplace : IntegrationTest() {
 
 		val constField = cls.searchFieldByName("CONST_VALUE")
 		assertThat(constField).isNotNull()
-		assertThat(checkNotNull(constField).getUseIn()).containsExactly(testMth)
+		assertThat(checkNotNull(constField).useIn).containsExactly(testMth)
 	}
 
 	@Test
@@ -31,6 +31,6 @@ class TestConstReplace : IntegrationTest() {
 
 		val constField = cls.searchFieldByName("CONST_VALUE")
 		assertThat(constField).isNotNull()
-		assertThat(checkNotNull(constField).getUseIn()).isEmpty()
+		assertThat(checkNotNull(constField).useIn).isEmpty()
 	}
 }

@@ -148,7 +148,7 @@ open class InsnGen(
 	/** 渲染赋值语句左侧（声明或普通引用）。 */
 	@Throws(CodegenException::class)
 	fun assignVar(code: ICodeWriter, insn: InsnNode) {
-		val arg = insn.getResult()
+		val arg = insn.result
 		if (insn.contains(AFlag.DECLARE_VAR)) {
 			declareVar(code, checkNotNull(arg))
 		} else {
@@ -262,7 +262,7 @@ open class InsnGen(
 						code.add("// ")
 					}
 				}
-				val resArg = insn.getResult()
+				val resArg = insn.result
 				if (resArg != null) {
 					val v = resArg.sVar
 					if (v == null || v.useCount != 0 || insn.type != InsnType.CONSTRUCTOR) {
@@ -542,7 +542,7 @@ open class InsnGen(
 			InsnType.NEW_INSTANCE -> {
 				// only fallback - make new instance in constructor invoke
 				fallbackOnlyInsn(insn)
-				code.add("new ").add(checkNotNull(insn.getResult()).getInitType().toString())
+				code.add("new ").add(checkNotNull(insn.result).getInitType().toString())
 			}
 
 			InsnType.PHI -> {
@@ -737,7 +737,7 @@ open class InsnGen(
 		if (callMth == null || !callMth.contains(AFlag.SKIP_FIRST_ARG)) {
 			return false
 		}
-		val ctrCls = checkNotNull(callMth.getDeclaringClass())
+		val ctrCls = checkNotNull(callMth.declaringClass)
 		if (!ctrCls.isInner() || insn.argsCount == 0) {
 			return false
 		}
@@ -746,7 +746,7 @@ open class InsnGen(
 			return false
 		}
 		// instance arg should be of an outer class type
-		if (instArg.getType() != checkNotNull(ctrCls.getDeclaringClass()).getType()) {
+		if (instArg.getType() != checkNotNull(ctrCls.declaringClass).getType()) {
 			return false
 		}
 		addArgDot(code, instArg)

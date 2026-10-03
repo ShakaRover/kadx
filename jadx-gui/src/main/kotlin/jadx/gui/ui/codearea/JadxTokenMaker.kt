@@ -74,7 +74,7 @@ class JadxTokenMaker(private val codeArea: CodeArea) : JavaTokenMaker() {
 			return
 		}
 		if (identifier is JavaMethod) {
-			val javaCls = identifier.getDeclaringClass()
+			val javaCls = identifier.declaringClass
 			if (lexeme == javaCls.getName()) {
 				token.setType(TokenTypes.IDENTIFIER)
 			}

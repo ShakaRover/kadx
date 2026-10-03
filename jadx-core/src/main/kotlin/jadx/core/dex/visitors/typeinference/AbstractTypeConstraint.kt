@@ -27,7 +27,7 @@ abstract class AbstractTypeConstraint(
 
 	private fun collectRelatedVars(insn: InsnNode, arg: InsnArg): List<SSAVar> {
 		val list = ArrayList<SSAVar>(insn.argsCount)
-		if (insn.getResult() === arg) {
+		if (insn.result === arg) {
 			// 约束针对结果：所有寄存器参数都会影响结果的类型
 			for (insnArg in insn.getArguments()) {
 				if (insnArg.isRegister) {
@@ -36,7 +36,7 @@ abstract class AbstractTypeConstraint(
 			}
 		} else {
 			// 约束针对某个参数：结果与其余寄存器参数都会与之相互影响
-			list.add(checkNotNull(insn.getResult()?.sVar))
+			list.add(checkNotNull(insn.result?.sVar))
 			for (insnArg in insn.getArguments()) {
 				if (insnArg !== arg && insnArg.isRegister) {
 					list.add(checkNotNull((insnArg as RegisterArg).sVar))

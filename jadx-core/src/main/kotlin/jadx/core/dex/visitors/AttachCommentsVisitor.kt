@@ -130,7 +130,7 @@ class AttachCommentsVisitor : AbstractVisitor() {
 		// 等价于 Java 的 Collectors.groupingBy(nodeRef.declaringClass)
 		val map = LinkedHashMap<String, MutableList<ICodeComment>>()
 		for (comment in data.getComments()) {
-			val key = comment.getNodeRef().getDeclaringClass()
+			val key = comment.getNodeRef().declaringClass
 			map.getOrPut(key) { ArrayList() }.add(comment)
 		}
 		clsCommentsMap = map

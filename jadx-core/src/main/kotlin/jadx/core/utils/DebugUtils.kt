@@ -132,7 +132,7 @@ object DebugUtils {
 		printWithAttributes(cw, indent, region.toString(), region)
 		indent += "|  "
 		printRegionSpecificInfo(cw, indent, mth, region, printInsns)
-		for (container in region.getSubBlocks()) {
+		for (container in region.subBlocks) {
 			if (container is IRegion) {
 				printRegion(mth, container, cw, indent, printInsns)
 			} else {
@@ -152,7 +152,7 @@ object DebugUtils {
 		printInsns: Boolean,
 	) {
 		if (region is LoopRegion) {
-			val condition = region.getCondition()
+			val condition = region.condition
 			if (printInsns && condition != null) {
 				val conditionGen = ConditionGen(InsnGen(MethodGen.getFallbackMethodGen(mth), true))
 				cw.startLine(indent).add("|> ")
@@ -166,7 +166,7 @@ object DebugUtils {
 	}
 
 	private fun printInsns(mth: MethodNode, cw: ICodeWriter, indent: String, block: IBlock) {
-		for (insn in block.getInstructions()) {
+		for (insn in block.instructions) {
 			try {
 				val mg = MethodGen.getFallbackMethodGen(mth)
 				val ig = InsnGen(mg, true)
