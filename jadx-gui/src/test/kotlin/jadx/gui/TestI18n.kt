@@ -103,12 +103,12 @@ class TestI18n {
 		val errors = ArrayList<String>()
 		for (codeKey in codeKeys) {
 			if (!keys.contains(codeKey)) {
-				errors.add(String.format("Key '%s' not found in NLS strings", codeKey))
+				errors.add("Key '$codeKey' not found in NLS strings")
 			}
 		}
 		for (key in keys) {
 			if (!codeKeys.contains(key)) {
-				errors.add(String.format("Key '%s' not used in code", key))
+				errors.add("Key '$key' not used in code")
 			}
 		}
 		if (errors.isNotEmpty()) {

@@ -72,7 +72,7 @@ class FridaAction(codeArea: CodeArea) : JNodeAction(ActionModel.FRIDA_COPY, code
 	private fun generateMethodSnippet(jMth: JMethod): String {
 		val classSnippet = generateClassSnippet(jMth.getJParent())
 		val methodSnippet = getMethodSnippet(jMth.getJavaMethod(), jMth.getJParent())
-		return String.format("%s\n%s", classSnippet, methodSnippet)
+		return "$classSnippet\n$methodSnippet"
 	}
 
 	private fun generateMethodSnippet(javaMethod: JavaMethod, jc: JClass): String = getMethodSnippet(javaMethod, jc)
@@ -124,7 +124,7 @@ class FridaAction(codeArea: CodeArea) : JNodeAction(ActionModel.FRIDA_COPY, code
 		val javaClass = jc.getCls()
 		val rawClassName = StringEscapeUtils.escapeEcmaScript(javaClass.getRawName())
 		val shortClassName = javaClass.getName()
-		return String.format("var %s = Java.use(\"%s\");", shortClassName, rawClassName)
+		return "var $shortClassName = Java.use(\"$rawClassName\");"
 	}
 
 	private fun showMethodSelectionDialog(jc: JClass) {
@@ -159,7 +159,7 @@ class FridaAction(codeArea: CodeArea) : JNodeAction(ActionModel.FRIDA_COPY, code
 		}
 		val jc = jf.getRootClass()
 		val classSnippet = generateClassSnippet(jc)
-		return String.format("%s\n%s = %s.%s.value;", classSnippet, fieldName, jc.getName(), rawFieldName)
+		return "$classSnippet\n$fieldName = ${jc.getName()}.$rawFieldName.value;"
 	}
 
 	/** 判断方法是否与同类中其它方法重名（需要 `.overload(...)` 区分）。 */

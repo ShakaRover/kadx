@@ -57,17 +57,8 @@ class ExceptionDialog private constructor(mainWindow: MainWindow?, data: Excepti
 		val details: MutableMap<String, String> = LinkedHashMap()
 		details["Jadx version"] = JadxDecompiler.getVersion()
 		details["Java version"] = JadxSystemInfo.JAVA_VER
-		details["Java VM"] = String.format(
-			"%s %s",
-			System.getProperty("java.vm.vendor", "?"),
-			System.getProperty("java.vm.name", "?"),
-		)
-		details["Platform"] = String.format(
-			"%s (%s %s)",
-			JadxSystemInfo.OS_NAME,
-			JadxSystemInfo.OS_VERSION,
-			JadxSystemInfo.OS_ARCH,
-		)
+		details["Java VM"] = "${System.getProperty("java.vm.vendor", "?")} ${System.getProperty("java.vm.name", "?")}"
+		details["Platform"] = "${JadxSystemInfo.OS_NAME} (${JadxSystemInfo.OS_VERSION} ${JadxSystemInfo.OS_ARCH})"
 		details["Max heap size"] = String.format("%d MB", Runtime.getRuntime().maxMemory() / (1024 * 1024))
 
 		try {
@@ -170,9 +161,9 @@ class ExceptionDialog private constructor(mainWindow: MainWindow?, data: Excepti
 				"**IMPORTANT!** If the error occurs with a specific APK file please attach or provide link to apk file!\n\n"
 
 			val detailsIssueBuilder = StringBuilder()
-			details.forEach { (key, value) -> detailsIssueBuilder.append(String.format("* %s: %s\n", key, value)) }
+			details.forEach { (key, value) -> detailsIssueBuilder.append("* $key: $value\n") }
 
-			val body = String.format("%s%s\n```\n%s\n```", message, detailsIssueBuilder, stackTrace)
+			val body = "$message$detailsIssueBuilder\n```\n$stackTrace\n```"
 
 			val issueBody = try {
 				URLEncoder.encode(body, StandardCharsets.UTF_8)
@@ -180,12 +171,7 @@ class ExceptionDialog private constructor(mainWindow: MainWindow?, data: Excepti
 				LOG.error("URL encoding of body failed", e)
 				"Please copy the displayed text in the Jadx error dialog and paste it here"
 			}
-			val url = String.format(
-				"https://github.com/%s/issues/new?labels=bug&title=%s&body=%s",
-				project,
-				issueTitle,
-				issueBody,
-			)
+			val url = "https://github.com/$project/issues/new?labels=bug&title=$issueTitle&body=$issueBody"
 			return Link("<html><u><b>" + NLS.str("error.dialog.new_github_issue") + "</b></u></html>", url)
 		}
 

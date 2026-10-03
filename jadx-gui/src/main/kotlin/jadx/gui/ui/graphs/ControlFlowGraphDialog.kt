@@ -38,7 +38,7 @@ class ControlFlowGraphDialog private constructor(mainWindow: MainWindow, jMth: J
 
 	init {
 		val mthName = DotGraphUtils.methodFormatName(jMth.getJavaMethod(), false)
-		title = String.format("%s: %s", NLS.str("graph_viewer.cfg.title"), mthName)
+		title = "${NLS.str("graph_viewer.cfg.title")}: $mthName"
 	}
 
 	/** CFG 展示预设：控制是否使用原始指令、是否按区域着色，以及在哪个 Pass 前 dump。 */

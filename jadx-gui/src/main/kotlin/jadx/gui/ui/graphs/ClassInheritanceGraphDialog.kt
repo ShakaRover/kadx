@@ -32,7 +32,7 @@ import javax.swing.UIManager
 class ClassInheritanceGraphDialog(mainWindow: MainWindow, private val cls: ClassNode) :
 	GraphDialog(
 		mainWindow,
-		String.format("%s: %s", NLS.str("graph_viewer.inheritance_graph.title"), DotGraphUtils.classFormatName(cls, false)),
+		"${NLS.str("graph_viewer.inheritance_graph.title")}: ${DotGraphUtils.classFormatName(cls, false)}",
 	) {
 
 	private var longNames = false

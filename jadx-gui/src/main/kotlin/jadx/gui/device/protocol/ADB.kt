@@ -114,7 +114,7 @@ object ADB {
 	internal fun setSerial(serial: String, outputStream: OutputStream, inputStream: InputStream): Boolean {
 		checkSerial(serial)
 		LOG.trace("setSerial({})", serial)
-		var setSerialCmd = String.format("host:tport:serial:%s", serial)
+		var setSerialCmd = "host:tport:serial:$serial"
 		setSerialCmd = String.format("%04x%s", setSerialCmd.length, setSerialCmd)
 		outputStream.write(setSerialCmd.toByteArray(ADB_CHARSET))
 		val ok = isOkay(inputStream, setSerialCmd)
@@ -129,7 +129,7 @@ object ADB {
 
 	@Throws(IOException::class)
 	private fun execShellCommandRaw(cmd: String, outputStream: OutputStream, inputStream: InputStream): ByteArray? {
-		var command = String.format("shell,v2,TERM=xterm-256color,raw:%s", cmd)
+		var command = "shell,v2,TERM=xterm-256color,raw:$cmd"
 		command = String.format("%04x%s", command.length, command)
 		outputStream.write(command.toByteArray(ADB_CHARSET))
 		if (isOkay(inputStream, command)) {
@@ -259,7 +259,7 @@ object ADB {
 	@Throws(IOException::class)
 	fun removeForward(host: String, port: Int, serial: String, localPort: String): Boolean {
 		connect(host, port).use { socket ->
-			var cmd = String.format("host:killforward:tcp:%s", localPort)
+			var cmd = "host:killforward:tcp:$localPort"
 			cmd = String.format("%04x%s", cmd.length, cmd)
 			val inputStream = socket.getInputStream()
 			val outputStream = socket.getOutputStream()

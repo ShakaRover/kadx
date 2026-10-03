@@ -39,10 +39,7 @@ public class LoadMappingsPass(private val options: RenameMappingsOptions) : Jadx
 			mappingTree.setDstNamespaces(listOf(MappingUtil.NS_TARGET_FALLBACK))
 		} else if (mappingTree.getDstNamespaces().size > 1) {
 			throw JadxRuntimeException(
-				String.format(
-					"JADX only supports mappings with just one destination namespace! The provided ones have %s.",
-					mappingTree.getDstNamespaces().size,
-				),
+				"JADX only supports mappings with just one destination namespace! The provided ones have ${mappingTree.getDstNamespaces().size}.",
 			)
 		}
 		if (options.isInvert()) {

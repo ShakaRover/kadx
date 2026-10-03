@@ -52,7 +52,7 @@ class ADBDevice(private var info: ADBDeviceInfo) {
 	@Throws(IOException::class)
 	fun forwardJDWP(localPort: String, jdwpPid: String): ForwardResult {
 		ADB.connect(info.getAdbHost(), info.getAdbPort()).use { socket ->
-			var cmd = String.format("host:forward:tcp:%s;jdwp:%s", localPort, jdwpPid)
+			var cmd = "host:forward:tcp:$localPort;jdwp:$jdwpPid"
 			cmd = String.format("%04x%s", cmd.length, cmd)
 			val inputStream = socket.getInputStream()
 			val outputStream = socket.getOutputStream()

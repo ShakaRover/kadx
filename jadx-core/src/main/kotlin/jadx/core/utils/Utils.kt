@@ -68,7 +68,7 @@ object Utils {
 			'J' -> "long"
 			'D' -> "double"
 			'L' -> cleanObjectNameWithInnerClass(descString)
-			'[' -> String.format("%s[]", smaliNameToJavaName(descString.substring(1, descString.length)))
+			'[' -> "${smaliNameToJavaName(descString.substring(1, descString.length))}[]"
 			else -> descString
 		}
 	}
@@ -84,7 +84,7 @@ object Utils {
 			return descString
 		}
 		if (descString.endsWith("[]")) {
-			return String.format("[%s", javaNameToSmaliName(descString.substring(0, descString.length - 2)))
+			return "[${javaNameToSmaliName(descString.substring(0, descString.length - 2))}"
 		}
 		return when (descString) {
 			"void" -> "V"

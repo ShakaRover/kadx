@@ -456,7 +456,7 @@ class DotGraphUtils {
 				val className = mthInfo.declClass.fullName
 				val returnName = mthInfo.returnType.toString()
 				val argStr = Utils.listToString(mthInfo.argumentsTypes) { it.toString() }
-				return String.format("%s.%s(%s):%s", className, name, argStr, returnName)
+				return "$className.$name($argStr):$returnName"
 			}
 			return name
 		}

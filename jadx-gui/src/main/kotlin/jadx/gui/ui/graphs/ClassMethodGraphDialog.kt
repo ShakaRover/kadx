@@ -29,7 +29,7 @@ import javax.swing.UIManager
 class ClassMethodGraphDialog(mainWindow: MainWindow, private val cls: ClassNode) :
 	GraphDialog(
 		mainWindow,
-		String.format("%s: %s", NLS.str("graph_viewer.method_graph.title"), DotGraphUtils.classFormatName(cls, false)),
+		"${NLS.str("graph_viewer.method_graph.title")}: ${DotGraphUtils.classFormatName(cls, false)}",
 	) {
 
 	private var nextNodeID = 0

@@ -129,10 +129,10 @@ class DebugController :
 			if (id != -1L) {
 				return // 应用已在运行，无法再停在 onCreate
 			}
-			debuggerPanel.log(String.format("Breakpoint will set at %s.%s", clsSig, ONCREATE_SIGNATURE))
+			debuggerPanel.log("Breakpoint will set at $clsSig.$ONCREATE_SIGNATURE")
 			checkNotNull(debugger).regMethodEntryEventSync(clsSig, ONCREATE_SIGNATURE::equals)
 		} catch (e: SmaliDebuggerException) {
-			logErr(e, String.format("Failed set breakpoint at %s.%s", clsSig, ONCREATE_SIGNATURE))
+			logErr(e, "Failed set breakpoint at $clsSig.$ONCREATE_SIGNATURE")
 		}
 	}
 
@@ -788,7 +788,7 @@ class DebugController :
 					valNode.updateType(RuntimeType.INT.getDesc())
 					valNode.updateValue(checkNotNull(debugger).readAll(rValue).toInt().toString())
 				} catch (except: SmaliDebuggerException) {
-					logErr(except, String.format("Update %s failed, %s", valNode.getName(), except.message))
+					logErr(except, "Update ${valNode.getName()} failed, ${except.message}")
 					valNode.updateValue(except.message)
 					ok = false
 				}
@@ -1225,7 +1225,7 @@ class DebugController :
 		}
 
 		override fun getName(): String = if (!StringUtils.isEmpty(alias)) {
-			String.format("%s (%s)", smaliReg.getName(), alias)
+			"${smaliReg.getName()} ($alias)"
 		} else {
 			String.format("%-3s", smaliReg.getName())
 		}

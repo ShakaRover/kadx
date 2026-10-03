@@ -35,7 +35,7 @@ import javax.swing.UIManager
 class CallGraphDialog(mainWindow: MainWindow, private val javaMethod: JavaMethod) :
 	GraphDialog(
 		mainWindow,
-		String.format("%s: %s", NLS.str("graph_viewer.call_graph.title"), DotGraphUtils.methodFormatName(javaMethod, false)),
+		"${NLS.str("graph_viewer.call_graph.title")}: ${DotGraphUtils.methodFormatName(javaMethod, false)}",
 	) {
 
 	private var callerDepthLimit = 3

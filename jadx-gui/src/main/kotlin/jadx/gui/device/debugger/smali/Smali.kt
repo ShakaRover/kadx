@@ -496,7 +496,7 @@ class Smali private constructor() {
 				val name = Utils.getOrElse(param.getName(), "")
 				val type = Utils.getOrElse(param.getSignature(), paramType)
 				val varName = "p$paramStart"
-				smali.startLine(String.format(".param %s, \"%s\" # %s", varName, name, type))
+				smali.startLine(".param $varName, \"$name\" # $type")
 				line.addRegName(regNum, varName)
 				line.smaliMthNode.setParamReg(regNum, varName)
 			}
@@ -571,9 +571,9 @@ class Smali private constructor() {
 			val type = localVar.getType()
 			val sign = localVar.getSignature()
 			val longTypeStr: String = if (sign == null || sign.trim().isEmpty()) {
-				String.format(", \"%s\":%s", localVar.getName(), type)
+				", \"${localVar.getName()}\":$type"
 			} else {
-				String.format(", \"%s\":%s, \"%s\"", localVar.getName(), type, localVar.getSignature())
+				", \"${localVar.getName()}\":$type, \"${localVar.getSignature()}\""
 			}
 			line.addTip(
 				localVar.getStartOffset(),
@@ -583,7 +583,7 @@ class Smali private constructor() {
 			line.addTip(
 				localVar.getEndOffset(),
 				".end local " + formatVarName(line.smaliMthNode, localVar),
-				String.format(" # \"%s\":%s", localVar.getName(), type),
+				" # \"${localVar.getName()}\":$type",
 			)
 		}
 	}
@@ -953,19 +953,19 @@ class Smali private constructor() {
 					when (value) {
 						is Int -> smali.add(String.format("%s # %d refs", key, value)).startLine()
 
-						is String -> smali.add(String.format("%s%s", key, value)).startLine()
+						is String -> smali.add("$key$value").startLine()
 
 						is List<*> -> {
 							@Suppress("UNCHECKED_CAST")
 							val extras = value as List<String>
-							smali.add(String.format("%s%s", key, extras[0])).startLine()
+							smali.add("$key${extras[0]}").startLine()
 							val pad = String(ByteArray(lineOffset)).replace("\u0000", " ")
 							for (i in 1 until extras.size) {
-								smali.add(String.format("%s%s", pad, extras[i])).startLine()
+								smali.add("$pad${extras[i]}").startLine()
 							}
 						}
 
-						else -> smali.add(String.format("%s%s", key, value)).startLine()
+						else -> smali.add("$key$value").startLine()
 					}
 				}
 			}

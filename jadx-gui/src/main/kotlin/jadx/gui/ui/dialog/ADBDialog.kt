@@ -563,9 +563,9 @@ class ADBDialog(private val mainWindow: MainWindow) :
 			var text = info.getModel()
 			if (text != null) {
 				if (text != info.getSerial()) {
-					text += String.format(" [serial: %s]", info.getSerial())
+					text += " [serial: ${info.getSerial()}]"
 				}
-				text += String.format(" [state: %s]", if (info.isOnline()) "online" else "offline")
+				text += " [state: ${if (info.isOnline()) "online" else "offline"}]"
 				tNode.setUserObject(text)
 			}
 		}

@@ -126,16 +126,16 @@ class DeobfPresets private constructor(private val deobfMapFile: Path) {
 	fun save() {
 		val list = ArrayList<String>()
 		for ((key, value) in pkgPresetMap) {
-			list.add(String.format("p %s = %s", key, value))
+			list.add("p $key = $value")
 		}
 		for ((key, value) in clsPresetMap) {
-			list.add(String.format("c %s = %s", key, value))
+			list.add("c $key = $value")
 		}
 		for ((key, value) in fldPresetMap) {
-			list.add(String.format("f %s = %s", key, value))
+			list.add("f $key = $value")
 		}
 		for ((key, value) in mthPresetMap) {
-			list.add(String.format("m %s = %s", key, value))
+			list.add("m $key = $value")
 		}
 		Collections.sort(list)
 		if (list.isEmpty()) {

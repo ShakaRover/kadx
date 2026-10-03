@@ -62,7 +62,7 @@ object NLS {
 
 	private fun load(lang: LangLocale) {
 		val locale = lang.get()
-		val resName = String.format("i18n/Messages_%s.properties", locale.toLanguageTag().replace('-', '_'))
+		val resName = "i18n/Messages_${locale.toLanguageTag().replace('-', '_')}.properties"
 		val bundleUrl = NLS::class.java.classLoader.getResource(resName)
 			?: throw JadxRuntimeException("Locale resource not found: $resName")
 		val bundle: ResourceBundle = try {
