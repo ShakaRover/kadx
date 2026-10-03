@@ -351,18 +351,21 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 - 例外：少数 driver 引用额外嵌套类型（如 `TestImportGenericMapFixture.SuperClass.ToImport`）需加 stub；
   仅出现在断言字符串里的类名无需 stub。
 
-**批次（Z1 已完成 10）：** 剩余 460 fixture + 2 基础设施（`IntegrationTest.java`、`JadxAssertions.java`）。
-- Z2–Z3：`others`(67) · Z4–Z5：`loops`(47)+部分 · Z6：`trycatch`(44) · Z7：`conditions`(36) · Z8：`types`(35)
-- Z9：`inner`(33) · Z10：`switches`(31) · Z11：`invoke`(21)+`enums`(19) · Z12：`generics`(16)+`arrays`(14)
-- Z13：`inline`(13)+`arith`(12)+`java8`(11) · Z14：`variables`(10)+`deobf`(7)+`annotations`(7)+`android`(7)
-- Z15：`rename`(6)+`names`(6)+`usethis`(4)+`synchronize`(4)+`debuginfo`(4)+`jbc`(2)+`code`(2)+`fallback`(1)+`deobf.a`(1)
-- **Z16（收尾）：** `IntegrationTest.java` + `JadxAssertions.java` → Kotlin（后者需 companion `@JvmStatic` 转发用到的 AssertJ 重载），然后 `find . -name '*.java'` = 0。
+**批次（全部完成）：** Z1 ✅ bce5fb0e（机制+10 pilot）· Z2 f1abc5e5（others 30）· Z3 53f09662（others 37）·
+Z4 f25fd99d（loops 47）· Z5 e5e0ce67（trycatch 44）· Z6 3f4841b5（conditions 36）· Z7 1d882d55（types 35）·
+Z8 39a2bc6a（inner 33）· Z9 f4e51311（switches 31）· Z10 3dfc650e（invoke+enums 40）·
+Z11 e56d87b4（generics+arrays+inline 43）· Z12 7af6e8ba（arith+java8+variables 33）·
+Z13 875e29ec（deobf+annotations+android+rename+names 34）· Z14 22d6621e（剩余 fixtures 17）·
+**Z15 c196a856（IntegrationTest + JadxAssertions → Kotlin；零 Java）。**
 
-## 12. 最终状态（项目 Kotlin 化完成）
+### Z15 要点（收尾）
+- `JadxAssertions` 必须用 Kotlin **`object`**（不是 `class + companion`）：K2 下 companion 成员无法用 `import JadxAssertions.assertThat` 导入，`object` 才能保住 703 处现有导入；`@JvmStatic` 仍为 ECJ 编译的 Java fixture 产生真静态方法。
+- 需在 companion 里 `@JvmStatic` 转发实际用到的 AssertJ 重载（泛型 + 各基本类型 + `CharSequence/Throwable/Class/File/Path/Iterable/List/Map/Stream/Array/8 种基本类型数组`）；引用参数可空以复刻 Java 平台类型（修了一个真 NPE）。
+- `IntegrationTest` 保持 `args`/`resMap` 为 `@JvmField` + 显式 `getArgs()/setResMap()`，~100 个 Kotlin 测试零改动。
 
-- **全部模块完成：** jadx-commons、jadx-plugins（含 input-api / dex / java / smali / apks / apkm / java-convert / raung / rename-mappings / kotlin-metadata）、jadx-plugins-tools、jadx-core、jadx-cli、jadx-gui。
-- **全局剩余 `.java` = 472**，全部为有意保留：
-  - 466 个 `*Fixture.java`（反编译器的 **Java 输入**，见 §11 Option A）；
-  - 6 个基础设施/输入文件：`tests/api/IntegrationTest.java`（测试 harness）、`tests/api/utils/assertj/JadxAssertions.java`（继承 AssertJ 静态方法）、`names/pkg/a.java`、`names/pkg/b.java`、`names/pkg2/TestCls.java`、`names/pkg2/System.java`（反编译输入）。
-- **总 Kotlin 文件 ~1936**；`./gradlew build` **BUILD SUCCESSFUL**（core 1018 tests / cli 24 / gui 39 / 各插件全绿）。
-- **后续（可选专项）：** 阶段 5.2 协程重构（`jadx.gui.jobs` / `BackgroundWorker` → `Dispatchers.Swing`）；以及若需文件级 100% 无 Java，可评估把 fixture 内联为 Java 源字符串（Option D）。
+## 12. 最终状态（项目 100% Kotlin）
+
+- **全部模块完成；仓库源码 `.java` = 0**（`find . -name '*.java' -not -path '*/build/*'` = 0，`git ls-files '*.java'` = 0）。
+- **总 Kotlin 文件 2436**；`./gradlew build` **BUILD SUCCESSFUL**（core 1018 tests / cli 24 / gui 39 / 各插件全绿）。
+- 集成测试的 Java fixture 已改为 Kotlin `*Fixture.kt`（`object` + stub + `const val JAVA_SOURCE`，harness 反射读取并用 ECJ 编译）；测试语义与断言完全不变。
+- **后续（可选）：** 阶段 5.2 协程重构（`jadx.gui.jobs` / `BackgroundWorker` → `Dispatchers.Swing`）。
