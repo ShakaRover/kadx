@@ -8,7 +8,6 @@ import jadx.plugins.input.java.data.attributes.types.StackMapTableAttr
 import jadx.plugins.input.java.utils.JavaClassParseException
 import java.util.EnumMap
 import java.util.HashMap
-import java.util.function.Consumer
 
 /**
  * StackMapTable attribute 读取器：解析 JDK7+ 字节码的验证器栈帧表。
@@ -39,22 +38,22 @@ class StackMapTableReader : IJavaAttributeReader {
 			throw JavaClassParseException("Found unsupported stack frame type: " + frameType)
 		}
 		val frameContext = FrameContext(reader, typeData, prevFrame)
-		frameReader.accept(frameContext)
+		frameReader(frameContext)
 		return frameContext.frame!! // 原 Java Objects.requireNonNull，同样 NPE
 	}
 
 	companion object {
-		private val FRAME_READERS: EnumMap<StackFrameType, Consumer<FrameContext>?> = registerReaders()
+		private val FRAME_READERS: EnumMap<StackFrameType, (FrameContext) -> Unit?> = registerReaders()
 
-		private fun registerReaders(): EnumMap<StackFrameType, Consumer<FrameContext>?> {
-			val map = EnumMap<StackFrameType, Consumer<FrameContext>?>(StackFrameType::class.java)
-			map[StackFrameType.SAME_FRAME] = Consumer<FrameContext> { readSame(it, false) }
-			map[StackFrameType.SAME_FRAME_EXTENDED] = Consumer<FrameContext> { readSame(it, true) }
-			map[StackFrameType.SAME_LOCALS_1_STACK] = Consumer<FrameContext> { readSL1S(it, false) }
-			map[StackFrameType.SAME_LOCALS_1_STACK_EXTENDED] = Consumer<FrameContext> { readSL1S(it, true) }
-			map[StackFrameType.CHOP] = Consumer<FrameContext> { readChop(it) }
-			map[StackFrameType.APPEND] = Consumer<FrameContext> { readAppend(it) }
-			map[StackFrameType.FULL] = Consumer<FrameContext> { readFull(it) }
+		private fun registerReaders(): EnumMap<StackFrameType, (FrameContext) -> Unit?> {
+			val map = EnumMap<StackFrameType, (FrameContext) -> Unit?>(StackFrameType::class.java)
+			map[StackFrameType.SAME_FRAME] = { readSame(it, false) }
+			map[StackFrameType.SAME_FRAME_EXTENDED] = { readSame(it, true) }
+			map[StackFrameType.SAME_LOCALS_1_STACK] = { readSL1S(it, false) }
+			map[StackFrameType.SAME_LOCALS_1_STACK_EXTENDED] = { readSL1S(it, true) }
+			map[StackFrameType.CHOP] = { readChop(it) }
+			map[StackFrameType.APPEND] = { readAppend(it) }
+			map[StackFrameType.FULL] = { readFull(it) }
 			return map
 		}
 

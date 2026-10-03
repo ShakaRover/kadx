@@ -20,7 +20,6 @@ import java.nio.file.Files.deleteIfExists
 import java.nio.file.Files.isRegularFile
 import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicReference
-import java.util.function.Consumer
 
 class JadxPluginsList private constructor() {
 	companion object {
@@ -37,23 +36,23 @@ class JadxPluginsList private constructor() {
 	@Volatile
 	private var loadedList: JadxPluginListCache? = null
 
-	fun get(consumer: Consumer<List<JadxPluginListEntry>>) {
+	fun get(consumer: (List<JadxPluginListEntry>) -> Unit) {
 		synchronized(this) {
 			val list = loadedList
 			if (list != null) {
-				consumer.accept(list.list!!)
+				consumer(list.list!!)
 				return
 			}
 			var listCache = loadCache()
 			if (listCache != null) {
-				consumer.accept(listCache.list!!)
+				consumer(listCache.list!!)
 				loadedList = listCache
 			}
 			val release = fetchLatestRelease()
 			if (listCache == null || listCache.version != release.name) {
 				val updatedList = fetchBundle(release)
 				saveCache(updatedList)
-				consumer.accept(updatedList.list!!)
+				consumer(updatedList.list!!)
 				loadedList = updatedList
 			}
 		}

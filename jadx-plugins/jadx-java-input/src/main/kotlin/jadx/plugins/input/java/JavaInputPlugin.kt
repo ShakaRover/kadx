@@ -11,7 +11,6 @@ import org.jetbrains.annotations.Nullable
 import java.io.Closeable
 import java.io.InputStream
 import java.nio.file.Path
-import java.util.function.Function
 
 /**
  * Java 输入插件入口：注册 .class/.jar 文件加载能力。
@@ -53,7 +52,7 @@ class JavaInputPlugin : JadxPlugin {
 		 * Method for provide several inputs by using load methods from [JavaInputLoader] class.
 		 */
 		@JvmStatic
-		fun load(loader: Function<JavaInputLoader, List<JavaClassReader>>): ICodeLoader = wrapClassReaders(loader.apply(JavaInputLoader()))
+		fun load(loader: (JavaInputLoader) -> List<JavaClassReader>): ICodeLoader = wrapClassReaders(loader(JavaInputLoader()))
 
 		/**
 		 * Convenient method for load class file or jar from input stream.

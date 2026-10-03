@@ -20,7 +20,7 @@ public class DexLoadResult(
 
 	override fun visitClasses(consumer: Consumer<IClassData>) {
 		for (dexReader in dexReaders) {
-			dexReader.visitClasses(consumer)
+			dexReader.visitClasses { consumer.accept(it) }
 		}
 	}
 

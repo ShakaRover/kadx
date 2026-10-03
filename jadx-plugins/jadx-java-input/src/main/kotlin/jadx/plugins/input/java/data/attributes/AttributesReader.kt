@@ -7,7 +7,6 @@ import org.jetbrains.annotations.Nullable
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.HashMap
-import java.util.function.Predicate
 
 /**
  * attribute 区的批量读取器。
@@ -36,7 +35,7 @@ class AttributesReader(
 	 * @param reader 读取器位置应已定位到 attribute 区起点
 	 * @param condition 判断某属性是否应该被解析并加入存储
 	 */
-	private fun loadAttributes(reader: DataReader, condition: Predicate<JavaAttrType<*>>): JavaAttrStorage {
+	private fun loadAttributes(reader: DataReader, condition: (JavaAttrType<*>) -> Boolean): JavaAttrStorage {
 		val count = reader.readU2()
 		if (count == 0) {
 			return JavaAttrStorage.EMPTY
@@ -48,7 +47,7 @@ class AttributesReader(
 			val end = reader.offset + len
 			try {
 				val attrType = resolveAttrReader(nameIdx)
-				if (attrType != null && condition.test(attrType)) {
+				if (attrType != null && condition(attrType)) {
 					val attrReader = attrType.reader
 					if (attrReader != null) {
 						val attrValue = attrReader.read(clsData, reader)

@@ -6,7 +6,6 @@ import jadx.plugins.input.dex.sections.DexHeader
 import jadx.plugins.input.dex.sections.SectionReader
 import jadx.plugins.input.dex.sections.annotations.AnnotationsParser
 import java.nio.ByteBuffer
-import java.util.function.Consumer
 
 /**
  * 单个已解析的 DEX 文件：持有完整字节数组与解析出的 header，作为各 section reader 的数据源。
@@ -34,7 +33,7 @@ public class DexReader(
 	/**
 	 * 遍历本 DEX 文件中的全部 class，逐个回调 [consumer]。
 	 */
-	public fun visitClasses(consumer: Consumer<IClassData>) {
+	public fun visitClasses(consumer: (IClassData) -> Unit) {
 		val count = header.classDefsSize
 		if (count == 0) {
 			return
@@ -44,7 +43,7 @@ public class DexReader(
 		val annotationsParser = AnnotationsParser(inReader.copy(), inReader.copy())
 		val classData = DexClassData(inReader, annotationsParser)
 		for (i in 0 until count) {
-			consumer.accept(classData)
+			consumer(classData)
 			inReader.shiftOffset(DexClassData.SIZE)
 		}
 	}

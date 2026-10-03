@@ -11,7 +11,6 @@ import jadx.api.plugins.input.data.attributes.types.SourceFileAttr
 import jadx.plugins.input.dex.sections.annotations.AnnotationsParser
 import jadx.plugins.input.dex.utils.SmaliUtils
 import org.slf4j.LoggerFactory
-import java.util.function.Consumer
 
 /**
  * DEX 类数据：class_defs section 中一个 class_def_item 的完整视图。
@@ -102,7 +101,7 @@ public class DexClassData(
 		visitMethods(mthConsumer, data, directMthCount, virtualMthCount)
 	}
 
-	private fun visitFields(fieldConsumer: Consumer<IFieldData>, data: SectionReader, staticFieldsCount: Int, instanceFieldsCount: Int) {
+	private fun visitFields(fieldConsumer: ISeqConsumer<IFieldData>, data: SectionReader, staticFieldsCount: Int, instanceFieldsCount: Int) {
 		val annotationOffsetMap = annotationsParser.readFieldsAnnotationOffsetMap()
 		val fieldData = DexFieldData(annotationsParser)
 		fieldData.setParentClassType(getType())
@@ -111,7 +110,7 @@ public class DexClassData(
 	}
 
 	private fun readFields(
-		fieldConsumer: Consumer<IFieldData>,
+		fieldConsumer: ISeqConsumer<IFieldData>,
 		data: SectionReader,
 		fieldData: DexFieldData,
 		count: Int,
@@ -133,7 +132,7 @@ public class DexClassData(
 		}
 	}
 
-	private fun visitMethods(mthConsumer: Consumer<IMethodData>, data: SectionReader, directMthCount: Int, virtualMthCount: Int) {
+	private fun visitMethods(mthConsumer: ISeqConsumer<IMethodData>, data: SectionReader, directMthCount: Int, virtualMthCount: Int) {
 		val methodData = DexMethodData(annotationsParser)
 		methodData.setMethodRef(DexMethodRef())
 		val annotationOffsetMap = annotationsParser.readMethodsAnnotationOffsetMap()
@@ -144,7 +143,7 @@ public class DexClassData(
 	}
 
 	private fun readMethods(
-		mthConsumer: Consumer<IMethodData>,
+		mthConsumer: ISeqConsumer<IMethodData>,
 		data: SectionReader,
 		methodData: DexMethodData,
 		count: Int,
