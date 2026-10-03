@@ -148,7 +148,7 @@ class JadxProject private constructor(
 
 	/** 从项目数据恢复打开的标签页。 */
 	fun getOpenTabs(mw: MainWindow): List<EditorViewState> {
-		tabStateViewAdapter.setCustomAdapters(mw.wrapper.guiPluginsContext.tabStatePersistAdapters)
+		tabStateViewAdapter.setCustomAdapters(mw.wrapper.guiPluginsContext.getTabStatePersistAdapters())
 		return data.getOpenTabs().mapNotNull { tabStateViewAdapter.load(mw, it) }
 	}
 
