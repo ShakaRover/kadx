@@ -78,17 +78,17 @@ class TabStateViewAdapter {
 	private fun loadJNode(mw: MainWindow, tvs: TabViewState): JNode? {
 		when (tvs.getType()) {
 			"class" -> {
-				val javaClass: JavaClass? = mw.wrapper.searchJavaClassByRawName(checkNotNull(tvs.getTabPath()))
+				val javaClass: JavaClass? = mw.getWrapper().searchJavaClassByRawName(checkNotNull(tvs.getTabPath()))
 				if (javaClass != null) {
-					return mw.cacheObject.getNodeCache().makeFrom(javaClass)
+					return mw.getCacheObject().getNodeCache().makeFrom(javaClass)
 				}
 			}
 
-			"resource" -> return mw.treeRoot.searchResourceByName(checkNotNull(tvs.getTabPath()))
+			"resource" -> return mw.getTreeRoot().searchResourceByName(checkNotNull(tvs.getTabPath()))
 
 			"sub-resource" -> {
 				val parts = checkNotNull(tvs.getTabPath()).split(JSubResource.SUB_RES_PREFIX)
-				val baseRes = mw.treeRoot.searchResourceByName(parts[0])
+				val baseRes = mw.getTreeRoot().searchResourceByName(parts[0])
 				if (baseRes != null) {
 					val subName = parts[1]
 					// 搜索前会先加载子节点
@@ -97,7 +97,7 @@ class TabStateViewAdapter {
 				return null
 			}
 
-			"mapping" -> return mw.treeRoot.followStaticPath("JInputs").searchNode { node -> node is JInputMapping }
+			"mapping" -> return mw.getTreeRoot().followStaticPath("JInputs").searchNode { node -> node is JInputMapping }
 		}
 		val statePersist = customAdaptersMap[tvs.getType()]
 		if (statePersist != null) {

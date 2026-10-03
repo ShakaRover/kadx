@@ -148,7 +148,7 @@ class JadxProject private constructor(
 
 	/** 从项目数据恢复打开的标签页。 */
 	fun getOpenTabs(mw: MainWindow): List<EditorViewState> {
-		tabStateViewAdapter.setCustomAdapters(mw.wrapper.getGuiPluginsContext().getTabStatePersistAdapters())
+		tabStateViewAdapter.setCustomAdapters(mw.getWrapper().getGuiPluginsContext().getTabStatePersistAdapters())
 		return data.getOpenTabs().mapNotNull { tabStateViewAdapter.load(mw, it) }
 	}
 
@@ -182,7 +182,7 @@ class JadxProject private constructor(
 	}
 
 	private fun resolveCachePath(cacheDirStr: String?): Path {
-		val cacheManager = mainWindow.cacheManager
+		val cacheManager = mainWindow.getCacheManager()
 		val newCacheDir = cacheManager.getCacheDir(this, cacheDirStr)
 		val newCacheStr = cacheManager.buildCacheDirStr(newCacheDir)
 		if (newCacheStr != cacheDirStr) {
@@ -232,7 +232,7 @@ class JadxProject private constructor(
 
 	fun getSearchResourcesSizeLimit(): Int = data.getSearchResourcesSizeLimit()
 	private fun changed() {
-		val settings: JadxSettings? = mainWindow.settings
+		val settings: JadxSettings? = mainWindow.getSettings()
 		if (settings != null && settings.getSaveOption() == SaveOptionEnum.ALWAYS) {
 			save()
 		} else {
@@ -251,7 +251,7 @@ class JadxProject private constructor(
 	fun isInitial(): Boolean = initial
 
 	fun saveAs(path: Path) {
-		mainWindow.cacheManager.projectPathUpdate(this, path)
+		mainWindow.getCacheManager().projectPathUpdate(this, path)
 		setProjectPath(path)
 		save()
 	}
