@@ -20,7 +20,7 @@ class ConstValueAttr(
 		/** @return 读取器：读一个 u2 常量池索引并按其类型解码为 [EncodedValue] */
 		@JvmStatic
 		fun reader(): IJavaAttributeReader = object : IJavaAttributeReader {
-			override fun read(clsData: JavaClassData, reader: DataReader): IJavaAttribute = ConstValueAttr(clsData.getConstPoolReader().readAsEncodedValue(reader.readU2()))
+			override fun read(clsData: JavaClassData, reader: DataReader): IJavaAttribute = ConstValueAttr(clsData.constPoolReader.readAsEncodedValue(reader.readU2()))
 		}
 	}
 }

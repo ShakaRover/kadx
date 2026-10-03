@@ -628,7 +628,7 @@ class DebugController :
 		val regs = checkNotNull(cur.regAdapter).getInitializedList(frame.getCodeOffset())
 		for (reg in regs) {
 			val info = checkNotNull(cur.regAdapter).getInfo(reg.getRuntimeRegNum(), frame.getCodeOffset())
-			val regNode = frame.getRegNodes()[reg.getRegNum()]
+			val regNode = frame.getRegNodes()[reg.regNum]
 			if (info != null) {
 				applyDbgInfo(regNode, info)
 			}
@@ -637,7 +637,7 @@ class DebugController :
 	}
 
 	private fun applyDbgInfo(rn: RegTreeNode, info: RuntimeVarInfo) {
-		applyDbgInfo(rn, info.getName(), info.getType())
+		applyDbgInfo(rn, info.name, info.type)
 	}
 
 	private fun applyDbgInfo(rn: RegTreeNode, alias: String?, type: String?) {
@@ -865,7 +865,7 @@ class DebugController :
 		val paramStart = smali.getParamRegStart(cur.mthFullID)
 		val srs = smali.getRegisterList(cur.mthFullID)
 		for (sr in srs) {
-			sr.setRuntimeRegNum(art.getRuntimeRegNum(sr.getRegNum(), regCount, paramStart))
+			sr.setRuntimeRegNum(art.getRuntimeRegNum(sr.regNum, regCount, paramStart))
 		}
 		return srs
 	}
@@ -1225,9 +1225,9 @@ class DebugController :
 		}
 
 		override fun getName(): String = if (!StringUtils.isEmpty(alias)) {
-			"${smaliReg.getName()} ($alias)"
+			"${smaliReg.name} ($alias)"
 		} else {
-			String.format("%-3s", smaliReg.getName())
+			String.format("%-3s", smaliReg.name)
 		}
 
 		override fun getValue(): String? = value

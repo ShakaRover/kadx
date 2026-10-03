@@ -26,7 +26,7 @@ public open class SourceFileAttr(
 	 *
 	 * 原 Java 声明为协变的具体类型，这里保持一致。
 	 */
-	override fun getAttrType(): JadxAttrType<SourceFileAttr> = JadxAttrType.SOURCE_FILE
+	override val attrType: JadxAttrType<SourceFileAttr> get() = JadxAttrType.SOURCE_FILE
 
 	/** 调试字符串，格式与原 Java 一致：`SOURCE:<文件名>`（注意冒号后无空格）*/
 	override fun toString(): String = "SOURCE:$fileName"

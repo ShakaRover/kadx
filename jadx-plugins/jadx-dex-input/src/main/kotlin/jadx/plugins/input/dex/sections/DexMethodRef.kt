@@ -18,18 +18,18 @@ import jadx.plugins.input.dex.DexReader
  */
 public class DexMethodRef : IMethodRef {
 
-	private var uniqId: Int = 0
-	private var name: String? = null
-	private var parentClassType: String? = null
-	private var returnType: String? = null
-	private var argTypes: List<String>? = null
+	private var uniqIdValue: Int = 0
+	private var nameValue: String? = null
+	private var parentClassTypeValue: String? = null
+	private var returnTypeValue: String? = null
+	private var argTypesValue: List<String>? = null
 
 	// lazy loading info（延迟加载所需的索引与读取器）
 	private var dexIdx: Int = 0
 	private var sectionReader: SectionReader? = null
 
 	public fun initUniqId(dexReader: DexReader, idx: Int) {
-		this.uniqId = (dexReader.uniqId and 0xFFFF) shl 16 or (idx and 0xFFFF)
+		this.uniqIdValue = (dexReader.uniqId and 0xFFFF) shl 16 or (idx and 0xFFFF)
 	}
 
 	override fun load() {
@@ -46,44 +46,44 @@ public class DexMethodRef : IMethodRef {
 		this.sectionReader = sectionReader
 	}
 
-	override fun getUniqId(): Int = uniqId
+	override val uniqId: Int get() = uniqIdValue
 
 	public fun reset() {
-		name = null
-		parentClassType = null
-		returnType = null
-		argTypes = null
+		nameValue = null
+		parentClassTypeValue = null
+		returnTypeValue = null
+		argTypesValue = null
 	}
 
-	override fun getParentClassType(): String = checkNotNull(parentClassType) { "method ref not loaded" }
+	override val parentClassType: String get() = checkNotNull(parentClassTypeValue) { "method ref not loaded" }
 
-	public fun setParentClassType(parentClassType: String?) {
-		this.parentClassType = parentClassType
+	public fun setParentClassType(parentClassTypeValue: String?) {
+		this.parentClassTypeValue = parentClassTypeValue
 	}
 
-	override fun getName(): String = checkNotNull(name) { "method ref not loaded" }
+	override val name: String get() = checkNotNull(nameValue) { "method ref not loaded" }
 
-	public fun setName(name: String?) {
-		this.name = name
+	public fun setName(nameValue: String?) {
+		this.nameValue = nameValue
 	}
 
-	override fun getReturnType(): String = checkNotNull(returnType) { "method ref not loaded" }
+	override val returnType: String get() = checkNotNull(returnTypeValue) { "method ref not loaded" }
 
-	public fun setReturnType(returnType: String?) {
-		this.returnType = returnType
+	public fun setReturnType(returnTypeValue: String?) {
+		this.returnTypeValue = returnTypeValue
 	}
 
-	override fun getArgTypes(): List<String> = checkNotNull(argTypes) { "method ref not loaded" }
+	override val argTypes: List<String> get() = checkNotNull(argTypesValue) { "method ref not loaded" }
 
-	public fun setArgTypes(argTypes: List<String>?) {
-		this.argTypes = argTypes
+	public fun setArgTypes(argTypesValue: List<String>?) {
+		this.argTypesValue = argTypesValue
 	}
 
 	override fun toString(): String {
-		if (name == null) {
+		if (nameValue == null) {
 			// 尚未 load：输出 uniqId 十六进制便于调试定位
-			return Integer.toHexString(uniqId)
+			return Integer.toHexString(uniqIdValue)
 		}
-		return "$parentClassType->$name(${Utils.listToStr(argTypes)})$returnType"
+		return "$parentClassTypeValue->$nameValue(${Utils.listToStr(argTypes)})$returnTypeValue"
 	}
 }

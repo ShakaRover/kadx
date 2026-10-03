@@ -134,15 +134,15 @@ class DebugInfoApplyVisitor : AbstractVisitor() {
 			val endOffset = maxOffset
 			val regNum = ssaVar.regNum
 			for (localVar in debugInfoAttr.localVars) {
-				if (localVar.getRegNum() == regNum) {
-					val startAddr = localVar.getStartOffset()
-					val endAddr = localVar.getEndOffset()
+				if (localVar.regNum == regNum) {
+					val startAddr = localVar.startOffset
+					val endAddr = localVar.endOffset
 					if (isInside(startOffset, startAddr, endAddr) || isInside(endOffset, startAddr, endAddr)) {
 						if (Consts.DEBUG_TYPE_INFERENCE) {
 							LOG.debug("Apply debug info by offset for: {} to {}", ssaVar, localVar)
 						}
 						val type = DebugInfoAttachVisitor.getVarType(mth, localVar)
-						applyDebugInfo(mth, ssaVar, type, localVar.getName())
+						applyDebugInfo(mth, ssaVar, type, localVar.name)
 						break
 					}
 				}

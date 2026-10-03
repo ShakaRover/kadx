@@ -16,7 +16,7 @@ public interface IMethodRef :
 	/**
 	 * @return 方法的唯一 id（用于缓存）；无法计算可靠 id 时返回 0（禁用缓存）。
 	 */
-	public fun getUniqId(): Int
+	public val uniqId: Int
 
 	/**
 	 * 惰性加载方法信息：调用 [load] 之前只能使用 [getUniqId]。
@@ -24,8 +24,8 @@ public interface IMethodRef :
 	public fun load()
 
 	/** @return 方法所属类的完整类型名（如 "com.example.Foo"）*/
-	public fun getParentClassType(): String
+	public val parentClassType: String
 
 	/** @return 方法名 */
-	public fun getName(): String
+	public val name: String
 }

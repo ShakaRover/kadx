@@ -9,11 +9,11 @@ package jadx.api.plugins.input.insns.custom
 public interface ISwitchPayload : ICustomPayload {
 
 	/** @return 条目数（keys/targets 的长度）*/
-	public fun getSize(): Int
+	public val size: Int
 
 	/** @return switch 的键值数组 */
-	public fun getKeys(): IntArray
+	public val keys: IntArray
 
 	/** @return 各键对应的跳转目标偏移数组，与 [getKeys] 一一对应 */
-	public fun getTargets(): IntArray
+	public val targets: IntArray
 }

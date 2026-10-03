@@ -178,11 +178,11 @@ class Smali private constructor() {
 			smali.startLine("###### Class ${cls.fullName} is created by jadx")
 			return
 		}
-		val clsAttributes = AttributeStorage.fromList(clsData.getAttributes())
-		smali.startLine("Class: " + clsData.getType())
-			.startLine("AccessFlags: " + AccessFlags.format(clsData.getAccessFlags(), AccessFlagsScope.CLASS))
-			.startLine("SuperType: " + clsData.getSuperType())
-			.startLine("Interfaces: " + clsData.getInterfacesTypes())
+		val clsAttributes = AttributeStorage.fromList(clsData.attributes)
+		smali.startLine("Class: " + clsData.type)
+			.startLine("AccessFlags: " + AccessFlags.format(clsData.accessFlags, AccessFlagsScope.CLASS))
+			.startLine("SuperType: " + clsData.superType)
+			.startLine("Interfaces: " + clsData.interfacesTypes)
 			.startLine("SourceFile: " + clsAttributes.get(JadxAttrType.SOURCE_FILE))
 
 		val annotationsAttr = clsAttributes.get(JadxAttrType.ANNOTATION_LIST)
@@ -221,8 +221,8 @@ class Smali private constructor() {
 					try {
 						writeMethod(smali, cls.methods[mthIndex[0]++], m, line)
 					} catch (e: Throwable) {
-						val methodRef = m.getMethodRef()
-						val mthFullName = methodRef.getParentClassType() + "->" + methodRef.getName()
+						val methodRef = m.methodRef
+						val mthFullName = methodRef.parentClassType + "->" + methodRef.name
 						smali.setIndent(0)
 						smali.startLine("Failed to write method: " + mthFullName + "\n" + Utils.getStackTrace(e))
 						LOG.error("Failed to write smali code for method: {}", mthFullName, e)
@@ -279,21 +279,21 @@ class Smali private constructor() {
 		}
 		smali.startLine().startLine(".method ")
 		writeMethodDef(smali, mth, line)
-		val codeReader = mth.getCodeReader()
+		val codeReader = mth.codeReader
 		if (codeReader != null) {
-			val regsCount = codeReader.getRegistersCount()
+			val regsCount = codeReader.registersCount
 			line.smaliMthNode.setParamRegStart(getParamStartRegNum(mth))
 			line.smaliMthNode.setRegCount(regsCount)
-			val nodes = HashMap<Long, InsnNode>(codeReader.getUnitsCount() / 2)
-			line.smaliMthNode.setInsnNodes(nodes, codeReader.getUnitsCount())
-			line.smaliMthNode.initRegInfoList(regsCount, codeReader.getUnitsCount())
+			val nodes = HashMap<Long, InsnNode>(codeReader.unitsCount / 2)
+			line.smaliMthNode.setInsnNodes(nodes, codeReader.unitsCount)
+			line.smaliMthNode.initRegInfoList(regsCount, codeReader.unitsCount)
 
 			smali.incIndent()
 			smali.startLine(".registers ").add(regsCount.toString())
 
 			writeTries(codeReader, line)
-			val debugInfo = codeReader.getDebugInfo()
-			val localVars: List<ILocalVar> = debugInfo?.getLocalVars() ?: emptyList()
+			val debugInfo = codeReader.debugInfo
+			val localVars: List<ILocalVar> = debugInfo?.localVars ?: emptyList()
 			formatMthParamInfo(mth, smali, line, regsCount, localVars)
 			if (debugInfo != null) {
 				formatDbgInfo(debugInfo, localVars, line)
@@ -302,15 +302,15 @@ class Smali private constructor() {
 			smali.startLine()
 			// 第一遍：填充 switch 指令的 payload 偏移
 			codeReader.visitInstructions { insn ->
-				val opcode = insn.getOpcode()
+				val opcode = insn.opcode
 				if (opcode == Opcode.PACKED_SWITCH || opcode == Opcode.SPARSE_SWITCH) {
 					insn.decode()
-					line.addPayloadOffset(insn.getOffset(), insn.getTarget())
+					line.addPayloadOffset(insn.offset, insn.target)
 				}
 			}
 			codeReader.visitInstructions { insn ->
 				val node = decodeInsn(insn, line)
-				nodes[insn.getOffset().toLong()] = node
+				nodes[insn.offset.toLong()] = node
 			}
 			line.write(smali)
 			insnMap[methodNode.getMethodInfo().rawFullId] = line.smaliMthNode
@@ -321,31 +321,31 @@ class Smali private constructor() {
 	}
 
 	private fun writeTries(codeReader: ICodeReader, line: LineInfo) {
-		val tries = codeReader.getTries()
+		val tries = codeReader.tries
 		for (aTry in tries) {
-			val end = aTry.getEndOffset()
+			val end = aTry.endOffset
 			val tryEndTip = String.format(FMT_TRY_END_TAG, end)
-			val tryStartTip = String.format(FMT_TRY_TAG, aTry.getStartOffset())
+			val tryStartTip = String.format(FMT_TRY_TAG, aTry.startOffset)
 			val tryStartTipExtra = " # :" + tryStartTip.substring(0, tryStartTip.length - 1)
 
-			line.addTip(aTry.getStartOffset(), tryStartTip, " # :" + tryEndTip.substring(0, tryEndTip.length - 1))
+			line.addTip(aTry.startOffset, tryStartTip, " # :" + tryEndTip.substring(0, tryEndTip.length - 1))
 			line.addTip(end, tryEndTip, tryStartTipExtra)
 
-			val iCatch: ICatch = aTry.getCatch()
-			val addresses = iCatch.getHandlers()
+			val iCatch: ICatch = aTry.catch
+			val addresses = iCatch.handlers
 			var addr = 0
 			for (i in addresses.indices) {
 				addr = addresses[i]
 				val catchTip = String.format(FMT_CATCH_TAG, addr)
-				line.addTip(addr, catchTip, " # " + iCatch.getTypes()[i])
+				line.addTip(addr, catchTip, " # " + iCatch.types[i])
 				line.addTip(addr, catchTip, tryStartTipExtra)
-				line.addTip(aTry.getStartOffset(), tryStartTip, " # :" + catchTip.substring(0, catchTip.length - 1))
+				line.addTip(aTry.startOffset, tryStartTip, " # :" + catchTip.substring(0, catchTip.length - 1))
 			}
-			addr = iCatch.getCatchAllHandler()
+			addr = iCatch.catchAllHandler
 			if (addr > -1) {
 				val catchAllTip = String.format(FMT_CATCH_ALL_TAG, addr)
 				line.addTip(addr, catchAllTip, tryStartTipExtra)
-				line.addTip(aTry.getStartOffset(), tryStartTip, " # :" + catchAllTip.substring(0, catchAllTip.length - 1))
+				line.addTip(aTry.startOffset, tryStartTip, " # :" + catchAllTip.substring(0, catchAllTip.length - 1))
 			}
 		}
 	}
@@ -371,19 +371,19 @@ class Smali private constructor() {
 				lw.append(", ").append(literal(insn))
 			} else if (node.getType() == InsnType.INVOKE) {
 				lw.append(", ").append(method(insn))
-			} else if (insn.getIndexType() == InsnIndexType.FIELD_REF) {
+			} else if (insn.indexType == InsnIndexType.FIELD_REF) {
 				lw.append(", ").append(field(insn))
-			} else if (insn.getIndexType() == InsnIndexType.STRING_REF) {
+			} else if (insn.indexType == InsnIndexType.STRING_REF) {
 				lw.append(", ").append(str(insn))
-			} else if (insn.getIndexType() == InsnIndexType.TYPE_REF) {
+			} else if (insn.indexType == InsnIndexType.TYPE_REF) {
 				lw.append(", ").append(type(insn))
-			} else if (insn.getOpcode() == Opcode.CONST_METHOD_HANDLE) {
+			} else if (insn.opcode == Opcode.CONST_METHOD_HANDLE) {
 				lw.append(", ").append(methodHandle(insn))
-			} else if (insn.getOpcode() == Opcode.CONST_METHOD_TYPE) {
-				lw.append(", ").append(proto(insn, insn.getIndex()))
+			} else if (insn.opcode == Opcode.CONST_METHOD_TYPE) {
+				lw.append(", ").append(proto(insn, insn.index))
 			}
 		}
-		line.addInsnLine(insn.getOffset(), lw.toString())
+		line.addInsnLine(insn.offset, lw.toString())
 	}
 
 	private fun formatInsnName(insn: InsnData): String {
@@ -391,39 +391,39 @@ class Smali private constructor() {
 			// 添加 api opcode，因为不使用寄存器
 			return String.format(
 				"%-" + INSN_COL_WIDTH + "s | %-15s",
-				insn.getOpcodeMnemonic(),
-				insn.getOpcode().name.lowercase(Locale.ROOT).replace('_', '-'),
+				insn.opcodeMnemonic,
+				insn.opcode.name.lowercase(Locale.ROOT).replace('_', '-'),
 			)
 		}
-		return String.format(FMT_INSN_COL, insn.getOpcodeMnemonic())
+		return String.format(FMT_INSN_COL, insn.opcodeMnemonic)
 	}
 
 	private fun tryFormatTargetIns(insn: InsnData, insnType: InsnType, line: LineInfo): Boolean {
 		when (insnType) {
 			InsnType.IF -> {
-				val target = insn.getTarget()
+				val target = insn.target
 				line.addTip(target, String.format(FMT_COND_TAG, target), "")
 				line.getLineWriter().append(", ").append(String.format(FMT_COND, target))
 				return true
 			}
 
 			InsnType.GOTO -> {
-				val target = insn.getTarget()
+				val target = insn.target
 				line.addTip(target, String.format(FMT_GOTO_TAG, target), "")
 				line.getLineWriter().append(String.format(FMT_GOTO, target))
 				return true
 			}
 
 			InsnType.FILL_ARRAY -> {
-				val target = insn.getTarget()
+				val target = insn.target
 				line.addTip(target, String.format(FMT_DATA_TAG, target), "")
 				line.getLineWriter().append(", ").append(String.format(FMT_DATA, target))
 				return true
 			}
 
 			InsnType.SWITCH -> {
-				val target = insn.getTarget()
-				if (insn.getOpcode() == Opcode.PACKED_SWITCH) {
+				val target = insn.target
+				if (insn.opcode == Opcode.PACKED_SWITCH) {
 					line.addTip(target, String.format(FMT_P_SWITCH_TAG, target), "")
 					line.getLineWriter().append(", ").append(String.format(FMT_P_SWITCH, target))
 				} else {
@@ -439,20 +439,20 @@ class Smali private constructor() {
 	}
 
 	private fun writeMethodDef(smali: SmaliWriter, mth: IMethodData, lineInfo: LineInfo) {
-		smali.add(AccessFlags.format(mth.getAccessFlags(), AccessFlagsScope.METHOD))
+		smali.add(AccessFlags.format(mth.accessFlags, AccessFlagsScope.METHOD))
 
-		val methodRef = mth.getMethodRef()
+		val methodRef = mth.methodRef
 		methodRef.load()
 		lineInfo.smaliMthNode.setDefPos(smali.getLength())
-		smali.add(methodRef.getName())
+		smali.add(methodRef.name)
 			.add('(')
-		methodRef.getArgTypes().forEach(smali::add)
+		methodRef.argTypes.forEach(smali::add)
 		smali.add(')')
-		smali.add(methodRef.getReturnType())
+		smali.add(methodRef.returnType)
 
-		val mthAttributes = AttributeStorage.fromList(mth.getAttributes())
+		val mthAttributes = AttributeStorage.fromList(mth.attributes)
 		val annotationsAttr = mthAttributes.get(JadxAttrType.ANNOTATION_LIST)
-		if (annotationsAttr != null && !annotationsAttr.isEmpty()) {
+		if (annotationsAttr != null && !annotationsAttr.isEmpty) {
 			smali.incIndent()
 			writeAnnotations(smali, annotationsAttr.list)
 			smali.decIndent()
@@ -467,13 +467,13 @@ class Smali private constructor() {
 		regsCount: Int,
 		localVars: List<ILocalVar>,
 	) {
-		val types = mth.getMethodRef().getArgTypes()
+		val types = mth.methodRef.argTypes
 		if (types.isEmpty()) {
 			return
 		}
 		var paramStart = 0
 		var regNum = line.smaliMthNode.getParamRegStart()
-		if (!hasStaticFlag(mth.getAccessFlags())) {
+		if (!hasStaticFlag(mth.accessFlags)) {
 			// 添加 'this' 寄存器
 			line.addRegName(regNum, "p0")
 			line.smaliMthNode.setParamReg(regNum, "p0")
@@ -485,16 +485,16 @@ class Smali private constructor() {
 		}
 		val params = arrayOfNulls<ILocalVar>(regsCount)
 		for (v in localVars) {
-			if (v.isMarkedAsParameter()) {
-				params[v.getRegNum()] = v
+			if (v.isMarkedAsParameter) {
+				params[v.regNum] = v
 			}
 		}
 		smali.newLine()
 		for (paramType in types) {
 			val param = params[regNum]
 			if (param != null) {
-				val name = Utils.getOrElse(param.getName(), "")
-				val type = Utils.getOrElse(param.getSignature(), paramType)
+				val name = Utils.getOrElse(param.name, "")
+				val type = Utils.getOrElse(param.signature, paramType)
 				val varName = "p$paramStart"
 				smali.startLine(".param $varName, \"$name\" # $type")
 				line.addRegName(regNum, varName)
@@ -507,18 +507,18 @@ class Smali private constructor() {
 	}
 
 	private fun getParamStartRegNum(mth: IMethodData): Int {
-		val codeReader = mth.getCodeReader()
+		val codeReader = mth.codeReader
 		if (codeReader != null) {
-			var startNum = codeReader.getRegistersCount()
+			var startNum = codeReader.registersCount
 			if (startNum > 0) {
-				for (argType in mth.getMethodRef().getArgTypes()) {
+				for (argType in mth.methodRef.argTypes) {
 					if (isWideType(argType)) {
 						startNum -= 2
 					} else {
 						startNum -= 1
 					}
 				}
-				if (!hasStaticFlag(mth.getAccessFlags())) {
+				if (!hasStaticFlag(mth.accessFlags)) {
 					startNum--
 				}
 				return startNum
@@ -559,38 +559,38 @@ class Smali private constructor() {
 	}
 
 	private fun formatDbgInfo(dbgInfo: IDebugInfo, localVars: List<ILocalVar>, line: LineInfo) {
-		dbgInfo.getSourceLineMapping().forEach { (codeOffset, srcLine) ->
+		dbgInfo.sourceLineMapping.forEach { (codeOffset, srcLine) ->
 			if (codeOffset > -1) {
 				line.addDebugLineTip(codeOffset, String.format(".line %d", srcLine), "")
 			}
 		}
 		for (localVar in localVars) {
-			if (localVar.isMarkedAsParameter()) {
+			if (localVar.isMarkedAsParameter) {
 				continue
 			}
-			val type = localVar.getType()
-			val sign = localVar.getSignature()
+			val type = localVar.type
+			val sign = localVar.signature
 			val longTypeStr: String = if (sign == null || sign.trim().isEmpty()) {
-				", \"${localVar.getName()}\":$type"
+				", \"${localVar.name}\":$type"
 			} else {
-				", \"${localVar.getName()}\":$type, \"${localVar.getSignature()}\""
+				", \"${localVar.name}\":$type, \"${localVar.signature}\""
 			}
 			line.addTip(
-				localVar.getStartOffset(),
+				localVar.startOffset,
 				".local " + formatVarName(line.smaliMthNode, localVar),
 				longTypeStr,
 			)
 			line.addTip(
-				localVar.getEndOffset(),
+				localVar.endOffset,
 				".end local " + formatVarName(line.smaliMthNode, localVar),
-				" # \"${localVar.getName()}\":$type",
+				" # \"${localVar.name}\":$type",
 			)
 		}
 	}
 
 	private fun formatVarName(smaliMthNode: SmaliMethodNode, localVar: ILocalVar): String {
 		val paramRegStart = smaliMthNode.getParamRegStart()
-		val regNum = localVar.getRegNum()
+		val regNum = localVar.regNum
 		if (regNum < paramRegStart) {
 			return "v$regNum"
 		}
@@ -655,7 +655,7 @@ class Smali private constructor() {
 		val appendBrace = insnType == InsnType.INVOKE || isRegList(insn)
 		val lw = line.getLineWriter()
 		if (insnType == InsnType.INVOKE) {
-			val resultReg = insn.getResultReg()
+			val resultReg = insn.resultReg
 			if (resultReg != -1) {
 				lw.append(line.getRegName(resultReg)).append(" <= ")
 			}
@@ -666,9 +666,9 @@ class Smali private constructor() {
 		if (isRangeRegIns(insn)) {
 			lw.append(line.getRegName(insn.getReg(0)))
 				.append(" .. ")
-				.append(line.getRegName(insn.getReg(insn.getRegsCount() - 1)))
-		} else if (insn.getRegsCount() > 0) {
-			for (i in 0 until insn.getRegsCount()) {
+				.append(line.getRegName(insn.getReg(insn.regsCount - 1)))
+		} else if (insn.regsCount > 0) {
+			for (i in 0 until insn.regsCount) {
 				if (i > 0) {
 					lw.append(", ")
 				}
@@ -693,12 +693,12 @@ class Smali private constructor() {
 
 	private fun fmtCols(insn: InsnData, line: LineInfo) {
 		if (printFileOffset) {
-			line.getLineWriter().append(String.format("$FMT_FILE_OFFSET ", insn.getFileOffset()))
+			line.getLineWriter().append(String.format("$FMT_FILE_OFFSET ", insn.fileOffset))
 		}
 		if (printBytecode) {
-			formatByteCode(line.getLineWriter(), insn.getByteCode())
+			formatByteCode(line.getLineWriter(), insn.byteCode)
 			line.getLineWriter().append(" ")
-			line.getLineWriter().append(String.format("$FMT_CODE_OFFSET ", insn.getOffset()))
+			line.getLineWriter().append(String.format("$FMT_CODE_OFFSET ", insn.offset))
 		}
 	}
 
@@ -720,12 +720,12 @@ class Smali private constructor() {
 	}
 
 	private fun fmtPayloadInsn(insn: InsnData, line: LineInfo): Boolean {
-		val opcode = insn.getOpcode()
+		val opcode = insn.opcode
 		if (opcode == Opcode.PACKED_SWITCH_PAYLOAD) {
 			line.getLineWriter().append("packed-switch-payload")
-			line.addInsnLine(insn.getOffset(), line.getLineWriter().toString())
+			line.addInsnLine(insn.offset, line.getLineWriter().toString())
 
-			val payload = insn.getPayload() as ISwitchPayload?
+			val payload = insn.payload as ISwitchPayload?
 			if (payload != null) {
 				fmtSwitchPayload(insn, FMT_P_SWITCH_CASE, FMT_P_SWITCH_CASE_TAG, line, payload)
 			}
@@ -733,9 +733,9 @@ class Smali private constructor() {
 		}
 		if (opcode == Opcode.SPARSE_SWITCH_PAYLOAD) {
 			line.getLineWriter().append("sparse-switch-payload")
-			line.addInsnLine(insn.getOffset(), line.getLineWriter().toString())
+			line.addInsnLine(insn.offset, line.getLineWriter().toString())
 
-			val payload = insn.getPayload() as ISwitchPayload?
+			val payload = insn.payload as ISwitchPayload?
 			if (payload != null) {
 				fmtSwitchPayload(insn, FMT_S_SWITCH_CASE, FMT_S_SWITCH_CASE_TAG, line, payload)
 			}
@@ -743,7 +743,7 @@ class Smali private constructor() {
 		}
 		if (opcode == Opcode.FILL_ARRAY_DATA_PAYLOAD) {
 			line.getLineWriter().append("fill-array-data-payload")
-			line.addInsnLine(insn.getOffset(), line.getLineWriter().toString())
+			line.addInsnLine(insn.offset, line.getLineWriter().toString())
 			return true
 		}
 		return false
@@ -754,23 +754,23 @@ class Smali private constructor() {
 		lineStart += CODE_OFFSET_COLUMN_WIDTH + 1 + 1 // 加 1 个空格和 1 个 ':'
 		val basicIndent = String(ByteArray(lineStart)).replace("\u0000", " ")
 		val indent = JadxArgs.DEFAULT_INDENT_STR + basicIndent
-		val keys = payload.getKeys()
-		val targets = payload.getTargets()
-		val switchOffset = line.payloadOffsetMap[insn.getOffset()]
-			?: throw JadxRuntimeException("Unknown switch insn for payload at " + insn.getOffset())
+		val keys = payload.keys
+		val targets = payload.targets
+		val switchOffset = line.payloadOffsetMap[insn.offset]
+			?: throw JadxRuntimeException("Unknown switch insn for payload at " + insn.offset)
 		for (i in keys.indices) {
 			val target = switchOffset + targets[i]
 			line.addInsnLine(
-				insn.getOffset(),
+				insn.offset,
 				String.format("%scase %d: -> $fmtTarget", indent, keys[i], target),
 			)
 			line.addTip(target, String.format(fmtTag, target), String.format(" # case %d", keys[i]))
 		}
-		line.addInsnLine(insn.getOffset(), basicIndent + ".end payload")
+		line.addInsnLine(insn.offset, basicIndent + ".end payload")
 	}
 
 	private fun literal(insn: InsnData): String {
-		val it = insn.getLiteral()
+		val it = insn.literal
 		var tip = ""
 		if (it > Int.MAX_VALUE) {
 			if (isWideIns(insn)) {
@@ -786,46 +786,46 @@ class Smali private constructor() {
 
 	private fun str(insn: InsnData): String = String.format(
 		"\"%s\" # string@%04x",
-		checkNotNull(insn.getIndexAsString())
+		checkNotNull(insn.indexAsString)
 			.replace("\n", "\\n")
 			.replace("\t", "\\t"),
-		insn.getIndex(),
+		insn.index,
 	)
 
-	private fun type(insn: InsnData): String = String.format("%s # type@%04x", insn.getIndexAsType(), insn.getIndex())
+	private fun type(insn: InsnData): String = String.format("%s # type@%04x", insn.indexAsType, insn.index)
 
-	private fun field(insn: InsnData): String = String.format("%s # field@%04x", checkNotNull(insn.getIndexAsField()).toString(), insn.getIndex())
+	private fun field(insn: InsnData): String = String.format("%s # field@%04x", checkNotNull(insn.indexAsField).toString(), insn.index)
 
 	private fun method(insn: InsnData): String {
-		val op = insn.getOpcode()
+		val op = insn.opcode
 		if (op == Opcode.INVOKE_CUSTOM || op == Opcode.INVOKE_CUSTOM_RANGE) {
-			val callSite = checkNotNull(insn.getIndexAsCallSite())
+			val callSite = checkNotNull(insn.indexAsCallSite)
 			callSite.load()
-			return String.format("%s # call_site@%04x", callSite.toString(), insn.getIndex())
+			return String.format("%s # call_site@%04x", callSite.toString(), insn.index)
 		}
-		val mthRef = checkNotNull(insn.getIndexAsMethod())
+		val mthRef = checkNotNull(insn.indexAsMethod)
 		mthRef.load()
 		if (op == Opcode.INVOKE_POLYMORPHIC || op == Opcode.INVOKE_POLYMORPHIC_RANGE) {
 			return String.format(
 				"%s, %s # method@%04x, proto@%04x",
 				mthRef.toString(),
-				checkNotNull(insn.getIndexAsProto(insn.getTarget())).toString(),
-				insn.getIndex(),
-				insn.getTarget(),
+				checkNotNull(insn.getIndexAsProto(insn.target)).toString(),
+				insn.index,
+				insn.target,
 			)
 		}
-		return String.format("%s # method@%04x", mthRef.toString(), insn.getIndex())
+		return String.format("%s # method@%04x", mthRef.toString(), insn.index)
 	}
 
 	private fun proto(insn: InsnData, protoIndex: Int): String = String.format("%s # proto@%04x", checkNotNull(insn.getIndexAsProto(protoIndex)).toString(), protoIndex)
 
 	private fun methodHandle(insn: InsnData): String = String.format(
 		"%s # method_handle@%04x",
-		checkNotNull(insn.getIndexAsMethodHandle()).toString(),
-		insn.getIndex(),
+		checkNotNull(insn.indexAsMethodHandle).toString(),
+		insn.index,
 	)
 
-	internal fun isRangeRegIns(insn: InsnData): Boolean = when (insn.getOpcode()) {
+	internal fun isRangeRegIns(insn: InsnData): Boolean = when (insn.opcode) {
 		Opcode.INVOKE_VIRTUAL_RANGE,
 		Opcode.INVOKE_SUPER_RANGE,
 		Opcode.INVOKE_DIRECT_RANGE,
@@ -839,18 +839,18 @@ class Smali private constructor() {
 		else -> false
 	}
 
-	private fun getOpenCodeByte(insn: InsnData): Int = insn.getRawOpcodeUnit() and 0xff
+	private fun getOpenCodeByte(insn: InsnData): Int = insn.rawOpcodeUnit and 0xff
 
-	private fun isWideIns(insn: InsnData): Boolean = insn.getOpcode() == Opcode.CONST_WIDE
+	private fun isWideIns(insn: InsnData): Boolean = insn.opcode == Opcode.CONST_WIDE
 
 	private fun hasLiteral(insn: InsnData): Boolean {
 		val opcode = getOpenCodeByte(insn)
-		return insn.getOpcode() == Opcode.CONST ||
-			insn.getOpcode() == Opcode.CONST_WIDE ||
+		return insn.opcode == Opcode.CONST ||
+			insn.opcode == Opcode.CONST_WIDE ||
 			(opcode >= 0xd0 && opcode <= 0xe2) // add-int/lit16 到 ushr-int/lit8
 	}
 
-	private fun isRegList(insn: InsnData): Boolean = insn.getOpcode() == Opcode.FILLED_NEW_ARRAY || insn.getOpcode() == Opcode.FILLED_NEW_ARRAY_RANGE
+	private fun isRegList(insn: InsnData): Boolean = insn.opcode == Opcode.FILLED_NEW_ARRAY || insn.opcode == Opcode.FILLED_NEW_ARRAY_RANGE
 
 	private inner class LineInfo {
 		internal var smaliMthNode: SmaliMethodNode = SmaliMethodNode()
@@ -978,14 +978,14 @@ class Smali private constructor() {
 			try {
 				return super.decode(insn)
 			} catch (e: Exception) {
-				return when (insn.getOpcode()) {
+				return when (insn.opcode) {
 					Opcode.INVOKE_CUSTOM,
 					Opcode.INVOKE_CUSTOM_RANGE,
 					Opcode.INVOKE_POLYMORPHIC,
 					Opcode.INVOKE_POLYMORPHIC_RANGE,
 					Opcode.CONST_METHOD_HANDLE,
 					Opcode.CONST_METHOD_TYPE,
-					-> InsnNode(InsnType.INVOKE, insn.getRegsCount())
+					-> InsnNode(InsnType.INVOKE, insn.regsCount)
 
 					else -> throw RuntimeException(e)
 				}
@@ -1007,11 +1007,11 @@ class Smali private constructor() {
 		companion object {
 			fun make(f: IFieldData): RawField {
 				val field = RawField()
-				field.isStatic = hasStaticFlag(f.getAccessFlags())
-				field.accessFlag = AccessFlags.format(f.getAccessFlags(), AccessFlagsScope.FIELD)
-				field.name = checkNotNull(f.getName())
-				field.type = checkNotNull(f.getType())
-				field.attributes = AttributeStorage.fromList(f.getAttributes())
+				field.isStatic = hasStaticFlag(f.accessFlags)
+				field.accessFlag = AccessFlags.format(f.accessFlags, AccessFlagsScope.FIELD)
+				field.name = checkNotNull(f.name)
+				field.type = checkNotNull(f.type)
+				field.attributes = AttributeStorage.fromList(f.attributes)
 				return field
 			}
 		}

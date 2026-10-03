@@ -112,7 +112,7 @@ class ClsSet(private val root: RootNode) {
 
 	/** 根据类的输入文件名判断它来自哪个 jar（应用自身应使用 [ClspClassSource.APP]） */
 	private fun getClspClassSource(cls: ClassNode): ClspClassSource {
-		val inputFileName = checkNotNull(cls.getClsData()).getInputFileName()
+		val inputFileName = checkNotNull(cls.getClsData()).inputFileName
 		val idx = inputFileName.indexOf(':')
 		val sourceFile = inputFileName.substring(0, idx)
 		val source = ClspClassSource.getClspClassSource(sourceFile)

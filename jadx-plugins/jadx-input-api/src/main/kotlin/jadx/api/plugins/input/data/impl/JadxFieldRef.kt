@@ -13,28 +13,28 @@ import jadx.api.plugins.input.data.IFieldRef
  * @param type 字段的描述符/类型字符串
  */
 public class JadxFieldRef(
-	private var parentClassType: String?,
-	private var name: String?,
-	private var type: String?,
+	private var parentClassTypeValue: String?,
+	private var nameValue: String?,
+	private var typeValue: String?,
 ) : IFieldRef {
 
-	override fun getParentClassType(): String? = parentClassType
+	override val parentClassType: String? get() = parentClassTypeValue
 
-	public fun setParentClassType(parentClassType: String?) {
-		this.parentClassType = parentClassType
+	public fun setParentClassType(parentClassTypeValue: String?) {
+		this.parentClassTypeValue = parentClassTypeValue
 	}
 
-	override fun getName(): String? = name
+	override val name: String? get() = nameValue
 
-	public fun setName(name: String?) {
-		this.name = name
+	public fun setName(nameValue: String?) {
+		this.nameValue = nameValue
 	}
 
-	override fun getType(): String? = type
+	override val type: String? get() = typeValue
 
-	public fun setType(type: String?) {
-		this.type = type
+	public fun setType(typeValue: String?) {
+		this.typeValue = typeValue
 	}
 
-	override fun toString(): String = "$parentClassType->$name:$type"
+	override fun toString(): String = "$parentClassTypeValue->$nameValue:$typeValue"
 }

@@ -1279,25 +1279,25 @@ class SmaliDebugger private constructor(
 
 	/** 远端调试变量表中的一个变量。 */
 	class RuntimeVarInfo internal constructor(private val slot: VarWithGenericSlot) : RegisterInfo() {
-		override fun getName(): String = slot.name
+		override val name: String get() = slot.name
 
-		override fun getRegNum(): Int = slot.slot
+		override val regNum: Int get() = slot.slot
 
-		override fun getType(): String {
-			val gen = getSignature()
+		override val type: String get() {
+			val gen = signature
 			if (gen.isEmpty()) {
 				return this.slot.signature
 			}
 			return gen
 		}
 
-		override fun getSignature(): String = this.slot.genericSignature.trim()
+		override val signature: String get() = this.slot.genericSignature.trim()
 
-		override fun getStartOffset(): Int = slot.codeIndex.toInt()
+		override val startOffset: Int get() = slot.codeIndex.toInt()
 
-		override fun getEndOffset(): Int = (slot.codeIndex + slot.length).toInt()
+		override val endOffset: Int get() = (slot.codeIndex + slot.length).toInt()
 
-		override fun isMarkedAsParameter(): Boolean = false
+		override val isMarkedAsParameter: Boolean get() = false
 	}
 
 	/** 一个方法的远端调试信息。 */

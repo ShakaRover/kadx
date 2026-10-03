@@ -50,9 +50,9 @@ open class InsnDecoder(private val method: MethodNode) {
 
 	/** 遍历并解码方法的所有指令，返回以偏移为下标、可能含 null 的指令数组。 */
 	open fun process(codeReader: ICodeReader): Array<InsnNode?> {
-		val instructions = arrayOfNulls<InsnNode>(codeReader.getUnitsCount())
+		val instructions = arrayOfNulls<InsnNode>(codeReader.unitsCount)
 		codeReader.visitInstructions { rawInsn ->
-			val offset = rawInsn.getOffset()
+			val offset = rawInsn.offset
 			var insn: InsnNode
 			try {
 				rawInsn.decode()
@@ -76,7 +76,7 @@ open class InsnDecoder(private val method: MethodNode) {
 	/** 单条指令解码入口：按 opcode 分派到对应分支。 */
 	@Throws(DecodeException::class)
 	protected open fun decode(insn: InsnData): InsnNode {
-		when (insn.getOpcode()) {
+		when (insn.opcode) {
 			// ===== 常量 / 寄存器移动 =====
 			Opcode.NOP -> return InsnNode(InsnType.NOP, 0)
 
@@ -94,13 +94,13 @@ open class InsnDecoder(private val method: MethodNode) {
 			}
 
 			Opcode.CONST_STRING -> {
-				val constStrInsn = ConstStringNode(insn.getIndexAsString())
+				val constStrInsn = ConstStringNode(insn.indexAsString)
 				constStrInsn.setResult(InsnArg.reg(insn, 0, ArgType.STRING))
 				return constStrInsn
 			}
 
 			Opcode.CONST_CLASS -> {
-				val clsType = ArgType.parse(insn.getIndexAsType())
+				val clsType = ArgType.parse(insn.indexAsType)
 				val constClsInsn = ConstClassNode(clsType)
 				constClsInsn.setResult(InsnArg.reg(insn, 0, ArgType.generic(Consts.CLASS_CLASS, clsType)))
 				return constClsInsn
@@ -113,7 +113,7 @@ open class InsnDecoder(private val method: MethodNode) {
 			)
 
 			Opcode.MOVE_MULTI -> {
-				val len = insn.getRegsCount()
+				val len = insn.regsCount
 				val mmv = InsnNode(InsnType.MOVE_MULTI, len)
 				for (i in 0 until len) {
 					mmv.addArg(InsnArg.reg(insn, i, ArgType.UNKNOWN))
@@ -291,11 +291,11 @@ open class InsnDecoder(private val method: MethodNode) {
 
 			Opcode.CMPG_DOUBLE -> return cmp(insn, InsnType.CMP_G, ArgType.DOUBLE)
 
-			Opcode.GOTO -> return GotoNode(insn.getTarget())
+			Opcode.GOTO -> return GotoNode(insn.target)
 
 			Opcode.JAVA_JSR -> {
 				method.add(AFlag.RESOLVE_JAVA_JSR)
-				val jsr = JsrNode(insn.getTarget())
+				val jsr = JsrNode(insn.target)
 				jsr.setResult(InsnArg.reg(insn, 0, ArgType.UNKNOWN_INT))
 				return jsr
 			}
@@ -336,22 +336,22 @@ open class InsnDecoder(private val method: MethodNode) {
 
 			// ===== 类型判断 / 字段访问 =====
 			Opcode.INSTANCE_OF -> {
-				val instInsn = IndexInsnNode(InsnType.INSTANCE_OF, ArgType.parse(insn.getIndexAsType()), 1)
+				val instInsn = IndexInsnNode(InsnType.INSTANCE_OF, ArgType.parse(insn.indexAsType), 1)
 				instInsn.setResult(InsnArg.reg(insn, 0, ArgType.BOOLEAN))
 				instInsn.addArg(InsnArg.reg(insn, 1, ArgType.UNKNOWN_OBJECT))
 				return instInsn
 			}
 
 			Opcode.CHECK_CAST -> {
-				val castType = ArgType.parse(insn.getIndexAsType())
+				val castType = ArgType.parse(insn.indexAsType)
 				val checkCastInsn = IndexInsnNode(InsnType.CHECK_CAST, castType, 1)
 				checkCastInsn.setResult(InsnArg.reg(insn, 0, castType))
-				checkCastInsn.addArg(InsnArg.reg(insn, if (insn.getRegsCount() == 2) 1 else 0, ArgType.UNKNOWN_OBJECT))
+				checkCastInsn.addArg(InsnArg.reg(insn, if (insn.regsCount == 2) 1 else 0, ArgType.UNKNOWN_OBJECT))
 				return checkCastInsn
 			}
 
 			Opcode.IGET -> {
-				val igetFld = FieldInfo.fromRef(root, checkNotNull(insn.getIndexAsField()))
+				val igetFld = FieldInfo.fromRef(root, checkNotNull(insn.indexAsField))
 				val igetInsn = IndexInsnNode(InsnType.IGET, igetFld, 1)
 				igetInsn.setResult(InsnArg.reg(insn, 0, tryResolveFieldType(igetFld)))
 				igetInsn.addArg(InsnArg.reg(insn, 1, igetFld.declClass.type))
@@ -359,7 +359,7 @@ open class InsnDecoder(private val method: MethodNode) {
 			}
 
 			Opcode.IPUT -> {
-				val iputFld = FieldInfo.fromRef(root, checkNotNull(insn.getIndexAsField()))
+				val iputFld = FieldInfo.fromRef(root, checkNotNull(insn.indexAsField))
 				val iputInsn = IndexInsnNode(InsnType.IPUT, iputFld, 2)
 				iputInsn.addArg(InsnArg.reg(insn, 0, tryResolveFieldType(iputFld)))
 				iputInsn.addArg(InsnArg.reg(insn, 1, iputFld.declClass.type))
@@ -367,14 +367,14 @@ open class InsnDecoder(private val method: MethodNode) {
 			}
 
 			Opcode.SGET -> {
-				val sgetFld = FieldInfo.fromRef(root, checkNotNull(insn.getIndexAsField()))
+				val sgetFld = FieldInfo.fromRef(root, checkNotNull(insn.indexAsField))
 				val sgetInsn = IndexInsnNode(InsnType.SGET, sgetFld, 0)
 				sgetInsn.setResult(InsnArg.reg(insn, 0, tryResolveFieldType(sgetFld)))
 				return sgetInsn
 			}
 
 			Opcode.SPUT -> {
-				val sputFld = FieldInfo.fromRef(root, checkNotNull(insn.getIndexAsField()))
+				val sputFld = FieldInfo.fromRef(root, checkNotNull(insn.indexAsField))
 				val sputInsn = IndexInsnNode(InsnType.SPUT, sputFld, 1)
 				sputInsn.addArg(InsnArg.reg(insn, 0, tryResolveFieldType(sputFld)))
 				return sputInsn
@@ -422,9 +422,9 @@ open class InsnDecoder(private val method: MethodNode) {
 
 			Opcode.NEW_ARRAY -> return makeNewArray(insn)
 
-			Opcode.FILL_ARRAY_DATA -> return FillArrayInsn(InsnArg.reg(insn, 0, ArgType.UNKNOWN_ARRAY), insn.getTarget())
+			Opcode.FILL_ARRAY_DATA -> return FillArrayInsn(InsnArg.reg(insn, 0, ArgType.UNKNOWN_ARRAY), insn.target)
 
-			Opcode.FILL_ARRAY_DATA_PAYLOAD -> return FillArrayData(insn.getPayload() as IArrayPayload)
+			Opcode.FILL_ARRAY_DATA_PAYLOAD -> return FillArrayData(insn.payload as IArrayPayload)
 
 			Opcode.FILLED_NEW_ARRAY -> return filledNewArray(insn, false)
 
@@ -463,7 +463,7 @@ open class InsnDecoder(private val method: MethodNode) {
 
 			// ===== new 实例 / switch =====
 			Opcode.NEW_INSTANCE -> {
-				val clsType = ArgType.parse(insn.getIndexAsType())
+				val clsType = ArgType.parse(insn.indexAsType)
 				val newInstInsn = IndexInsnNode(InsnType.NEW_INSTANCE, clsType, 0)
 				newInstInsn.setResult(InsnArg.reg(insn, 0, clsType))
 				return newInstInsn
@@ -475,7 +475,7 @@ open class InsnDecoder(private val method: MethodNode) {
 
 			Opcode.PACKED_SWITCH_PAYLOAD,
 			Opcode.SPARSE_SWITCH_PAYLOAD,
-			-> return SwitchData(insn.getPayload() as ISwitchPayload)
+			-> return SwitchData(insn.payload as ISwitchPayload)
 
 			else -> throw DecodeException("Unknown instruction: '$insn'")
 		}
@@ -484,10 +484,10 @@ open class InsnDecoder(private val method: MethodNode) {
 	// ======================= 辅助方法 =======================
 
 	private fun makeSwitch(insn: InsnData, packed: Boolean): SwitchInsn {
-		val swInsn = SwitchInsn(InsnArg.reg(insn, 0, ArgType.NARROW_INTEGRAL), insn.getTarget(), packed)
-		val payload = insn.getPayload()
+		val swInsn = SwitchInsn(InsnArg.reg(insn, 0, ArgType.NARROW_INTEGRAL), insn.target, packed)
+		val payload = insn.payload
 		if (payload != null) {
-			swInsn.attachSwitchData(SwitchData(payload as ISwitchPayload), insn.getTarget())
+			swInsn.attachSwitchData(SwitchData(payload as ISwitchPayload), insn.target)
 		}
 		method.add(AFlag.COMPUTE_POST_DOM)
 		CodeFeaturesAttr.add(method, CodeFeature.SWITCH)
@@ -495,13 +495,13 @@ open class InsnDecoder(private val method: MethodNode) {
 	}
 
 	private fun makeNewArray(insn: InsnData): InsnNode {
-		val indexType = ArgType.parse(insn.getIndexAsType())
+		val indexType = ArgType.parse(insn.indexAsType)
 		// NEW_ARRAY 的字面量 = 需要用操作数包裹的维度：
 		// 0 表示操作数本身已是完整数组类型（dalvik new-array、java multianewarray），
 		// 1 表示 newarray/anewarray（操作数是元素类型）
-		val dim = insn.getLiteral().toInt()
+		val dim = insn.literal.toInt()
 		val arrType = if (dim == 0) indexType else ArgType.array(indexType, dim)
-		val regsCount = insn.getRegsCount()
+		val regsCount = insn.regsCount
 		val newArr = NewArrayNode(arrType, regsCount - 1)
 		newArr.setResult(InsnArg.reg(insn, 0, arrType))
 		for (i in 1 until regsCount) {
@@ -520,10 +520,10 @@ open class InsnDecoder(private val method: MethodNode) {
 	}
 
 	private fun filledNewArray(insn: InsnData, isRange: Boolean): InsnNode {
-		val arrType = ArgType.parse(insn.getIndexAsType())
+		val arrType = ArgType.parse(insn.indexAsType)
 		val elType = checkNotNull(arrType.getArrayElement())
 		val typeImmutable = elType.isPrimitive()
-		val regsCount = insn.getRegsCount()
+		val regsCount = insn.regsCount
 		val regs = arrayOfNulls<InsnArg>(regsCount)
 		if (isRange) {
 			var r = insn.getReg(0)
@@ -566,11 +566,11 @@ open class InsnDecoder(private val method: MethodNode) {
 		val mthRef = InsnDataUtils.getMethodRef(insn)
 			?: throw JadxRuntimeException("Failed to load method reference for insn: $insn")
 		val callMth = MethodInfo.fromRef(root, mthRef)
-		val proto = checkNotNull(insn.getIndexAsProto(insn.getTarget()))
+		val proto = checkNotNull(insn.getIndexAsProto(insn.target))
 
 		// 展开调用参数
-		val args = Utils.collectionMap(proto.getArgTypes()) { ArgType.parse(it) }
-		val returnType = ArgType.parse(proto.getReturnType())
+		val args = Utils.collectionMap(proto.argTypes) { ArgType.parse(it) }
+		val returnType = ArgType.parse(proto.returnType)
 		val effectiveCallMth = MethodInfo.fromDetails(root, callMth.declClass, callMth.name, args, returnType)
 		return InvokePolymorphicNode(effectiveCallMth, insn, proto, callMth, isRange)
 	}

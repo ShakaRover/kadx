@@ -26,7 +26,7 @@ class MethodThrowsAttr(val list: MutableSet<String>) : PinnedAttribute() {
 		this.visited = visited
 	}
 
-	override fun getAttrType(): IJadxAttrType<MethodThrowsAttr> = AType.METHOD_THROWS
+	override val attrType: IJadxAttrType<MethodThrowsAttr> get() = AType.METHOD_THROWS
 
 	override fun toString(): String = "THROWS:$list"
 }

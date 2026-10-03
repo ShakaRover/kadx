@@ -19,5 +19,5 @@ public class DexInputOptions : BasePluginOptionsBuilder() {
 			.setter { v -> verifyChecksum = v }
 	}
 
-	public fun isVerifyChecksum(): Boolean = verifyChecksum
+	public val isVerifyChecksum: Boolean get() = verifyChecksum
 }

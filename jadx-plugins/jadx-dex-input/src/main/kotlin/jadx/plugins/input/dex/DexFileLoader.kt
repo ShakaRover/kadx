@@ -131,10 +131,10 @@ public class DexFileLoader(private val options: DexInputOptions) {
 	}
 
 	private fun loadSingleDex(fileName: String, content: ByteArray, offset: Int): DexReader {
-		if (options.isVerifyChecksum()) {
+		if (options.isVerifyChecksum) {
 			DexCheckSum.verify(fileName, content, offset)
 		}
-		return DexReader(getNextUniqId(), fileName, content, offset)
+		return DexReader(nextUniqId, fileName, content, offset)
 	}
 
 	/**
@@ -179,8 +179,8 @@ public class DexFileLoader(private val options: DexInputOptions) {
 		// sharing between all instances (can be used in other plugins) // TODO:
 		private var dexUniqId = 1
 
-		@Synchronized
-		private fun getNextUniqId(): Int {
+		@get:Synchronized
+		private val nextUniqId: Int get() {
 			dexUniqId++
 			if (dexUniqId >= 0xFFFF) {
 				dexUniqId = 1

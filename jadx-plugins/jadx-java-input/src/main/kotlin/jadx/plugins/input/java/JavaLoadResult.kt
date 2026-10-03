@@ -24,12 +24,12 @@ class JavaLoadResult @JvmOverloads constructor(
 			try {
 				consumer.accept(reader.loadClassData())
 			} catch (e: Exception) {
-				LOG.error("Failed to load class data for file: {}", reader.getFileName(), e)
+				LOG.error("Failed to load class data for file: {}", reader.fileName, e)
 			}
 		}
 	}
 
-	override fun isEmpty(): Boolean = readers.isEmpty()
+	override val isEmpty: Boolean get() = readers.isEmpty()
 
 	override fun close() {
 		closeable?.close()

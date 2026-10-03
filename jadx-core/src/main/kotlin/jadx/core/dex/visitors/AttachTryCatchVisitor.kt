@@ -39,7 +39,7 @@ class AttachTryCatchVisitor : AbstractVisitor() {
 		if (mth.isNoCode()) {
 			return
 		}
-		initTryCatches(mth, checkNotNull(mth.instructions), checkNotNull(mth.getCodeReader()).getTries())
+		initTryCatches(mth, checkNotNull(mth.instructions), checkNotNull(mth.getCodeReader()).tries)
 	}
 
 	companion object {
@@ -56,7 +56,7 @@ class AttachTryCatchVisitor : AbstractVisitor() {
 				}
 			}
 			for (tryData in tries) {
-				val handlers = convertToHandlers(mth, tryData.getCatch(), insnByOffset)
+				val handlers = convertToHandlers(mth, tryData.catch, insnByOffset)
 				if (handlers.isEmpty()) {
 					continue
 				}
@@ -65,8 +65,8 @@ class AttachTryCatchVisitor : AbstractVisitor() {
 		}
 
 		private fun markTryBounds(insnByOffset: Array<InsnNode?>, aTry: ITry, catchAttr: CatchAttr) {
-			var offset = aTry.getStartOffset()
-			val end = aTry.getEndOffset()
+			var offset = aTry.startOffset
+			val end = aTry.endOffset
 
 			var tryBlockStarted = false
 			var insn: InsnNode? = null
@@ -89,7 +89,7 @@ class AttachTryCatchVisitor : AbstractVisitor() {
 				checkNotNull(insn).add(AFlag.TRY_LEAVE)
 			} else {
 				// 区间内没有指令 -> 在起始偏移插入一条 NOP
-				val nop = insertNOP(insnByOffset, aTry.getStartOffset())
+				val nop = insertNOP(insnByOffset, aTry.startOffset)
 				nop.add(AFlag.TRY_ENTER)
 				nop.add(AFlag.TRY_LEAVE)
 				nop.addAttr(catchAttr)
@@ -108,8 +108,8 @@ class AttachTryCatchVisitor : AbstractVisitor() {
 		}
 
 		private fun convertToHandlers(mth: MethodNode, catchBlock: ICatch, insnByOffset: Array<InsnNode?>): MutableList<ExceptionHandler> {
-			val handlerOffsetArr = catchBlock.getHandlers()
-			val handlerTypes = catchBlock.getTypes()
+			val handlerOffsetArr = catchBlock.handlers
+			val handlerTypes = catchBlock.types
 
 			val handlersCount = handlerOffsetArr.size
 			val list = ArrayList<ExceptionHandler>(handlersCount)
@@ -118,7 +118,7 @@ class AttachTryCatchVisitor : AbstractVisitor() {
 				val type = ClassInfo.fromName(mth.root(), handlerTypes[i])
 				Utils.addToList(list, createHandler(mth, insnByOffset, handlerOffset, type))
 			}
-			val allHandlerOffset = catchBlock.getCatchAllHandler()
+			val allHandlerOffset = catchBlock.catchAllHandler
 			if (allHandlerOffset >= 0) {
 				Utils.addToList(list, createHandler(mth, insnByOffset, allHandlerOffset, null))
 			}

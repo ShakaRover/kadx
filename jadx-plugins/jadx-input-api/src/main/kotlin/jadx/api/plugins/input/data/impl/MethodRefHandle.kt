@@ -12,21 +12,21 @@ import jadx.api.plugins.input.data.MethodHandleType
  * @param methodRef 指向的方法引用
  */
 public class MethodRefHandle(
-	private val type: MethodHandleType,
-	private val methodRef: IMethodRef,
+	private val typeValue: MethodHandleType,
+	private val methodRefValue: IMethodRef,
 ) : IMethodHandle {
 
-	override fun getType(): MethodHandleType = type
+	override val type: MethodHandleType get() = typeValue
 
-	override fun getMethodRef(): IMethodRef? = methodRef
+	override val methodRef: IMethodRef? get() = methodRefValue
 
 	// 原 Java 此处返回类型误写为 IFieldData（协变），实际恒返回 null；
 	// Kotlin 中按接口签名声明为 IFieldRef?，运行时行为完全一致。
-	override fun getFieldRef(): IFieldRef? = null
+	override val fieldRef: IFieldRef? get() = null
 
 	override fun load() {
-		methodRef.load()
+		methodRefValue.load()
 	}
 
-	override fun toString(): String = "$type: $methodRef"
+	override fun toString(): String = "$typeValue: $methodRefValue"
 }

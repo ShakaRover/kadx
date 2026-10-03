@@ -28,5 +28,5 @@ public class DexLoadResult(
 		closeable?.close()
 	}
 
-	override fun isEmpty(): Boolean = dexReaders.isEmpty()
+	override val isEmpty: Boolean get() = dexReaders.isEmpty()
 }

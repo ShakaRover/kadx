@@ -14,7 +14,7 @@ import jadx.core.dex.nodes.BlockNode
  */
 class ExcSplitCrossAttr(val originalPathCross: BlockNode) : IJadxAttribute {
 
-	override fun getAttrType(): IJadxAttrType<*> = AType.EXC_SPLIT_CROSS
+	override val attrType: IJadxAttrType<*> get() = AType.EXC_SPLIT_CROSS
 
 	override fun toString(): String = "ExcSplitCross -> " + originalPathCross.toString()
 }

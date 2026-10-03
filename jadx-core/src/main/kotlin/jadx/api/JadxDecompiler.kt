@@ -151,7 +151,7 @@ class JadxDecompiler : Closeable {
 					// JadxCodeInput.loadFiles 参数类型是显式 java.util.List（为兼容 Java SAM），此处做一次未检查转型
 					@Suppress("UNCHECKED_CAST")
 					val loader = codeLoader.loadFiles(inputFiles as java.util.List<Path>)
-					if (loader != null && !loader.isEmpty()) {
+					if (loader != null && !loader.isEmpty) {
 						loadedInputs.add(loader)
 					}
 				} catch (e: Exception) {

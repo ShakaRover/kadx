@@ -24,27 +24,27 @@ object InsnDataUtils {
 	/** 若当前指令是 invoke-custom（索引类型 CALL_SITE），返回其 call-site，否则返回 null。 */
 	@JvmStatic
 	fun getCallSite(insnData: InsnData): ICallSite? {
-		if (insnData.getIndexType() !== InsnIndexType.CALL_SITE) {
+		if (insnData.indexType !== InsnIndexType.CALL_SITE) {
 			return null
 		}
-		val payload = insnData.getPayload()
+		val payload = insnData.payload
 		if (payload != null) {
 			return payload as ICallSite
 		}
-		return insnData.getIndexAsCallSite()
+		return insnData.indexAsCallSite
 	}
 
 	/** 若当前指令是方法引用（索引类型 METHOD_REF），返回其方法引用，否则返回 null。 */
 	@JvmStatic
 	fun getMethodRef(insnData: InsnData): IMethodRef? {
-		if (insnData.getIndexType() !== InsnIndexType.METHOD_REF) {
+		if (insnData.indexType !== InsnIndexType.METHOD_REF) {
 			return null
 		}
-		val payload = insnData.getPayload()
+		val payload = insnData.payload
 		if (payload != null) {
 			return payload as IMethodRef
 		}
-		return insnData.getIndexAsMethod()
+		return insnData.indexAsMethod
 	}
 
 	/**
@@ -58,7 +58,7 @@ object InsnDataUtils {
 		if (callSite == null) {
 			return null
 		}
-		val values = callSite.getValues()
+		val values = callSite.values
 		if (argNum < values.size) {
 			val encodedValue = values[argNum]
 			if (encodedValue.type === EncodedType.ENCODED_METHOD_HANDLE) {

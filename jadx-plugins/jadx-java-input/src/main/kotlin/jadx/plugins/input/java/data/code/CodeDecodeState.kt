@@ -70,7 +70,7 @@ class CodeDecodeState(
 
 	fun decoded() {
 		val insn = checkNotNull(this.insn)
-		if (excHandler && insn.getOpcode() == Opcode.MOVE) {
+		if (excHandler && insn.opcode == Opcode.MOVE) {
 			// replace first 'move' in exception handler with 'move-exception'
 			insn.setOpcode(Opcode.MOVE_EXCEPTION)
 			insn.setRegsCount(1)
@@ -148,7 +148,7 @@ class CodeDecodeState(
 	/** Must be after all pop and push */
 	fun jump(offset: Int) {
 		val insn = checkNotNull(this.insn)
-		val jumpOffset = insn.getOffset() + offset
+		val jumpOffset = insn.offset + offset
 		insn.setTarget(jumpOffset)
 		registerJump(jumpOffset)
 	}
@@ -167,7 +167,7 @@ class CodeDecodeState(
 
 	fun fieldType(): StackValueType {
 		val insn = checkNotNull(this.insn)
-		val type = insn.constPoolReader().getFieldType(insn.getIndex())
+		val type = insn.constPoolReader().getFieldType(insn.index)
 		return getSVType(type)
 	}
 

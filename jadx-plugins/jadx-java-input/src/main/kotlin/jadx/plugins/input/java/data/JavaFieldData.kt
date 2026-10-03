@@ -18,57 +18,57 @@ import java.util.ArrayList
  */
 class JavaFieldData : IFieldData {
 
-	private var name: String? = null
-	private var parentClassType: String? = null
-	private var type: String? = null
-	private var accessFlags = 0
+	private var nameValue: String? = null
+	private var parentClassTypeValue: String? = null
+	private var typeValue: String? = null
+	private var accessFlagsValue = 0
 
 	// 原 Java 字段初始为 null，setAttributes 前调用 getAttributes 会 NPE；保持等价
-	private var attributes: JavaAttrStorage? = null
+	private var attributesValue: JavaAttrStorage? = null
 
-	override fun getParentClassType(): String? = parentClassType
+	override val parentClassType: String? get() = parentClassTypeValue
 
-	fun setParentClassType(parentClassType: String?) {
-		this.parentClassType = parentClassType
+	fun setParentClassType(parentClassTypeValue: String?) {
+		this.parentClassTypeValue = parentClassTypeValue
 	}
 
-	override fun getType(): String? = type
+	override val type: String? get() = typeValue
 
-	fun setType(type: String?) {
-		this.type = type
+	fun setType(typeValue: String?) {
+		this.typeValue = typeValue
 	}
 
-	override fun getName(): String? = name
+	override val name: String? get() = nameValue
 
-	fun setName(name: String?) {
-		this.name = name
+	fun setName(nameValue: String?) {
+		this.nameValue = nameValue
 	}
 
-	override fun getAccessFlags(): Int = accessFlags
+	override val accessFlags: Int get() = accessFlagsValue
 
-	fun setAccessFlags(accessFlags: Int) {
-		this.accessFlags = accessFlags
+	fun setAccessFlags(accessFlagsValue: Int) {
+		this.accessFlagsValue = accessFlagsValue
 	}
 
-	fun setAttributes(attributes: JavaAttrStorage) {
-		this.attributes = attributes
+	fun setAttributes(attributesValue: JavaAttrStorage) {
+		this.attributesValue = attributesValue
 	}
 
-	override fun getAttributes(): List<IJadxAttribute> {
-		val attributes = checkNotNull(this.attributes)
-		val size = attributes.size()
+	override val attributes: List<IJadxAttribute> get() {
+		val attributesValue = checkNotNull(this.attributesValue)
+		val size = attributesValue.size()
 		if (size == 0) {
 			return emptyList()
 		}
 		val list = ArrayList<IJadxAttribute>(size)
-		Utils.addToList(list, JavaAnnotationsAttr.merge(attributes))
-		val constValue: ConstValueAttr? = attributes.get(JavaAttrType.CONST_VALUE)
+		Utils.addToList(list, JavaAnnotationsAttr.merge(attributesValue))
+		val constValue: ConstValueAttr? = attributesValue.get(JavaAttrType.CONST_VALUE)
 		// 原 Java 用方法引用 ConstValueAttr::getValue；EncodedValue 本身是 IJadxAttribute（PinnedAttribute）
 		Utils.addToList(list, constValue) { it.value }
-		val signature: SignatureAttr? = attributes.get(JavaAttrType.SIGNATURE)
+		val signature: SignatureAttr? = attributesValue.get(JavaAttrType.SIGNATURE)
 		Utils.addToList(list, signature)
 		return list
 	}
 
-	override fun toString(): String = parentClassType + "->" + name + ":" + type
+	override fun toString(): String = parentClassTypeValue + "->" + nameValue + ":" + typeValue
 }

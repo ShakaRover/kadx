@@ -120,7 +120,7 @@ class ConstPoolReader(
 		val kind = data.readU1()
 		val refIdx = data.readU2()
 		val handleType = convertMethodHandleKind(kind)
-		if (handleType.isField()) {
+		if (handleType.isField) {
 			return FieldRefHandle(handleType, getFieldRef(refIdx))
 		}
 		return MethodRefHandle(handleType, getMethodRef(refIdx))

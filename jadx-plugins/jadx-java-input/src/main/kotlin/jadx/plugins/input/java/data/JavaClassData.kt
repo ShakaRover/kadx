@@ -27,47 +27,47 @@ import java.util.ArrayList
  * [visitFieldsAndMethods] 顺序遍历字段表/方法表并回调消费者（复用同一实例，逐条填充）；
  * 类型、接口列表、类级属性都从这里读取。
  */
-class JavaClassData(private val clsReader: JavaClassReader) : IClassData {
+class JavaClassData(private val clsReaderValue: JavaClassReader) : IClassData {
 
-	private val data: DataReader = DataReader(clsReader.getData())
-	private val offsets: ClassOffsets = ClassOffsets(data)
-	private val constPoolReader: ConstPoolReader = ConstPoolReader(clsReader, this, data.copy(), offsets)
-	private val attributesReader: AttributesReader = AttributesReader(this, constPoolReader)
+	private val dataValue: DataReader = DataReader(clsReaderValue.data)
+	private val offsetsValue: ClassOffsets = ClassOffsets(dataValue)
+	private val constPoolReaderValue: ConstPoolReader = ConstPoolReader(clsReaderValue, this, dataValue.copy(), offsetsValue)
+	private val attributesReaderValue: AttributesReader = AttributesReader(this, constPoolReaderValue)
 
-	override fun getInputFileOffset(): Int = offsets.accessFlagsOffset
+	override val inputFileOffset: Int get() = offsetsValue.accessFlagsOffset
 
 	override fun copy(): IClassData = this
 
-	override fun getAccessFlags(): Int = data.absPos(offsets.accessFlagsOffset).readU2()
+	override val accessFlags: Int get() = dataValue.absPos(offsetsValue.accessFlagsOffset).readU2()
 
 	// 接口声明非空；损坏 class 时 getClass 返回 null，调用方解引用与原 Java 一样 NPE
-	override fun getType(): String {
-		val idx = data.absPos(offsets.clsTypeOffset).readU2()
-		return constPoolReader.getClass(idx) ?: throw NullPointerException("class type is null")
+	override val type: String get() {
+		val idx = dataValue.absPos(offsetsValue.clsTypeOffset).readU2()
+		return constPoolReaderValue.getClass(idx) ?: throw NullPointerException("class type is null")
 	}
 
-	@Nullable
-	override fun getSuperType(): String? {
-		val idx = data.absPos(offsets.superTypeOffset).readU2()
+	@get:Nullable
+	override val superType: String? get() {
+		val idx = dataValue.absPos(offsetsValue.superTypeOffset).readU2()
 		if (idx == 0) {
 			return null
 		}
-		return constPoolReader.getClass(idx)
+		return constPoolReaderValue.getClass(idx)
 	}
 
-	override fun getInterfacesTypes(): List<String> {
-		data.absPos(offsets.interfacesOffset)
+	override val interfacesTypes: List<String> get() {
+		dataValue.absPos(offsetsValue.interfacesOffset)
 		// readClassesList 元素理论上可空（损坏 class），透传给声明非空的接口类型（擦除后等价）
 		@Suppress("UNCHECKED_CAST")
-		return data.readClassesList(constPoolReader) as List<String>
+		return dataValue.readClassesList(constPoolReaderValue) as List<String>
 	}
 
-	override fun getInputFileName(): String = clsReader.getFileName()
+	override val inputFileName: String get() = clsReaderValue.fileName
 
 	override fun visitFieldsAndMethods(fieldsConsumer: ISeqConsumer<IFieldData>, mthConsumer: ISeqConsumer<IMethodData>) {
-		val clsIdx = data.absPos(offsets.clsTypeOffset).readU2()
-		val classType = checkNotNull(constPoolReader.getClass(clsIdx))
-		val reader = data.absPos(offsets.fieldsOffset).copy()
+		val clsIdx = dataValue.absPos(offsetsValue.clsTypeOffset).readU2()
+		val classType = checkNotNull(constPoolReaderValue.getClass(clsIdx))
+		val reader = dataValue.absPos(offsetsValue.fieldsOffset).copy()
 		val fieldsCount = reader.readU2()
 		fieldsConsumer.init(fieldsCount)
 		if (fieldsCount != 0) {
@@ -96,67 +96,67 @@ class JavaClassData(private val clsReader: JavaClassReader) : IClassData {
 		val accessFlags = reader.readU2()
 		val nameIdx = reader.readU2()
 		val typeIdx = reader.readU2()
-		val attributes = attributesReader.loadAll(reader)
+		val attributesValue = attributesReaderValue.loadAll(reader)
 
 		field.setAccessFlags(accessFlags)
-		field.setName(constPoolReader.getUtf8(nameIdx))
-		field.setType(constPoolReader.getUtf8(typeIdx))
-		field.setAttributes(attributes)
+		field.setName(constPoolReaderValue.getUtf8(nameIdx))
+		field.setType(constPoolReaderValue.getUtf8(typeIdx))
+		field.setAttributes(attributesValue)
 	}
 
 	private fun parseMethod(reader: DataReader, method: JavaMethodData, id: Int) {
 		var accessFlags = reader.readU2()
 		val nameIdx = reader.readU2()
 		val descriptorIdx = reader.readU2()
-		val attributes = attributesReader.loadAll(reader)
+		val attributesValue = attributesReaderValue.loadAll(reader)
 
-		val methodRef = method.getMethodRef()
+		val methodRef = method.methodRef
 		methodRef.reset()
-		methodRef.initUniqId(clsReader, id, false)
-		methodRef.setName(constPoolReader.getUtf8(nameIdx))
-		methodRef.setDescr(constPoolReader.getUtf8(descriptorIdx))
+		methodRef.initUniqId(clsReaderValue, id, false)
+		methodRef.setName(constPoolReaderValue.getUtf8(nameIdx))
+		methodRef.setDescr(constPoolReaderValue.getUtf8(descriptorIdx))
 
-		if (methodRef.getName() == "<init>") {
+		if (methodRef.name == "<init>") {
 			accessFlags = accessFlags or AccessFlags.CONSTRUCTOR // java bytecode don't use that flag
 		}
 
-		method.setData(accessFlags, attributes)
+		method.setData(accessFlags, attributesValue)
 	}
 
-	fun getData(): DataReader = data
+	val data: DataReader get() = dataValue
 
-	override fun getAttributes(): List<IJadxAttribute> {
-		data.absPos(offsets.attributesOffset)
-		val attributes = attributesReader.loadAll(data)
-		val size = attributes.size()
+	override val attributes: List<IJadxAttribute> get() {
+		dataValue.absPos(offsetsValue.attributesOffset)
+		val attributesValue = attributesReaderValue.loadAll(dataValue)
+		val size = attributesValue.size()
 		if (size == 0) {
 			return emptyList()
 		}
 		val list = ArrayList<IJadxAttribute>(size)
-		Utils.addToList(list, JavaAnnotationsAttr.merge(attributes))
-		val innerClasses: InnerClassesAttr? = attributes.get(JavaAttrType.INNER_CLASSES)
+		Utils.addToList(list, JavaAnnotationsAttr.merge(attributesValue))
+		val innerClasses: InnerClassesAttr? = attributesValue.get(JavaAttrType.INNER_CLASSES)
 		Utils.addToList(list, innerClasses)
-		val sourceFile: SourceFileAttr? = attributes.get(JavaAttrType.SOURCE_FILE)
+		val sourceFile: SourceFileAttr? = attributesValue.get(JavaAttrType.SOURCE_FILE)
 		Utils.addToList(list, sourceFile)
-		val signature: SignatureAttr? = attributes.get(JavaAttrType.SIGNATURE)
+		val signature: SignatureAttr? = attributesValue.get(JavaAttrType.SIGNATURE)
 		Utils.addToList(list, signature)
 		return list
 	}
 
 	fun <T : IJavaAttribute> loadClassAttribute(reader: DataReader, type: JavaAttrType<T>): T? {
-		reader.absPos(offsets.attributesOffset)
-		return attributesReader.loadOne(reader, type)
+		reader.absPos(offsetsValue.attributesOffset)
+		return attributesReaderValue.loadOne(reader, type)
 	}
 
-	override fun getDisassembledCode(): String = DisasmUtils.get(data.getBytes())
+	override val disassembledCode: String get() = DisasmUtils.get(dataValue.bytes)
 
-	fun getClsReader(): JavaClassReader = clsReader
+	val clsReader: JavaClassReader get() = clsReaderValue
 
-	fun getOffsets(): ClassOffsets = offsets
+	val offsets: ClassOffsets get() = offsetsValue
 
-	fun getConstPoolReader(): ConstPoolReader = constPoolReader
+	val constPoolReader: ConstPoolReader get() = constPoolReaderValue
 
-	fun getAttributesReader(): AttributesReader = attributesReader
+	val attributesReader: AttributesReader get() = attributesReaderValue
 
-	override fun toString(): String = getInputFileName()
+	override fun toString(): String = inputFileName
 }

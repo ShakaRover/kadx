@@ -33,7 +33,7 @@ class CatchAttr private constructor(private val handlers: List<ExceptionHandler>
 
 	fun getHandlers(): List<ExceptionHandler> = handlers
 
-	override fun getAttrType(): AType<CatchAttr> = AType.EXC_CATCH
+	override val attrType: AType<CatchAttr> get() = AType.EXC_CATCH
 
 	override fun equals(other: Any?): Boolean {
 		if (this === other) {

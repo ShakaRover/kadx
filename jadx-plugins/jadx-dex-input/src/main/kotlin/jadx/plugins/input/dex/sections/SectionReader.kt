@@ -26,7 +26,7 @@ import java.nio.charset.StandardCharsets
  *    method handle / call site（invoke-custom）等。
  */
 public class SectionReader(
-	private val dexReader: DexReader,
+	private val dexReaderValue: DexReader,
 	off: Int,
 ) {
 
@@ -42,7 +42,7 @@ public class SectionReader(
 	var offset: Int = off
 
 	init {
-		buf = duplicate(dexReader.buf, off)
+		buf = duplicate(dexReaderValue.buf, off)
 	}
 
 	/**
@@ -84,7 +84,7 @@ public class SectionReader(
 	}
 
 	/** @return 当前游标的文件绝对位置 */
-	public fun getAbsPos(): Int = buf.position()
+	public val absPos: Int get() = buf.position()
 
 	/** 跳过 [skip] 字节（等价于 pos += skip）*/
 	public fun skip(skip: Int) {
@@ -157,7 +157,7 @@ public class SectionReader(
 		if (idx == DexConsts.NO_INDEX) {
 			return null
 		}
-		val typeIdsOff = dexReader.header.typeIdsOff
+		val typeIdsOff = dexReaderValue.header.typeIdsOff
 		absPos(typeIdsOff + idx * 4)
 		val strIdx = readInt()
 		return getString(strIdx)
@@ -172,7 +172,7 @@ public class SectionReader(
 			return null
 		}
 		// TODO: make string pool cache?
-		val stringIdsOff = dexReader.header.stringIdsOff
+		val stringIdsOff = dexReaderValue.header.stringIdsOff
 		absPos(stringIdsOff + idx * 4)
 		val strOff = readInt()
 		absPos(strOff)
@@ -190,7 +190,7 @@ public class SectionReader(
 	 * 从 field_ids section 填充 [fieldData]（类型 + 名称），返回所属类的 type_idx。
 	 */
 	public fun fillFieldData(fieldData: DexFieldData, idx: Int): Int {
-		val fieldIdsOff = dexReader.header.fieldIdsOff
+		val fieldIdsOff = dexReaderValue.header.fieldIdsOff
 		absPos(fieldIdsOff + idx * 8)
 		val classTypeIdx = readUShort()
 		val typeIdx = readUShort()
@@ -208,7 +208,7 @@ public class SectionReader(
 
 	/** 读取 invoke-custom 的 call site（encoded_array 编码）。 */
 	public fun getCallSite(idx: Int, ext: SectionReader): ICallSite {
-		val callSiteOff = dexReader.header.callSiteOff
+		val callSiteOff = dexReaderValue.header.callSiteOff
 		absPos(callSiteOff + idx * 4)
 		absPos(readInt())
 		return CallSite(EncodedValueParser.parseEncodedArray(this, ext))
@@ -216,12 +216,12 @@ public class SectionReader(
 
 	/** 读取 method handle（接口方法引用 / 字段访问等，用于 invoke-polymorphic）。 */
 	public fun getMethodHandle(idx: Int): IMethodHandle {
-		val methodHandleOff = dexReader.header.methodHandleOff
+		val methodHandleOff = dexReaderValue.header.methodHandleOff
 		absPos(methodHandleOff + idx * 8)
 		val handleType = getMethodHandleType(readUShort())
 		skip(2) // reserved0
 		val refId = readUShort()
-		if (handleType.isField()) {
+		if (handleType.isField) {
 			return FieldRefHandle(handleType, getFieldRef(refId))
 		}
 		return MethodRefHandle(handleType, getMethodRef(refId))
@@ -241,7 +241,7 @@ public class SectionReader(
 	}
 
 	public fun initMethodRef(idx: Int, methodRef: DexMethodRef) {
-		methodRef.initUniqId(dexReader, idx)
+		methodRef.initUniqId(dexReaderValue, idx)
 		methodRef.setDexIdx(idx)
 		methodRef.setSectionReader(this)
 	}
@@ -251,7 +251,7 @@ public class SectionReader(
 	 * 父类类型、方法名、返回类型与参数类型列表。
 	 */
 	public fun loadMethodRef(methodRef: DexMethodRef, idx: Int) {
-		val header = dexReader.header
+		val header = dexReaderValue.header
 		val methodIdsOff = header.methodIdsOff
 		absPos(methodIdsOff + idx * 8)
 		val classTypeIdx = readUShort()
@@ -272,7 +272,7 @@ public class SectionReader(
 	}
 
 	public fun getMethodProto(idx: Int): DexMethodProto {
-		val protoIdsOff = dexReader.header.protoIdsOff
+		val protoIdsOff = dexReaderValue.header.protoIdsOff
 		absPos(protoIdsOff + idx * 12)
 		skip(4) // shortyIdx
 		val returnTypeIdx = readInt()
@@ -282,7 +282,7 @@ public class SectionReader(
 
 	/** @return 方法 [idx] 的参数类型列表（经 method_ids → proto_ids 两级索引）*/
 	public fun getMethodParamTypes(idx: Int): List<String> {
-		val header = dexReader.header
+		val header = dexReaderValue.header
 		val methodIdsOff = header.methodIdsOff
 		absPos(methodIdsOff + idx * 8 + 2)
 		val protoIdx = readUShort()
@@ -297,7 +297,7 @@ public class SectionReader(
 		return absPos(paramsOff).readTypeList()
 	}
 
-	public fun getDexReader(): DexReader = dexReader
+	public val dexReader: DexReader get() = dexReaderValue
 
 	/** 读取 ULEB128（无符号 LEB128，DEX 长度/索引编码）*/
 	public fun readUleb128(): Int = Leb128.readUnsignedLeb128(this)

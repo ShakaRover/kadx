@@ -54,7 +54,7 @@ public enum class MethodHandleType(
 	 *
 	 * @return true 如果是字段访问（PUT/GET），false 如果是方法调用（INVOKE_*）
 	 */
-	public fun isField(): Boolean = when (this) {
+	public val isField: Boolean get() = when (this) {
 		STATIC_PUT, STATIC_GET, INSTANCE_PUT, INSTANCE_GET -> true
 		else -> false
 	}

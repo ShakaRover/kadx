@@ -23,7 +23,7 @@ class LocalVarTypesAttr(
 		@JvmStatic
 		fun reader(): IJavaAttributeReader = object : IJavaAttributeReader {
 			override fun read(clsData: JavaClassData, reader: DataReader): IJavaAttribute {
-				val constPool: ConstPoolReader = clsData.getConstPoolReader()
+				val constPool: ConstPoolReader = clsData.constPoolReader
 				val len = reader.readU2()
 				val varsList = ArrayList<JavaLocalVar>(len)
 				for (i in 0 until len) {

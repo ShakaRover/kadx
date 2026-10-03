@@ -24,7 +24,7 @@ class GenericInfoAttr(val genericTypes: List<ArgType>) : IJadxAttribute {
 		this.explicit = explicit
 	}
 
-	override fun getAttrType(): AType<GenericInfoAttr> = AType.GENERIC_INFO
+	override val attrType: AType<GenericInfoAttr> get() = AType.GENERIC_INFO
 
 	override fun toString(): String = "GenericInfoAttr{$genericTypes, explicit=$explicit}"
 }

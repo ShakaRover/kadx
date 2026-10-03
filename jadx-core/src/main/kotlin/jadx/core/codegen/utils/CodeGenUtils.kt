@@ -202,11 +202,11 @@ class CodeGenUtils {
 		fun addInputFileInfo(code: ICodeWriter, cls: ClassNode) {
 			val clsData = cls.getClsData()
 			if (cls.checkCommentsLevel(CommentsLevel.INFO) && clsData != null) {
-				val inputFileName = clsData.getInputFileName()
+				val inputFileName = clsData.inputFileName
 				if (inputFileName != null) {
 					val declCls = cls.getDeclaringClass()
 					val declClsData = declCls?.getClsData()
-					if (declClsData != null && inputFileName == declClsData.getInputFileName()) {
+					if (declClsData != null && inputFileName == declClsData.inputFileName) {
 						// don't add same comment for inner classes
 						return
 					}

@@ -40,7 +40,7 @@ class EnumMapAttr : IJadxAttribute {
 
 	fun isEmpty(): Boolean = fieldsMap?.isEmpty() ?: true
 
-	override fun getAttrType(): AType<EnumMapAttr> = AType.ENUM_MAP
+	override val attrType: AType<EnumMapAttr> get() = AType.ENUM_MAP
 
 	override fun toString(): String = "Enum fields map: $fieldsMap"
 }

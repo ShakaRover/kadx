@@ -14,7 +14,7 @@ import jadx.core.dex.nodes.IRegion
  */
 class RegionRefAttr(val region: IRegion) : IJadxAttribute {
 
-	override fun getAttrType(): AType<RegionRefAttr> = AType.REGION_REF
+	override val attrType: AType<RegionRefAttr> get() = AType.REGION_REF
 
 	override fun toString(): String = "RegionRef:" + region.baseString()
 }

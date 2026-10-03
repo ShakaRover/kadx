@@ -20,7 +20,7 @@ public object SmaliInsnFormat {
 	private fun registerFormatters(): Map<Int, InsnFormatter> {
 		val map = HashMap<Int, InsnFormatter>()
 		// 显式 InsnFormatter {} 构造：map 索引赋值不传播期望类型，SAM 转换无法推断
-		map[DexOpcodes.NOP] = InsnFormatter { fi -> fi.getCodeWriter().add("nop") }
+		map[DexOpcodes.NOP] = InsnFormatter { fi -> fi.codeWriter.add("nop") }
 		map[DexOpcodes.SGET_OBJECT] = staticFieldInsn("sget-object")
 		map[DexOpcodes.SPUT_BOOLEAN] = staticFieldInsn("sput-boolean")
 		map[DexOpcodes.CONST] = constInsn("const")
@@ -40,10 +40,10 @@ public object SmaliInsnFormat {
 	}
 
 	private fun simpleInsn(name: String): InsnFormatter = { fi ->
-		val code = fi.getCodeWriter()
+		val code = fi.codeWriter
 		code.add(name)
-		val insn = fi.getInsn()
-		val regsCount = insn.getRegsCount()
+		val insn = fi.insn
+		val regsCount = insn.regsCount
 		for (i in 0 until regsCount) {
 			if (i == 0) {
 				code.add(' ')
@@ -54,35 +54,35 @@ public object SmaliInsnFormat {
 		}
 	}
 
-	private fun gotoInsn(name: String): InsnFormatter = { fi -> fi.getCodeWriter().add(name).add(" :goto").add(fi.getInsn().getTarget().toString(16)) }
+	private fun gotoInsn(name: String): InsnFormatter = { fi -> fi.codeWriter.add(name).add(" :goto").add(fi.insn.target.toString(16)) }
 
-	private fun staticFieldInsn(name: String): InsnFormatter = { fi -> fi.getCodeWriter().add(name).add(' ').add(regAt(fi, 0)).add(", ").add(field(fi)) }
+	private fun staticFieldInsn(name: String): InsnFormatter = { fi -> fi.codeWriter.add(name).add(' ').add(regAt(fi, 0)).add(", ").add(field(fi)) }
 
-	private fun constInsn(name: String): InsnFormatter = { fi -> fi.getCodeWriter().add(name).add(' ').add(regAt(fi, 0)).add(", ").add(literal(fi)) }
+	private fun constInsn(name: String): InsnFormatter = { fi -> fi.codeWriter.add(name).add(' ').add(regAt(fi, 0)).add(", ").add(literal(fi)) }
 
-	private fun stringInsn(name: String): InsnFormatter = { fi -> fi.getCodeWriter().add(name).add(' ').add(regAt(fi, 0)).add(", ").add(str(fi)) }
+	private fun stringInsn(name: String): InsnFormatter = { fi -> fi.codeWriter.add(name).add(' ').add(regAt(fi, 0)).add(", ").add(str(fi)) }
 
 	private fun invokeInsn(name: String): InsnFormatter = { fi ->
-		val code = fi.getCodeWriter()
+		val code = fi.codeWriter
 		code.add(name).add(' ')
-		regsList(code, fi.getInsn())
+		regsList(code, fi.insn)
 		code.add(", ").add(method(fi))
 	}
 
-	private fun oneArgsInsn(name: String): InsnFormatter = { fi -> fi.getCodeWriter().add(name).add(' ').add(regAt(fi, 0)) }
+	private fun oneArgsInsn(name: String): InsnFormatter = { fi -> fi.codeWriter.add(name).add(' ').add(regAt(fi, 0)) }
 
-	private fun noArgsInsn(name: String): InsnFormatter = { fi -> fi.getCodeWriter().add(name) }
+	private fun noArgsInsn(name: String): InsnFormatter = { fi -> fi.codeWriter.add(name) }
 
-	private fun literal(fi: InsnFormatterInfo): String = "0x" + fi.getInsn().getLiteral().toString(16)
+	private fun literal(fi: InsnFormatterInfo): String = "0x" + fi.insn.literal.toString(16)
 
-	private fun str(fi: InsnFormatterInfo): String = "\"${fi.getInsn().getIndexAsString()}\""
+	private fun str(fi: InsnFormatterInfo): String = "\"${fi.insn.indexAsString}\""
 
-	private fun field(fi: InsnFormatterInfo): String = fi.getInsn().getIndexAsField().toString()
+	private fun field(fi: InsnFormatterInfo): String = fi.insn.indexAsField.toString()
 
-	private fun method(fi: InsnFormatterInfo): String = fi.getInsn().getIndexAsMethod().toString()
+	private fun method(fi: InsnFormatterInfo): String = fi.insn.indexAsMethod.toString()
 
 	private fun regsList(code: SmaliCodeWriter, insn: InsnData) {
-		val argsCount = insn.getRegsCount()
+		val argsCount = insn.regsCount
 		code.add('{')
 		for (i in 0 until argsCount) {
 			if (i != 0) {
@@ -93,21 +93,21 @@ public object SmaliInsnFormat {
 		code.add('}')
 	}
 
-	private fun regAt(fi: InsnFormatterInfo, argNum: Int): String = "v" + fi.getInsn().getReg(argNum)
+	private fun regAt(fi: InsnFormatterInfo, argNum: Int): String = "v" + fi.insn.getReg(argNum)
 
 	/**
 	 * 格式化单条指令：解码后按原始操作码查表分发，未注册时输出占位注释行。
 	 */
 	public fun format(formatInfo: InsnFormatterInfo) {
-		val insn = formatInfo.getInsn()
+		val insn = formatInfo.insn
 		insn.decode()
-		val rawOpcodeUnit = insn.getRawOpcodeUnit()
+		val rawOpcodeUnit = insn.rawOpcodeUnit
 		val opcode = rawOpcodeUnit and 0xFF
 		val insnFormatter = formatters[opcode]
 		if (insnFormatter != null) {
 			insnFormatter.format(formatInfo)
 		} else {
-			formatInfo.getCodeWriter().add("# ").add(insn.getOpcode()).add(" (?0x").add(rawOpcodeUnit.toString(16)).add(')')
+			formatInfo.codeWriter.add("# ").add(insn.opcode).add(" (?0x").add(rawOpcodeUnit.toString(16)).add(')')
 		}
 	}
 
@@ -117,6 +117,6 @@ public object SmaliInsnFormat {
 	public fun format(insn: InsnData): String {
 		val formatInfo = InsnFormatterInfo(SmaliCodeWriter(), insn)
 		format(formatInfo)
-		return formatInfo.getCodeWriter().getCode()
+		return formatInfo.codeWriter.code
 	}
 }

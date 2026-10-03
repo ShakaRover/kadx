@@ -44,7 +44,7 @@ class AttrList<T> : IJadxAttribute {
 		this.list = ArrayList()
 	}
 
-	override fun getAttrType(): IJadxAttrType<AttrList<T>> = type
+	override val attrType: IJadxAttrType<AttrList<T>> get() = type
 
 	override fun toString(): String {
 		val commaDelimited = Utils.listToString(list, ", ")

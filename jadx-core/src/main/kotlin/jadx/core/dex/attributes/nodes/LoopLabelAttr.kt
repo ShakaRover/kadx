@@ -13,7 +13,7 @@ import jadx.core.dex.attributes.AType
  */
 class LoopLabelAttr(val loop: LoopInfo) : IJadxAttribute {
 
-	override fun getAttrType(): AType<LoopLabelAttr> = AType.LOOP_LABEL
+	override val attrType: AType<LoopLabelAttr> get() = AType.LOOP_LABEL
 
 	override fun toString(): String = "LOOP_LABEL: $loop"
 }

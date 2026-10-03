@@ -22,7 +22,7 @@ interface IMethodDetails : IJadxAttribute {
 
 	fun getRawAccessFlags(): Int
 
-	override fun getAttrType() = AType.METHOD_DETAILS
+	override val attrType get() = AType.METHOD_DETAILS
 
 	override fun toAttrString(): String {
 		val sb = StringBuilder("MD:")

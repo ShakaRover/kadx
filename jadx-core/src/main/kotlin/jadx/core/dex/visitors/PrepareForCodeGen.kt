@@ -344,7 +344,7 @@ class PrepareForCodeGen : AbstractVisitor() {
 
 	private fun collectFieldsUsageInAnnotations(mth: MethodNode, attrNode: AttrNode) {
 		val annotationsList = attrNode.get(JadxAttrType.ANNOTATION_LIST) ?: return
-		for (annotation in annotationsList.getAll()) {
+		for (annotation in annotationsList.all) {
 			if (annotation.visibility == AnnotationVisibility.SYSTEM) {
 				continue
 			}

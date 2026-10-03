@@ -26,7 +26,7 @@ public open class InnerClassesAttr(
 	 *
 	 * 原 Java 声明为协变的具体类型，这里保持一致。
 	 */
-	override fun getAttrType(): JadxAttrType<InnerClassesAttr> = JadxAttrType.INNER_CLASSES
+	override val attrType: JadxAttrType<InnerClassesAttr> get() = JadxAttrType.INNER_CLASSES
 
 	/** 调试字符串，格式与原 Java 一致：`INNER_CLASSES:<映射>`（冒号后无空格）*/
 	override fun toString(): String = "INNER_CLASSES:$map"

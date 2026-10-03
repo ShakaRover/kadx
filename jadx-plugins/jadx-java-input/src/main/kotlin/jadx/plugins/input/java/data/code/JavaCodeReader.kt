@@ -36,15 +36,15 @@ class JavaCodeReader(
 	offset: Int,
 ) : ICodeReader {
 
-	private val reader: DataReader = clsData.getData()
-	private val codeOffset: Int = offset
+	private val reader: DataReader = clsData.data
+	private val codeOffsetValue: Int = offset
 
 	override fun copy(): ICodeReader = this
 
 	override fun visitInstructions(insnConsumer: Consumer<InsnData>) {
-		val excHandlers = getExcHandlers()
+		val excHandlers = excHandlers
 		jumpToCodeAttributes()
-		val stackMapTable = clsData.getAttributesReader().loadOne(reader, JavaAttrType.STACK_MAP_TABLE)
+		val stackMapTable = clsData.attributesReader.loadOne(reader, JavaAttrType.STACK_MAP_TABLE)
 
 		val maxStack = readMaxStack()
 		reader.skip(2) // max_locals
@@ -71,11 +71,11 @@ class JavaCodeReader(
 			state.onInsn(offset)
 			insnConsumer.accept(insn)
 
-			var payloadSize = insn.getPayloadSize()
-			if (!insn.isDecoded()) {
+			var payloadSize = insn.payloadSize
+			if (!insn.isDecoded) {
 				if (payloadSize == -1) {
 					insn.skip()
-					payloadSize = insn.getPayloadSize()
+					payloadSize = insn.payloadSize
 				} else {
 					reader.skip(payloadSize)
 				}
@@ -84,21 +84,21 @@ class JavaCodeReader(
 		}
 	}
 
-	override fun getRegistersCount(): Int {
+	override val registersCount: Int get() {
 		val maxStack = readMaxStack()
 		val maxLocals = reader.readU2()
 		return maxStack + maxLocals
 	}
 
-	override fun getArgsStartReg(): Int = readMaxStack()
+	override val argsStartReg: Int get() = readMaxStack()
 
 	private fun readMaxStack(): Int {
-		reader.absPos(codeOffset)
+		reader.absPos(codeOffsetValue)
 		val maxStack = reader.readU2()
 		return maxStack + 1 // add one temporary register (for `swap` opcode)
 	}
 
-	override fun getUnitsCount(): Int = reader.absPos(codeOffset + 4).readU4()
+	override val unitsCount: Int get() = reader.absPos(codeOffsetValue + 4).readU4()
 
 	companion object {
 		private val DEBUG_INFO_ATTRIBUTES: Set<JavaAttrType<*>> = setOf(
@@ -130,11 +130,11 @@ class JavaCodeReader(
 		}
 	}
 
-	@Nullable
-	override fun getDebugInfo(): IDebugInfo? {
+	@get:Nullable
+	override val debugInfo: IDebugInfo? get() {
 		val maxStack = readMaxStack()
 		jumpToCodeAttributes()
-		val attrs: JavaAttrStorage = clsData.getAttributesReader().loadMulti(reader, DEBUG_INFO_ATTRIBUTES)
+		val attrs: JavaAttrStorage = clsData.attributesReader.loadMulti(reader, DEBUG_INFO_ATTRIBUTES)
 		val linesAttr = attrs.get(JavaAttrType.LINE_NUMBER_TABLE)
 		val varsAttr = attrs.get(JavaAttrType.LOCAL_VAR_TABLE)
 		if (linesAttr == null && varsAttr == null) {
@@ -157,7 +157,7 @@ class JavaCodeReader(
 				for (typedVar in typedVars.vars) {
 					val jv = varsMap[typedVar]
 					if (jv != null) {
-						jv.setSignature(typedVar.getSignature())
+						jv.setSignature(typedVar.signature)
 					}
 				}
 			}
@@ -169,23 +169,23 @@ class JavaCodeReader(
 		return DebugInfo(linesMap, vars)
 	}
 
-	override fun getCodeOffset(): Int = codeOffset
+	override val codeOffset: Int get() = codeOffsetValue
 
-	override fun getTries(): List<ITry> {
+	override val tries: List<ITry> get() {
 		jumpToTries()
 		val excTableLen = reader.readU2()
 		if (excTableLen == 0) {
 			return Collections.emptyList()
 		}
-		val constPool: ConstPoolReader = clsData.getConstPoolReader()
-		val tries = HashMap<JavaTryData, MutableList<JavaSingleCatch>>(excTableLen)
+		val constPool: ConstPoolReader = clsData.constPoolReader
+		val triesValue = HashMap<JavaTryData, MutableList<JavaSingleCatch>>(excTableLen)
 		for (i in 0 until excTableLen) {
 			val start = reader.readU2()
 			val end = reader.readU2()
 			val handler = reader.readU2()
 			val type = reader.readU2()
 			val tryData = JavaTryData(start, end)
-			val catches = tries.computeIfAbsent(tryData) { ArrayList<JavaSingleCatch>() }
+			val catches = triesValue.computeIfAbsent(tryData) { ArrayList<JavaSingleCatch>() }
 			if (type == 0) {
 				catches.add(JavaSingleCatch(handler, null))
 			} else {
@@ -193,8 +193,8 @@ class JavaCodeReader(
 			}
 		}
 		// 与原 Java stream().map(...).collect(toList()) 等价：保持 entrySet 迭代顺序，边遍历边 setCatch
-		val result = ArrayList<ITry>(tries.size)
-		for (e in tries.entries) {
+		val result = ArrayList<ITry>(triesValue.size)
+		for (e in triesValue.entries) {
 			val tryData = e.key
 			tryData.setCatch(convertSingleCatches(e.value))
 			result.add(tryData)
@@ -202,7 +202,7 @@ class JavaCodeReader(
 		return result
 	}
 
-	private fun getExcHandlers(): Set<Int> {
+	private val excHandlers: Set<Int> get() {
 		jumpToTries()
 		val excTableLen = reader.readU2()
 		if (excTableLen == 0) {
@@ -219,7 +219,7 @@ class JavaCodeReader(
 	}
 
 	private fun jumpToTries() {
-		reader.absPos(codeOffset + 4)
+		reader.absPos(codeOffsetValue + 4)
 		reader.skip(reader.readU4()) // code length
 	}
 

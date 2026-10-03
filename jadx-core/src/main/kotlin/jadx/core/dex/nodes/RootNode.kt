@@ -169,7 +169,7 @@ class RootNode private constructor(
 
 	private fun addDummyClass(classData: IClassData, exc: Exception) {
 		try {
-			val typeStr = classData.getType()
+			val typeStr = classData.type
 			var name: String? = null
 			try {
 				val clsInfo = ClassInfo.fromName(this, typeStr)
@@ -182,10 +182,10 @@ class RootNode private constructor(
 			if (name.isNullOrEmpty()) {
 				name = "CLASS_$typeStr"
 			}
-			val clsNode = ClassNode.addSyntheticClass(this, name, classData.getAccessFlags())
+			val clsNode = ClassNode.addSyntheticClass(this, name, classData.accessFlags)
 			jadx.core.utils.ErrorsCounter.error(clsNode, "Load error", exc)
 		} catch (innerExc: Exception) {
-			LOG.error("Failed to load class from file: {}", classData.getInputFileName(), exc)
+			LOG.error("Failed to load class from file: {}", classData.inputFileName, exc)
 		}
 	}
 

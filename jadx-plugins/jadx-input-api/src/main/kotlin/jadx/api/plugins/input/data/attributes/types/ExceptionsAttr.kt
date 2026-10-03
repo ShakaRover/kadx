@@ -29,7 +29,7 @@ public open class ExceptionsAttr(
 	 * 原 Java 声明返回 `IJadxAttrType<ExceptionsAttr>`，这里用其子类型
 	 * `JadxAttrType<ExceptionsAttr>` 做协变覆写（字节码兼容）。
 	 */
-	override fun getAttrType(): JadxAttrType<ExceptionsAttr> = JadxAttrType.EXCEPTIONS
+	override val attrType: JadxAttrType<ExceptionsAttr> get() = JadxAttrType.EXCEPTIONS
 
 	/** 调试字符串，格式与原 Java 一致：`EXCEPTIONS:<列表>`（冒号后无空格）*/
 	override fun toString(): String = "EXCEPTIONS:$list"

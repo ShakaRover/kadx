@@ -33,5 +33,5 @@ public class ListConsumer<T, R>(private val convert: Function<T, R>) : ISeqConsu
 	}
 
 	/** @return 累积的所有转换结果 */
-	public fun getResult(): List<R> = list
+	public val result: List<R> get() = list
 }

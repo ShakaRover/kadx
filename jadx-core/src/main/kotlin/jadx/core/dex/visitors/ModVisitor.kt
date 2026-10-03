@@ -123,7 +123,7 @@ class ModVisitor : AbstractVisitor() {
 		if (annotationsList == null) {
 			return
 		}
-		for (annotation in annotationsList.getAll()) {
+		for (annotation in annotationsList.all) {
 			if (annotation.visibility == AnnotationVisibility.SYSTEM) {
 				continue
 			}

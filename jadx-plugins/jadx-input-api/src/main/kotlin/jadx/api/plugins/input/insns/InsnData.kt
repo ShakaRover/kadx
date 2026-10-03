@@ -22,28 +22,28 @@ public interface InsnData {
 	public fun decode()
 
 	/** @return 方法体内的指令偏移 */
-	public fun getOffset(): Int
+	public val offset: Int
 
 	/** @return 输入文件中的字节偏移 */
-	public fun getFileOffset(): Int
+	public val fileOffset: Int
 
 	/** @return 操作码枚举 */
-	public fun getOpcode(): Opcode
+	public val opcode: Opcode
 
 	/** @return 操作码助记符（如 "add-int"）；未知操作码时可能为 null */
-	public fun getOpcodeMnemonic(): String?
+	public val opcodeMnemonic: String?
 
 	/** @return 指令原始字节 */
-	public fun getByteCode(): ByteArray
+	public val byteCode: ByteArray
 
 	/** @return index 操作数的类型（见 [InsnIndexType]，决定用哪个 getIndexAsXxx 取值）*/
-	public fun getIndexType(): InsnIndexType
+	public val indexType: InsnIndexType
 
 	/** @return 未解码的原始操作码单元值 */
-	public fun getRawOpcodeUnit(): Int
+	public val rawOpcodeUnit: Int
 
 	/** @return 该指令使用的寄存器个数 */
-	public fun getRegsCount(): Int
+	public val regsCount: Int
 
 	/**
 	 * @param argNum 第几个寄存器操作数（从 0 开始）
@@ -55,31 +55,31 @@ public interface InsnData {
 	 * @return 结果寄存器编号；不需要时返回 -1。
 	 * **背景**：某些输入格式没有 move-result 指令，用此方法直接指定结果寄存器。
 	 */
-	public fun getResultReg(): Int
+	public val resultReg: Int
 
 	/** @return 字面量操作数（如 const/4 的立即数）*/
-	public fun getLiteral(): Long
+	public val literal: Long
 
 	/** @return 跳转目标偏移（goto/if 类指令）*/
-	public fun getTarget(): Int
+	public val target: Int
 
 	/** @return index 操作数的原始值 */
-	public fun getIndex(): Int
+	public val index: Int
 
 	/** @return index 作为字符串取值；类型不匹配时为 null */
-	public fun getIndexAsString(): String?
+	public val indexAsString: String?
 
 	/** @return index 作为类型名取值（如 const-class）；类型不匹配时为 null */
-	public fun getIndexAsType(): String?
+	public val indexAsType: String?
 
 	/** @return index 作为字段引用取值（iget/put 类指令）；类型不匹配时为 null */
-	public fun getIndexAsField(): IFieldRef?
+	public val indexAsField: IFieldRef?
 
 	/** @return index 作为方法引用取值（invoke 类指令）；类型不匹配时为 null */
-	public fun getIndexAsMethod(): IMethodRef?
+	public val indexAsMethod: IMethodRef?
 
 	/** @return index 作为调用点取值（invoke-custom）；类型不匹配时为 null */
-	public fun getIndexAsCallSite(): ICallSite?
+	public val indexAsCallSite: ICallSite?
 
 	/**
 	 * @param protoIndex proto 表索引
@@ -88,8 +88,8 @@ public interface InsnData {
 	public fun getIndexAsProto(protoIndex: Int): IMethodProto?
 
 	/** @return index 作为方法句柄取值（const-method-handle）；不支持时为 null */
-	public fun getIndexAsMethodHandle(): IMethodHandle?
+	public val indexAsMethodHandle: IMethodHandle?
 
 	/** @return 指令附带的自定义载荷（switch 表 / 数组数据等）；无载荷时为 null */
-	public fun getPayload(): ICustomPayload?
+	public val payload: ICustomPayload?
 }

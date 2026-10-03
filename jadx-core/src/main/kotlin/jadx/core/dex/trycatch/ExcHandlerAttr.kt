@@ -13,7 +13,7 @@ import jadx.core.dex.attributes.AType
  */
 class ExcHandlerAttr(private val handler: ExceptionHandler) : IJadxAttribute {
 
-	override fun getAttrType(): AType<ExcHandlerAttr> = AType.EXC_HANDLER
+	override val attrType: AType<ExcHandlerAttr> get() = AType.EXC_HANDLER
 
 	fun getTryBlock(): TryCatchBlockAttr? = handler.getTryBlock()
 

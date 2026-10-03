@@ -220,7 +220,7 @@ abstract class InsnArg : Typed() {
 		fun lit(literal: Long, type: ArgType): LiteralArg = LiteralArg.makeWithFixedType(literal, type)
 
 		@JvmStatic
-		fun lit(insn: InsnData, type: ArgType): LiteralArg = lit(insn.getLiteral(), type)
+		fun lit(insn: InsnData, type: ArgType): LiteralArg = lit(insn.literal, type)
 
 		private fun wrap(insn: InsnNode): InsnWrapArg {
 			insn.add(AFlag.WRAPPED)

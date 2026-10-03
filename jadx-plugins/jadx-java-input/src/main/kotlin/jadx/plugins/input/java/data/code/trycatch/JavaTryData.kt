@@ -11,13 +11,13 @@ import jadx.api.plugins.utils.Utils
  * equals/hashCode 只比较偏移区间，因为 [JavaCodeReader] 用它做"起始偏移 → try 块"的去重 map 键。
  */
 class JavaTryData(
-	private val startOffset: Int,
-	private val endOffset: Int,
+	private val startOffsetValue: Int,
+	private val endOffsetValue: Int,
 ) : ITry {
 
 	private var catchHandler: ICatch? = null
 
-	override fun getCatch(): ICatch {
+	override val catch: ICatch get() {
 		// 接口声明非空；实际调用前 setCatch 必已执行（JavaCodeReader 聚合完子句才交给 core），
 		// 若提前调用，原 Java 返回 null 后调用方解引用同样 NPE，行为等价
 		return catchHandler ?: throw NullPointerException("catchHandler is not set")
@@ -27,11 +27,11 @@ class JavaTryData(
 		this.catchHandler = catchHandler
 	}
 
-	override fun getStartOffset(): Int = startOffset
+	override val startOffset: Int get() = startOffsetValue
 
-	override fun getEndOffset(): Int = endOffset
+	override val endOffset: Int get() = endOffsetValue
 
-	override fun hashCode(): Int = startOffset + 31 * endOffset
+	override fun hashCode(): Int = startOffsetValue + 31 * endOffsetValue
 
 	override fun equals(o: Any?): Boolean {
 		if (this === o) {
@@ -41,8 +41,8 @@ class JavaTryData(
 			return false
 		}
 		val that = o
-		return startOffset == that.startOffset && endOffset == that.endOffset
+		return startOffsetValue == that.startOffset && endOffsetValue == that.endOffset
 	}
 
-	override fun toString(): String = "Try{" + Utils.formatOffset(startOffset) + " - " + Utils.formatOffset(endOffset) + ": " + catchHandler + '}'
+	override fun toString(): String = "Try{" + Utils.formatOffset(startOffsetValue) + " - " + Utils.formatOffset(endOffsetValue) + ": " + catchHandler + '}'
 }

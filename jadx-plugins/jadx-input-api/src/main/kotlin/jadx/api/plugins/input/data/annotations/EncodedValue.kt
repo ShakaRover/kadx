@@ -71,7 +71,7 @@ public class EncodedValue(
 	 * 存储字段的编译时常量值（如 `public static final int MAX = 100`）。
 	 */
 	// 接口已转 Kotlin：星投影 IJadxAttrType<*> 不再是 IJadxAttrType<out IJadxAttribute> 的子类型，改用精确类型
-	override fun getAttrType(): JadxAttrType<EncodedValue> = JadxAttrType.CONSTANT_VALUE
+	override val attrType: JadxAttrType<EncodedValue> get() = JadxAttrType.CONSTANT_VALUE
 
 	/**
 	 * 与原 Java 的 `Objects.hash(getType(), getValue())` 完全一致。

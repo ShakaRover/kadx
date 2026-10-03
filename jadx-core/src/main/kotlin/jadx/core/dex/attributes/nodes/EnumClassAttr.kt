@@ -40,7 +40,7 @@ class EnumClassAttr(val fields: List<EnumField>) : IJadxAttribute {
 	/** 生成枚举常量的静态初始化方法（可能为 null） */
 	var staticMethod: MethodNode? = null
 
-	override fun getAttrType(): AType<EnumClassAttr> = AType.ENUM_CLASS
+	override val attrType: AType<EnumClassAttr> get() = AType.ENUM_CLASS
 
 	override fun toString(): String = "Enum fields: $fields"
 }

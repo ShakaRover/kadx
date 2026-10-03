@@ -9,8 +9,8 @@ package jadx.api.plugins.input.data
 public interface IDebugInfo {
 
 	/** @return 指令偏移 → 源码行号的映射 */
-	public fun getSourceLineMapping(): Map<Int, Int>
+	public val sourceLineMapping: Map<Int, Int>
 
 	/** @return 局部变量列表（含参数，见 [ILocalVar]）*/
-	public fun getLocalVars(): List<ILocalVar>
+	public val localVars: List<ILocalVar>
 }

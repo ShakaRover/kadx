@@ -39,29 +39,29 @@ public class DexClassData(
 		}
 	}
 
-	private val inputFileOffset: Int
+	private val inputFileOffsetValue: Int
 
 	init {
-		inputFileOffset = sectionReader.offset
+		inputFileOffsetValue = sectionReader.offset
 	}
 
-	override fun getInputFileOffset(): Int = inputFileOffset
+	override val inputFileOffset: Int get() = inputFileOffsetValue
 
 	override fun copy(): IClassData = DexClassData(sectionReader.copy(), annotationsParser.copy())
 
-	override fun getType(): String {
+	override val type: String get() {
 		val typeIdx = sectionReader.pos(0).readInt()
 		return checkNotNull(sectionReader.getType(typeIdx)) { "Unknown class type" }
 	}
 
-	override fun getAccessFlags(): Int = sectionReader.pos(4).readInt()
+	override val accessFlags: Int get() = sectionReader.pos(4).readInt()
 
-	override fun getSuperType(): String? {
+	override val superType: String? get() {
 		val typeIdx = sectionReader.pos(2 * 4).readInt()
 		return sectionReader.getType(typeIdx)
 	}
 
-	override fun getInterfacesTypes(): List<String> {
+	override val interfacesTypes: List<String> get() {
 		val offset = sectionReader.pos(3 * 4).readInt()
 		if (offset == 0) {
 			return emptyList()
@@ -69,21 +69,21 @@ public class DexClassData(
 		return sectionReader.absPos(offset).readTypeList()
 	}
 
-	private fun getSourceFile(): String? {
+	private val sourceFile: String? get() {
 		val strIdx = sectionReader.pos(4 * 4).readInt()
 		return sectionReader.getString(strIdx)
 	}
 
-	override fun getInputFileName(): String = sectionReader.getDexReader().inputFileName
+	override val inputFileName: String get() = sectionReader.dexReader.inputFileName
 
-	public fun getAnnotationsOff(): Int = sectionReader.pos(5 * 4).readInt()
+	public val annotationsOff: Int get() = sectionReader.pos(5 * 4).readInt()
 
-	public fun getClassDataOff(): Int = sectionReader.pos(6 * 4).readInt()
+	public val classDataOff: Int get() = sectionReader.pos(6 * 4).readInt()
 
-	public fun getStaticValuesOff(): Int = sectionReader.pos(7 * 4).readInt()
+	public val staticValuesOff: Int get() = sectionReader.pos(7 * 4).readInt()
 
 	override fun visitFieldsAndMethods(fieldConsumer: ISeqConsumer<IFieldData>, mthConsumer: ISeqConsumer<IMethodData>) {
-		val classDataOff = getClassDataOff()
+		val classDataOff = classDataOff
 		if (classDataOff == 0) {
 			return
 		}
@@ -96,7 +96,7 @@ public class DexClassData(
 		fieldConsumer.init(staticFieldsCount + instanceFieldsCount)
 		mthConsumer.init(directMthCount + virtualMthCount)
 
-		annotationsParser.setOffset(getAnnotationsOff())
+		annotationsParser.setOffset(annotationsOff)
 		visitFields(fieldConsumer, data, staticFieldsCount, instanceFieldsCount)
 		visitMethods(mthConsumer, data, directMthCount, virtualMthCount)
 	}
@@ -104,7 +104,7 @@ public class DexClassData(
 	private fun visitFields(fieldConsumer: ISeqConsumer<IFieldData>, data: SectionReader, staticFieldsCount: Int, instanceFieldsCount: Int) {
 		val annotationOffsetMap = annotationsParser.readFieldsAnnotationOffsetMap()
 		val fieldData = DexFieldData(annotationsParser)
-		fieldData.setParentClassType(getType())
+		fieldData.setParentClassType(type)
 		readFields(fieldConsumer, data, fieldData, staticFieldsCount, annotationOffsetMap, true)
 		readFields(fieldConsumer, data, fieldData, instanceFieldsCount, annotationOffsetMap, false)
 	}
@@ -157,7 +157,7 @@ public class DexClassData(
 			val accFlags = data.readUleb128()
 			val codeOff = data.readUleb128()
 
-			val methodRef = methodData.getMethodRef()
+			val methodRef = methodData.methodRef
 			methodRef.reset()
 			sectionReader.initMethodRef(mthIdx, methodRef)
 			methodData.setAccessFlags(accFlags)
@@ -176,7 +176,7 @@ public class DexClassData(
 	}
 
 	private fun getStaticFieldInitValues(reader: SectionReader): List<EncodedValue> {
-		val staticValuesOff = getStaticValuesOff()
+		val staticValuesOff = staticValuesOff
 		if (staticValuesOff == 0) {
 			return emptyList()
 		}
@@ -184,27 +184,27 @@ public class DexClassData(
 		return annotationsParser.parseEncodedArray(reader)
 	}
 
-	private fun getAnnotations(): List<IAnnotation> {
-		annotationsParser.setOffset(getAnnotationsOff())
+	private val annotations: List<IAnnotation> get() {
+		annotationsParser.setOffset(annotationsOff)
 		return annotationsParser.readClassAnnotations()
 	}
 
-	override fun getAttributes(): List<IJadxAttribute> {
+	override val attributes: List<IJadxAttribute> get() {
 		val list = ArrayList<IJadxAttribute>()
-		val sourceFile = getSourceFile()
-		if (sourceFile != null && !sourceFile.isEmpty()) {
-			list.add(SourceFileAttr(sourceFile))
+		val srcFile = sourceFile
+		if (srcFile != null && !srcFile.isEmpty()) {
+			list.add(SourceFileAttr(srcFile))
 		}
-		DexAnnotationsConvert.forClass(getType(), list, getAnnotations())
+		DexAnnotationsConvert.forClass(type, list, annotations)
 		return list
 	}
 
-	public fun getClassDefOffset(): Int = sectionReader.pos(0).getAbsPos()
+	public val classDefOffset: Int get() = sectionReader.pos(0).absPos
 
-	override fun getDisassembledCode(): String {
-		val dexBuf = sectionReader.getDexReader().buf.array()
-		return SmaliUtils.getSmaliCode(dexBuf, getClassDefOffset())
+	override val disassembledCode: String get() {
+		val dexBuf = sectionReader.dexReader.buf.array()
+		return SmaliUtils.getSmaliCode(dexBuf, classDefOffset)
 	}
 
-	override fun toString(): String = getType()
+	override fun toString(): String = type
 }

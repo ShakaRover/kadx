@@ -20,7 +20,7 @@ public interface IJadxAttribute {
 	 * javac 看到的是不变型 `IJadxAttrType<T>`，jadx-core 大量 Java 覆写返回更窄类型参数
 	 * （如 `AType<CatchAttr>`）会因非子类型而编译失败；星投影在两侧语言都接受任意实参。
 	 */
-	public fun getAttrType(): IJadxAttrType<*>
+	public val attrType: IJadxAttrType<*>
 
 	/**
 	 * 标记节点卸载事件时跳过本属性的 unload。

@@ -178,7 +178,7 @@ public class DebugInfoParser(
 		}
 		if (varsInfoFound) {
 			for (localVar in locals) {
-				if (localVar != null && !localVar.isEnd()) {
+				if (localVar != null && !localVar.isEnd) {
 					endVar(localVar, codeSize - 1)
 				}
 			}
@@ -196,12 +196,12 @@ public class DebugInfoParser(
 	private fun restartVar(regNum: Int, addr: Int) {
 		val prev = locals[regNum] ?: return
 		endVar(prev, addr)
-		val newVar = DexLocalVar(regNum, prev.getName(), prev.getType(), prev.getSignature())
+		val newVar = DexLocalVar(regNum, prev.name, prev.type, prev.signature)
 		startVar(newVar, addr)
 	}
 
 	private fun startVar(newVar: DexLocalVar, addr: Int) {
-		val regNum = newVar.getRegNum()
+		val regNum = newVar.regNum
 		val prev = locals[regNum]
 		if (prev != null) {
 			endVar(prev, addr)

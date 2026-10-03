@@ -59,8 +59,8 @@ class DebugInfoAttachVisitor : AbstractVisitor() {
 
 	private fun processDebugInfo(mth: MethodNode, debugInfo: IDebugInfo) {
 		val insnArr = checkNotNull(mth.instructions)
-		attachSourceLines(mth, debugInfo.getSourceLineMapping(), insnArr)
-		attachDebugInfo(mth, debugInfo.getLocalVars(), insnArr)
+		attachSourceLines(mth, debugInfo.sourceLineMapping, insnArr)
+		attachDebugInfo(mth, debugInfo.localVars, insnArr)
 		setMethodSourceLine(mth, insnArr)
 	}
 
@@ -122,12 +122,12 @@ class DebugInfoAttachVisitor : AbstractVisitor() {
 			return
 		}
 		for (v in localVars) {
-			val regNum = v.getRegNum()
-			var start = v.getStartOffset()
-			val end = v.getEndOffset()
+			val regNum = v.regNum
+			var start = v.startOffset
+			val end = v.endOffset
 
 			val type = getVarType(mth, v)
-			val debugInfoAttr = RegDebugInfoAttr(type, v.getName())
+			val debugInfoAttr = RegDebugInfoAttr(type, v.name)
 			if (start <= 0) {
 				// 附加到方法参数
 				val thisArg = mth.getThisArg()
@@ -186,8 +186,8 @@ class DebugInfoAttachVisitor : AbstractVisitor() {
 		/** 从局部变量调试信息推导变量类型（泛型签名优先）。 */
 		@JvmStatic
 		fun getVarType(mth: MethodNode, v: ILocalVar): ArgType {
-			val type = ArgType.parse(v.getType())
-			val sign = v.getSignature() ?: return type
+			val type = ArgType.parse(v.type)
+			val sign = v.signature ?: return type
 			try {
 				val gType = checkNotNull(SignatureParser(sign).consumeType())
 				val expandedType = mth.root().getTypeUtils().expandTypeVariables(mth, gType)

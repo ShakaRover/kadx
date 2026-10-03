@@ -12,7 +12,7 @@ import java.util.function.Consumer
  */
 public class EmptyCodeLoader : ICodeLoader {
 
-	override fun isEmpty(): Boolean = true
+	override val isEmpty: Boolean get() = true
 
 	override fun visitClasses(consumer: Consumer<IClassData>) {
 		// 空实现：没有类可交付

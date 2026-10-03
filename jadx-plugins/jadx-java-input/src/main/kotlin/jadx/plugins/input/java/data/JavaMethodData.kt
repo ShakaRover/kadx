@@ -25,27 +25,27 @@ import java.util.ArrayList
  */
 class JavaMethodData(
 	private val clsData: JavaClassData,
-	private val methodRef: JavaMethodRef,
+	private val methodRefValue: JavaMethodRef,
 ) : IMethodData {
 
-	private var accessFlags = 0
+	private var accessFlagsValue = 0
 
 	// 原 Java 字段初始为 null，setData 前调用 getAttributes/getCodeReader 会 NPE；保持等价
-	private var attributes: JavaAttrStorage? = null
+	private var attributesValue: JavaAttrStorage? = null
 
-	fun setData(accessFlags: Int, attributes: JavaAttrStorage) {
-		this.accessFlags = accessFlags
-		this.attributes = attributes
+	fun setData(accessFlagsValue: Int, attributesValue: JavaAttrStorage) {
+		this.accessFlagsValue = accessFlagsValue
+		this.attributesValue = attributesValue
 	}
 
 	// 协变返回：原 Java 覆写返回具体类型 JavaMethodRef，调用方无需转型
-	override fun getMethodRef(): JavaMethodRef = methodRef
+	override val methodRef: JavaMethodRef get() = methodRefValue
 
-	override fun getAccessFlags(): Int = accessFlags
+	override val accessFlags: Int get() = accessFlagsValue
 
-	@Nullable
-	override fun getCodeReader(): ICodeReader? {
-		val codeAttr: CodeAttr? = checkNotNull(this.attributes).get(JavaAttrType.CODE)
+	@get:Nullable
+	override val codeReader: ICodeReader? get() {
+		val codeAttr: CodeAttr? = checkNotNull(this.attributesValue).get(JavaAttrType.CODE)
 		if (codeAttr == null) {
 			return null
 		}
@@ -54,24 +54,24 @@ class JavaMethodData(
 
 	override fun disassembleMethod(): String = ""
 
-	override fun getAttributes(): List<IJadxAttribute> {
-		val attributes = checkNotNull(this.attributes)
-		val size = attributes.size()
+	override val attributes: List<IJadxAttribute> get() {
+		val attributesValue = checkNotNull(this.attributesValue)
+		val size = attributesValue.size()
 		if (size == 0) {
 			return emptyList()
 		}
 		val list = ArrayList<IJadxAttribute>(size)
-		Utils.addToList(list, JavaAnnotationsAttr.merge(attributes))
-		Utils.addToList(list, JavaParamAnnsAttr.merge(attributes))
-		Utils.addToList(list, JavaAnnotationDefaultAttr.convert(attributes))
-		val signature: SignatureAttr? = attributes.get(JavaAttrType.SIGNATURE)
+		Utils.addToList(list, JavaAnnotationsAttr.merge(attributesValue))
+		Utils.addToList(list, JavaParamAnnsAttr.merge(attributesValue))
+		Utils.addToList(list, JavaAnnotationDefaultAttr.convert(attributesValue))
+		val signature: SignatureAttr? = attributesValue.get(JavaAttrType.SIGNATURE)
 		Utils.addToList(list, signature)
-		val exceptions: ExceptionsAttr? = attributes.get(JavaAttrType.EXCEPTIONS)
+		val exceptions: ExceptionsAttr? = attributesValue.get(JavaAttrType.EXCEPTIONS)
 		Utils.addToList(list, exceptions)
-		val methodParameters: JavaMethodParametersAttr? = attributes.get(JavaAttrType.METHOD_PARAMETERS)
+		val methodParameters: JavaMethodParametersAttr? = attributesValue.get(JavaAttrType.METHOD_PARAMETERS)
 		Utils.addToList(list, methodParameters)
 		return list
 	}
 
-	override fun toString(): String = methodRef.toString()
+	override fun toString(): String = methodRefValue.toString()
 }

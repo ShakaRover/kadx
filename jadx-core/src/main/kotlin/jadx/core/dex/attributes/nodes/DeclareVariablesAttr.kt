@@ -24,7 +24,7 @@ class DeclareVariablesAttr : IJadxAttribute {
 		vars.add(arg)
 	}
 
-	override fun getAttrType(): AType<DeclareVariablesAttr> = AType.DECLARE_VARIABLES
+	override val attrType: AType<DeclareVariablesAttr> get() = AType.DECLARE_VARIABLES
 
 	override fun toString(): String = "DECL_VAR: " + Utils.listToString(vars)
 }

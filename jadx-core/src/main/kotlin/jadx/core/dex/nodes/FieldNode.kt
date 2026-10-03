@@ -26,8 +26,8 @@ class FieldNode(
 	companion object {
 		fun build(cls: ClassNode, fieldData: IFieldData): FieldNode {
 			val fieldInfo = FieldInfo.fromRef(cls.root(), fieldData)
-			val fieldNode = FieldNode(cls, fieldInfo, fieldData.getAccessFlags())
-			fieldNode.addAttrs(fieldData.getAttributes())
+			val fieldNode = FieldNode(cls, fieldInfo, fieldData.accessFlags)
+			fieldNode.addAttrs(fieldData.attributes)
 			return fieldNode
 		}
 	}

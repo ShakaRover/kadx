@@ -23,7 +23,7 @@ class JavaMethodParametersAttr(list: List<MethodParametersAttr.Info>) :
 		@JvmStatic
 		fun reader(): IJavaAttributeReader = object : IJavaAttributeReader {
 			override fun read(clsData: JavaClassData, reader: DataReader): IJavaAttribute {
-				val constPool: ConstPoolReader = clsData.getConstPoolReader()
+				val constPool: ConstPoolReader = clsData.constPoolReader
 				val count = reader.readU1()
 				val params = ArrayList<MethodParametersAttr.Info>(count)
 				for (i in 0 until count) {

@@ -16,7 +16,7 @@ import jadx.core.utils.Utils
  */
 class LocalVarsDebugInfoAttr(val localVars: List<ILocalVar>) : IJadxAttribute {
 
-	override fun getAttrType(): AType<LocalVarsDebugInfoAttr> = AType.LOCAL_VARS_DEBUG_INFO
+	override val attrType: AType<LocalVarsDebugInfoAttr> get() = AType.LOCAL_VARS_DEBUG_INFO
 
 	override fun toString(): String = "Debug Info:\n  " + Utils.listToString(localVars, "\n  ")
 }

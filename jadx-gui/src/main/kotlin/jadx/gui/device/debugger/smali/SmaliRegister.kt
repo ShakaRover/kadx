@@ -6,13 +6,13 @@ package jadx.gui.device.debugger.smali
  * **做什么**：记录寄存器编号、参数名、运行时寄存器编号以及作用域偏移，
  * 是 smali 反汇编结果中「寄存器 -> 变量」映射的基础数据。
  */
-class SmaliRegister(private val num: Int, private val endOffset: Int) : RegisterInfo() {
+class SmaliRegister(private val num: Int, private val endOffsetValue: Int) : RegisterInfo() {
 
 	/** 参数名（方法参数或 `.local` 名）；为空时展示为 `vN`。 */
 	private var paramName: String? = null
 
 	/** 作用域起始偏移，初始等于结束偏移（表示尚未使用）。 */
-	private var startOffset: Int = endOffset
+	private var startOffsetValue: Int = endOffsetValue
 
 	/** 是否是方法参数。 */
 	private var isParam: Boolean = false
@@ -33,7 +33,7 @@ class SmaliRegister(private val num: Int, private val endOffset: Int) : Register
 	 *
 	 * 注意：这里用的是开区间 `(start, end)`，与基类的 `[start, end)` 略有不同。
 	 */
-	override fun isInitialized(codeOffset: Long): Boolean = codeOffset > getStartOffset() && codeOffset < getEndOffset()
+	override fun isInitialized(codeOffset: Long): Boolean = codeOffset > startOffset && codeOffset < endOffset
 
 	/** 标记该寄存器为方法参数，并记录参数名。 */
 	internal fun setParam(name: String) {
@@ -43,22 +43,22 @@ class SmaliRegister(private val num: Int, private val endOffset: Int) : Register
 
 	/** 把起始偏移更新为更小的值（只允许向前扩展作用域）。 */
 	internal fun setStartOffset(off: Int) {
-		if (off < startOffset) {
-			startOffset = off
+		if (off < startOffsetValue) {
+			startOffsetValue = off
 		}
 	}
 
-	override fun getName(): String = paramName ?: "v$num"
+	override val name: String get() = paramName ?: "v$num"
 
-	override fun getRegNum(): Int = num
+	override val regNum: Int get() = num
 
-	override fun getType(): String = ""
+	override val type: String get() = ""
 
-	override fun getSignature(): String? = null
+	override val signature: String? get() = null
 
-	override fun getStartOffset(): Int = startOffset
+	override val startOffset: Int get() = startOffsetValue
 
-	override fun getEndOffset(): Int = endOffset
+	override val endOffset: Int get() = endOffsetValue
 
-	override fun isMarkedAsParameter(): Boolean = isParam
+	override val isMarkedAsParameter: Boolean get() = isParam
 }

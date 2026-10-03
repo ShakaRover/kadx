@@ -13,7 +13,7 @@ import jadx.api.plugins.input.insns.custom.ICustomPayload
 public interface ICallSite : ICustomPayload {
 
 	/** @return bootstrap 方法的参数值列表（编码值）*/
-	public fun getValues(): List<EncodedValue>
+	public val values: List<EncodedValue>
 
 	/**
 	 * 惰性加载：首次访问前调用，填充 [getValues] 的数据。

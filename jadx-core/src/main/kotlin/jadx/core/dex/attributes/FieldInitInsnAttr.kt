@@ -24,7 +24,7 @@ class FieldInitInsnAttr(
 	/** 初始化指令所在的方法（原 Java 方法名：getInsnMth） */
 	fun getInsnMth(): MethodNode = mth
 
-	override fun getAttrType(): IJadxAttrType<*> = AType.FIELD_INIT_INSN
+	override val attrType: IJadxAttrType<*> get() = AType.FIELD_INIT_INSN
 
 	override fun toString(): String = "INIT{$insn}"
 }

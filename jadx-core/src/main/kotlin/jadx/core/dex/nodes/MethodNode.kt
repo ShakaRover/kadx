@@ -48,13 +48,13 @@ class MethodNode(
 
 		fun build(classNode: ClassNode, methodData: IMethodData): MethodNode {
 			val methodNode = MethodNode(classNode, methodData)
-			methodNode.addAttrs(methodData.getAttributes())
+			methodNode.addAttrs(methodData.attributes)
 			return methodNode
 		}
 	}
 
-	val mthInfo: MethodInfo = MethodInfo.fromRef(parentClass.root(), mthData.getMethodRef())
-	var accFlags: AccessInfo = AccessInfo(mthData.getAccessFlags(), AccessInfo.AFType.METHOD)
+	val mthInfo: MethodInfo = MethodInfo.fromRef(parentClass.root(), mthData.methodRef)
+	var accFlags: AccessInfo = AccessInfo(mthData.accessFlags, AccessInfo.AFType.METHOD)
 
 	lateinit var retType: ArgType
 
@@ -71,7 +71,7 @@ class MethodNode(
 	private var noCode: Boolean
 
 	init {
-		val reader = mthData.getCodeReader()
+		val reader = mthData.codeReader
 		if (reader == null) {
 			noCode = true
 			codeReader = null
@@ -79,7 +79,7 @@ class MethodNode(
 		} else {
 			noCode = false
 			codeReader = reader.copy()
-			insnsCount = reader.getUnitsCount()
+			insnsCount = reader.unitsCount
 		}
 		retType = mthInfo.returnType
 		argTypes = mthInfo.argumentsTypes
@@ -143,8 +143,8 @@ class MethodNode(
 				initArguments(argTypes)
 				return
 			}
-			regsCount = checkNotNull(codeReader).getRegistersCount()
-			argsStartReg = checkNotNull(codeReader).getArgsStartReg()
+			regsCount = checkNotNull(codeReader).registersCount
+			argsStartReg = checkNotNull(codeReader).argsStartReg
 			initArguments(argTypes)
 			if (contains(AType.JADX_ERROR)) {
 				instructions = EMPTY_INSN_ARRAY
@@ -493,9 +493,9 @@ class MethodNode(
 
 	override fun getMethodInfo(): MethodInfo = mthInfo
 
-	fun getMethodCodeOffset(): Long = if (noCode) 0 else checkNotNull(codeReader).getCodeOffset().toLong()
+	fun getMethodCodeOffset(): Long = if (noCode) 0 else checkNotNull(codeReader).codeOffset.toLong()
 
-	fun getDebugInfo(): IDebugInfo? = if (noCode) null else checkNotNull(codeReader).getDebugInfo()
+	fun getDebugInfo(): IDebugInfo? = if (noCode) null else checkNotNull(codeReader).debugInfo
 
 	fun ignoreMethod() {
 		add(AFlag.DONT_GENERATE)

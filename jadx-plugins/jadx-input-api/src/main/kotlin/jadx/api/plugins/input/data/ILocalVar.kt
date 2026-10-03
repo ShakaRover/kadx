@@ -9,26 +9,26 @@ package jadx.api.plugins.input.data
 public interface ILocalVar {
 
 	/** @return 变量名（可能为空字符串）*/
-	public fun getName(): String
+	public val name: String
 
 	/** @return 寄存器编号（Dex 中变量绑定到寄存器）*/
-	public fun getRegNum(): Int
+	public val regNum: Int
 
 	/** @return 变量的描述符/类型字符串 */
-	public fun getType(): String
+	public val type: String
 
 	/** @return 泛型签名；无泛型信息时为 null */
-	public fun getSignature(): String?
+	public val signature: String?
 
 	/** @return 变量作用域的起始指令偏移 */
-	public fun getStartOffset(): Int
+	public val startOffset: Int
 
 	/** @return 变量作用域的结束指令偏移 */
-	public fun getEndOffset(): Int
+	public val endOffset: Int
 
 	/**
 	 * @return 调试信息标记该变量是否为方法参数。
 	 * **注意**：原 Java 注释明确说明此标记可能不准确，不应完全信任。
 	 */
-	public fun isMarkedAsParameter(): Boolean
+	public val isMarkedAsParameter: Boolean
 }

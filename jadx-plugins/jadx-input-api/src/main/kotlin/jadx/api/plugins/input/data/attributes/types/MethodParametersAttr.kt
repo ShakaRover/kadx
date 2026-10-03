@@ -48,7 +48,7 @@ public open class MethodParametersAttr(
 	 * 原 Java 声明返回 `IJadxAttrType<MethodParametersAttr>`，这里用其子类型
 	 * `JadxAttrType<MethodParametersAttr>` 做协变覆写（字节码兼容）。
 	 */
-	override fun getAttrType(): JadxAttrType<MethodParametersAttr> = JadxAttrType.METHOD_PARAMETERS
+	override val attrType: JadxAttrType<MethodParametersAttr> get() = JadxAttrType.METHOD_PARAMETERS
 
 	/** 调试字符串，格式与原 Java 一致：`METHOD_PARAMETERS: <列表>`（冒号后有空格）*/
 	override fun toString(): String = "METHOD_PARAMETERS: $list"

@@ -26,7 +26,7 @@ class JavaInnerClsAttr(map: Map<String, InnerClsInfo>) :
 		fun reader(): IJavaAttributeReader = object : IJavaAttributeReader {
 			override fun read(clsData: JavaClassData, reader: DataReader): IJavaAttribute {
 				val len = reader.readU2()
-				val constPool: ConstPoolReader = clsData.getConstPoolReader()
+				val constPool: ConstPoolReader = clsData.constPoolReader
 				// getClass 带 @Nullable（损坏 class），原 Java 允许 null 键，这里保持同样行为
 				val clsMap = HashMap<String?, InnerClsInfo>(len)
 				for (i in 0 until len) {

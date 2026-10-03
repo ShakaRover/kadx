@@ -40,11 +40,11 @@ public class DexCodeReader(private val inReader: SectionReader) : ICodeReader {
 		inReader.offset = offset
 	}
 
-	override fun getRegistersCount(): Int = inReader.pos(0).readUShort()
+	override val registersCount: Int get() = inReader.pos(0).readUShort()
 
-	override fun getArgsStartReg(): Int = -1
+	override val argsStartReg: Int get() = -1
 
-	override fun getUnitsCount(): Int = inReader.pos(12).readInt()
+	override val unitsCount: Int get() = inReader.pos(12).readInt()
 
 	override fun visitInstructions(insnConsumer: Consumer<InsnData>) {
 		val insnData = DexInsnData(this, inReader.copy())
@@ -52,7 +52,7 @@ public class DexCodeReader(private val inReader: SectionReader) : ICodeReader {
 		val size = inReader.readInt()
 		var offset = 0 // in code units (2 byte)
 		while (offset < size) {
-			val insnStart = inReader.getAbsPos()
+			val insnStart = inReader.absPos
 			val opcodeUnit = inReader.readUShort()
 			val insnInfo = DexInsnInfo.get(opcodeUnit)
 			insnData.setInsnStart(insnStart)
@@ -72,7 +72,7 @@ public class DexCodeReader(private val inReader: SectionReader) : ICodeReader {
 
 			insnConsumer.accept(insnData)
 
-			if (!insnData.isDecoded()) {
+			if (!insnData.isDecoded) {
 				skip(insnData)
 			}
 			offset += insnData.length
@@ -81,20 +81,20 @@ public class DexCodeReader(private val inReader: SectionReader) : ICodeReader {
 
 	/** 委托 [DexInsnFormat.decode] 解码指令参数（寄存器/字面量/索引）。 */
 	public fun decode(insn: DexInsnData) {
-		val insnInfo = checkNotNull(insn.getInsnInfo()) { "insn info is not set" }
+		val insnInfo = checkNotNull(insn.insnInfo) { "insn info is not set" }
 		val format = insnInfo.format
-		format.decode(insn, insn.getOpcodeUnit(), insn.getCodeData().inReader)
+		format.decode(insn, insn.opcodeUnit, insn.codeData.inReader)
 		insn.setDecoded(true)
 	}
 
 	/** 未解码的指令按格式跳过对应字节数。 */
 	public fun skip(insn: DexInsnData) {
-		val insnInfo = insn.getInsnInfo() ?: return
-		val codeReader = insn.getCodeData()
+		val insnInfo = insn.insnInfo ?: return
+		val codeReader = insn.codeData
 		insnInfo.format.skip(insn, codeReader.inReader)
 	}
 
-	override fun getDebugInfo(): IDebugInfo? {
+	override val debugInfo: IDebugInfo? get() {
 		val debugOff = inReader.pos(8).readInt()
 		if (debugOff == 0) {
 			return null
@@ -102,30 +102,30 @@ public class DexCodeReader(private val inReader: SectionReader) : ICodeReader {
 		if (debugOff < 0 || debugOff > inReader.size()) {
 			throw InvalidDataException("Invalid debug info offset")
 		}
-		val regsCount = getRegistersCount()
-		val debugInfoParser = DebugInfoParser(inReader, regsCount, getUnitsCount())
+		val regsCount = registersCount
+		val debugInfoParser = DebugInfoParser(inReader, regsCount, unitsCount)
 		debugInfoParser.initMthArgs(regsCount, inReader.getMethodParamTypes(mthId))
 		return debugInfoParser.process(debugOff)
 	}
 
-	private fun getTriesCount(): Int = inReader.pos(6).readUShort()
+	private val triesCount: Int get() = inReader.pos(6).readUShort()
 
-	private fun getTriesOffset(): Int {
-		val triesCount = getTriesCount()
+	private val triesOffset: Int get() {
+		val triesCount = triesCount
 		if (triesCount == 0) {
 			return -1
 		}
-		val insnsCount = getUnitsCount()
+		val insnsCount = unitsCount
 		val padding = if (insnsCount % 2 == 1) 2 else 0 // try_list 需 4 字节对齐，奇数指令补 2 字节
 		return 4 * 4 + insnsCount * 2 + padding
 	}
 
-	override fun getTries(): List<ITry> {
-		val triesOffset = getTriesOffset()
+	override val tries: List<ITry> get() {
+		val triesOffset = triesOffset
 		if (triesOffset == -1) {
 			return emptyList()
 		}
-		val triesCount = getTriesCount()
+		val triesCount = triesCount
 		val catchHandlers = getCatchHandlers(triesOffset + 8 * triesCount, inReader.copy())
 		inReader.pos(triesOffset)
 		val triesList = ArrayList<ITry>(triesCount)
@@ -151,11 +151,11 @@ public class DexCodeReader(private val inReader: SectionReader) : ICodeReader {
 	 */
 	private fun getCatchHandlers(offset: Int, ext: SectionReader): Map<Int, ICatch> {
 		inReader.pos(offset)
-		val byteOffsetStart = inReader.getAbsPos()
+		val byteOffsetStart = inReader.absPos
 		val size = inReader.readUleb128()
 		val map = HashMap<Int, ICatch>(size)
 		for (i in 0 until size) {
-			val byteIndex = inReader.getAbsPos() - byteOffsetStart
+			val byteIndex = inReader.absPos - byteOffsetStart
 			val sizeAndType = inReader.readSleb128()
 			val handlersLen = abs(sizeAndType)
 			val addr = IntArray(handlersLen)
@@ -171,5 +171,5 @@ public class DexCodeReader(private val inReader: SectionReader) : ICodeReader {
 		return map
 	}
 
-	override fun getCodeOffset(): Int = inReader.offset
+	override val codeOffset: Int get() = inReader.offset
 }

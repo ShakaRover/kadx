@@ -9,8 +9,8 @@ package jadx.api.plugins.input.data
 public interface IMethodProto {
 
 	/** @return 返回类型的描述符/类型字符串（如 "V"、"I"）*/
-	public fun getReturnType(): String
+	public val returnType: String
 
 	/** @return 参数类型列表，顺序与方法声明一致 */
-	public fun getArgTypes(): List<String>
+	public val argTypes: List<String>
 }

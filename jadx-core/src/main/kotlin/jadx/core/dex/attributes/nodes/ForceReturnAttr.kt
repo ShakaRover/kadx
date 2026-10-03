@@ -13,7 +13,7 @@ import jadx.core.utils.Utils
  */
 class ForceReturnAttr(val returnInsn: InsnNode) : IJadxAttribute {
 
-	override fun getAttrType(): AType<ForceReturnAttr> = AType.FORCE_RETURN
+	override val attrType: AType<ForceReturnAttr> get() = AType.FORCE_RETURN
 
 	override fun toString(): String = "FORCE_RETURN " + Utils.listToString(returnInsn.arguments)
 }

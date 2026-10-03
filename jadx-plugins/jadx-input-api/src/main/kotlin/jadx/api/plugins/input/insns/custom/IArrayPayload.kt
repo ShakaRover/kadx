@@ -9,14 +9,14 @@ package jadx.api.plugins.input.insns.custom
 public interface IArrayPayload : ICustomPayload {
 
 	/** @return 元素个数 */
-	public fun getSize(): Int
+	public val size: Int
 
 	/** @return 单个元素的字节大小（如 int 为 4）*/
-	public fun getElementSize(): Int
+	public val elementSize: Int
 
 	/**
 	 * @return 数组数据本体，具体类型由输入格式决定（通常为 Object[]）。
 	 * **可空**：原 Java 返回 Object 且未声明非空，实现类可能持有 null。
 	 */
-	public fun getData(): Any?
+	public val data: Any?
 }

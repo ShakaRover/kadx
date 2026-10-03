@@ -13,51 +13,51 @@ import org.jetbrains.annotations.Nullable
  * LocalVariableTypeTable 条目相反（type=null）；两者在 [JavaCodeReader] 里按变量合并互补。
  */
 class JavaLocalVar(
-	regNum: Int,
+	regNumValue: Int,
 	nameValue: String?,
 	typeValue: String?,
 	sign: String?,
-	private val startOffset: Int,
-	private val endOffset: Int,
+	private val startOffsetValue: Int,
+	private val endOffsetValue: Int,
 ) : ILocalVar {
 
 	// 寄存器号会被 shiftRegNum 修改，故为 var；其余字段解析后不变
-	private var regNum: Int = regNum
-	private val name: String? = nameValue
-	private val type: String? = typeValue
+	private var regNumValue: Int = regNumValue
+	private val nameValue: String? = nameValue
+	private val typeValue: String? = typeValue
 	private var sign: String? = sign
 
 	fun shiftRegNum(maxStack: Int) {
-		regNum += maxStack // convert local var to register
+		regNumValue += maxStack // convert local var to register
 	}
 
 	// 接口声明非空；损坏 class 时名字为 null，调用方解引用与原 Java 一样 NPE
-	override fun getName(): String = name ?: throw NullPointerException("name is null")
+	override val name: String get() = nameValue ?: throw NullPointerException("name is null")
 
-	override fun getRegNum(): Int = regNum
+	override val regNum: Int get() = regNumValue
 
 	// 接口声明非空，但 LocalVariableTypeTable 来源的变量此处运行时为 null（原 Java 同样返回 null）；
 	// 调用方解引用时两边都是 NPE，行为等价
-	override fun getType(): String = type ?: throw NullPointerException("type is null")
+	override val type: String get() = typeValue ?: throw NullPointerException("type is null")
 
-	@Nullable
-	override fun getSignature(): String? = sign
+	@get:Nullable
+	override val signature: String? get() = sign
 
 	fun setSignature(sign: String?) {
 		this.sign = sign
 	}
 
-	override fun getStartOffset(): Int = startOffset
+	override val startOffset: Int get() = startOffsetValue
 
-	override fun getEndOffset(): Int = endOffset
+	override val endOffset: Int get() = endOffsetValue
 
-	override fun isMarkedAsParameter(): Boolean = false
+	override val isMarkedAsParameter: Boolean get() = false
 
 	override fun hashCode(): Int {
-		var result = regNum
-		result = 31 * result + name.hashCode()
-		result = 31 * result + startOffset
-		result = 31 * result + endOffset
+		var result = regNumValue
+		result = 31 * result + nameValue.hashCode()
+		result = 31 * result + startOffsetValue
+		result = 31 * result + endOffsetValue
 		return result
 	}
 
@@ -69,17 +69,17 @@ class JavaLocalVar(
 			return false
 		}
 		val other = o
-		return regNum == other.regNum &&
-			startOffset == other.startOffset &&
-			endOffset == other.endOffset &&
-			name == other.name
+		return regNumValue == other.regNum &&
+			startOffsetValue == other.startOffset &&
+			endOffsetValue == other.endOffset &&
+			nameValue == other.name
 	}
 
 	companion object {
 		private fun formatOffset(offset: Int): String = String.format("0x%04x", offset)
 	}
 
-	override fun toString(): String = formatOffset(startOffset) + '-' + formatOffset(endOffset) +
-		": r" + regNum + " '" + name + "' " + type +
+	override fun toString(): String = formatOffset(startOffsetValue) + '-' + formatOffset(endOffsetValue) +
+		": r" + regNumValue + " '" + nameValue + "' " + typeValue +
 		(if (sign != null) ", signature: " + sign else "")
 }

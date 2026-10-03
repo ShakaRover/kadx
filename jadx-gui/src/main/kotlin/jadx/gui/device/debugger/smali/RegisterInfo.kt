@@ -19,12 +19,12 @@ abstract class RegisterInfo : ILocalVar {
 	 *
 	 * 注意：这里用的是闭开区间 `[start, end)`，即起始偏移算「已初始化」。
 	 */
-	open fun isInitialized(codeOffset: Long): Boolean = codeOffset >= getStartOffset() && codeOffset < getEndOffset()
+	open fun isInitialized(codeOffset: Long): Boolean = codeOffset >= startOffset && codeOffset < endOffset
 
 	/**
 	 * 判断在 [codeOffset] 处该变量是否尚未生效（作用域之外）。
 	 *
 	 * 与 [isInitialized] 互补：偏移量小于起始或大于等于结束都算未初始化。
 	 */
-	open fun isUnInitialized(codeOffset: Long): Boolean = codeOffset < getStartOffset() || codeOffset >= getEndOffset()
+	open fun isUnInitialized(codeOffset: Long): Boolean = codeOffset < startOffset || codeOffset >= endOffset
 }

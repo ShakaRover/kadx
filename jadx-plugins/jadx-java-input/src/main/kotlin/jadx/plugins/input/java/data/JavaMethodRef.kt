@@ -14,38 +14,38 @@ class JavaMethodRef :
 	JavaMethodProto(),
 	IMethodRef {
 
-	private var uniqId = 0
-	private var parentClassType: String? = null
-	private var name: String? = null
+	private var uniqIdValue = 0
+	private var parentClassTypeValue: String? = null
+	private var nameValue: String? = null
 	private var descr: String? = null
 
-	override fun getUniqId(): Int = uniqId
+	override val uniqId: Int get() = uniqIdValue
 
 	fun initUniqId(clsReader: JavaClassReader, id: Int, fromConstPool: Boolean) {
-		val readerId = clsReader.getId()
+		val readerId = clsReader.id
 		if (readerId > 0xFFFF || id > 0x7FFF) {
 			// loaded more than 65535 classes or more than 32767 methods in this class -> disable caching
-			uniqId = 0
+			uniqIdValue = 0
 		} else {
 			val source = if (fromConstPool) 0 else 0x8000
-			uniqId = ((readerId and 0xFFFF) shl 16) or source or (id and 0x7FFF)
+			uniqIdValue = ((readerId and 0xFFFF) shl 16) or source or (id and 0x7FFF)
 		}
 	}
 
 	// 接口声明非空；实际调用前 setParentClassType/setName 必已执行，提前调用时原 Java 同样 NPE
-	override fun getParentClassType(): String = parentClassType ?: throw NullPointerException("parentClassType is null")
+	override val parentClassType: String get() = parentClassTypeValue ?: throw NullPointerException("parentClassType is null")
 
-	fun setParentClassType(parentClassType: String?) {
-		this.parentClassType = parentClassType
+	fun setParentClassType(parentClassTypeValue: String?) {
+		this.parentClassTypeValue = parentClassTypeValue
 	}
 
-	override fun getName(): String = name ?: throw NullPointerException("name is null")
+	override val name: String get() = nameValue ?: throw NullPointerException("name is null")
 
-	fun setName(name: String?) {
-		this.name = name
+	fun setName(nameValue: String?) {
+		this.nameValue = nameValue
 	}
 
-	fun getDescriptor(): String? = descr
+	val descriptor: String? get() = descr
 
 	fun setDescr(descr: String?) {
 		this.descr = descr
@@ -63,5 +63,5 @@ class JavaMethodRef :
 		}
 	}
 
-	override fun toString(): String = parentClassType + "->" + name + descr
+	override fun toString(): String = parentClassTypeValue + "->" + nameValue + descr
 }

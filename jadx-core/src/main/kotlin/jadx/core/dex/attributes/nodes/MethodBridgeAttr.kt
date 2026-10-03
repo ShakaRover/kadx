@@ -15,7 +15,7 @@ import jadx.core.dex.nodes.MethodNode
  */
 class MethodBridgeAttr(val bridgeMth: MethodNode) : PinnedAttribute() {
 
-	override fun getAttrType(): AType<MethodBridgeAttr> = AType.BRIDGED_BY
+	override val attrType: AType<MethodBridgeAttr> get() = AType.BRIDGED_BY
 
 	override fun toString(): String = "BRIDGED_BY: $bridgeMth"
 }

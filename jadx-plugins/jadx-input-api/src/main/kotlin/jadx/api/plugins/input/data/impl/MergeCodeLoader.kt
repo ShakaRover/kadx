@@ -28,9 +28,9 @@ public class MergeCodeLoader(
 		}
 	}
 
-	override fun isEmpty(): Boolean {
+	override val isEmpty: Boolean get() {
 		for (codeLoader in codeLoaders) {
-			if (!codeLoader.isEmpty()) {
+			if (!codeLoader.isEmpty) {
 				return false
 			}
 		}

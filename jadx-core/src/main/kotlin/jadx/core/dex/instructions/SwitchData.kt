@@ -15,9 +15,9 @@ import jadx.core.utils.InsnUtils
  */
 class SwitchData(payload: ISwitchPayload) : InsnNode(InsnType.SWITCH_DATA, 0) {
 
-	val size: Int = payload.getSize()
-	val keys: IntArray = payload.getKeys()
-	val targets: IntArray = payload.getTargets()
+	val size: Int = payload.size
+	val keys: IntArray = payload.keys
+	val targets: IntArray = payload.targets
 
 	/** 把相对跳转偏移加上 switch 指令自身偏移，得到绝对偏移。 */
 	fun fixTargets(switchOffset: Int) {

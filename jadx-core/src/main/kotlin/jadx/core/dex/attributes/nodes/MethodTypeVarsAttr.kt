@@ -35,7 +35,7 @@ class MethodTypeVarsAttr private constructor(private val typeVars: Set<ArgType>)
 	/** 方法作用域内已知的类型变量集合 */
 	fun getTypeVars(): Set<ArgType> = typeVars
 
-	override fun getAttrType(): AType<MethodTypeVarsAttr> = AType.METHOD_TYPE_VARS
+	override val attrType: AType<MethodTypeVarsAttr> get() = AType.METHOD_TYPE_VARS
 
 	override fun toString(): String {
 		if (this === EMPTY) {

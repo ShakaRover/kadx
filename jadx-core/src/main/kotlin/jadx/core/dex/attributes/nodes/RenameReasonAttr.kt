@@ -63,7 +63,7 @@ class RenameReasonAttr(private var description: String = "") : IJadxAttribute {
 
 	fun getDescription(): String = description
 
-	override fun getAttrType(): AType<RenameReasonAttr> = AType.RENAME_REASON
+	override val attrType: AType<RenameReasonAttr> get() = AType.RENAME_REASON
 
 	override fun toString(): String = "RENAME_REASON:$description"
 }

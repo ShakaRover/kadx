@@ -39,7 +39,7 @@ public abstract class DexInsnFormat(
 		@JvmField
 		public val FORMAT_12X = object : DexInsnFormat(1, 2) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
-				val regs = insn.getArgsReg()
+				val regs = insn.argsReg
 				regs[0] = nibble2(opcodeUnit)
 				regs[1] = nibble3(opcodeUnit)
 			}
@@ -49,7 +49,7 @@ public abstract class DexInsnFormat(
 		@JvmField
 		public val FORMAT_11N = object : DexInsnFormat(1, 1) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
-				val regs = insn.getArgsReg()
+				val regs = insn.argsReg
 				regs[0] = nibble2(opcodeUnit)
 				insn.setLiteral(signedNibble3(opcodeUnit).toLong())
 			}
@@ -59,7 +59,7 @@ public abstract class DexInsnFormat(
 		@JvmField
 		public val FORMAT_11X = object : DexInsnFormat(1, 1) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
-				val regs = insn.getArgsReg()
+				val regs = insn.argsReg
 				regs[0] = byte1(opcodeUnit)
 			}
 		}
@@ -68,7 +68,7 @@ public abstract class DexInsnFormat(
 		@JvmField
 		public val FORMAT_10T = object : DexInsnFormat(1, 0) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
-				insn.setTarget(insn.getOffset() + signedByte1(opcodeUnit))
+				insn.setTarget(insn.offset + signedByte1(opcodeUnit))
 			}
 		}
 
@@ -76,7 +76,7 @@ public abstract class DexInsnFormat(
 		@JvmField
 		public val FORMAT_20T = object : DexInsnFormat(2, 0) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
-				insn.setTarget(insn.getOffset() + reader.readShort())
+				insn.setTarget(insn.offset + reader.readShort())
 			}
 		}
 
@@ -93,7 +93,7 @@ public abstract class DexInsnFormat(
 		@JvmField
 		public val FORMAT_22X = object : DexInsnFormat(2, 2) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
-				val regs = insn.getArgsReg()
+				val regs = insn.argsReg
 				regs[0] = byte1(opcodeUnit)
 				regs[1] = reader.readUShort()
 			}
@@ -103,9 +103,9 @@ public abstract class DexInsnFormat(
 		@JvmField
 		public val FORMAT_21T = object : DexInsnFormat(2, 1) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
-				val regs = insn.getArgsReg()
+				val regs = insn.argsReg
 				regs[0] = byte1(opcodeUnit)
-				insn.setTarget(insn.getOffset() + reader.readShort())
+				insn.setTarget(insn.offset + reader.readShort())
 			}
 		}
 
@@ -113,7 +113,7 @@ public abstract class DexInsnFormat(
 		@JvmField
 		public val FORMAT_21S = object : DexInsnFormat(2, 1) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
-				val regs = insn.getArgsReg()
+				val regs = insn.argsReg
 				regs[0] = byte1(opcodeUnit)
 				insn.setLiteral(reader.readShort().toLong())
 			}
@@ -126,7 +126,7 @@ public abstract class DexInsnFormat(
 		@JvmField
 		public val FORMAT_21H = object : DexInsnFormat(2, 1) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
-				val regs = insn.getArgsReg()
+				val regs = insn.argsReg
 				regs[0] = byte1(opcodeUnit)
 
 				var literal = reader.readShort().toLong()
@@ -139,7 +139,7 @@ public abstract class DexInsnFormat(
 		@JvmField
 		public val FORMAT_21C = object : DexInsnFormat(2, 1) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
-				val regs = insn.getArgsReg()
+				val regs = insn.argsReg
 				regs[0] = byte1(opcodeUnit)
 				insn.setIndex(reader.readUShort())
 			}
@@ -149,7 +149,7 @@ public abstract class DexInsnFormat(
 		@JvmField
 		public val FORMAT_23X = object : DexInsnFormat(2, 3) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
-				val regs = insn.getArgsReg()
+				val regs = insn.argsReg
 				regs[0] = byte1(opcodeUnit)
 				val next = reader.readUShort()
 				regs[1] = byte0(next)
@@ -161,7 +161,7 @@ public abstract class DexInsnFormat(
 		@JvmField
 		public val FORMAT_22B = object : DexInsnFormat(2, 2) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
-				val regs = insn.getArgsReg()
+				val regs = insn.argsReg
 				regs[0] = byte1(opcodeUnit)
 				val next = reader.readUShort()
 				regs[1] = byte0(next)
@@ -173,10 +173,10 @@ public abstract class DexInsnFormat(
 		@JvmField
 		public val FORMAT_22T = object : DexInsnFormat(2, 2) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
-				val regs = insn.getArgsReg()
+				val regs = insn.argsReg
 				regs[0] = nibble2(opcodeUnit)
 				regs[1] = nibble3(opcodeUnit)
-				insn.setTarget(insn.getOffset() + reader.readShort())
+				insn.setTarget(insn.offset + reader.readShort())
 			}
 		}
 
@@ -184,7 +184,7 @@ public abstract class DexInsnFormat(
 		@JvmField
 		public val FORMAT_22S = object : DexInsnFormat(2, 2) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
-				val regs = insn.getArgsReg()
+				val regs = insn.argsReg
 				regs[0] = nibble2(opcodeUnit)
 				regs[1] = nibble3(opcodeUnit)
 				insn.setLiteral(reader.readShort().toLong())
@@ -195,7 +195,7 @@ public abstract class DexInsnFormat(
 		@JvmField
 		public val FORMAT_22C = object : DexInsnFormat(2, 2) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
-				val regs = insn.getArgsReg()
+				val regs = insn.argsReg
 				regs[0] = nibble2(opcodeUnit)
 				regs[1] = nibble3(opcodeUnit)
 				insn.setIndex(reader.readUShort())
@@ -211,7 +211,7 @@ public abstract class DexInsnFormat(
 		@JvmField
 		public val FORMAT_30T = object : DexInsnFormat(3, 0) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
-				insn.setTarget(insn.getOffset() + reader.readInt())
+				insn.setTarget(insn.offset + reader.readInt())
 			}
 		}
 
@@ -219,7 +219,7 @@ public abstract class DexInsnFormat(
 		@JvmField
 		public val FORMAT_32X = object : DexInsnFormat(3, 2) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
-				val regs = insn.getArgsReg()
+				val regs = insn.argsReg
 				regs[0] = reader.readUShort()
 				regs[1] = reader.readUShort()
 			}
@@ -229,7 +229,7 @@ public abstract class DexInsnFormat(
 		@JvmField
 		public val FORMAT_31I = object : DexInsnFormat(3, 1) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
-				val regs = insn.getArgsReg()
+				val regs = insn.argsReg
 				regs[0] = byte1(opcodeUnit)
 				insn.setLiteral(reader.readInt().toLong())
 			}
@@ -239,9 +239,9 @@ public abstract class DexInsnFormat(
 		@JvmField
 		public val FORMAT_31T = object : DexInsnFormat(3, 1) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
-				val regs = insn.getArgsReg()
+				val regs = insn.argsReg
 				regs[0] = byte1(opcodeUnit)
-				insn.setTarget(insn.getOffset() + reader.readInt())
+				insn.setTarget(insn.offset + reader.readInt())
 			}
 		}
 
@@ -249,7 +249,7 @@ public abstract class DexInsnFormat(
 		@JvmField
 		public val FORMAT_31C = object : DexInsnFormat(3, 1) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
-				val regs = insn.getArgsReg()
+				val regs = insn.argsReg
 				regs[0] = byte1(opcodeUnit)
 				insn.setIndex(reader.readInt())
 			}
@@ -309,7 +309,7 @@ public abstract class DexInsnFormat(
 		@JvmField
 		public val FORMAT_51I = object : DexInsnFormat(5, 1) {
 			override fun decode(insn: DexInsnData, opcodeUnit: Int, reader: SectionReader) {
-				val regs = insn.getArgsReg()
+				val regs = insn.argsReg
 				regs[0] = byte1(opcodeUnit)
 				insn.setLiteral(reader.readLong())
 			}
@@ -443,7 +443,7 @@ public abstract class DexInsnFormat(
 		val index = reader.readUShort()
 		val rs = reader.readUShort()
 
-		val regs = insn.getArgsReg()
+		val regs = insn.argsReg
 		regs[0] = nibble0(rs)
 		regs[1] = nibble1(rs)
 		regs[2] = nibble2(rs)
@@ -460,7 +460,7 @@ public abstract class DexInsnFormat(
 		val index = reader.readUShort()
 		val startReg = reader.readUShort()
 
-		var regs = insn.getArgsReg()
+		var regs = insn.argsReg
 		if (regs.size < regsCount) {
 			// invoke-*/range 最多 255 个寄存器，超出默认数组容量时扩容
 			regs = IntArray(regsCount)

@@ -15,7 +15,7 @@ import jadx.core.dex.nodes.BlockNode
  */
 class TmpEdgeAttr(val block: BlockNode) : IJadxAttribute {
 
-	override fun getAttrType(): IJadxAttrType<TmpEdgeAttr> = AType.TMP_EDGE
+	override val attrType: IJadxAttrType<TmpEdgeAttr> get() = AType.TMP_EDGE
 
 	override fun toString(): String = "TMP_EDGE: $block"
 }

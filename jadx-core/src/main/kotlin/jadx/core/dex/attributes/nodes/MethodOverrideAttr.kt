@@ -23,7 +23,7 @@ class MethodOverrideAttr(
 	val baseMethods: Set<IMethodDetails>,
 ) : PinnedAttribute() {
 
-	override fun getAttrType(): AType<MethodOverrideAttr> = AType.METHOD_OVERRIDE
+	override val attrType: AType<MethodOverrideAttr> get() = AType.METHOD_OVERRIDE
 
 	override fun toString(): String = "METHOD_OVERRIDE: " + baseMethods
 }

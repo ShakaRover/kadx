@@ -47,7 +47,7 @@ class CodeFeaturesAttr : IJadxAttribute {
 
 	val codeFeatures: MutableSet<CodeFeature> = EnumSet.noneOf(CodeFeature::class.java)
 
-	override fun getAttrType(): AType<CodeFeaturesAttr> = AType.METHOD_CODE_FEATURES
+	override val attrType: AType<CodeFeaturesAttr> get() = AType.METHOD_CODE_FEATURES
 
 	override fun toAttrString(): String = "CodeFeatures{$codeFeatures}"
 

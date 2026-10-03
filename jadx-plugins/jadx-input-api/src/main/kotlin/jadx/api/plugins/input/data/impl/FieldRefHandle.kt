@@ -12,19 +12,19 @@ import jadx.api.plugins.input.data.MethodHandleType
  * @param fieldRef 指向的字段引用；getter 声明可空，故此处允许 null
  */
 public class FieldRefHandle(
-	private val type: MethodHandleType,
-	private val fieldRef: IFieldRef?,
+	private val typeValue: MethodHandleType,
+	private val fieldRefValue: IFieldRef?,
 ) : IMethodHandle {
 
-	override fun getType(): MethodHandleType = type
+	override val type: MethodHandleType get() = typeValue
 
-	override fun getFieldRef(): IFieldRef? = fieldRef
+	override val fieldRef: IFieldRef? get() = fieldRefValue
 
-	override fun getMethodRef(): IMethodRef? = null
+	override val methodRef: IMethodRef? get() = null
 
 	override fun load() {
 		// 字段引用构造时已完整，无需加载
 	}
 
-	override fun toString(): String = "$type: $fieldRef"
+	override fun toString(): String = "$typeValue: $fieldRefValue"
 }

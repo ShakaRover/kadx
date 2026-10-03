@@ -20,35 +20,35 @@ public class DexFieldData(
 	private val annotationsParser: AnnotationsParser?,
 ) : IFieldData {
 
-	private var parentClassType: String? = null
-	private var type: String? = null
-	private var name: String? = null
-	private var accessFlags: Int = 0
+	private var parentClassTypeValue: String? = null
+	private var typeValue: String? = null
+	private var nameValue: String? = null
+	private var accessFlagsValue: Int = 0
 	private var annotationsOffset: Int = 0
 	private var constValue: EncodedValue? = null
 
-	override fun getParentClassType(): String? = parentClassType
+	override val parentClassType: String? get() = parentClassTypeValue
 
-	public fun setParentClassType(parentClassType: String?) {
-		this.parentClassType = parentClassType
+	public fun setParentClassType(parentClassTypeValue: String?) {
+		this.parentClassTypeValue = parentClassTypeValue
 	}
 
-	override fun getType(): String? = type
+	override val type: String? get() = typeValue
 
-	public fun setType(type: String?) {
-		this.type = type
+	public fun setType(typeValue: String?) {
+		this.typeValue = typeValue
 	}
 
-	override fun getName(): String? = name
+	override val name: String? get() = nameValue
 
-	public fun setName(name: String?) {
-		this.name = name
+	public fun setName(nameValue: String?) {
+		this.nameValue = nameValue
 	}
 
-	override fun getAccessFlags(): Int = accessFlags
+	override val accessFlags: Int get() = accessFlagsValue
 
-	public fun setAccessFlags(accessFlags: Int) {
-		this.accessFlags = accessFlags
+	public fun setAccessFlags(accessFlagsValue: Int) {
+		this.accessFlagsValue = accessFlagsValue
 	}
 
 	public fun setAnnotationsOffset(annotationsOffset: Int) {
@@ -59,17 +59,17 @@ public class DexFieldData(
 		this.constValue = constValue
 	}
 
-	private fun getAnnotations(): List<IAnnotation> {
+	private val annotations: List<IAnnotation> get() {
 		val parser = checkNotNull(annotationsParser) { "Annotation parser not initialized" }
 		return parser.readAnnotationList(annotationsOffset)
 	}
 
-	override fun getAttributes(): List<IJadxAttribute> {
+	override val attributes: List<IJadxAttribute> get() {
 		val list = ArrayList<IJadxAttribute>(2)
 		Utils.addToList(list, constValue)
-		DexAnnotationsConvert.forField(list, getAnnotations())
+		DexAnnotationsConvert.forField(list, annotations)
 		return list
 	}
 
-	override fun toString(): String = "$parentClassType->$name:$type"
+	override fun toString(): String = "$parentClassTypeValue->$nameValue:$typeValue"
 }

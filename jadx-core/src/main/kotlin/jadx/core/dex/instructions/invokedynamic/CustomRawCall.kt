@@ -37,13 +37,13 @@ class CustomRawCall {
 			val invokeProto = values[2].value as IMethodProto
 			val resolveArgs = buildArgs(mth, values)
 
-			if (resolveHandle.getType().isField()) {
+			if (resolveHandle.type.isField) {
 				throw JadxRuntimeException("Field handle not yet supported")
 			}
 
 			val root = mth.root()
-			val resolveMth = MethodInfo.fromRef(root, checkNotNull(resolveHandle.getMethodRef()))
-			val resolveInvokeType = InvokeCustomUtils.convertInvokeType(resolveHandle.getType())
+			val resolveMth = MethodInfo.fromRef(root, checkNotNull(resolveHandle.methodRef))
+			val resolveInvokeType = InvokeCustomUtils.convertInvokeType(resolveHandle.type)
 			val resolve = InvokeNode(resolveMth, resolveInvokeType, resolveArgs.size)
 			resolveArgs.forEach(resolve::addArg)
 

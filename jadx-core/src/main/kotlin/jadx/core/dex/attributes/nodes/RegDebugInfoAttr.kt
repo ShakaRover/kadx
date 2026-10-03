@@ -20,7 +20,7 @@ import java.util.Objects
  */
 class RegDebugInfoAttr(val regType: ArgType, val name: String) : IJadxAttribute {
 
-	override fun getAttrType(): AType<RegDebugInfoAttr> = AType.REG_DEBUG_INFO
+	override val attrType: AType<RegDebugInfoAttr> get() = AType.REG_DEBUG_INFO
 
 	override fun equals(other: Any?): Boolean {
 		if (this === other) {

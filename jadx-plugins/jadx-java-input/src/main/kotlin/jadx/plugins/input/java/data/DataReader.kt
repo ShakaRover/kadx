@@ -123,5 +123,5 @@ class DataReader @JvmOverloads constructor(
 	}
 
 	/** @return 底层字节数组（对应原 Java getBytes()，保留显式方法名以兼容 Java 调用方） */
-	fun getBytes(): ByteArray = data
+	val bytes: ByteArray get() = data
 }

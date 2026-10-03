@@ -28,24 +28,24 @@ class InvokeDecoder(
 		val instanceCall: Boolean
 		val mthProto: IMethodProto
 		if (apiOpcode == Opcode.INVOKE_CUSTOM) {
-			val callSite = checkNotNull(insn.getIndexAsCallSite())
+			val callSite = checkNotNull(insn.indexAsCallSite)
 			insn.setPayload(callSite)
-			mthProto = callSite.getValues()[2].value as IMethodProto
+			mthProto = callSite.values[2].value as IMethodProto
 			instanceCall = false // 'this' arg already included in proto args
 		} else {
-			val mthRef = checkNotNull(insn.getIndexAsMethod())
+			val mthRef = checkNotNull(insn.indexAsMethod)
 			mthRef.load()
 			insn.setPayload(mthRef)
 			mthProto = mthRef
 			instanceCall = apiOpcode != Opcode.INVOKE_STATIC
 		}
 
-		var argsCount = mthProto.getArgTypes().size
+		var argsCount = mthProto.argTypes.size
 		if (instanceCall) {
 			argsCount++
 		}
 		insn.setRegsCount(argsCount * 2) // allocate twice of the size for worst case
-		val regs = insn.getRegsArray()
+		val regs = insn.regsArray
 
 		// calculate actual count of registers
 		// set '1' in regs to be filled with stack values later, '0' for skip
@@ -53,7 +53,7 @@ class InvokeDecoder(
 		if (instanceCall) {
 			regs[regsCount++] = 1
 		}
-		for (type in mthProto.getArgTypes()) {
+		for (type in mthProto.argTypes) {
 			val size = getRegsCountForType(type)
 			regs[regsCount++] = 1
 			if (size == 2) {
@@ -66,7 +66,7 @@ class InvokeDecoder(
 				state.pop(i)
 			}
 		}
-		val returnType = mthProto.getReturnType()
+		val returnType = mthProto.returnType
 		if (!returnType.equals("V")) {
 			insn.setResultReg(state.push(returnType))
 		} else {

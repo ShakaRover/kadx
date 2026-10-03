@@ -16,9 +16,9 @@ import org.jetbrains.annotations.Nullable
  * getter 用 checkNotNull 兜底（同 DexMethodRef 的既有模式）。
  */
 public class DexLocalVar(
-	private val regNum: Int,
-	@Nullable private val name: String?,
-	@Nullable private val type: String?,
+	private val regNumValue: Int,
+	@Nullable private val nameValue: String?,
+	@Nullable private val typeValue: String?,
 	@Nullable private val sign: String?,
 ) : ILocalVar {
 
@@ -29,27 +29,27 @@ public class DexLocalVar(
 	/** 从 section 读取器按索引解析名称/类型/签名构造 */
 	public constructor(
 		dex: SectionReader,
-		regNum: Int,
+		regNumValue: Int,
 		nameId: Int,
 		typeId: Int,
 		signId: Int,
-	) : this(regNum, dex.getString(nameId), dex.getType(typeId), dex.getString(signId))
+	) : this(regNumValue, dex.getString(nameId), dex.getType(typeId), dex.getString(signId))
 
 	/** 无签名信息的便捷构造 */
 	public constructor(
-		regNum: Int,
-		name: String?,
-		type: String?,
-	) : this(regNum, name, type, null)
+		regNumValue: Int,
+		nameValue: String?,
+		typeValue: String?,
+	) : this(regNumValue, nameValue, typeValue, null)
 
-	private var isEnd = false
-	private var startOffset = 0
-	private var endOffset = 0
+	private var isEndValue = false
+	private var startOffsetValue = 0
+	private var endOffsetValue = 0
 
 	/** 标记变量作用域起点 */
 	public fun start(addr: Int) {
-		isEnd = false
-		startOffset = addr
+		isEndValue = false
+		startOffsetValue = addr
 	}
 
 	/**
@@ -58,40 +58,40 @@ public class DexLocalVar(
 	 * @return 变量此前处于激活状态返回 true，已结束时返回 false
 	 */
 	public fun end(addr: Int): Boolean {
-		if (isEnd) {
+		if (isEndValue) {
 			return false
 		}
-		isEnd = true
-		endOffset = addr
+		isEndValue = true
+		endOffsetValue = addr
 		return true
 	}
 
-	override fun getRegNum(): Int = regNum
+	override val regNum: Int get() = regNumValue
 
-	override fun getName(): String = checkNotNull(name) { "local var name is not set" }
+	override val name: String get() = checkNotNull(nameValue) { "local var name is not set" }
 
-	override fun getType(): String = checkNotNull(type) { "local var type is not set" }
+	override val type: String get() = checkNotNull(typeValue) { "local var type is not set" }
 
-	@Nullable
-	override fun getSignature(): String? = sign
+	@get:Nullable
+	override val signature: String? get() = sign
 
-	override fun getStartOffset(): Int = startOffset
+	override val startOffset: Int get() = startOffsetValue
 
 	/** 标记为方法参数（起始偏移记为 [PARAM_START_OFFSET]）*/
 	public fun markAsParameter() {
-		startOffset = PARAM_START_OFFSET
+		startOffsetValue = PARAM_START_OFFSET
 	}
 
-	override fun isMarkedAsParameter(): Boolean = startOffset == PARAM_START_OFFSET
+	override val isMarkedAsParameter: Boolean get() = startOffsetValue == PARAM_START_OFFSET
 
-	override fun getEndOffset(): Int = endOffset
+	override val endOffset: Int get() = endOffsetValue
 
-	public fun isEnd(): Boolean = isEnd
+	public val isEnd: Boolean get() = isEndValue
 
 	// equals/hashCode 与原 Java 一致：显式委托 super（即身份比较），Kotlin 默认行为相同，故省略
 
-	override fun toString(): String = (if (startOffset == -1) "-1 " else Utils.formatOffset(startOffset)) +
-		'-' + (if (isEnd) Utils.formatOffset(endOffset) else "      ") +
-		": r$regNum '$name' $type" +
+	override fun toString(): String = (if (startOffsetValue == -1) "-1 " else Utils.formatOffset(startOffsetValue)) +
+		'-' + (if (isEndValue) Utils.formatOffset(endOffsetValue) else "      ") +
+		": r$regNumValue '$nameValue' $typeValue" +
 		(if (sign != null) ", signature: $sign" else "")
 }

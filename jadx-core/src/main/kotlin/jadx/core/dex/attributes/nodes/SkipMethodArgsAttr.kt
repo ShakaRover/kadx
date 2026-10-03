@@ -77,7 +77,7 @@ class SkipMethodArgsAttr private constructor(mth: MethodNode) : PinnedAttribute(
 	/** 被跳过的参数总数 */
 	fun getSkipCount(): Int = skipArgs.cardinality()
 
-	override fun getAttrType(): AType<SkipMethodArgsAttr> = AType.SKIP_MTH_ARGS
+	override val attrType: AType<SkipMethodArgsAttr> get() = AType.SKIP_MTH_ARGS
 
 	override fun toString(): String = "SKIP_MTH_ARGS: $skipArgs"
 }

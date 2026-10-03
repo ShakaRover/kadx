@@ -44,7 +44,7 @@ class MethodInfo private constructor(
 		@JvmStatic
 		fun fromRef(root: RootNode, methodRef: IMethodRef): MethodInfo {
 			val infoStorage = root.getInfoStorage()
-			val uniqId = methodRef.getUniqId()
+			val uniqId = methodRef.uniqId
 			if (uniqId != 0) {
 				val prevMth = infoStorage.getByUniqId(uniqId)
 				if (prevMth != null) {
@@ -52,11 +52,11 @@ class MethodInfo private constructor(
 				}
 			}
 			methodRef.load()
-			val parentClsType = ArgType.parse(methodRef.getParentClassType())
+			val parentClsType = ArgType.parse(methodRef.parentClassType)
 			val parentClass = ClassInfo.fromType(root, parentClsType)
-			val returnType = ArgType.parse(methodRef.getReturnType())
-			val args = Utils.collectionMap(methodRef.getArgTypes()) { ArgType.parse(it) }
-			val newMth = MethodInfo(parentClass, methodRef.getName(), args, returnType)
+			val returnType = ArgType.parse(methodRef.returnType)
+			val args = Utils.collectionMap(methodRef.argTypes) { ArgType.parse(it) }
+			val newMth = MethodInfo(parentClass, methodRef.name, args, returnType)
 			val uniqMth = infoStorage.putMethod(newMth)
 			if (uniqId != 0) {
 				infoStorage.putByUniqId(uniqId, uniqMth)
@@ -74,8 +74,8 @@ class MethodInfo private constructor(
 		/** 从输入层方法原型 [IMethodProto] 构造。 */
 		@JvmStatic
 		fun fromMethodProto(root: RootNode, declClass: ClassInfo, name: String, proto: IMethodProto): MethodInfo {
-			val args = Utils.collectionMap(proto.getArgTypes()) { ArgType.parse(it) }
-			val returnType = ArgType.parse(proto.getReturnType())
+			val args = Utils.collectionMap(proto.argTypes) { ArgType.parse(it) }
+			val returnType = ArgType.parse(proto.returnType)
 			return fromDetails(root, declClass, name, args, returnType)
 		}
 

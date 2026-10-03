@@ -36,7 +36,7 @@ class FieldReplaceAttr private constructor(
 	/** 取变量引用（仅当 [replaceType] 为 VAR 时有效） */
 	fun getVarRef(): InsnArg = replaceObj as InsnArg
 
-	override fun getAttrType(): AType<FieldReplaceAttr> = AType.FIELD_REPLACE
+	override val attrType: AType<FieldReplaceAttr> get() = AType.FIELD_REPLACE
 
 	override fun toString(): String = "REPLACE: $replaceType $replaceObj"
 }

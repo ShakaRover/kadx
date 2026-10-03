@@ -26,21 +26,21 @@ import org.jetbrains.annotations.Nullable
 class JavaInsnData(private val state: CodeDecodeState) : InsnData {
 
 	private var insnInfo: JavaInsnInfo? = null
-	private var opcode: Opcode? = null
+	private var opcodeValue: Opcode? = null
 	private var decoded = false
 	private var opcodeUnit = 0
-	private var payloadSize = 0
+	private var payloadSizeValue = 0
 	private var insnStart = 0
-	private var offset = 0
-	private var regsCount = 0
+	private var offsetValue = 0
+	private var regsCountValue = 0
 	private var argsReg = IntArray(16)
-	private var resultReg = 0
-	private var literal = 0L
-	private var target = 0
-	private var index = 0
+	private var resultRegValue = 0
+	private var literalValue = 0L
+	private var targetValue = 0
+	private var indexValue = 0
 
 	@Nullable
-	private var payload: ICustomPayload? = null
+	private var payloadValue: ICustomPayload? = null
 
 	private fun insnInfoOrThrow(): JavaInsnInfo = insnInfo ?: throw NullPointerException("insnInfo is not set")
 
@@ -61,83 +61,83 @@ class JavaInsnData(private val state: CodeDecodeState) : InsnData {
 		}
 	}
 
-	override fun getOffset(): Int = offset
+	override val offset: Int get() = offsetValue
 
-	override fun getFileOffset(): Int = insnStart
+	override val fileOffset: Int get() = insnStart
 
-	override fun getOpcode(): Opcode {
+	override val opcode: Opcode get() {
 		// 接口声明非空；setOpcode 在 decode 前必已执行，提前调用时原 Java 同样 NPE
-		return opcode ?: throw NullPointerException("opcode is not set")
+		return opcodeValue ?: throw NullPointerException("opcode is not set")
 	}
 
-	fun setOpcode(opcode: Opcode) {
-		this.opcode = opcode
+	fun setOpcode(opcodeValue: Opcode) {
+		this.opcodeValue = opcodeValue
 	}
 
 	// 原 Java 直接 insnInfo.getName()，insnInfo 为 null 时 NPE；保持等价
-	override fun getOpcodeMnemonic(): String? = insnInfoOrThrow().name
+	override val opcodeMnemonic: String? get() = insnInfoOrThrow().name
 
-	override fun getByteCode(): ByteArray {
+	override val byteCode: ByteArray get() {
 		val reader = state.reader()
 		val startOffset = reader.offset
 		try {
 			reader.absPos(insnStart)
-			return reader.readBytes(1 + payloadSize)
+			return reader.readBytes(1 + payloadSizeValue)
 		} finally {
 			reader.absPos(startOffset)
 		}
 	}
 
 	// 接口声明非空（调用前 setInsnInfo 必已执行）
-	override fun getIndexType(): InsnIndexType = insnInfoOrThrow().indexType
+	override val indexType: InsnIndexType get() = insnInfoOrThrow().indexType
 
-	override fun getRawOpcodeUnit(): Int = opcodeUnit
+	override val rawOpcodeUnit: Int get() = opcodeUnit
 
-	override fun getRegsCount(): Int = regsCount
+	override val regsCount: Int get() = regsCountValue
 
 	override fun getReg(argNum: Int): Int = argsReg[argNum]
 
-	override fun getResultReg(): Int = resultReg
+	override val resultReg: Int get() = resultRegValue
 
-	fun setResultReg(resultReg: Int) {
-		this.resultReg = resultReg
+	fun setResultReg(resultRegValue: Int) {
+		this.resultRegValue = resultRegValue
 	}
 
-	override fun getLiteral(): Long = literal
+	override val literal: Long get() = literalValue
 
-	override fun getTarget(): Int = target
+	override val target: Int get() = targetValue
 
-	override fun getIndex(): Int = index
+	override val index: Int get() = indexValue
 
-	fun getPayloadSize(): Int = payloadSize
+	val payloadSize: Int get() = payloadSizeValue
 
-	override fun getIndexAsString(): String? = constPoolReader().getUtf8(index)
+	override val indexAsString: String? get() = constPoolReader().getUtf8(indexValue)
 
-	override fun getIndexAsType(): String? {
+	override val indexAsType: String? get() {
 		if (insnInfoOrThrow().opcode == 0xbc) { // newarray
-			return ArrayType.byValue(index)
+			return ArrayType.byValue(indexValue)
 		}
-		return constPoolReader().getClass(index)
+		return constPoolReader().getClass(indexValue)
 	}
 
-	override fun getIndexAsField(): IFieldRef? = constPoolReader().getFieldRef(index)
+	override val indexAsField: IFieldRef? get() = constPoolReader().getFieldRef(indexValue)
 
-	override fun getIndexAsMethod(): IMethodRef? = constPoolReader().getMethodRef(index)
+	override val indexAsMethod: IMethodRef? get() = constPoolReader().getMethodRef(indexValue)
 
-	override fun getIndexAsCallSite(): ICallSite? = constPoolReader().getCallSite(index)
+	override val indexAsCallSite: ICallSite? get() = constPoolReader().getCallSite(indexValue)
 
 	override fun getIndexAsProto(protoIndex: Int): IMethodProto? = null
 
-	override fun getIndexAsMethodHandle(): IMethodHandle? = null
+	override val indexAsMethodHandle: IMethodHandle? get() = null
 
-	@Nullable
-	override fun getPayload(): ICustomPayload? = payload
+	@get:Nullable
+	override val payload: ICustomPayload? get() = payloadValue
 
 	fun setInsnInfo(insnInfo: JavaInsnInfo) {
 		this.insnInfo = insnInfo
 	}
 
-	fun isDecoded(): Boolean = decoded
+	val isDecoded: Boolean get() = decoded
 
 	fun setDecoded(decoded: Boolean) {
 		this.decoded = decoded
@@ -147,60 +147,60 @@ class JavaInsnData(private val state: CodeDecodeState) : InsnData {
 		this.opcodeUnit = opcodeUnit
 	}
 
-	fun setPayloadSize(payloadSize: Int) {
-		this.payloadSize = payloadSize
+	fun setPayloadSize(payloadSizeValue: Int) {
+		this.payloadSizeValue = payloadSizeValue
 	}
 
 	fun setInsnStart(insnStart: Int) {
 		this.insnStart = insnStart
 	}
 
-	fun setOffset(offset: Int) {
-		this.offset = offset
+	fun setOffset(offsetValue: Int) {
+		this.offsetValue = offsetValue
 	}
 
 	fun setArgReg(arg: Int, reg: Int) {
 		argsReg[arg] = reg
 	}
 
-	fun setRegsCount(regsCount: Int) {
-		this.regsCount = regsCount
-		if (argsReg.size < regsCount) {
-			argsReg = IntArray(regsCount)
+	fun setRegsCount(regsCountValue: Int) {
+		this.regsCountValue = regsCountValue
+		if (argsReg.size < regsCountValue) {
+			argsReg = IntArray(regsCountValue)
 		}
 	}
 
-	fun getRegsArray(): IntArray = argsReg
+	val regsArray: IntArray get() = argsReg
 
-	fun setLiteral(literal: Long) {
-		this.literal = literal
+	fun setLiteral(literalValue: Long) {
+		this.literalValue = literalValue
 	}
 
-	fun setTarget(target: Int) {
-		this.target = target
+	fun setTarget(targetValue: Int) {
+		this.targetValue = targetValue
 	}
 
-	fun setIndex(index: Int) {
-		this.index = index
+	fun setIndex(indexValue: Int) {
+		this.indexValue = indexValue
 	}
 
-	fun setPayload(payload: ICustomPayload?) {
-		this.payload = payload
+	fun setPayload(payloadValue: ICustomPayload?) {
+		this.payloadValue = payloadValue
 	}
 
-	fun constPoolReader(): ConstPoolReader = state.clsData().getConstPoolReader()
+	fun constPoolReader(): ConstPoolReader = state.clsData().constPoolReader
 
 	override fun toString(): String {
 		val sb = StringBuilder()
-		sb.append(String.format("0x%04X", offset))
-		sb.append(": ").append(getOpcode())
+		sb.append(String.format("0x%04X", offsetValue))
+		sb.append(": ").append(opcode)
 		if (insnInfo == null) {
 			sb.append(String.format("(0x%04X)", opcodeUnit))
 		} else {
-			val regsCount = getRegsCount()
-			if (isDecoded()) {
+			val regsCountValue = regsCount
+			if (isDecoded) {
 				sb.append(' ')
-				for (i in 0 until regsCount) {
+				for (i in 0 until regsCountValue) {
 					if (i != 0) {
 						sb.append(", ")
 					}

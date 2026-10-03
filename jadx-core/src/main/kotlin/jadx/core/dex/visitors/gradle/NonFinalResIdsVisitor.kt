@@ -83,7 +83,7 @@ class NonFinalResIdsVisitor :
 
 	private fun visitAnnotationList(annotationsList: AnnotationsAttr?): Boolean {
 		if (annotationsList != null) {
-			for (annotation in annotationsList.getAll()) {
+			for (annotation in annotationsList.all) {
 				if (annotation.visibility == AnnotationVisibility.SYSTEM) {
 					continue
 				}

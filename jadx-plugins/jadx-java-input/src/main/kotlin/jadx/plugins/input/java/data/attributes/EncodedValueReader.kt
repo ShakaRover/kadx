@@ -28,7 +28,7 @@ object EncodedValueReader {
 	 */
 	@JvmStatic
 	fun read(clsData: JavaClassData, reader: DataReader): EncodedValue {
-		val constPool: ConstPoolReader = clsData.getConstPoolReader()
+		val constPool: ConstPoolReader = clsData.constPoolReader
 		val tag = reader.readU1().toChar()
 		return when (tag) {
 			'B' -> EncodedValue(EncodedType.ENCODED_BYTE, constPool.getInt(reader.readU2()).toByte())

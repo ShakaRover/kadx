@@ -11,16 +11,16 @@ import jadx.api.plugins.input.data.ITry
  * @param catchHandler 关联的 [ICatch]（异常类型 → 处理指令映射）
  */
 public class TryData(
-	private val startOffset: Int,
-	private val endOffset: Int,
+	private val startOffsetValue: Int,
+	private val endOffsetValue: Int,
 	private val catchHandler: ICatch,
 ) : ITry {
 
-	override fun getCatch(): ICatch = catchHandler
+	override val catch: ICatch get() = catchHandler
 
-	override fun getStartOffset(): Int = startOffset
+	override val startOffset: Int get() = startOffsetValue
 
-	override fun getEndOffset(): Int = endOffset
+	override val endOffset: Int get() = endOffsetValue
 
-	override fun toString(): String = "Try{" + InputUtils.formatOffset(startOffset) + " - " + InputUtils.formatOffset(endOffset) + ": " + catchHandler + '}'
+	override fun toString(): String = "Try{" + InputUtils.formatOffset(startOffsetValue) + " - " + InputUtils.formatOffset(endOffsetValue) + ": " + catchHandler + '}'
 }

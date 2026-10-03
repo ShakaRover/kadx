@@ -19,16 +19,16 @@ import jadx.api.plugins.input.insns.custom.ISwitchPayload
  */
 public class SwitchPayload(
 	/** 条目数 */
-	private val size: Int,
+	private val sizeValue: Int,
 	/** switch 键值数组 */
-	private val keys: IntArray,
+	private val keysValue: IntArray,
 	/** 各键对应的跳转目标偏移数组 */
-	private val targets: IntArray,
+	private val targetsValue: IntArray,
 ) : ISwitchPayload {
 
-	override fun getSize(): Int = size
+	override val size: Int get() = sizeValue
 
-	override fun getKeys(): IntArray = keys
+	override val keys: IntArray get() = keysValue
 
-	override fun getTargets(): IntArray = targets
+	override val targets: IntArray get() = targetsValue
 }

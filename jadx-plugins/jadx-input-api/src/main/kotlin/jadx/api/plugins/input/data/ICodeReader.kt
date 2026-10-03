@@ -21,20 +21,20 @@ public interface ICodeReader {
 	public fun visitInstructions(insnConsumer: Consumer<InsnData>)
 
 	/** @return 方法使用的寄存器总数（Dex 的 registers_size）*/
-	public fun getRegistersCount(): Int
+	public val registersCount: Int
 
 	/** @return 参数起始寄存器编号（具体语义由输入格式决定）*/
-	public fun getArgsStartReg(): Int
+	public val argsStartReg: Int
 
 	/** @return 指令单元数 */
-	public fun getUnitsCount(): Int
+	public val unitsCount: Int
 
 	/** @return 调试信息；无调试信息时为 null */
-	public fun getDebugInfo(): IDebugInfo?
+	public val debugInfo: IDebugInfo?
 
 	/** @return 方法代码在输入文件中的起始偏移 */
-	public fun getCodeOffset(): Int
+	public val codeOffset: Int
 
 	/** @return try 块列表（异常处理区间，可为空列表）*/
-	public fun getTries(): List<ITry>
+	public val tries: List<ITry>
 }

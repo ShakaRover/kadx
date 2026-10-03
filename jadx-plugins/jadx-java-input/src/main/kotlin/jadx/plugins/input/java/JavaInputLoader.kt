@@ -39,7 +39,7 @@ class JavaInputLoader(
 
 	fun loadInputStream(input: InputStream, name: String): List<JavaClassReader> = loadReader(input, name, null, null)
 
-	fun loadClass(content: ByteArray, fileName: String): JavaClassReader = JavaClassReader(getNextUniqId(), fileName, content)
+	fun loadClass(content: ByteArray, fileName: String): JavaClassReader = JavaClassReader(nextUniqId, fileName, content)
 
 	private fun loadFromFile(file: File): List<JavaClassReader> = try {
 		BufferedInputStream(FileInputStream(file)).use { inputStream ->
@@ -64,7 +64,7 @@ class JavaInputLoader(
 		if (isStartWithBytes(magic, JAVA_CLASS_FILE_MAGIC) || name.endsWith(".class")) {
 			val data = CommonFileUtils.loadBytes(magic, input)
 			val source = concatSource(parentFileName, name)
-			val reader = JavaClassReader(getNextUniqId(), source, data)
+			val reader = JavaClassReader(nextUniqId, source, data)
 			return listOf(reader)
 		}
 		if (isStartWithBytes(magic, ZIP_FILE_MAGIC) || CommonFileUtils.isZipFileExt(name)) {
@@ -82,7 +82,7 @@ class JavaInputLoader(
 	private fun loadReaderFromZipEntry(content: ByteArray, name: String, parentFileName: String): List<JavaClassReader> {
 		if (isStartWithBytes(content, JAVA_CLASS_FILE_MAGIC) || name.endsWith(".class")) {
 			val source = concatSource(parentFileName, name)
-			val reader = JavaClassReader(getNextUniqId(), source, content)
+			val reader = JavaClassReader(nextUniqId, source, content)
 			return listOf(reader)
 		}
 		if (isStartWithBytes(content, ZIP_FILE_MAGIC) || CommonFileUtils.isZipFileExt(name)) {
@@ -158,5 +158,5 @@ class JavaInputLoader(
 		return result
 	}
 
-	private fun getNextUniqId(): Int = classUniqId++
+	private val nextUniqId: Int get() = classUniqId++
 }

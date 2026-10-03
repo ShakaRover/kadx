@@ -19,7 +19,7 @@ class PhiListAttr : IJadxAttribute {
 	/** 该基本块上的 phi 指令列表（可变，Java 调用方会直接增删） */
 	val list: MutableList<PhiInsn> = ArrayList()
 
-	override fun getAttrType(): AType<PhiListAttr> = AType.PHI_LIST
+	override val attrType: AType<PhiListAttr> get() = AType.PHI_LIST
 
 	override fun toString(): String {
 		val sb = StringBuilder()

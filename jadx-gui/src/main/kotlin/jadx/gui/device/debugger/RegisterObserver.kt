@@ -50,22 +50,22 @@ class RegisterObserver private constructor(
 			}
 			adapter.regList.sortWith(compareBy { it.getSmaliRegister().getRuntimeRegNum() })
 			for (rt in rtRegs) {
-				val smaliRegMapping = adapter.getRegListEntry(rt.getRegNum())
+				val smaliRegMapping = adapter.getRegListEntry(rt.regNum)
 				val smaliReg = smaliRegMapping.getSmaliRegister()
 				smaliRegMapping.addRuntimeVarInfo(rt)
 
-				var type = rt.getSignature()
+				var type = rt.signature
 				if (type.isEmpty()) {
-					type = rt.getType()
+					type = rt.type
 				}
 				val at = ArgType.parse(type)
 				if (at != null) {
 					type = at.toString()
 				}
-				val load = Info(smaliReg.getRegNum(), true, rt.getName(), type)
-				val unload = Info(smaliReg.getRegNum(), false, null, null)
-				adapter.infoMap.computeIfAbsent(rt.getStartOffset().toLong()) { ArrayList() }.add(load)
-				adapter.infoMap.computeIfAbsent(rt.getEndOffset().toLong()) { ArrayList() }.add(unload)
+				val load = Info(smaliReg.regNum, true, rt.name, type)
+				val unload = Info(smaliReg.regNum, false, null, null)
+				adapter.infoMap.computeIfAbsent(rt.startOffset.toLong()) { ArrayList() }.add(load)
+				adapter.infoMap.computeIfAbsent(rt.endOffset.toLong()) { ArrayList() }.add(unload)
 			}
 			return adapter
 		}
@@ -89,7 +89,7 @@ class RegisterObserver private constructor(
 	fun getInfo(runtimeNum: Int, codeOffset: Long): RuntimeVarInfo? {
 		val list = getRegListEntry(runtimeNum)
 		for (info in list.getRuntimeVarInfoList()) {
-			if (info.getStartOffset() > codeOffset) {
+			if (info.startOffset > codeOffset) {
 				break
 			}
 			if (info.isInitialized(codeOffset)) {

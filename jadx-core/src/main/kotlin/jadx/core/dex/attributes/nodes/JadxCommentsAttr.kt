@@ -60,7 +60,7 @@ class JadxCommentsAttr : IJadxAttribute {
 
 	fun getComments(): Map<CommentsLevel, Set<String>> = comments
 
-	override fun getAttrType(): IJadxAttrType<JadxCommentsAttr> = AType.JADX_COMMENTS
+	override val attrType: IJadxAttrType<JadxCommentsAttr> get() = AType.JADX_COMMENTS
 
 	override fun toString(): String = "JadxCommentsAttr{\n " +
 		Utils.listToString(comments.entries, "\n ") { e ->

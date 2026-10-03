@@ -45,7 +45,7 @@ open class InvokeNode(
 			addReg(if (isRange) k else insn.getReg(k), arg)
 			k += arg.getRegCount()
 		}
-		val resReg = insn.getResultReg()
+		val resReg = insn.resultReg
 		if (resReg != -1) {
 			setResult(InsnArg.reg(resReg, mth.returnType))
 		}

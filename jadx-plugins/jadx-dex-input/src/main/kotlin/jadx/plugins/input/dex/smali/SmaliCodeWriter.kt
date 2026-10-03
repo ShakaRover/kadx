@@ -21,7 +21,7 @@ public class SmaliCodeWriter {
 		public val INDENT_STR: String = "    "
 	}
 
-	private val code = StringBuilder()
+	private val codeValue = StringBuilder()
 
 	private var indent = 0
 	private var indentStr = ""
@@ -29,43 +29,43 @@ public class SmaliCodeWriter {
 	/** 开始新行并追加内容 */
 	public fun startLine(line: String): SmaliCodeWriter {
 		startLine()
-		code.append(line)
+		codeValue.append(line)
 		return this
 	}
 
 	/** 开始新行（非空时先补换行与当前缩进）*/
 	public fun startLine(): SmaliCodeWriter {
-		if (code.isNotEmpty()) {
-			code.append(NL)
-			code.append(indentStr)
+		if (codeValue.isNotEmpty()) {
+			codeValue.append(NL)
+			codeValue.append(indentStr)
 		}
 		return this
 	}
 
 	public fun add(obj: Any?): SmaliCodeWriter {
-		code.append(obj)
+		codeValue.append(obj)
 		return this
 	}
 
 	public fun add(i: Int): SmaliCodeWriter {
-		code.append(i)
+		codeValue.append(i)
 		return this
 	}
 
 	public fun add(c: Char): SmaliCodeWriter {
-		code.append(c)
+		codeValue.append(c)
 		return this
 	}
 
 	public fun add(str: String): SmaliCodeWriter {
-		code.append(str)
+		codeValue.append(str)
 		return this
 	}
 
 	/** 依次追加多个参数类型（方法签名拼装用）*/
 	public fun addArgs(argTypes: List<String>): SmaliCodeWriter {
 		for (type in argTypes) {
-			code.append(type)
+			codeValue.append(type)
 		}
 		return this
 	}
@@ -91,5 +91,5 @@ public class SmaliCodeWriter {
 	}
 
 	/** @return 已累积的完整 smali 文本 */
-	public fun getCode(): String = code.toString()
+	public val code: String get() = codeValue.toString()
 }

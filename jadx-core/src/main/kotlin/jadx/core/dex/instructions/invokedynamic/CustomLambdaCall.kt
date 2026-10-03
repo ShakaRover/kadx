@@ -54,14 +54,14 @@ class CustomLambdaCall {
 				return false
 			}
 			val methodHandle = mthRef.value as IMethodHandle
-			if (methodHandle.getType() != MethodHandleType.INVOKE_STATIC) {
+			if (methodHandle.type != MethodHandleType.INVOKE_STATIC) {
 				return false
 			}
-			val methodRef = methodHandle.getMethodRef() ?: return false
-			if (methodRef.getParentClassType() != "Ljava/lang/invoke/LambdaMetafactory;") {
+			val methodRef = methodHandle.methodRef ?: return false
+			if (methodRef.parentClassType != "Ljava/lang/invoke/LambdaMetafactory;") {
 				return false
 			}
-			val mthName = methodRef.getName()
+			val mthName = methodRef.name
 			return mthName == "metafactory" || mthName == "altMetafactory"
 		}
 
@@ -69,11 +69,11 @@ class CustomLambdaCall {
 		@JvmStatic
 		fun buildLambdaMethodCall(mth: MethodNode, insn: InsnData, isRange: Boolean, values: List<EncodedValue>): InvokeCustomNode {
 			val callMthHandle = values[4].value as IMethodHandle
-			if (callMthHandle.getType().isField()) {
+			if (callMthHandle.type.isField) {
 				throw JadxRuntimeException("Not yet supported")
 			}
 			val resNode = buildMethodCall(mth, insn, isRange, values, callMthHandle)
-			val resReg = insn.getResultReg()
+			val resReg = insn.resultReg
 			if (resReg != -1) {
 				resNode.setResult(InsnArg.reg(resReg, mth.getReturnType()))
 			}
@@ -101,7 +101,7 @@ class CustomLambdaCall {
 			val lambdaProto = values[2].value as IMethodProto
 			val lambdaInfo = MethodInfo.fromMethodProto(root, mth.parentClass.classInfo, "", lambdaProto)
 
-			val methodHandleType = callMthHandle.getType()
+			val methodHandleType = callMthHandle.type
 			val invokeCustomNode = InvokeCustomNode(lambdaInfo, insn, false, isRange)
 			invokeCustomNode.handleType = methodHandleType
 
@@ -111,7 +111,7 @@ class CustomLambdaCall {
 			val implMthInfo = MethodInfo.fromMethodProto(root, implCls, implName, implProto)
 			invokeCustomNode.implMthInfo = implMthInfo
 
-			val callMthInfo = MethodInfo.fromRef(root, checkNotNull(callMthHandle.getMethodRef()))
+			val callMthInfo = MethodInfo.fromRef(root, checkNotNull(callMthHandle.methodRef))
 			val invokeNode = buildInvokeNode(methodHandleType, invokeCustomNode, callMthInfo)
 
 			if (methodHandleType == MethodHandleType.INVOKE_CONSTRUCTOR) {
@@ -134,7 +134,7 @@ class CustomLambdaCall {
 			}
 			if (!invokeCustomNode.isInlineInsn) {
 				val effectiveMthProto = values[5].value as IMethodProto
-				val args = Utils.collectionMap(effectiveMthProto.getArgTypes()) { ArgType.parse(it) }
+				val args = Utils.collectionMap(effectiveMthProto.argTypes) { ArgType.parse(it) }
 				val sameArgs = args == callMthInfo.argumentsTypes
 				invokeCustomNode.isUseRef = sameArgs
 			}

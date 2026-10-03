@@ -12,7 +12,7 @@ import jadx.core.dex.nodes.ClassNode
  */
 class InlinedAttr(val inlineCls: ClassNode) : IJadxAttribute {
 
-	override fun getAttrType(): IJadxAttrType<InlinedAttr> = AType.INLINED
+	override val attrType: IJadxAttrType<InlinedAttr> get() = AType.INLINED
 
 	override fun toString(): String = "INLINED: $inlineCls"
 }

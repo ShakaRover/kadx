@@ -26,7 +26,7 @@ class LookupSwitchDecoder : IJavaInsnDecoder {
 			val reader = state.reader()
 			val insn = state.insn()
 			val dataOffset = reader.offset
-			val insnOffset = insn.getOffset()
+			val insnOffset = insn.offset
 			reader.skip(3 - insnOffset % 4) // 对齐到 4 字节边界
 			val defTarget = insnOffset + reader.readS4()
 			val pairs = reader.readS4()

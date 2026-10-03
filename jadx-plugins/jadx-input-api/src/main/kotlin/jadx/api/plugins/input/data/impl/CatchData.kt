@@ -10,21 +10,21 @@ import jadx.api.plugins.input.data.ICatch
  * @param allHandler catch-all 处理指令偏移；无 catch-all 时为 -1
  */
 public class CatchData(
-	private val handlers: IntArray,
-	private val types: Array<String>,
+	private val handlersValue: IntArray,
+	private val typesValue: Array<String>,
 	private val allHandler: Int,
 ) : ICatch {
 
-	override fun getHandlers(): IntArray = handlers
+	override val handlers: IntArray get() = handlersValue
 
-	override fun getTypes(): Array<String> = types
+	override val types: Array<String> get() = typesValue
 
-	override fun getCatchAllHandler(): Int = allHandler
+	override val catchAllHandler: Int get() = allHandler
 
 	override fun toString(): String {
 		val sb = StringBuilder("Catch:")
-		for (i in types.indices) {
-			sb.append(' ').append(types[i]).append("->").append(InputUtils.formatOffset(handlers[i]))
+		for (i in typesValue.indices) {
+			sb.append(' ').append(typesValue[i]).append("->").append(InputUtils.formatOffset(handlersValue[i]))
 		}
 		if (allHandler != -1) {
 			sb.append(" all->").append(InputUtils.formatOffset(allHandler))

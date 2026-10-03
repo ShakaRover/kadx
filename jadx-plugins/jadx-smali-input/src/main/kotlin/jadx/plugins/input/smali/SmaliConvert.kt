@@ -56,8 +56,7 @@ public class SmaliConvert {
 				}
 				executor.shutdown()
 				executor.awaitTermination(1, TimeUnit.HOURS)
-				// IDexData 已转 Kotlin（抽象函数声明），无合成属性，用显式 getter
-				dexDataList.sortBy { it.getFileName() }
+				dexDataList.sortBy { it.fileName }
 			} catch (e: InterruptedException) {
 				LOG.error("Smali compile interrupted", e)
 			}

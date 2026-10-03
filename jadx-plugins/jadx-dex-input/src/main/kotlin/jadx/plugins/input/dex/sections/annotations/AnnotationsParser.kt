@@ -112,7 +112,7 @@ public class AnnotationsParser(
 			return emptyList()
 		}
 		val list = ArrayList<IAnnotation>(size)
-		val pos = inReader.getAbsPos()
+		val pos = inReader.absPos
 		for (i in 0 until size) {
 			inReader.absPos(pos + i * 4)
 			val annOffset = inReader.readInt()
@@ -135,7 +135,7 @@ public class AnnotationsParser(
 		val list = ArrayList<List<IAnnotation>>(size)
 		for (i in 0 until size) {
 			val refOff = inReader.readInt()
-			val pos = inReader.getAbsPos()
+			val pos = inReader.absPos
 			list.add(readAnnotationList(refOff))
 			inReader.absPos(pos)
 		}

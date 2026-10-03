@@ -154,7 +154,7 @@ class ClassNode(
 	init {
 		if (cls != null) {
 			this.clsData = cls.copy()
-			this.classInfo = checkNotNull(ClassInfo.fromType(root, ArgType.`object`(cls.getType())))
+			this.classInfo = checkNotNull(ClassInfo.fromType(root, ArgType.`object`(cls.type)))
 			// 原 Java 在主构造器中先设置 packageNode 再 load，load 过程中可能读取该字段
 			this.packageNode = PackageNode.getForClass(root, classInfo.getPackage(), this)
 			load(this.clsData, false)
@@ -174,17 +174,17 @@ class ClassNode(
 
 	private fun load(cls: IClassData?, reloading: Boolean) {
 		try {
-			addAttrs(checkNotNull(cls).getAttributes())
+			addAttrs(checkNotNull(cls).attributes)
 			accessFlags = AccessInfo(getAccessFlags(cls), AccessInfo.AFType.CLASS)
 			superClass = checkSuperType(cls)
-			interfaces = collectionMap(cls.getInterfacesTypes()) { ArgType.`object`(it) }
-			inputFileName = cls.getInputFileName()
+			interfaces = collectionMap(cls.interfacesTypes) { ArgType.`object`(it) }
+			inputFileName = cls.inputFileName
 
 			val fieldsConsumer = ListConsumer<IFieldData, FieldNode> { fld -> FieldNode.build(this, fld) }
 			val methodsConsumer = ListConsumer<IMethodData, MethodNode> { mth -> MethodNode.build(this, mth) }
 			cls.visitFieldsAndMethods(fieldsConsumer, methodsConsumer)
-			fields = fieldsConsumer.getResult()
-			methods = methodsConsumer.getResult()
+			fields = fieldsConsumer.result
+			methods = methodsConsumer.result
 			if (reloading) {
 				restoreUsageData()
 			}
@@ -211,7 +211,7 @@ class ClassNode(
 	}
 
 	private fun checkSuperType(cls: IClassData): ArgType? {
-		val superType = cls.getSuperType()
+		val superType = cls.superType
 		if (superType == null) {
 			if (classInfo.type.getObject() == Consts.CLASS_OBJECT) return null
 			if (accessFlags.isModuleInfo()) return null
@@ -229,10 +229,10 @@ class ClassNode(
 	private fun getAccessFlags(cls: IClassData): Int {
 		val innerClassesAttr = get(JadxAttrType.INNER_CLASSES) as? InnerClassesAttr
 		if (innerClassesAttr != null) {
-			val innerClsInfo = innerClassesAttr.map[cls.getType()]
+			val innerClsInfo = innerClassesAttr.map[cls.type]
 			if (innerClsInfo != null) return innerClsInfo.accessFlags
 		}
-		return cls.getAccessFlags()
+		return cls.accessFlags
 	}
 
 	private fun initStaticValues(fields: List<FieldNode>) {
@@ -647,7 +647,7 @@ class ClassNode(
 		}
 		code.startLine("###### Class $fullName ($rawName)")
 		try {
-			code.startLine(checkNotNull(clsData).getDisassembledCode())
+			code.startLine(checkNotNull(clsData).disassembledCode)
 		} catch (e: Exception) {
 			code.startLine("Failed to disassemble class:")
 			code.startLine(getStackTrace(e))

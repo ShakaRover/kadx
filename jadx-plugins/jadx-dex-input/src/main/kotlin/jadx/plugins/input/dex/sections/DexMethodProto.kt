@@ -17,13 +17,13 @@ import jadx.api.plugins.utils.Utils
  * 且 equals 接受任意 [IMethodProto] 实现（而非仅限本类），便于跨输入格式比较签名。
  */
 public class DexMethodProto(
-	private val argTypes: List<String>,
-	private val returnType: String?,
+	private val argTypesValue: List<String>,
+	private val returnTypeValue: String?,
 ) : IMethodProto {
 
-	override fun getArgTypes(): List<String> = argTypes
+	override val argTypes: List<String> get() = argTypesValue
 
-	override fun getReturnType(): String = checkNotNull(returnType) { "return type not set" }
+	override val returnType: String get() = checkNotNull(returnTypeValue) { "return type not set" }
 
 	override fun equals(other: Any?): Boolean {
 		if (this === other) {
@@ -32,10 +32,10 @@ public class DexMethodProto(
 		if (other !is IMethodProto) {
 			return false
 		}
-		return argTypes == other.getArgTypes() && returnType == other.getReturnType()
+		return argTypesValue == other.argTypes && returnTypeValue == other.returnType
 	}
 
-	override fun hashCode(): Int = 31 * argTypes.hashCode() + (returnType?.hashCode() ?: 0)
+	override fun hashCode(): Int = 31 * argTypesValue.hashCode() + (returnTypeValue?.hashCode() ?: 0)
 
-	override fun toString(): String = "(${Utils.listToStr(argTypes)})$returnType"
+	override fun toString(): String = "(${Utils.listToStr(argTypes)})$returnTypeValue"
 }

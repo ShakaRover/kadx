@@ -9,11 +9,11 @@ package jadx.api.plugins.input.data
 public interface ITry {
 
 	/** @return 该 try 区间关联的 [ICatch]（异常类型 → 处理指令映射）*/
-	public fun getCatch(): ICatch
+	public val catch: ICatch
 
 	/** @return try 区间的起始指令偏移 */
-	public fun getStartOffset(): Int
+	public val startOffset: Int
 
 	/** @return try 区间的结束指令偏移 */
-	public fun getEndOffset(): Int
+	public val endOffset: Int
 }

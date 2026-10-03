@@ -54,7 +54,7 @@ public class AnnotationMethodParamsAttr private constructor(
 	 *
 	 * 原 Java 声明为协变的具体类型，这里保持一致。
 	 */
-	override fun getAttrType(): JadxAttrType<AnnotationMethodParamsAttr> = JadxAttrType.ANNOTATION_MTH_PARAMETERS
+	override val attrType: JadxAttrType<AnnotationMethodParamsAttr> get() = JadxAttrType.ANNOTATION_MTH_PARAMETERS
 
 	/** 调试字符串：直接输出参数列表（与原 Java `paramList.toString()` 一致）*/
 	override fun toString(): String = paramList.toString()

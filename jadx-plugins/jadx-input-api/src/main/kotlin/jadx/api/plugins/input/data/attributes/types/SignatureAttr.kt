@@ -32,7 +32,7 @@ public open class SignatureAttr(
 	 * 原 Java 声明为 `IJadxAttrType<? extends IJadxAttribute>`，这里用协变的具体类型
 	 * `JadxAttrType<SignatureAttr>`（Kotlin 允许对 Java 通配符签名做协变覆写）。
 	 */
-	override fun getAttrType(): JadxAttrType<SignatureAttr> = JadxAttrType.SIGNATURE
+	override val attrType: JadxAttrType<SignatureAttr> get() = JadxAttrType.SIGNATURE
 
 	/** 调试字符串，格式与原 Java 一致：`SIGNATURE: <签名>` */
 	override fun toString(): String = "SIGNATURE: $signature"

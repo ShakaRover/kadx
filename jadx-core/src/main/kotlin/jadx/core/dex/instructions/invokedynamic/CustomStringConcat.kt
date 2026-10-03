@@ -40,14 +40,14 @@ class CustomStringConcat {
 				return false
 			}
 			val methodHandle = values[0].value as IMethodHandle
-			if (methodHandle.getType() != MethodHandleType.INVOKE_STATIC) {
+			if (methodHandle.type != MethodHandleType.INVOKE_STATIC) {
 				return false
 			}
-			val methodRef = methodHandle.getMethodRef() ?: return false
-			if (methodRef.getName() != "makeConcatWithConstants") {
+			val methodRef = methodHandle.methodRef ?: return false
+			if (methodRef.name != "makeConcatWithConstants") {
 				return false
 			}
-			if (methodRef.getParentClassType() != "Ljava/lang/invoke/StringConcatFactory;") {
+			if (methodRef.parentClassType != "Ljava/lang/invoke/StringConcatFactory;") {
 				return false
 			}
 			if (values[1].value != "makeConcatWithConstants") {
@@ -60,11 +60,11 @@ class CustomStringConcat {
 		@JvmStatic
 		fun buildStringConcat(insn: InsnData, isRange: Boolean, values: List<EncodedValue>): InsnNode {
 			try {
-				val argsCount = values.size - 3 + insn.getRegsCount()
+				val argsCount = values.size - 3 + insn.regsCount
 				val concat = InsnNode(InsnType.STR_CONCAT, argsCount)
 				val recipe = values[3].value as String
 				processRecipe(recipe, concat, values, insn)
-				val resReg = insn.getResultReg()
+				val resReg = insn.resultReg
 				if (resReg != -1) {
 					concat.setResult(InsnArg.reg(resReg, ArgType.STRING))
 				}

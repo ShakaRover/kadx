@@ -49,10 +49,10 @@ class AnnotationGen(private val cls: ClassNode, private val classGen: ClassGen) 
 			return
 		}
 		val aList = paramList[n]
-		if (aList == null || aList.isEmpty()) {
+		if (aList == null || aList.isEmpty) {
 			return
 		}
-		for (a in aList.getAll()) {
+		for (a in aList.all) {
 			formatAnnotation(code, a)
 			code.add(' ')
 		}
@@ -60,10 +60,10 @@ class AnnotationGen(private val cls: ClassNode, private val classGen: ClassGen) 
 
 	private fun add(node: IAttributeNode, code: ICodeWriter) {
 		val aList = node.get(JadxAttrType.ANNOTATION_LIST)
-		if (aList == null || aList.isEmpty()) {
+		if (aList == null || aList.isEmpty) {
 			return
 		}
-		for (a in aList.getAll()) {
+		for (a in aList.all) {
 			val aCls = a.annotationClass
 			if (aCls != Consts.OVERRIDE_ANNOTATION) {
 				code.startLine()

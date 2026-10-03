@@ -31,11 +31,11 @@ open class IfNode : GotoNode {
 	private var thenBlock: BlockNode? = null
 	private var elseBlock: BlockNode? = null
 
-	constructor(insn: InsnData, op: IfOp) : super(InsnType.IF, insn.getTarget(), 2) {
+	constructor(insn: InsnData, op: IfOp) : super(InsnType.IF, insn.target, 2) {
 		this.op = op
 		val argType = narrowTypeByOp(op)
 		addArg(InsnArg.reg(insn, 0, argType))
-		if (insn.getRegsCount() == 1) {
+		if (insn.regsCount == 1) {
 			addArg(InsnArg.lit(0, argType))
 		} else {
 			addArg(InsnArg.reg(insn, 1, argType))

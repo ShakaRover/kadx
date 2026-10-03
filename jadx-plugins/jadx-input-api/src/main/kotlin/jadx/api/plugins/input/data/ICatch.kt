@@ -9,14 +9,14 @@ package jadx.api.plugins.input.data
 public interface ICatch {
 
 	/** @return 捕获的异常类型名数组（如 ["java.lang.Exception"]）*/
-	public fun getTypes(): Array<String>
+	public val types: Array<String>
 
 	/** @return 各异常类型对应的处理指令偏移数组，与 [getTypes] 一一对应 */
-	public fun getHandlers(): IntArray
+	public val handlers: IntArray
 
 	/**
 	 * @return catch-all（捕获所有异常）的处理指令偏移；无 catch-all 时为 -1。
 	 * **注意**：这是普通方法而非属性 getter，Kotlin 中保持函数形式。
 	 */
-	public fun getCatchAllHandler(): Int
+	public val catchAllHandler: Int
 }

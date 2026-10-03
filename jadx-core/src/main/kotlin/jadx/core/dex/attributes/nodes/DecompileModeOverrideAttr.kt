@@ -13,7 +13,7 @@ import jadx.core.dex.attributes.AType
  */
 class DecompileModeOverrideAttr(val mode: DecompilationMode) : IJadxAttribute {
 
-	override fun getAttrType(): IJadxAttrType<DecompileModeOverrideAttr> = AType.DECOMPILE_MODE_OVERRIDE
+	override val attrType: IJadxAttrType<DecompileModeOverrideAttr> get() = AType.DECOMPILE_MODE_OVERRIDE
 
 	override fun toString(): String = "DECOMPILE_MODE_OVERRIDE: $mode"
 }

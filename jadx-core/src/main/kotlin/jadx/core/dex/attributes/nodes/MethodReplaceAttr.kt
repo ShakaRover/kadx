@@ -13,7 +13,7 @@ import jadx.core.dex.nodes.MethodNode
  */
 class MethodReplaceAttr(val replaceMth: MethodNode) : PinnedAttribute() {
 
-	override fun getAttrType(): AType<MethodReplaceAttr> = AType.METHOD_REPLACE
+	override val attrType: AType<MethodReplaceAttr> get() = AType.METHOD_REPLACE
 
 	override fun toString(): String = "REPLACED_BY: $replaceMth"
 }

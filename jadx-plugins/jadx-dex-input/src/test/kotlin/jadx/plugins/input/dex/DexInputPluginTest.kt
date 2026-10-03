@@ -40,11 +40,11 @@ internal class DexInputPluginTest {
 			val count = AtomicInteger()
 			result.visitClasses { cls ->
 				System.out.println()
-				System.out.println("Class: " + cls.getType())
-				System.out.println("AccessFlags: " + AccessFlags.format(cls.getAccessFlags(), AccessFlagsScope.CLASS))
-				System.out.println("SuperType: " + cls.getSuperType())
-				System.out.println("Interfaces: " + cls.getInterfacesTypes())
-				System.out.println("Attributes: " + cls.getAttributes())
+				System.out.println("Class: " + cls.type)
+				System.out.println("AccessFlags: " + AccessFlags.format(cls.accessFlags, AccessFlagsScope.CLASS))
+				System.out.println("SuperType: " + cls.superType)
+				System.out.println("Interfaces: " + cls.interfacesTypes)
+				System.out.println("Attributes: " + cls.attributes)
 				count.incrementAndGet()
 
 				// ISeqConsumer 是 Kotlin 接口（无 SAM 转换），需显式 object 实现
@@ -58,7 +58,7 @@ internal class DexInputPluginTest {
 						override fun accept(mth: IMethodData) {
 							System.out.println("---")
 							System.out.println(mth)
-							val codeReader = mth.getCodeReader()
+							val codeReader = mth.codeReader
 							if (codeReader != null) {
 								codeReader.visitInstructions { insn ->
 									insn.decode()
@@ -72,7 +72,7 @@ internal class DexInputPluginTest {
 					},
 				)
 				System.out.println("----")
-				System.out.println(cls.getDisassembledCode())
+				System.out.println(cls.disassembledCode)
 				System.out.println("----")
 			}
 			assertThat(count.get()).isGreaterThan(0)

@@ -82,7 +82,7 @@ open class ArithNode(val op: ArithOp, res: RegisterArg?, a: InsnArg, b: InsnArg)
 		fun build(insn: InsnData, op: ArithOp, type: ArgType): ArithNode {
 			val resArg = InsnArg.reg(insn, 0, fixResultType(op, type))
 			val argType = fixArgType(op, type)
-			return when (insn.getRegsCount()) {
+			return when (insn.regsCount) {
 				2 -> ArithNode(op, resArg, InsnArg.reg(insn, 0, argType), InsnArg.reg(insn, 1, argType))
 				3 -> ArithNode(op, resArg, InsnArg.reg(insn, 1, argType), InsnArg.reg(insn, 2, argType))
 				else -> throw JadxRuntimeException("Unexpected registers count in $insn")
@@ -94,7 +94,7 @@ open class ArithNode(val op: ArithOp, res: RegisterArg?, a: InsnArg, b: InsnArg)
 			val resArg = InsnArg.reg(insn, 0, fixResultType(op, type))
 			val argType = fixArgType(op, type)
 			val litArg = InsnArg.lit(insn, argType)
-			return when (insn.getRegsCount()) {
+			return when (insn.regsCount) {
 				1 -> ArithNode(op, resArg, InsnArg.reg(insn, 0, argType), litArg)
 				2 -> ArithNode(op, resArg, InsnArg.reg(insn, 1, argType), litArg)
 				else -> throw JadxRuntimeException("Unexpected registers count in $insn")

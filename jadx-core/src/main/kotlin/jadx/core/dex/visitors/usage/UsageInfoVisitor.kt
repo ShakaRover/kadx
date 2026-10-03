@@ -150,19 +150,19 @@ class UsageInfoVisitor : AbstractVisitor() {
 		}
 
 		private fun processInsn(root: RootNode, mth: MethodNode, insnData: InsnData, usageInfo: UsageInfo) {
-			if (insnData.getOpcode() == Opcode.UNKNOWN) {
+			if (insnData.opcode == Opcode.UNKNOWN) {
 				return
 			}
-			when (insnData.getIndexType()) {
+			when (insnData.indexType) {
 				InsnIndexType.TYPE_REF -> {
 					insnData.decode()
-					val usedType = ArgType.parse(insnData.getIndexAsType())
+					val usedType = ArgType.parse(insnData.indexAsType)
 					usageInfo.clsUse(mth, usedType)
 				}
 
 				InsnIndexType.FIELD_REF -> {
 					insnData.decode()
-					val fieldNode = root.resolveField(FieldInfo.fromRef(root, checkNotNull(insnData.getIndexAsField())))
+					val fieldNode = root.resolveField(FieldInfo.fromRef(root, checkNotNull(insnData.indexAsField)))
 					if (fieldNode != null) {
 						usageInfo.fieldUse(mth, fieldNode)
 					}
@@ -170,11 +170,11 @@ class UsageInfoVisitor : AbstractVisitor() {
 
 				InsnIndexType.METHOD_REF -> {
 					insnData.decode()
-					val payload = insnData.getPayload()
+					val payload = insnData.payload
 					val mthRef: IMethodRef = if (payload != null) {
 						payload as IMethodRef
 					} else {
-						checkNotNull(insnData.getIndexAsMethod())
+						checkNotNull(insnData.indexAsMethod)
 					}
 					val mthInfo = MethodInfo.fromRef(root, mthRef)
 					val methodNode = root.resolveMethod(mthInfo)
@@ -190,7 +190,7 @@ class UsageInfoVisitor : AbstractVisitor() {
 					val callSite: ICallSite? = InsnDataUtils.getCallSite(insnData)
 					val methodHandle: IMethodHandle? = InsnDataUtils.getMethodHandleAt(callSite, 4)
 					if (methodHandle != null) {
-						val mthRef = methodHandle.getMethodRef()
+						val mthRef = methodHandle.methodRef
 						if (mthRef != null) {
 							val mthInfo = MethodInfo.fromRef(root, mthRef)
 							val mthNode = root.resolveMethod(mthInfo)
@@ -223,7 +223,7 @@ class UsageInfoVisitor : AbstractVisitor() {
 		}
 
 		private fun processAnnotationAttr(node: ICodeNode, annAttr: AnnotationsAttr?, usageInfo: UsageInfo) {
-			if (annAttr == null || annAttr.isEmpty()) {
+			if (annAttr == null || annAttr.isEmpty) {
 				return
 			}
 			for (ann in annAttr.list) {

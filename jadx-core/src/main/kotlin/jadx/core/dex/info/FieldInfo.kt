@@ -36,8 +36,8 @@ class FieldInfo private constructor(
 		/** 从输入层的字段引用 [IFieldRef] 构造 [FieldInfo]。 */
 		@JvmStatic
 		fun fromRef(root: RootNode, fieldRef: IFieldRef): FieldInfo {
-			val declClass = ClassInfo.fromName(root, checkNotNull(fieldRef.getParentClassType()))
-			val field = FieldInfo(declClass, checkNotNull(fieldRef.getName()), ArgType.parse(fieldRef.getType()))
+			val declClass = ClassInfo.fromName(root, checkNotNull(fieldRef.parentClassType))
+			val field = FieldInfo(declClass, checkNotNull(fieldRef.name), ArgType.parse(fieldRef.type))
 			return root.getInfoStorage().getField(field)
 		}
 	}

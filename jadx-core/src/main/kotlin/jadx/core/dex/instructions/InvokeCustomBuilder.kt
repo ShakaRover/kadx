@@ -33,7 +33,7 @@ class InvokeCustomBuilder {
 				val callSite = InsnDataUtils.getCallSite(insn)
 					?: throw JadxRuntimeException("Failed to get call site for insn: $insn")
 				callSite.load()
-				val values = callSite.getValues()
+				val values = callSite.values
 				if (CustomLambdaCall.isLambdaInvoke(values)) {
 					return CustomLambdaCall.buildLambdaMethodCall(mth, insn, isRange, values)
 				}

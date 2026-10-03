@@ -26,7 +26,7 @@ class DescriptorParserTest {
 			fail("Parse failed for: " + desc, e)
 		}
 
-		assertThat(mthRef.getReturnType()).isEqualTo(retType)
-		assertThat(mthRef.getArgTypes()).isEqualTo(argTypes.toList())
+		assertThat(mthRef.returnType).isEqualTo(retType)
+		assertThat(mthRef.argTypes).isEqualTo(argTypes.toList())
 	}
 }

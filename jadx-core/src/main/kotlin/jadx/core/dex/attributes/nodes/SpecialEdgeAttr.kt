@@ -33,7 +33,7 @@ class SpecialEdgeAttr(
 		CROSS_EDGE,
 	}
 
-	override fun getAttrType(): AType<AttrList<SpecialEdgeAttr>> = AType.SPECIAL_EDGE
+	override val attrType: AType<AttrList<SpecialEdgeAttr>> get() = AType.SPECIAL_EDGE
 
 	override fun toString(): String = "$type: $start -> $end"
 }

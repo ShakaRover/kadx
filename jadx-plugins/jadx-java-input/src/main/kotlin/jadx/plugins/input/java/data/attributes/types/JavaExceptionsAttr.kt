@@ -23,7 +23,7 @@ class JavaExceptionsAttr(list: List<String>) :
 			override fun read(clsData: JavaClassData, reader: DataReader): IJavaAttribute {
 				// readClassesList 元素理论上可空（损坏 class），与原 Java 一样直接透传
 				@Suppress("UNCHECKED_CAST")
-				return JavaExceptionsAttr(reader.readClassesList(clsData.getConstPoolReader()) as List<String>)
+				return JavaExceptionsAttr(reader.readClassesList(clsData.constPoolReader) as List<String>)
 			}
 		}
 	}

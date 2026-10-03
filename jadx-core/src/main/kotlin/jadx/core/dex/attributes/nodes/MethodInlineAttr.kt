@@ -68,7 +68,7 @@ class MethodInlineAttr private constructor(
 	/** 被调方法各形参的寄存器号；哨兵实例返回 null */
 	fun getArgsRegNums(): IntArray? = argsRegNums
 
-	override fun getAttrType(): AType<MethodInlineAttr> = AType.METHOD_INLINE
+	override val attrType: AType<MethodInlineAttr> get() = AType.METHOD_INLINE
 
 	override fun toString(): String {
 		if (notNeeded()) {

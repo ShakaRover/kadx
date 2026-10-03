@@ -21,18 +21,18 @@ public object SmaliPrinter {
 	public fun printMethod(mth: DexMethodData): String {
 		val codeWriter = SmaliCodeWriter()
 		codeWriter.startLine(".method ")
-		codeWriter.add(AccessFlags.format(mth.getAccessFlags(), METHOD))
+		codeWriter.add(AccessFlags.format(mth.accessFlags, METHOD))
 
-		val methodRef: DexMethodRef = mth.getMethodRef()
+		val methodRef: DexMethodRef = mth.methodRef
 		methodRef.load()
-		codeWriter.add(methodRef.getName())
-		codeWriter.add('(').addArgs(methodRef.getArgTypes()).add(')')
-		codeWriter.add(methodRef.getReturnType())
+		codeWriter.add(methodRef.name)
+		codeWriter.add('(').addArgs(methodRef.argTypes).add(')')
+		codeWriter.add(methodRef.returnType)
 		codeWriter.incIndent()
 
-		val codeReader: ICodeReader? = mth.getCodeReader()
+		val codeReader: ICodeReader? = mth.codeReader
 		if (codeReader != null) {
-			codeWriter.startLine(".registers ").add(codeReader.getRegistersCount())
+			codeWriter.startLine(".registers ").add(codeReader.registersCount)
 			val insnFormat = SmaliInsnFormat
 			val formatterInfo = InsnFormatterInfo(codeWriter, mth)
 			codeReader.visitInstructions { insn ->
@@ -43,6 +43,6 @@ public object SmaliPrinter {
 			codeWriter.decIndent()
 		}
 		codeWriter.startLine(".end method")
-		return codeWriter.getCode()
+		return codeWriter.code
 	}
 }

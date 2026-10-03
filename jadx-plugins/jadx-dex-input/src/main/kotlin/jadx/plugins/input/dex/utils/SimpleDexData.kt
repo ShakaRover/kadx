@@ -7,13 +7,13 @@ package jadx.plugins.input.dex.utils
  * 无需落盘读取文件。两个构造参数均不可为 null（与原 Java 的 Objects.requireNonNull 一致）。
  */
 public class SimpleDexData(
-	private val fileName: String,
-	private val content: ByteArray,
+	private val fileNameValue: String,
+	private val contentValue: ByteArray,
 ) : IDexData {
 
-	override fun getFileName(): String = fileName
+	override val fileName: String get() = fileNameValue
 
-	override fun getContent(): ByteArray = content
+	override val content: ByteArray get() = contentValue
 
-	override fun toString(): String = "DexData{$fileName, size=${content.size}}"
+	override fun toString(): String = "DexData{$fileNameValue, size=${content.size}}"
 }

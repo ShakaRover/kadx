@@ -71,7 +71,7 @@ public class DexInputPlugin : JadxPlugin {
 	public fun loadDexData(list: kotlin.collections.List<IDexData>): ICodeLoader {
 		val readers = ArrayList<DexReader>()
 		for (data in list) {
-			readers.addAll(loader.loadDexReaders(data.getFileName(), data.getContent()))
+			readers.addAll(loader.loadDexReaders(data.fileName, data.content))
 		}
 		return DexLoadResult(readers, null)
 	}

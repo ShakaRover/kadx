@@ -368,7 +368,7 @@ class TryCatchBlockAttr(
 		return searchBlocks
 	}
 
-	override fun getAttrType(): IJadxAttrType<*> = AType.TRY_BLOCK
+	override val attrType: IJadxAttrType<*> get() = AType.TRY_BLOCK
 
 	override fun hashCode(): Int = handlers.hashCode() + 31 * blocks.hashCode()
 

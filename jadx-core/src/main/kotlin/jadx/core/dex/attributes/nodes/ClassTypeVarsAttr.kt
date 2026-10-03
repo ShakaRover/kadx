@@ -30,7 +30,7 @@ class ClassTypeVarsAttr(
 	/** 查询指定父类型对应的类型变量映射；没有映射时返回空表 */
 	fun getTypeVarsMapFor(type: ArgType): Map<ArgType, ArgType> = superTypeMaps[type.getObject()] ?: Collections.emptyMap()
 
-	override fun getAttrType(): AType<ClassTypeVarsAttr> = AType.CLASS_TYPE_VARS
+	override val attrType: AType<ClassTypeVarsAttr> get() = AType.CLASS_TYPE_VARS
 
 	override fun toString(): String = "ClassTypeVarsAttr{$typeVars, super maps: $superTypeMaps}"
 }

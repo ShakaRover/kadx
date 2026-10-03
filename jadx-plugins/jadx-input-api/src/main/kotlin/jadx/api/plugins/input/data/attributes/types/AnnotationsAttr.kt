@@ -59,7 +59,7 @@ public class AnnotationsAttr(
 	public fun get(className: String): IAnnotation? = map[className]
 
 	/** 返回所有注解的集合视图（map.values()，与原 Java 一致）*/
-	public fun getAll(): Collection<IAnnotation> = map.values
+	public val all: Collection<IAnnotation> get() = map.values
 
 	/**
 	 * 返回注解列表副本。
@@ -72,14 +72,14 @@ public class AnnotationsAttr(
 	public fun size(): Int = map.size
 
 	/** 是否为空（同上，普通方法）*/
-	public fun isEmpty(): Boolean = map.isEmpty()
+	public val isEmpty: Boolean get() = map.isEmpty()
 
 	/**
 	 * 返回本属性的类型标识：[JadxAttrType.ANNOTATION_LIST]。
 	 *
 	 * 原 Java 声明为协变的具体类型，这里保持一致。
 	 */
-	override fun getAttrType(): JadxAttrType<AnnotationsAttr> = JadxAttrType.ANNOTATION_LIST
+	override val attrType: JadxAttrType<AnnotationsAttr> get() = JadxAttrType.ANNOTATION_LIST
 
 	/** 调试字符串：直接输出内部映射（与原 Java `map.toString()` 一致）*/
 	override fun toString(): String = map.toString()

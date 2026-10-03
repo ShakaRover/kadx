@@ -11,8 +11,8 @@ import jadx.api.plugins.input.data.attributes.IJadxAttribute
 public interface IFieldData : IFieldRef {
 
 	/** @return 访问标志位（见 [AccessFlags]，如 ACC_PUBLIC、ACC_STATIC）*/
-	public fun getAccessFlags(): Int
+	public val accessFlags: Int
 
 	/** @return 字段携带的自定义属性列表（注解等，可为空列表）*/
-	public fun getAttributes(): List<IJadxAttribute>
+	public val attributes: List<IJadxAttribute>
 }

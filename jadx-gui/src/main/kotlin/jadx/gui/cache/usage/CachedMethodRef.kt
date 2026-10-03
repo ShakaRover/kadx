@@ -11,22 +11,19 @@ import jadx.core.dex.info.MethodInfo
  * [jadx.core.dex.nodes.MethodNode] 表示；本类用字符串描述其签名
  * （父类类型、方法名、返回类型、参数类型），并实现 [IMethodRef] 以便复用
  * `MethodInfo.fromRef` 的解析逻辑。
- *
- * **为什么显式写 `getXxx()`**：[IMethodRef] 是接口，Kotlin 属性不会自动实现接口方法，
- * 必须保留显式函数形态，Java / Kotlin 调用方都零改动。
  */
 class CachedMethodRef : IMethodRef {
 
-	private var parentClassType: String
-	private var name: String
-	private var returnType: String
-	private var argTypes: List<String>
+	private var parentClassTypeValue: String
+	private var nameValue: String
+	private var returnTypeValue: String
+	private var argTypesValue: List<String>
 
 	constructor(parentClassType: String, name: String, returnType: String, argTypes: List<String>) {
-		this.parentClassType = parentClassType
-		this.name = name
-		this.returnType = returnType
-		this.argTypes = argTypes
+		this.parentClassTypeValue = parentClassType
+		this.nameValue = name
+		this.returnTypeValue = returnType
+		this.argTypesValue = argTypes
 	}
 
 	/** 由 [MethodInfo] 的签名构造（参数为原始类型描述符，与 [TypeGen] 输出一致）。 */
@@ -37,32 +34,32 @@ class CachedMethodRef : IMethodRef {
 		TypeGen.signatures(mthInfo.argumentsTypes),
 	)
 
-	override fun getParentClassType(): String = parentClassType
+	override val parentClassType: String get() = parentClassTypeValue
 
 	fun setParentClassType(parentClassType: String) {
-		this.parentClassType = parentClassType
+		this.parentClassTypeValue = parentClassType
 	}
 
-	override fun getName(): String = name
+	override val name: String get() = nameValue
 
 	fun setName(name: String) {
-		this.name = name
+		this.nameValue = name
 	}
 
-	override fun getReturnType(): String = returnType
+	override val returnType: String get() = returnTypeValue
 
 	fun setReturnType(returnType: String) {
-		this.returnType = returnType
+		this.returnTypeValue = returnType
 	}
 
-	override fun getArgTypes(): List<String> = argTypes
+	override val argTypes: List<String> get() = argTypesValue
 
 	fun setArgTypes(argTypes: List<String>) {
-		this.argTypes = argTypes
+		this.argTypesValue = argTypes
 	}
 
 	/** 无唯一 id，表示不参与输入层的引用缓存。 */
-	override fun getUniqId(): Int = 0
+	override val uniqId: Int get() = 0
 
 	/** 已是完整签名，无需惰性加载。 */
 	override fun load() {}

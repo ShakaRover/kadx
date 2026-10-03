@@ -13,10 +13,10 @@ import jadx.api.plugins.input.data.annotations.EncodedValue
  *
  * @param values bootstrap 方法的编码值参数列表
  */
-public class CallSite(private val values: List<EncodedValue>) : ICallSite {
+public class CallSite(private val valuesValue: List<EncodedValue>) : ICallSite {
 
 	override fun load() {
-		for (value in values) {
+		for (value in valuesValue) {
 			when (value.type) {
 				// 参数本身是方法句柄/方法引用时，递归触发其惰性加载
 				EncodedType.ENCODED_METHOD_HANDLE -> (value.value as IMethodHandle).load()
@@ -30,7 +30,7 @@ public class CallSite(private val values: List<EncodedValue>) : ICallSite {
 		}
 	}
 
-	override fun getValues(): List<EncodedValue> = values
+	override val values: List<EncodedValue> get() = valuesValue
 
-	override fun toString(): String = "CallSite{$values}"
+	override fun toString(): String = "CallSite{$valuesValue}"
 }

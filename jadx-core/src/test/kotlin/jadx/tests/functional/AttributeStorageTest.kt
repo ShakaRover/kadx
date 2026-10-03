@@ -65,7 +65,7 @@ class AttributeStorageTest {
 
 	/** 测试用属性实现，仅返回固定的 [TEST] 类型。 */
 	class TestAttr : IJadxAttribute {
-		override fun getAttrType(): IJadxAttrType<*> = TEST
+		override val attrType: IJadxAttrType<*> get() = TEST
 	}
 
 	companion object {

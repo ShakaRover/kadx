@@ -18,34 +18,34 @@ import jadx.plugins.input.dex.smali.SmaliPrinter
  */
 public class DexMethodData(
 	/** 注解解析器；可为 null（此时调用 [getAttributes] 会抛 NPE）*/
-	private val annotationsParser: AnnotationsParser?,
+	private val annotationsParserValue: AnnotationsParser?,
 ) : IMethodData {
 
-	private var methodRef: DexMethodRef? = null
+	private var methodRefValue: DexMethodRef? = null
 
-	private var accessFlags: Int = 0
+	private var accessFlagsValue: Int = 0
 	private var annotationsOffset: Int = 0
 	private var paramAnnotationsOffset: Int = 0
 
 	/** 方法代码读取器；抽象/native 等无代码方法为 null */
-	private var codeReader: DexCodeReader? = null
+	private var codeReaderValue: DexCodeReader? = null
 
-	override fun getMethodRef(): DexMethodRef = checkNotNull(methodRef) { "method ref not set" }
+	override val methodRef: DexMethodRef get() = checkNotNull(methodRefValue) { "method ref not set" }
 
-	public fun setMethodRef(methodRef: DexMethodRef) {
-		this.methodRef = methodRef
+	public fun setMethodRef(methodRefValue: DexMethodRef) {
+		this.methodRefValue = methodRefValue
 	}
 
-	override fun getAccessFlags(): Int = accessFlags
+	override val accessFlags: Int get() = accessFlagsValue
 
-	public fun setAccessFlags(accessFlags: Int) {
-		this.accessFlags = accessFlags
+	public fun setAccessFlags(accessFlagsValue: Int) {
+		this.accessFlagsValue = accessFlagsValue
 	}
 
-	override fun getCodeReader(): ICodeReader? = codeReader
+	override val codeReader: ICodeReader? get() = codeReaderValue
 
-	public fun setCodeReader(codeReader: DexCodeReader?) {
-		this.codeReader = codeReader
+	public fun setCodeReader(codeReaderValue: DexCodeReader?) {
+		this.codeReaderValue = codeReaderValue
 	}
 
 	override fun disassembleMethod(): String = SmaliPrinter.printMethod(this)
@@ -58,18 +58,18 @@ public class DexMethodData(
 		this.paramAnnotationsOffset = paramAnnotationsOffset
 	}
 
-	private fun getAnnotations(): List<IAnnotation> = getAnnotationsParser().readAnnotationList(annotationsOffset)
+	private val annotations: List<IAnnotation> get() = annotationsParser.readAnnotationList(annotationsOffset)
 
-	private fun getParamsAnnotations(): List<List<IAnnotation>> = getAnnotationsParser().readAnnotationRefList(paramAnnotationsOffset)
+	private val paramsAnnotations: List<List<IAnnotation>> get() = annotationsParser.readAnnotationRefList(paramAnnotationsOffset)
 
-	override fun getAttributes(): List<IJadxAttribute> {
+	override val attributes: List<IJadxAttribute> get() {
 		val list = ArrayList<IJadxAttribute>()
-		DexAnnotationsConvert.forMethod(list, getAnnotations())
-		Utils.addToList(list, AnnotationMethodParamsAttr.pack(getParamsAnnotations()))
+		DexAnnotationsConvert.forMethod(list, annotations)
+		Utils.addToList(list, AnnotationMethodParamsAttr.pack(paramsAnnotations))
 		return list
 	}
 
-	private fun getAnnotationsParser(): AnnotationsParser = checkNotNull(annotationsParser) { "Annotation parser not initialized" }
+	private val annotationsParser: AnnotationsParser get() = checkNotNull(annotationsParserValue) { "Annotation parser not initialized" }
 
-	override fun toString(): String = getMethodRef().toString()
+	override fun toString(): String = methodRef.toString()
 }

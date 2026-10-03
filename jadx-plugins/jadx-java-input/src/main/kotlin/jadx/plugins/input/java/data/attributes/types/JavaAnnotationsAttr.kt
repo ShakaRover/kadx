@@ -54,7 +54,7 @@ class JavaAnnotationsAttr(
 		 */
 		@JvmStatic
 		fun readAnnotation(visibility: AnnotationVisibility, clsData: JavaClassData, reader: DataReader): JadxAnnotation {
-			val constPool: ConstPoolReader = clsData.getConstPoolReader()
+			val constPool: ConstPoolReader = clsData.constPoolReader
 			// getUtf8 可返回 null（损坏 class）；JadxAnnotation.type 声明非空，提前调用时原 Java 同样 NPE
 			val type = constPool.getUtf8(reader.readU2()) ?: throw NullPointerException("annotation type is null")
 			val pairsCount = reader.readU2()

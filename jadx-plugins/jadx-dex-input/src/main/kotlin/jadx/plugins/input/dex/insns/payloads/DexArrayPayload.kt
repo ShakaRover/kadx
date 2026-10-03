@@ -14,14 +14,14 @@ import jadx.api.plugins.input.insns.custom.IArrayPayload
  * @param data 数组数据本体，具体类型由 [elemSize] 决定（ByteArray/ShortArray/IntArray/LongArray）
  */
 public class DexArrayPayload(
-	private val size: Int,
+	private val sizeValue: Int,
 	private val elemSize: Int,
-	private val data: Any?,
+	private val dataValue: Any?,
 ) : IArrayPayload {
 
-	override fun getSize(): Int = size
+	override val size: Int get() = sizeValue
 
-	override fun getElementSize(): Int = elemSize
+	override val elementSize: Int get() = elemSize
 
-	override fun getData(): Any? = data
+	override val data: Any? get() = dataValue
 }

@@ -9,13 +9,13 @@ package jadx.api.plugins.input.data
 public interface IMethodHandle {
 
 	/** @return 句柄类型（如 REF_invokeVirtual）*/
-	public fun getType(): MethodHandleType
+	public val type: MethodHandleType
 
 	/** @return 指向的字段引用；仅当类型为字段类句柄时非 null */
-	public fun getFieldRef(): IFieldRef?
+	public val fieldRef: IFieldRef?
 
 	/** @return 指向的方法引用；仅当类型为方法类句柄时非 null */
-	public fun getMethodRef(): IMethodRef?
+	public val methodRef: IMethodRef?
 
 	/**
 	 * 惰性加载：首次访问前调用，填充 [getFieldRef] / [getMethodRef]。

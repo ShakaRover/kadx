@@ -90,8 +90,8 @@ object EncodedValueUtils {
 	}
 
 	private fun buildMethodType(root: RootNode, methodProto: IMethodProto): InvokeNode {
-		val retType = ArgType.parse(methodProto.getReturnType())
-		val argTypes = Utils.collectionMap(methodProto.getArgTypes()) { ArgType.parse(it) }
+		val retType = ArgType.parse(methodProto.returnType)
+		val argTypes = Utils.collectionMap(methodProto.argTypes) { ArgType.parse(it) }
 		val callTypes = ArrayList<ArgType>(1 + argTypes.size)
 		callTypes.add(retType)
 		callTypes.addAll(argTypes)
@@ -122,26 +122,26 @@ object EncodedValueUtils {
 	 * 构造 `MethodHandles.lookup().find{type}(methodCls, methodName, methodType)` 调用。
 	 */
 	private fun buildMethodHandle(root: RootNode, methodHandle: IMethodHandle): InsnNode {
-		if (methodHandle.getType().isField()) {
+		if (methodHandle.type.isField) {
 			// TODO: 字段句柄的 lookup 尚未实现，先用占位字符串
-			return ConstStringNode("FIELD:" + methodHandle.getFieldRef())
+			return ConstStringNode("FIELD:" + methodHandle.fieldRef)
 		}
-		val methodRef = checkNotNull(methodHandle.getMethodRef())
+		val methodRef = checkNotNull(methodHandle.methodRef)
 		methodRef.load()
 
 		val lookupCls = ClassInfo.fromName(root, "java.lang.invoke.MethodHandles.Lookup")
 		val findMethod = MethodInfo.fromDetails(
 			root,
 			lookupCls,
-			getFindMethodName(methodHandle.getType()),
+			getFindMethodName(methodHandle.type),
 			Arrays.asList(ArgType.CLASS, ArgType.STRING, ArgType.`object`("java.lang.invoke.MethodType")),
 			ArgType.`object`("java.lang.invoke.MethodHandle"),
 		)
 
 		val invoke = InvokeNode(findMethod, InvokeType.DIRECT, 4)
 		invoke.addArg(buildLookupArg(root))
-		invoke.addArg(InsnArg.wrapArg(ConstClassNode(ArgType.`object`(methodRef.getParentClassType()))))
-		invoke.addArg(InsnArg.wrapArg(ConstStringNode(methodRef.getName())))
+		invoke.addArg(InsnArg.wrapArg(ConstClassNode(ArgType.`object`(methodRef.parentClassType))))
+		invoke.addArg(InsnArg.wrapArg(ConstStringNode(methodRef.name)))
 		invoke.addArg(InsnArg.wrapArg(buildMethodType(root, methodRef)))
 		return invoke
 	}

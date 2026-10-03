@@ -60,11 +60,11 @@ open class AttributeStorage {
 	}
 
 	open fun add(attr: IJadxAttribute) {
-		writeAttributes { map -> map[attr.getAttrType()] = attr }
+		writeAttributes { map -> map[attr.attrType] = attr }
 	}
 
 	open fun add(list: List<IJadxAttribute>) {
-		writeAttributes { map -> list.forEach { attr -> map[attr.getAttrType()] = attr } }
+		writeAttributes { map -> list.forEach { attr -> map[attr.attrType] = attr } }
 	}
 
 	/** 向列表型属性追加一个元素（列表不存在时先创建） */
@@ -129,7 +129,7 @@ open class AttributeStorage {
 	open fun remove(attr: IJadxAttribute) {
 		if (attributes.isNotEmpty()) {
 			writeAttributes { map ->
-				val type = attr.getAttrType()
+				val type = attr.attrType
 				val a = map[type]
 				// 只有同一个对象实例才移除（引用比较，对应 Java 的 `==`）
 				if (a === attr) {

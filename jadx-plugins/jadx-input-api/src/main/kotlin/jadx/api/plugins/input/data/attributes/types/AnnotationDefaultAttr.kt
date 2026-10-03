@@ -32,7 +32,7 @@ public open class AnnotationDefaultAttr(
 	 * 原 Java 声明为 `IJadxAttrType<? extends IJadxAttribute>`，这里用协变的具体类型
 	 * `JadxAttrType<AnnotationDefaultAttr>`（Kotlin 允许对 Java 通配符签名做协变覆写）。
 	 */
-	override fun getAttrType(): JadxAttrType<AnnotationDefaultAttr> = JadxAttrType.ANNOTATION_DEFAULT
+	override val attrType: JadxAttrType<AnnotationDefaultAttr> get() = JadxAttrType.ANNOTATION_DEFAULT
 
 	/** 调试字符串，格式与原 Java 一致：`ANNOTATION_DEFAULT: <值>`（冒号后有空格）*/
 	override fun toString(): String = "ANNOTATION_DEFAULT: $value"

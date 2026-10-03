@@ -14,44 +14,44 @@ import org.jetbrains.annotations.Nullable
  * Kotlin/Java 调用方零改动。
  */
 public class InsnFormatterInfo(
-	private val codeWriter: SmaliCodeWriter,
+	private val codeWriterValue: SmaliCodeWriter,
 ) {
 
 	@Nullable
-	private var mth: IMethodData? = null
+	private var mthValue: IMethodData? = null
 
 	@Nullable
-	private var insn: InsnData? = null
+	private var insnValue: InsnData? = null
 
 	/** 以方法为上下文的构造（mth 不可为 null，与原 Java requireNonNull 一致）*/
 	public constructor(
-		codeWriter: SmaliCodeWriter,
-		mth: IMethodData,
-	) : this(codeWriter) {
-		this.mth = mth
+		codeWriterValue: SmaliCodeWriter,
+		mthValue: IMethodData,
+	) : this(codeWriterValue) {
+		this.mthValue = mthValue
 	}
 
 	/** 以指令为上下文的构造（insn 不可为 null，与原 Java requireNonNull 一致）*/
 	public constructor(
-		codeWriter: SmaliCodeWriter,
-		insn: InsnData,
-	) : this(codeWriter) {
-		this.insn = insn
+		codeWriterValue: SmaliCodeWriter,
+		insnValue: InsnData,
+	) : this(codeWriterValue) {
+		this.insnValue = insnValue
 	}
 
-	public fun getCodeWriter(): SmaliCodeWriter = codeWriter
+	public val codeWriter: SmaliCodeWriter get() = codeWriterValue
 
-	public fun setMth(mth: IMethodData?) {
-		this.mth = mth
+	public fun setMth(mthValue: IMethodData?) {
+		this.mthValue = mthValue
 	}
 
-	@Nullable
-	public fun getMth(): IMethodData? = mth
+	@get:Nullable
+	public val mth: IMethodData? get() = mthValue
 
 	/** @throws IllegalStateException 指令未设置时抛异常（原 Java 为裸 NPE，同项目 checkNotNull 惯例）*/
-	public fun getInsn(): InsnData = checkNotNull(insn) { "Instruction not set for formatter" }
+	public val insn: InsnData get() = checkNotNull(insnValue) { "Instruction not set for formatter" }
 
-	public fun setInsn(insn: InsnData?) {
-		this.insn = insn
+	public fun setInsn(insnValue: InsnData?) {
+		this.insnValue = insnValue
 	}
 }

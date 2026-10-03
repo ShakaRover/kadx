@@ -27,7 +27,7 @@ class FillArrayData private constructor(
 
 	private var elemType: ArgType = getElementTypeByWidth(elemSize)
 
-	constructor(payload: IArrayPayload) : this(payload.getData(), payload.getSize(), payload.getElementSize())
+	constructor(payload: IArrayPayload) : this(payload.data, payload.size, payload.elementSize)
 
 	fun getElementType(): ArgType = elemType
 

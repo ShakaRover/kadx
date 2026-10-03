@@ -12,17 +12,17 @@ import jadx.api.plugins.input.data.attributes.IJadxAttribute
 public interface IMethodData {
 
 	/** @return 方法引用（父类/名字/签名）*/
-	public fun getMethodRef(): IMethodRef
+	public val methodRef: IMethodRef
 
 	/** @return 访问标志位（见 [AccessFlags]，如 ACC_PUBLIC、ACC_ABSTRACT）*/
-	public fun getAccessFlags(): Int
+	public val accessFlags: Int
 
 	/** @return 方法代码读取器；抽象方法 / native 方法等无代码时为 null */
-	public fun getCodeReader(): ICodeReader?
+	public val codeReader: ICodeReader?
 
 	/** @return 方法的反汇编文本（调试用，可能为空字符串）*/
 	public fun disassembleMethod(): String
 
 	/** @return 方法携带的自定义属性列表（注解、try-catch 等，可为空列表）*/
-	public fun getAttributes(): List<IJadxAttribute>
+	public val attributes: List<IJadxAttribute>
 }

@@ -9,8 +9,8 @@ package jadx.plugins.input.dex.utils
 public interface IDexData {
 
 	/** @return DEX 文件名（用于日志与异常信息）*/
-	public fun getFileName(): String
+	public val fileName: String
 
 	/** @return DEX 文件的完整字节内容 */
-	public fun getContent(): ByteArray
+	public val content: ByteArray
 }

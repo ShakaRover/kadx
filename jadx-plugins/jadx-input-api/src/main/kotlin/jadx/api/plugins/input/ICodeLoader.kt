@@ -20,5 +20,5 @@ public interface ICodeLoader : Closeable {
 	public fun visitClasses(consumer: Consumer<IClassData>)
 
 	/** @return 是否没有可交付的类（空输入）*/
-	public fun isEmpty(): Boolean
+	public val isEmpty: Boolean
 }

@@ -43,7 +43,7 @@ class EdgeInsnAttr private constructor(
 		}
 	}
 
-	override fun getAttrType(): AType<AttrList<EdgeInsnAttr>> = AType.EDGE_INSN
+	override val attrType: AType<AttrList<EdgeInsnAttr>> get() = AType.EDGE_INSN
 
 	override fun equals(other: Any?): Boolean {
 		if (this === other) {

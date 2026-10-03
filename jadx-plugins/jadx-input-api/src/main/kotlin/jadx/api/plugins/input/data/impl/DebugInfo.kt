@@ -11,12 +11,12 @@ import jadx.api.plugins.input.data.ILocalVar
  */
 public class DebugInfo(
 	private val sourceLineMap: Map<Int, Int>,
-	private val localVars: List<ILocalVar>,
+	private val localVarsValue: List<ILocalVar>,
 ) : IDebugInfo {
 
-	override fun getSourceLineMapping(): Map<Int, Int> = sourceLineMap
+	override val sourceLineMapping: Map<Int, Int> get() = sourceLineMap
 
-	override fun getLocalVars(): List<ILocalVar> = localVars
+	override val localVars: List<ILocalVar> get() = localVarsValue
 
-	override fun toString(): String = "DebugInfo{lines=$sourceLineMap, localVars=$localVars}"
+	override fun toString(): String = "DebugInfo{lines=$sourceLineMap, localVars=$localVarsValue}"
 }

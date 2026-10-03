@@ -10,18 +10,18 @@ import jadx.plugins.input.java.data.JavaClassData
  * 本身只持有轻量元数据，供加载结果列表与调试日志使用。
  */
 class JavaClassReader(
-	private val id: Int,
-	private val fileName: String,
-	private val data: ByteArray,
+	private val idValue: Int,
+	private val fileNameValue: String,
+	private val dataValue: ByteArray,
 ) {
 
 	fun loadClassData(): IClassData = JavaClassData(this)
 
-	fun getId(): Int = id
+	val id: Int get() = idValue
 
-	fun getFileName(): String = fileName
+	val fileName: String get() = fileNameValue
 
-	fun getData(): ByteArray = data
+	val data: ByteArray get() = dataValue
 
-	override fun toString(): String = fileName
+	override fun toString(): String = fileNameValue
 }

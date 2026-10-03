@@ -27,7 +27,7 @@ class AnonymousClassAttr(
 		INSTANCE_FIELD,
 	}
 
-	override fun getAttrType(): AType<AnonymousClassAttr> = AType.ANONYMOUS_CLASS
+	override val attrType: AType<AnonymousClassAttr> get() = AType.ANONYMOUS_CLASS
 
 	override fun toString(): String = "AnonymousClass{" + outerCls + ", base: " + baseType + ", inline type: " + inlineType + '}'
 }

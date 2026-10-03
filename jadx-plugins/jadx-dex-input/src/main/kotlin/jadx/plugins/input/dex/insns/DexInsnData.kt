@@ -24,82 +24,82 @@ import jadx.plugins.input.dex.sections.SectionReader
  * 命名，Java/Kotlin 调用方零改动。
  */
 public class DexInsnData(
-	private val codeData: DexCodeReader,
+	private val codeDataValue: DexCodeReader,
 	private val externalReader: SectionReader,
 ) : InsnData {
 
 	/** 独立的 section 读取器副本（invoke-custom 解析 call site 时不干扰主游标）*/
 	private val secondExtReader: SectionReader = externalReader.copy()
 
-	private var insnInfo: DexInsnInfo? = null
+	private var insnInfoValue: DexInsnInfo? = null
 	private var decoded = false
-	private var opcodeUnit = 0
+	private var opcodeUnitValue = 0
 
 	/** 指令长度（code unit 数）；DexCodeReader 用属性语法 `.length` 累加偏移 */
 	var length = 0
 	private var insnStart = 0
 
-	private var offset = 0
-	private var argsReg = IntArray(5)
-	private var regsCount = 0
-	private var literal = 0L
-	private var target = 0
-	private var index = 0
-	private var payload: ICustomPayload? = null
+	private var offsetValue = 0
+	private var argsRegValue = IntArray(5)
+	private var regsCountValue = 0
+	private var literalValue = 0L
+	private var targetValue = 0
+	private var indexValue = 0
+	private var payloadValue: ICustomPayload? = null
 
 	/** 惰性解码：首次调用时按指令格式从字节流读取操作数 */
 	override fun decode() {
-		val info = insnInfo ?: return
+		val info = insnInfoValue ?: return
 		if (!decoded) {
-			codeData.decode(this)
+			codeDataValue.decode(this)
 		}
 	}
 
-	override fun getOffset(): Int = offset
+	override val offset: Int get() = offsetValue
 
-	override fun getFileOffset(): Int = insnStart
+	override val fileOffset: Int get() = insnStart
 
-	override fun getOpcode(): Opcode {
-		val info = insnInfo
+	override val opcode: Opcode get() {
+		val info = insnInfoValue
 		if (info == null) {
 			return Opcode.UNKNOWN
 		}
 		return info.apiOpcode
 	}
 
-	override fun getOpcodeMnemonic(): String = DexInsnMnemonics.get(opcodeUnit)
+	override val opcodeMnemonic: String get() = DexInsnMnemonics.get(opcodeUnitValue)
 
-	override fun getByteCode(): ByteArray = externalReader.getByteCode(insnStart, length * 2) // a unit is 2 bytes
+	override val byteCode: ByteArray get() = externalReader.getByteCode(insnStart, length * 2) // a unit is 2 bytes
 
-	override fun getRawOpcodeUnit(): Int = opcodeUnit
+	override val rawOpcodeUnit: Int get() = opcodeUnitValue
 
-	override fun getRegsCount(): Int = regsCount
+	override val regsCount: Int get() = regsCountValue
 
-	override fun getReg(argNum: Int): Int = argsReg[argNum]
+	override fun getReg(argNum: Int): Int = argsRegValue[argNum]
 
-	override fun getResultReg(): Int = -1
+	override val resultReg: Int get() = -1
 
-	override fun getLiteral(): Long = literal
+	override val literal: Long get() = literalValue
 
-	override fun getTarget(): Int = target
+	override val target: Int get() = targetValue
 
-	override fun getIndex(): Int = index
+	override val index: Int get() = indexValue
 
-	override fun getIndexType(): InsnIndexType {
+	override val indexType: InsnIndexType get() {
 		// 与原 Java 一致：insnInfo 未设置时抛 NPE（正常流程 decode 前必已设置）
-		val info = checkNotNull(insnInfo) { "insn info is not set" }
+		val info = checkNotNull(insnInfoValue) { "insn info is not set" }
 		return info.indexType
 	}
 
-	override fun getIndexAsString(): String? = externalReader.getString(index)
+	override val indexAsString: String? get() = externalReader.getString(indexValue)
 
-	override fun getIndexAsType(): String? = externalReader.getType(index)
+	override val indexAsType: String? get() = externalReader.getType(indexValue)
 
-	override fun getIndexAsField(): IFieldRef = externalReader.getFieldRef(index)
+	override val indexAsField: IFieldRef get() = externalReader.getFieldRef(indexValue)
 
-	override fun getIndexAsMethod(): IMethodRef = externalReader.getMethodRef(index)
+	override val indexAsMethod: IMethodRef get() = externalReader.getMethodRef(indexValue)
 
-	override fun getIndexAsCallSite(): ICallSite = externalReader.getCallSite(index, secondExtReader)
+	override val indexAsCallSite: ICallSite get() = externalReader.getCallSite(indexValue, secondExtReader)
 
 	/**
 	 * 按 proto 表索引取方法原型。
@@ -109,80 +109,80 @@ public class DexInsnData(
 	 */
 	override fun getIndexAsProto(protoIndex: Int): IMethodProto = externalReader.getMethodProto(protoIndex)
 
-	override fun getIndexAsMethodHandle(): IMethodHandle = externalReader.getMethodHandle(index)
+	override val indexAsMethodHandle: IMethodHandle get() = externalReader.getMethodHandle(indexValue)
 
-	override fun getPayload(): ICustomPayload? = payload
+	override val payload: ICustomPayload? get() = payloadValue
 
-	public fun getArgsReg(): IntArray = argsReg
+	public val argsReg: IntArray get() = argsRegValue
 
-	public fun setArgsReg(argsReg: IntArray) {
-		this.argsReg = argsReg
+	public fun setArgsReg(argsRegValue: IntArray) {
+		this.argsRegValue = argsRegValue
 	}
 
-	public fun setRegsCount(regsCount: Int) {
-		this.regsCount = regsCount
+	public fun setRegsCount(regsCountValue: Int) {
+		this.regsCountValue = regsCountValue
 	}
 
 	public fun setInsnStart(start: Int) {
 		this.insnStart = start
 	}
 
-	public fun setLiteral(literal: Long) {
-		this.literal = literal
+	public fun setLiteral(literalValue: Long) {
+		this.literalValue = literalValue
 	}
 
-	public fun setTarget(target: Int) {
-		this.target = target
+	public fun setTarget(targetValue: Int) {
+		this.targetValue = targetValue
 	}
 
-	public fun setIndex(index: Int) {
-		this.index = index
+	public fun setIndex(indexValue: Int) {
+		this.indexValue = indexValue
 	}
 
-	public fun isDecoded(): Boolean = decoded
+	public val isDecoded: Boolean get() = decoded
 
 	public fun setDecoded(decoded: Boolean) {
 		this.decoded = decoded
 	}
 
-	public fun setOffset(offset: Int) {
-		this.offset = offset
+	public fun setOffset(offsetValue: Int) {
+		this.offsetValue = offsetValue
 	}
 
-	public fun getInsnInfo(): DexInsnInfo? = insnInfo
+	public val insnInfo: DexInsnInfo? get() = insnInfoValue
 
-	public fun setInsnInfo(insnInfo: DexInsnInfo?) {
-		this.insnInfo = insnInfo
+	public fun setInsnInfo(insnInfoValue: DexInsnInfo?) {
+		this.insnInfoValue = insnInfoValue
 	}
 
-	public fun getCodeData(): DexCodeReader = codeData
+	public val codeData: DexCodeReader get() = codeDataValue
 
-	public fun getOpcodeUnit(): Int = opcodeUnit
+	public val opcodeUnit: Int get() = opcodeUnitValue
 
-	public fun setOpcodeUnit(opcodeUnit: Int) {
-		this.opcodeUnit = opcodeUnit
+	public fun setOpcodeUnit(opcodeUnitValue: Int) {
+		this.opcodeUnitValue = opcodeUnitValue
 	}
 
-	public fun setPayload(payload: ICustomPayload?) {
-		this.payload = payload
+	public fun setPayload(payloadValue: ICustomPayload?) {
+		this.payloadValue = payloadValue
 	}
 
 	override fun toString(): String {
 		val sb = StringBuilder()
-		sb.append("0x%04X".format(offset))
-		sb.append(": ").append(getOpcode())
-		val info = insnInfo
+		sb.append("0x%04X".format(offsetValue))
+		sb.append(": ").append(opcode)
+		val info = insnInfoValue
 		if (info == null) {
-			sb.append("(0x%04X)".format(opcodeUnit))
+			sb.append("(0x%04X)".format(opcodeUnitValue))
 		} else {
-			val count = getRegsCount()
-			if (isDecoded()) {
+			val count = regsCount
+			if (isDecoded) {
 				sb.append(' ')
 				for (i in 0 until count) {
 					if (i != 0) {
 						sb.append(", ")
 					}
-					sb.append("r").append(argsReg[i])
+					sb.append("r").append(argsRegValue[i])
 				}
 			}
 		}

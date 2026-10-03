@@ -231,7 +231,7 @@ internal class UsageFileAdapter : DataAdapterHelper() {
 			// 未解析方法涉及到的类名池
 			val uClsNames = HashSet<String>()
 			for (uMthRef in unresolvedMethods) {
-				uClsNames.add(uMthRef.getParentClassType())
+				uClsNames.add(uMthRef.parentClassType)
 			}
 			val uClsList = ArrayList(uClsNames)
 			uClsList.sort()
@@ -279,10 +279,10 @@ internal class UsageFileAdapter : DataAdapterHelper() {
 			DataAdapterHelper.writeUVInt(out, unresolvedMethods.size)
 			var k = 0
 			for (uMthRef in unresolvedMethods) {
-				DataAdapterHelper.writeUVInt(out, checkNotNull(uClsMap[uMthRef.getParentClassType()]))
-				out.writeUTF(uMthRef.getName())
-				out.writeUTF(uMthRef.getReturnType())
-				val args = uMthRef.getArgTypes()
+				DataAdapterHelper.writeUVInt(out, checkNotNull(uClsMap[uMthRef.parentClassType]))
+				out.writeUTF(uMthRef.name)
+				out.writeUTF(uMthRef.returnType)
+				val args = uMthRef.argTypes
 				DataAdapterHelper.writeUVInt(out, args.size)
 				for (arg in args) {
 					out.writeUTF(arg)

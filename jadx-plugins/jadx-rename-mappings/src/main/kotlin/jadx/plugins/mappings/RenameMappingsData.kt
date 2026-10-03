@@ -13,7 +13,7 @@ import net.fabricmc.mappingio.tree.MappingTreeView
  */
 public class RenameMappingsData(val mappings: MappingTreeView) : IJadxAttribute {
 
-	override fun getAttrType(): IJadxAttrType<RenameMappingsData> = DATA
+	override val attrType: IJadxAttrType<RenameMappingsData> get() = DATA
 
 	public companion object {
 		private val DATA: IJadxAttrType<RenameMappingsData> = IJadxAttrType.create()
