@@ -57,7 +57,7 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 |------|----------:|--------:|----------:|--------:|------|
 | jadx-commons/jadx-app-commons | 0 | 4 | 0 | 0 | ✅ |
 | jadx-commons/jadx-zip | 0 | 17 | 0 | 0 | ✅ |
-| jadx-commons/jadx-analysis | 0 | 12 | **1** | 0 | 🟡 仅剩 1 测试 |
+| jadx-commons/jadx-analysis | 0 | 12 | 0 | 1 | ✅ a29dca28 |
 | jadx-plugins/jadx-input-api | 0 | 57 | 0 | 0 | ✅ |
 | jadx-plugins/jadx-dex-input | 0 | 40 | 0 | 2 | ✅ |
 | jadx-plugins/jadx-java-input | 0 | 61 | 0 | 3 | ✅ |
@@ -182,8 +182,11 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 
 ## 7. 阶段 5：jadx-gui（main 405 + test 8）—— **先语法迁移**
 
+> **状态：未开始（下一阶段）。** jadx-core / jadx-cli / 全部插件模块已完成。
 > 阶段 5.1 严格保持原 Swing 线程模型（`SwingWorker` / `invokeLater`）；**不引入协程**。
 > 阶段 5.2（协程重构）待全部语法迁移 + 测试通过后另立专项，不在本计划范围。
+> gui 已带 `id("jadx-kotlin")`；直接 `src/main/kotlin` 建文件、删原 `.java`。
+> 验证：`./gradlew :jadx-gui:compileKotlin :jadx-gui:compileJava :jadx-gui:test` + `./gradlew build`。
 
 | ID | 包组 | 约数 |
 |----|------|-----:|
@@ -213,7 +216,7 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 
 | ID | 范围 | 约数 | 状态 |
 |----|------|-----:|------|
-| A01 | `jadx-commons/jadx-analysis` 剩余 1 个测试（JadxCallGraphTest） | 1 | ⏳ |
+| A01 | `jadx-commons/jadx-analysis` 剩余 1 个测试（JadxCallGraphTest） | 1 | ✅ a29dca28 |
 
 ---
 
@@ -313,7 +316,8 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 
 ## 12. 当前状态与下一单
 
-- **已完成：** C01–C28（jadx-core main 全 Kotlin，568 文件）+ T01。
-- **进行中：** T02（`others` 下一批 25 个 driver）。
-- **待办：** T02–T26（core test，剩余 ~649 driver）→ CL01–02 → G01–G21 → A01。
-- **派单原则：** 每单回报「driver 数 / fixture 数 / 构建输出 / commit hash / 遗留」；Worker 不改本文件。
+- **已完成：** C01–C28（jadx-core main 568 文件）、T01–T27（jadx-core test，仅剩 6 个有意 Java + 466 fixture/输入）、CL01–CL02（jadx-cli 21）、A01（analysis 1）。
+  **除 jadx-gui 外，全项目生产代码已 100% Kotlin。**
+- **下一阶段（唯一剩余）：** 阶段 5 jadx-gui（main 405 + test 8），按 §7 的 G01–G21 逐批派发。
+- **派单模板：** 复用 `TEST_MIGRATION_BRIEF.md` 的 Option A（若 gui 测试有 Java fixture）+ `KOTLIN_MASTER_PLAN.md` §9 坑位。
+- **派单原则：** 每单回报「转换/删除数、构建输出、commit hash、遗留」；Worker 不改本文件。
