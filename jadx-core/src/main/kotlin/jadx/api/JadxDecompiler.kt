@@ -44,6 +44,7 @@ import java.util.ArrayList
 import java.util.Collections
 import java.util.HashMap
 import java.util.concurrent.ExecutorService
+import java.util.concurrent.TimeUnit
 import java.util.stream.Collectors
 
 /**
@@ -235,7 +236,6 @@ class JadxDecompiler : Closeable {
 		save(!args.isSkipSources, !args.isSkipResources)
 	}
 
-	@Suppress("BusyWait")
 	fun save(intervalInMillis: Int, listener: ProgressListener) {
 		try {
 			val tasks = getSaveTaskExecutor()
@@ -243,7 +243,8 @@ class JadxDecompiler : Closeable {
 			val total = tasks.getTasksCount().toLong()
 			while (tasks.isRunning()) {
 				listener.progress(tasks.getProgress().toLong(), total)
-				Thread.sleep(intervalInMillis.toLong())
+				val executor = tasks.getInternalExecutor() ?: break
+				executor.awaitTermination(intervalInMillis.toLong(), TimeUnit.MILLISECONDS)
 			}
 		} catch (e: InterruptedException) {
 			LOG.error("Save interrupted", e)
