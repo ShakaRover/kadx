@@ -64,7 +64,7 @@ class UsageDialog private constructor(
 	}
 
 	private fun prepareUsageData() {
-		if (mainWindow.getSettings().isReplaceConsts && node is JField) {
+		if (mainWindow.getSettings().isReplaceConsts() && node is JField) {
 			val fld: FieldNode = (node as JField).getJavaField().getFieldNode()
 			val constField = CollectConstValues.getFieldConstValue(fld) != null
 			if (constField && !fld.accessFlags.isPrivate()) {
@@ -105,7 +105,7 @@ class UsageDialog private constructor(
 			}
 			return map
 		}
-		if (node is JField && mainWindow.getSettings().isReplaceConsts) {
+		if (node is JField && mainWindow.getSettings().isReplaceConsts()) {
 			val fld: FieldNode = (node as JField).getJavaField().getFieldNode()
 			val constField = CollectConstValues.getFieldConstValue(fld) != null
 			if (constField && !fld.accessFlags.isPrivate()) {

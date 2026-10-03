@@ -212,7 +212,7 @@ class SearchDialog private constructor(
 		addSearchHistoryButton()
 		searchField.putClientProperty(FlatClientProperties.TEXT_FIELD_SHOW_CLEAR_BUTTON, true)
 
-		val autoSearch = mainWindow.getSettings().isUseAutoSearch
+		val autoSearch = mainWindow.getSettings().isUseAutoSearch()
 		val searchBtn = JButton(NLS.str("search_dialog.search_button"))
 		searchBtn.setVisible(!autoSearch)
 		searchBtn.addActionListener { searchEmitter.emitSearch() }
@@ -465,7 +465,7 @@ class SearchDialog private constructor(
 		}
 		searchEmitter = SearchEventEmitter()
 		val searchEvents: Flowable<String>
-		if (mainWindow.getSettings().isUseAutoSearch) {
+		if (mainWindow.getSettings().isUseAutoSearch()) {
 			searchEvents = Flowable.merge(
 				listOf(
 					RxUtils.textFieldChanges(searchField),
@@ -632,7 +632,7 @@ class SearchDialog private constructor(
 		return true
 	}
 	override fun openItem(node: JNode) {
-		if (mainWindow.getSettings().isUseAutoSearch) {
+		if (mainWindow.getSettings().isUseAutoSearch()) {
 			// 自动搜索时只保存能打开节点的搜索词
 			mainWindow.getProject().addToSearchHistory(searchField.getText())
 		}
@@ -721,7 +721,7 @@ class SearchDialog private constructor(
 		cache.setLastSearch(text)
 		cache.setLastSearchPackage(packageField.getText())
 		cache.getLastSearchOptions()[searchPreset] = options
-		if (!mainWindow.getSettings().isUseAutoSearch) {
+		if (!mainWindow.getSettings().isUseAutoSearch()) {
 			mainWindow.getProject().addToSearchHistory(text)
 		}
 	}

@@ -141,7 +141,7 @@ abstract class CommonSearchDialog(
 		} else {
 			tabsController.codeJump(node)
 		}
-		if (!mainWindow.getSettings().isKeepCommonDialogOpen) {
+		if (!mainWindow.getSettings().isKeepCommonDialogOpen()) {
 			dispose()
 		}
 	}
@@ -200,7 +200,7 @@ abstract class CommonSearchDialog(
 		copyBtn.addActionListener { copyAllSearchResults() }
 
 		val cbKeepOpen = JCheckBox(NLS.str("search_dialog.keep_open"))
-		cbKeepOpen.isSelected = mainWindow.getSettings().isKeepCommonDialogOpen
+		cbKeepOpen.isSelected = mainWindow.getSettings().isKeepCommonDialogOpen()
 		cbKeepOpen.addActionListener { mainWindow.getSettings().saveKeepCommonDialogOpen(cbKeepOpen.isSelected) }
 		cbKeepOpen.setAlignmentY(Component.CENTER_ALIGNMENT)
 

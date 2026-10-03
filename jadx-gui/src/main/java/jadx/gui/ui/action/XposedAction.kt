@@ -140,7 +140,7 @@ class XposedAction(codeArea: CodeArea) : JNodeAction(ActionModel.XPOSED_COPY, co
 	}
 
 	private val language: XposedCodegenLanguage
-		get() = getCodeArea().getMainWindow().settings.xposedCodegenLanguage
+		get() = getCodeArea().getMainWindow().settings.getXposedCodegenLanguage()
 
 	companion object {
 		private val LOG: Logger = LoggerFactory.getLogger(XposedAction::class.java)

@@ -339,7 +339,7 @@ class UsageDialogPlus private constructor(
 		return count
 	}
 	private fun prepareUsageData(node: JNode) {
-		if (mainWindow.getSettings().isReplaceConsts && node is JField) {
+		if (mainWindow.getSettings().isReplaceConsts() && node is JField) {
 			val fld: FieldNode = node.getJavaField().getFieldNode()
 			val constField = CollectConstValues.getFieldConstValue(fld) != null
 			if (constField && !fld.accessFlags.isPrivate()) {
@@ -389,7 +389,7 @@ class UsageDialogPlus private constructor(
 			}
 			return map
 		}
-		if (node is JField && mainWindow.getSettings().isReplaceConsts) {
+		if (node is JField && mainWindow.getSettings().isReplaceConsts()) {
 			val fld: FieldNode = node.getJavaField().getFieldNode()
 			val constField = CollectConstValues.getFieldConstValue(fld) != null
 			if (constField && !fld.accessFlags.isPrivate()) {
@@ -539,7 +539,7 @@ class UsageDialogPlus private constructor(
 		rootPane.defaultButton = openBtn
 
 		val cbKeepOpen = JCheckBox(NLS.str("search_dialog.keep_open"))
-		cbKeepOpen.isSelected = mainWindow.getSettings().isKeepCommonDialogOpen
+		cbKeepOpen.isSelected = mainWindow.getSettings().isKeepCommonDialogOpen()
 		cbKeepOpen.addActionListener { mainWindow.getSettings().saveKeepCommonDialogOpen(cbKeepOpen.isSelected) }
 		cbKeepOpen.setAlignmentY(Component.CENTER_ALIGNMENT)
 
