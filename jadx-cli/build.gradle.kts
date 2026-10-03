@@ -1,5 +1,5 @@
 plugins {
-	id("jadx-java")
+	id("jadx-kotlin")
 	id("jadx-library")
 	id("application")
 
