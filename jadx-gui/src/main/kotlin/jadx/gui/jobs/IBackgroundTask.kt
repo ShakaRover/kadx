@@ -1,7 +1,8 @@
 package jadx.gui.jobs
 
 import jadx.api.utils.tasks.ITaskExecutor
-import java.util.function.Consumer
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 
 /**
  * 后台任务接口。
@@ -46,8 +47,8 @@ interface IBackgroundTask : Cancelable {
 	/** 自定义任务进度（可选），默认 `null` 表示由执行器统计。 */
 	fun getTaskProgress(): ITaskProgress? = null
 
-	/** 进度通知监听器（可选），默认 `null`。 */
-	fun getProgressListener(): Consumer<ITaskProgress>? = null
+	/** 进度通知流（可选），默认无进度更新。 */
+	fun getProgressFlow(): Flow<ITaskProgress> = emptyFlow()
 
 	/** 是否为静默任务（不显示进度），默认否。 */
 	fun isSilent(): Boolean = false

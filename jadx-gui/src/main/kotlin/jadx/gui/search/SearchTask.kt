@@ -11,10 +11,14 @@ import jadx.gui.jobs.TaskStatus
 import jadx.gui.treemodel.JNode
 import jadx.gui.ui.MainWindow
 import jadx.gui.utils.NLS
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeoutOrNull
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.concurrent.Future
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.BiConsumer
 import java.util.function.Consumer
@@ -25,10 +29,10 @@ import java.util.function.Consumer
  * **做什么**：把若干 [ISearchProvider] 包装成 [SearchJob]，交给
  * [BackgroundExecutor] 在后台线程执行，并通过回调把结果推给 UI。
  *
- * **线程模型**（阶段 5.1 保持原 Swing 模型，不引入协程）：
+ * **线程模型（N1）**：
  * - [fetchResults] / [addResult] / [waitTask] 用 `@Synchronized` 保护共享状态；
- * - 实际搜索跑在 [BackgroundExecutor] 的线程池里；
- * - 结果回调 [resultsListener] 由调用方保证在 EDT 上消费。
+ * - 实际搜索在 [BackgroundExecutor] 的协程上执行（耗时部分在 `Dispatchers.IO`）；
+ * - 进度通过 [getProgressFlow] 发布，结果回调 [resultsListener] 由调用方保证在 EDT 上消费。
  */
 class SearchTask(
 	mainWindow: MainWindow,
@@ -42,9 +46,9 @@ class SearchTask(
 
 	private val resultsCount = AtomicInteger(0)
 	private var resultsLimit = 0
-	private var future: Future<TaskStatus>? = null
+	private var deferred: Deferred<TaskStatus>? = null
 
-	private var progressListener: Consumer<ITaskProgress>? = null
+	private val progressFlow = MutableSharedFlow<ITaskProgress>(replay = 1)
 
 	/** 注册一个搜索提供者。 */
 	fun addProviderJob(provider: ISearchProvider) {
@@ -58,13 +62,13 @@ class SearchTask(
 	/** 提交并开始执行本次搜索（同一实例上一次任务未结束时会抛异常）。 */
 	@Synchronized
 	fun fetchResults() {
-		if (future != null) {
+		if (deferred != null) {
 			throw IllegalStateException("Previous task not yet finished")
 		}
 		resetCancel()
 		resultsCount.set(0)
 		taskProgress.updateTotal(jobs.stream().mapToInt { it.getProvider().total() }.sum())
-		future = backgroundExecutor.executeWithFuture(this)
+		deferred = backgroundExecutor.executeAsync(this)
 	}
 
 	/**
@@ -86,17 +90,17 @@ class SearchTask(
 		return false
 	}
 
-	/** 等待当前搜索任务结束（最多 200ms），并清空 future。 */
+	/** 等待当前搜索任务结束（最多 200ms），并清空 deferred。 */
 	@Synchronized
 	fun waitTask() {
-		val currentFuture = future ?: return
+		val currentDeferred = deferred ?: return
 		try {
-			currentFuture.get(200, TimeUnit.MILLISECONDS)
+			runBlocking { withTimeoutOrNull(200) { currentDeferred.await() } }
 		} catch (e: Exception) {
 			LOG.warn("Search task wait error", e)
-			currentFuture.cancel(true)
+			currentDeferred.cancel()
 		} finally {
-			future = null
+			deferred = null
 		}
 	}
 
@@ -119,14 +123,11 @@ class SearchTask(
 
 	override fun getTaskProgress(): ITaskProgress {
 		taskProgress.updateProgress(jobs.stream().mapToInt { it.getProvider().progress() }.sum())
+		progressFlow.tryEmit(taskProgress)
 		return taskProgress
 	}
 
-	fun setProgressListener(progressListener: Consumer<ITaskProgress>?) {
-		this.progressListener = progressListener
-	}
-
-	override fun getProgressListener(): Consumer<ITaskProgress>? = progressListener
+	override fun getProgressFlow(): Flow<ITaskProgress> = progressFlow.asSharedFlow()
 
 	override fun getCancelTimeoutMS(): Int = 0
 

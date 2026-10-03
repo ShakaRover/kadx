@@ -1,45 +1,50 @@
 package jadx.gui.jobs
 
-import jadx.core.utils.Utils
 import jadx.gui.ui.panel.ProgressPanel
 import jadx.gui.utils.NLS
-import jadx.gui.utils.UiUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import java.util.concurrent.BlockingQueue
-import java.util.concurrent.DelayQueue
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
-import java.util.function.Consumer
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * 后台任务的进度刷新器。
  *
- * **做什么**：维护一个 [DelayQueue]，按固定间隔（[UPDATE_INTERVAL_MS]）取出运行中的
- * [InternalTask]，在 EDT 上更新 [ProgressPanel]，并周期性执行取消检查。
+ * **做什么**：在 [scope]（[kotlinx.coroutines.Dispatchers.Swing]，即 EDT）上运行一个
+ * 定时协程，按固定间隔（[UPDATE_INTERVAL_MS]）取出当前运行中的 [InternalTask]，
+ * 刷新 [ProgressPanel]，并周期性执行取消检查。当前进度同时以 [StateFlow] 暴露，
+ * 替代原先的进度回调管线。
  *
- * **线程模型**（阶段 5.1 保持原 Swing 线程模型，不引入协程）：
- * - 独立单线程 [bgExecutor] 运行 [updateLoop]；
- * - UI 更新通过 [UiUtils.uiRun] 投递到 EDT；
- * - 取消回调 [cancelCallback] 在刷新线程上调用。
- *
- * **为什么字段是 private 但保留**：`bgExecutor` 与 `tasks` 的生命周期贯穿整个
- * 更新器，不能被回收；`tasks` 必须在启动刷新线程前完成初始化。
+ * **线程模型**：
+ * - 刷新循环是 [scope] 上的协程（EDT），因此面板更新天然在 EDT 上；
+ * - 取消回调 [cancelCallback] 也在 EDT 上调用。
  */
 class ProgressUpdater(
 	private val progressPane: ProgressPanel,
-	private val cancelCallback: Consumer<InternalTask>,
+	private val scope: CoroutineScope,
+	private val cancelCallback: (InternalTask) -> Unit,
 ) {
-	/** 刷新线程池（单线程，守护线程工厂）。 */
-	private val bgExecutor: ExecutorService =
-		Executors.newSingleThreadExecutor(Utils.simpleThreadFactory("jadx-progress"))
 
-	/** 待刷新任务队列，按 `nextUpdate` 时间排序。 */
-	private val tasks: BlockingQueue<InternalTask> = DelayQueue()
+	/** 当前进度状态（供外部观察，替代回调）。 */
+	private val _progress = MutableStateFlow<ProgressState>(ProgressState.Hidden)
+	val progress: StateFlow<ProgressState> = _progress.asStateFlow()
+
+	/** 当前正在刷新进度的任务；由任务执行协程写入、刷新协程读取。 */
+	private val currentTask = AtomicReference<InternalTask?>(null)
 
 	init {
-		// 启动后台刷新循环
-		bgExecutor.execute { updateLoop() }
+		scope.launch {
+			while (isActive) {
+				delay(UPDATE_INTERVAL_MS)
+				tick()
+			}
+		}
 	}
 
 	/** 添加任务到刷新队列；静默任务不显示进度，直接跳过。 */
@@ -47,82 +52,89 @@ class ProgressUpdater(
 		if (task.getBgTask().isSilent()) {
 			return
 		}
-		scheduleNextUpdate(task)
+		currentTask.set(task)
 	}
 
-	/** 任务完成：清零下次刷新时间并立即刷新一次（使进度面板复位/隐藏）。 */
+	/** 任务完成：立即刷新一次（使进度面板复位/隐藏）。 */
 	fun taskComplete(task: InternalTask) {
-		task.setNextUpdate(0)
-		updateProgress(task)
-	}
-
-	private fun scheduleNextUpdate(task: InternalTask) {
-		task.setNextUpdate(System.currentTimeMillis() + UPDATE_INTERVAL_MS)
-		tasks.add(task)
-	}
-
-	/** 刷新循环：阻塞等待到期的任务，刷新进度、检查取消，然后重新排期。 */
-	private fun updateLoop() {
-		while (true) {
-			try {
-				val task = tasks.take()
-				if (task.isRunning()) {
-					updateProgress(task)
-					cancelCheck(task)
-					scheduleNextUpdate(task)
-				}
-			} catch (e: Exception) {
-				LOG.warn("Error in ProgressUpdater loop", e)
-			}
+		if (currentTask.compareAndSet(task, null)) {
+			applyState(ProgressState.Hidden)
 		}
 	}
 
-	private fun updateProgress(internalTask: InternalTask) {
-		UiUtils.uiRun {
-			val bgTask = internalTask.getBgTask()
-			if (internalTask.isRunning()) {
-				if (internalTask.checkForFirstUpdate()) {
-					progressPane.setLabel(bgTask.getTitle() + "… ")
-					progressPane.setCancelButtonVisible(bgTask.canBeCanceled())
-					progressPane.setVisible(true)
-				}
-				val customProgress = bgTask.getTaskProgress()
-				val taskProgress = customProgress ?: TaskProgress(
-					checkNotNull(internalTask.getTaskExecutor()).getProgress().toLong(),
-					internalTask.getJobsCount(),
-				)
-				progressPane.setProgress(taskProgress)
-				val onProgressListener = bgTask.getProgressListener()
-				if (onProgressListener != null) {
-					onProgressListener.accept(taskProgress)
-				}
-			} else {
+	/** 单个刷新周期：更新进度、执行取消检查。 */
+	private suspend fun tick() {
+		val task = currentTask.get() ?: return
+		if (!task.isRunning()) {
+			return
+		}
+		// 取消检查（含内存检测/GC）可能阻塞，放到 IO 线程执行，避免冻结 EDT
+		val cancelStatus = withContext(Dispatchers.IO) { task.getCancelCheck().invoke() }
+		if (cancelStatus != null) {
+			task.setStatus(cancelStatus)
+			applyState(ProgressState.Canceling(task.getBgTask().getTitle()))
+			cancelCallback(task)
+			return
+		}
+		val bgTask = task.getBgTask()
+		val customProgress = bgTask.getTaskProgress()
+		val taskProgress = customProgress ?: TaskProgress(
+			checkNotNull(task.getTaskExecutor()).getProgress().toLong(),
+			task.getJobsCount(),
+		)
+		applyState(
+			ProgressState.Active(
+				title = bgTask.getTitle(),
+				taskProgress = taskProgress,
+				cancelable = bgTask.canBeCanceled(),
+				firstUpdate = task.checkForFirstUpdate(),
+			),
+		)
+	}
+
+	/** 把进度状态应用到面板并发布到 [progress]。 */
+	private fun applyState(state: ProgressState) {
+		_progress.value = state
+		when (state) {
+			is ProgressState.Hidden -> {
 				progressPane.reset()
 				progressPane.setVisible(false)
 			}
-		}
-	}
 
-	/** 执行取消检查：若检查函数返回非 null，则设置状态、更新 UI 并触发取消回调。 */
-	private fun cancelCheck(task: InternalTask) {
-		val taskStatus = task.getCancelCheck().get()
-		if (taskStatus == null) {
-			return
-		}
-		task.setStatus(taskStatus)
-		UiUtils.uiRun {
-			val bgTask = task.getBgTask()
-			progressPane.setLabel(bgTask.getTitle() + " (" + NLS.str("progress.canceling") + ")… ")
-			progressPane.setCancelButtonVisible(false)
-			progressPane.setIndeterminate(true)
-		}
-		cancelCallback.accept(task)
-	}
+			is ProgressState.Active -> {
+				if (state.firstUpdate) {
+					progressPane.setLabel(state.title + "… ")
+					progressPane.setCancelButtonVisible(state.cancelable)
+					progressPane.setVisible(true)
+				}
+				progressPane.setProgress(state.taskProgress)
+			}
 
-	companion object {
-		private val LOG: Logger = LoggerFactory.getLogger(ProgressUpdater::class.java)
-
-		/** 进度刷新间隔（毫秒）。 */
-		private const val UPDATE_INTERVAL_MS = 1000
+			is ProgressState.Canceling -> {
+				progressPane.setLabel(state.title + " (" + NLS.str("progress.canceling") + ")… ")
+				progressPane.setCancelButtonVisible(false)
+				progressPane.setIndeterminate(true)
+			}
+		}
 	}
 }
+
+/** 进度面板状态。 */
+sealed interface ProgressState {
+	/** 无任务：面板隐藏并复位。 */
+	data object Hidden : ProgressState
+
+	/** 任务运行中。 */
+	data class Active(
+		val title: String,
+		val taskProgress: ITaskProgress,
+		val cancelable: Boolean,
+		val firstUpdate: Boolean,
+	) : ProgressState
+
+	/** 任务正在取消。 */
+	data class Canceling(val title: String) : ProgressState
+}
+
+/** 进度刷新间隔（毫秒）。 */
+private const val UPDATE_INTERVAL_MS = 1000L

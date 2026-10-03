@@ -36,8 +36,7 @@ import javax.swing.SwingUtilities
  * **做什么**：实现 [ITabStatesListener]，把 [TabsController] 的状态变化映射为
  * `JTabbedPane` 的增删/选中操作；同时处理滚轮切换、Ctrl+Tab 切换、Ctrl+W 关闭等交互。
  *
- * **线程模型（phase 5.1）**：完全沿用原 Swing 线程模型，UI 更新都在 EDT 上，
- * 后台加载通过 [SilentTask]（内部仍是 `SwingWorker`/任务执行器）完成，**不引入协程**。
+ * **线程模型（N1）**：UI 更新都在 EDT 上，后台加载通过 [SilentTask]（协程任务执行器）完成。
  *
  * **为什么不是 `data class`**：这是有状态的 Swing 组件。
  */

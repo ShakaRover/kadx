@@ -42,6 +42,13 @@ import jadx.gui.utils.cache.ValueCache
 import jadx.gui.utils.layout.WrapLayout
 import jadx.gui.utils.rx.RxUtils
 import jadx.gui.utils.ui.DocumentUpdateListener
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.swing.Swing
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.awt.BorderLayout
@@ -112,6 +119,10 @@ class SearchDialog private constructor(
 	private lateinit var searchEmitter: SearchEventEmitter
 	private var activeTabListener: ChangeListener? = null
 
+	/** 协程作用域：仅用于收集搜索任务进度流，随对话框 [dispose] 取消。 */
+	private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
+	private var progressJob: Job? = null
+
 	private var initSearchText: String? = null
 	private var initSearchPackage: String? = null
 
@@ -157,6 +168,8 @@ class SearchDialog private constructor(
 		if (disposable != null && !disposable.isDisposed) {
 			disposable.dispose()
 		}
+		progressJob?.cancel()
+		scope.cancel()
 		resultsModel.clear()
 		removeActiveTabListener()
 		searchBackgroundExecutor.execute {
@@ -513,7 +526,10 @@ class SearchDialog private constructor(
 			prepareForSearch()
 		}
 		task.setResultsLimit(mainWindow.getSettings().getSearchResultsPerPage())
-		task.setProgressListener { progress -> updateProgress(progress) }
+		progressJob?.cancel()
+		progressJob = scope.launch {
+			task.getProgressFlow().collect { progress -> updateProgress(progress) }
+		}
 		task.fetchResults()
 		LOG.debug("Total search items count estimation: {}", task.getTaskProgress().total())
 	}

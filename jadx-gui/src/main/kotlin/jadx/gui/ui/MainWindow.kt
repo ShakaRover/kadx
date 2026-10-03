@@ -177,9 +177,9 @@ import javax.swing.tree.TreeSelectionModel
  * **做什么**：负责组装菜单/工具栏、左侧包树、右侧标签页与底部日志/调试面板，
  * 并协调后台任务（[BackgroundExecutor]）、事件总线（[JadxGuiEventsImpl]）与各控制器。
  *
- * **线程模型**：本阶段（5.1）严格保持原 Swing 线程模型 —— 所有 UI 操作仍在
- * EDT 上执行（`SwingUtilities.invokeLater` / [UiUtils.uiRun]），后台任务仍走
- * [BackgroundExecutor] 与 `SwingWorker`，**不引入协程**。
+ * **线程模型**：本阶段（N1）已把后台任务迁移到协程 —— 所有 UI 操作仍在
+ * EDT 上执行（`SwingUtilities.invokeLater` / [UiUtils.uiRun]），后台任务经
+ * [BackgroundExecutor] 的协程作用域调度，耗时工作下放到 `Dispatchers.IO`。
  *
  * **为什么公共 getter 都写成显式函数**：该类是被几乎所有 gui 类引用的中心节点，
  * 保留 `fun getXxx()` 形式可让 Kotlin 调用点的 `.getXxx()` 写法零改动。
@@ -1687,6 +1687,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 				} catch (e: Exception) {
 					LOG.error("Close window error", e)
 				} finally {
+					backgroundExecutor.dispose()
 					System.exit(0)
 				}
 			},

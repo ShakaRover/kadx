@@ -13,17 +13,17 @@ import jadx.gui.utils.CertificateManager
 import jadx.gui.utils.NLS
 import jadx.gui.utils.UiUtils
 import jadx.zip.IZipEntry
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.commons.text.StringEscapeUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.security.cert.Certificate
-import java.util.concurrent.ExecutionException
 import javax.swing.Icon
 import javax.swing.ImageIcon
 import javax.swing.SwingUtilities
-import javax.swing.SwingWorker
 
 /**
  * APK 签名校验节点。
@@ -31,8 +31,8 @@ import javax.swing.SwingWorker
  * **做什么**：使用 `apksig` 库在后台校验 APK 签名（v1/v2/v3/v3.1），
  * 并把证书信息、错误与警告渲染成 HTML 展示在内容面板中。
  *
- * **线程模型**：保持原 Swing 模型 —— [getCodeInfo] 在 UI 线程触发 [SwingWorker]，
- * 校验完成后在 [SwingWorker.done] 里刷新面板。
+ * **线程模型**：保持原 Swing 模型 —— [getCodeInfo] 在 UI 线程触发后台签名校验，
+ * 校验在 `Dispatchers.IO` 上执行，完成后回到 EDT 刷新面板。
  *
  * **为什么不是 `data class`**：它是树中的身份节点，需要按引用比较。
  */
@@ -62,7 +62,7 @@ class ApkSignatureNode(private val openFile: File) : JNode() {
 		// 若尚未开始加载，则立即启动后台校验
 		if (!loadingStarted) {
 			loadingStarted = true
-			SwingUtilities.invokeLater { ApkSignatureWorker(this).execute() }
+			SwingUtilities.invokeLater { startVerification(this) }
 		}
 
 		return SimpleCodeInfo(StringEscapeUtils.escapeHtml4(NLS.str("apkSignature.loading")))
@@ -151,152 +151,143 @@ class ApkSignatureNode(private val openFile: File) : JNode() {
 		}
 	}
 
-	private class ApkSignatureWorker(private val node: ApkSignatureNode) : SwingWorker<ICodeInfo, Void>() {
+	/** 在后台线程执行 APK 签名校验并构造 HTML 内容。 */
+	private fun buildCodeInfo(openFile: File): ICodeInfo {
+		LOG.debug("Starting APK signature verification for {}", openFile)
+		val verifier = ApkVerifier.Builder(openFile).build()
+		try {
+			val result = verifier.verify()
 
-		override fun doInBackground(): ICodeInfo {
-			LOG.debug("Starting APK signature verification for {}", node.openFile)
-			val verifier = ApkVerifier.Builder(node.openFile).build()
-			try {
-				val result = verifier.verify()
+			// 构造 HTML 内容
+			val builder = StringEscapeUtils.builder(StringEscapeUtils.ESCAPE_HTML4)
+			builder.append("<h1>APK signature verification result:</h1>")
 
-				// 构造 HTML 内容
-				val builder = StringEscapeUtils.builder(StringEscapeUtils.ESCAPE_HTML4)
-				builder.append("<h1>APK signature verification result:</h1>")
-
-				builder.append("<p><b>")
-				if (result.isVerified()) {
-					builder.escape(NLS.str("apkSignature.verificationSuccess"))
-				} else {
-					builder.escape(NLS.str("apkSignature.verificationFailed"))
-				}
-				builder.append("</b></p>")
-
-				val err = NLS.str("apkSignature.errors")
-				val warn = NLS.str("apkSignature.warnings")
-				writeIssues(builder, err, result.getErrors())
-
-				if (result.getV1SchemeSigners().isNotEmpty()) {
-					addVerifyResult(builder, result.isVerifiedUsingV1Scheme(), 1)
-					builder.append("<blockquote>")
-					for (signer in result.getV1SchemeSigners()) {
-						builder.append("<h3>")
-						builder.escape(NLS.str("apkSignature.signer"))
-						builder.append(" ")
-						builder.escape(signer.getName())
-						builder.append(" (")
-						builder.escape(signer.getSignatureFileName())
-						builder.append(")")
-						builder.append("</h3>")
-						writeCertificate(builder, signer.getCertificate())
-						writeIssues(builder, err, signer.getErrors())
-						writeIssues(builder, warn, signer.getWarnings())
-					}
-					builder.append("</blockquote>")
-				}
-				if (result.getV2SchemeSigners().isNotEmpty()) {
-					addVerifyResult(builder, result.isVerifiedUsingV2Scheme(), 2)
-					builder.append("<blockquote>")
-					for (signer in result.getV2SchemeSigners()) {
-						builder.append("<h3>")
-						builder.escape(NLS.str("apkSignature.signer"))
-						builder.append(" ")
-						builder.append(Integer.toString(signer.getIndex() + 1))
-						builder.append("</h3>")
-						writeCertificate(builder, signer.getCertificate())
-						writeIssues(builder, err, signer.getErrors())
-						writeIssues(builder, warn, signer.getWarnings())
-					}
-					builder.append("</blockquote>")
-				}
-				if (result.getV3SchemeSigners().isNotEmpty()) {
-					addVerifyResult(builder, result.isVerifiedUsingV3Scheme(), 3)
-					builder.append("<blockquote>")
-					for (signer in result.getV3SchemeSigners()) {
-						builder.append("<h3>")
-						builder.escape(NLS.str("apkSignature.signer"))
-						builder.append(" ")
-						builder.append(Integer.toString(signer.getIndex() + 1))
-						builder.append("</h3>")
-						writeCertificate(builder, signer.getCertificate())
-						writeIssues(builder, err, signer.getErrors())
-						writeIssues(builder, warn, signer.getWarnings())
-					}
-					builder.append("</blockquote>")
-				}
-				if (result.getV31SchemeSigners().isNotEmpty()) {
-					addVerifyResult(builder, result.isVerifiedUsingV31Scheme(), 31)
-					builder.append("<blockquote>")
-					for (signer in result.getV31SchemeSigners()) {
-						builder.append("<h3>")
-						builder.escape(NLS.str("apkSignature.signer"))
-						builder.append(" ")
-						builder.append(Integer.toString(signer.getIndex() + 1))
-						builder.append("</h3>")
-						writeCertificate(builder, signer.getCertificate())
-						writeIssues(builder, err, signer.getErrors())
-						writeIssues(builder, warn, signer.getWarnings())
-					}
-					builder.append("</blockquote>")
-				}
-				writeIssues(builder, warn, result.getWarnings())
-
-				return SimpleCodeInfo(builder.toString())
-			} catch (e: Exception) {
-				LOG.error("Failed to verify APK signature for {}", node.openFile, e)
-				val builder = StringEscapeUtils.builder(StringEscapeUtils.ESCAPE_HTML4)
-				builder.append("<h1>")
-				builder.escape(NLS.str("apkSignature.exception"))
-				builder.append("</h1><pre>")
-				builder.escape(ExceptionUtils.getStackTrace(e))
-				builder.append("</pre>")
-				return SimpleCodeInfo(builder.toString())
+			builder.append("<p><b>")
+			if (result.isVerified()) {
+				builder.escape(NLS.str("apkSignature.verificationSuccess"))
+			} else {
+				builder.escape(NLS.str("apkSignature.verificationFailed"))
 			}
-		}
+			builder.append("</b></p>")
 
-		override fun done() {
-			try {
-				node.content = get()
-				val tabbedPane = ApkSignatureNode.Companion.tabbedPane
-				if (tabbedPane != null) {
-					val panel = tabbedPane.getTabByNode(node)
-					if (panel is HtmlPanel) {
-						panel.loadContent(node)
-					}
-				} else {
-					LOG.warn("Could not find TabbedPane to refresh ApkSignatureNode panel.")
-				}
-			} catch (e: Exception) {
-				LOG.error("Error during APK signature verification SwingWorker", e)
-				val builder = StringEscapeUtils.builder(StringEscapeUtils.ESCAPE_HTML4)
-				builder.append("<h1>")
-				builder.escape(NLS.str("apkSignature.exception"))
-				builder.append("</h1><pre>")
-				builder.escape(ExceptionUtils.getStackTrace(if (e is ExecutionException) e.cause else e))
-				builder.append("</pre>")
-				node.content = SimpleCodeInfo(builder.toString())
+			val err = NLS.str("apkSignature.errors")
+			val warn = NLS.str("apkSignature.warnings")
+			writeIssues(builder, err, result.getErrors())
 
-				val tabbedPane = ApkSignatureNode.Companion.tabbedPane
-				if (tabbedPane != null) {
-					val panel = tabbedPane.getTabByNode(node)
-					if (panel is HtmlPanel) {
-						panel.loadContent(node)
-					}
+			if (result.getV1SchemeSigners().isNotEmpty()) {
+				addVerifyResult(builder, result.isVerifiedUsingV1Scheme(), 1)
+				builder.append("<blockquote>")
+				for (signer in result.getV1SchemeSigners()) {
+					builder.append("<h3>")
+					builder.escape(NLS.str("apkSignature.signer"))
+					builder.append(" ")
+					builder.escape(signer.getName())
+					builder.append(" (")
+					builder.escape(signer.getSignatureFileName())
+					builder.append(")")
+					builder.append("</h3>")
+					writeCertificate(builder, signer.getCertificate())
+					writeIssues(builder, err, signer.getErrors())
+					writeIssues(builder, warn, signer.getWarnings())
 				}
-			} finally {
-				node.loadingStarted = false
+				builder.append("</blockquote>")
 			}
-		}
-
-		companion object {
-			private fun addVerifyResult(builder: StringEscapeUtils.Builder, verifyResult: Boolean, verNum: Int) {
-				builder.append("<h2>")
-				if (verifyResult) {
-					builder.escape(NLS.str("apkSignature.signatureSuccess", verNum))
-				} else {
-					builder.escape(NLS.str("apkSignature.signatureFailed", verNum))
+			if (result.getV2SchemeSigners().isNotEmpty()) {
+				addVerifyResult(builder, result.isVerifiedUsingV2Scheme(), 2)
+				builder.append("<blockquote>")
+				for (signer in result.getV2SchemeSigners()) {
+					builder.append("<h3>")
+					builder.escape(NLS.str("apkSignature.signer"))
+					builder.append(" ")
+					builder.append(Integer.toString(signer.getIndex() + 1))
+					builder.append("</h3>")
+					writeCertificate(builder, signer.getCertificate())
+					writeIssues(builder, err, signer.getErrors())
+					writeIssues(builder, warn, signer.getWarnings())
 				}
-				builder.append("</h2>\n")
+				builder.append("</blockquote>")
 			}
+			if (result.getV3SchemeSigners().isNotEmpty()) {
+				addVerifyResult(builder, result.isVerifiedUsingV3Scheme(), 3)
+				builder.append("<blockquote>")
+				for (signer in result.getV3SchemeSigners()) {
+					builder.append("<h3>")
+					builder.escape(NLS.str("apkSignature.signer"))
+					builder.append(" ")
+					builder.append(Integer.toString(signer.getIndex() + 1))
+					builder.append("</h3>")
+					writeCertificate(builder, signer.getCertificate())
+					writeIssues(builder, err, signer.getErrors())
+					writeIssues(builder, warn, signer.getWarnings())
+				}
+				builder.append("</blockquote>")
+			}
+			if (result.getV31SchemeSigners().isNotEmpty()) {
+				addVerifyResult(builder, result.isVerifiedUsingV31Scheme(), 31)
+				builder.append("<blockquote>")
+				for (signer in result.getV31SchemeSigners()) {
+					builder.append("<h3>")
+					builder.escape(NLS.str("apkSignature.signer"))
+					builder.append(" ")
+					builder.append(Integer.toString(signer.getIndex() + 1))
+					builder.append("</h3>")
+					writeCertificate(builder, signer.getCertificate())
+					writeIssues(builder, err, signer.getErrors())
+					writeIssues(builder, warn, signer.getWarnings())
+				}
+				builder.append("</blockquote>")
+			}
+			writeIssues(builder, warn, result.getWarnings())
+
+			return SimpleCodeInfo(builder.toString())
+		} catch (e: Exception) {
+			LOG.error("Failed to verify APK signature for {}", openFile, e)
+			val builder = StringEscapeUtils.builder(StringEscapeUtils.ESCAPE_HTML4)
+			builder.append("<h1>")
+			builder.escape(NLS.str("apkSignature.exception"))
+			builder.append("</h1><pre>")
+			builder.escape(ExceptionUtils.getStackTrace(e))
+			builder.append("</pre>")
+			return SimpleCodeInfo(builder.toString())
 		}
+	}
+
+	/** 在 EDT 上刷新签名节点对应的面板内容。 */
+	private fun refreshPanel(node: ApkSignatureNode) {
+		val tabbedPane = ApkSignatureNode.tabbedPane
+		if (tabbedPane != null) {
+			val panel = tabbedPane.getTabByNode(node)
+			if (panel is HtmlPanel) {
+				panel.loadContent(node)
+			}
+		} else {
+			LOG.warn("Could not find TabbedPane to refresh ApkSignatureNode panel.")
+		}
+	}
+
+	/** 启动后台签名校验协程，完成后回到 EDT 刷新面板。 */
+	private fun startVerification(node: ApkSignatureNode) {
+		val executor = tabbedPane?.getMainWindow()?.getBackgroundExecutor()
+		if (executor == null) {
+			LOG.warn("Could not find BackgroundExecutor to verify APK signature.")
+			node.loadingStarted = false
+			return
+		}
+		executor.launch {
+			val codeInfo = withContext(Dispatchers.IO) { buildCodeInfo(node.openFile) }
+			node.content = codeInfo
+			refreshPanel(node)
+			node.loadingStarted = false
+		}
+	}
+
+	private fun addVerifyResult(builder: StringEscapeUtils.Builder, verifyResult: Boolean, verNum: Int) {
+		builder.append("<h2>")
+		if (verifyResult) {
+			builder.escape(NLS.str("apkSignature.signatureSuccess", verNum))
+		} else {
+			builder.escape(NLS.str("apkSignature.signatureFailed", verNum))
+		}
+		builder.append("</h2>\n")
 	}
 }

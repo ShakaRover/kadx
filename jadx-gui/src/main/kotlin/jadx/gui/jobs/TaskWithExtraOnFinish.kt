@@ -1,6 +1,7 @@
 package jadx.gui.jobs
 
 import jadx.api.utils.tasks.ITaskExecutor
+import kotlinx.coroutines.flow.Flow
 import java.util.function.Consumer
 
 /**
@@ -38,7 +39,7 @@ class TaskWithExtraOnFinish : IBackgroundTask {
 		task.onDone(taskInfo)
 	}
 
-	override fun getProgressListener(): Consumer<ITaskProgress>? = task.getProgressListener()
+	override fun getProgressFlow(): Flow<ITaskProgress> = task.getProgressFlow()
 
 	override fun getTaskProgress(): ITaskProgress? = task.getTaskProgress()
 

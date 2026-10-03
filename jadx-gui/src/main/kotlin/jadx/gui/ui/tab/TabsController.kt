@@ -21,9 +21,8 @@ import org.slf4j.LoggerFactory
  * - 维护监听者列表，把状态变化广播给 [ITabStatesListener]；
  * - 处理代码跳转（可能需要在后台加载类，再回到 EDT 滚动到目标位置）。
  *
- * **线程模型（phase 5.1）**：完全沿用原 Swing 线程模型。
- * 后台加载使用 [jadx.gui.jobs] 的 `SwingWorker` 封装，UI 更新用 `UiUtils.uiRun`
- * （内部即 `SwingUtilities.invokeLater`），**不引入协程**。
+ * **线程模型（N1）**：后台加载使用 [jadx.gui.jobs] 的协程任务执行器，
+ * UI 更新用 `UiUtils.uiRun`（内部即 `SwingUtilities.invokeLater`）。
  *
  * **为什么不是 `data class`**：有状态的可变控制器，需要按身份比较。
  */
