@@ -36,7 +36,6 @@ import java.awt.event.MouseEvent
 import java.util.Collections
 import java.util.Enumeration
 import java.util.HashMap
-import java.util.function.Consumer
 import javax.swing.BorderFactory
 import javax.swing.Box
 import javax.swing.BoxLayout
@@ -304,7 +303,7 @@ class UsageDialogPlus private constructor(
 		mainWindow.getBackgroundExecutor().execute(
 			NLS.str("progress.load"),
 			Runnable { collectUsageData(node, treeNode) },
-			Consumer { status ->
+			{ status ->
 				if (status == TaskStatus.CANCEL_BY_MEMORY) {
 					mainWindow.showHeapUsageBar()
 					UiUtils.errorMessage(this, NLS.str("message.memoryLow"))

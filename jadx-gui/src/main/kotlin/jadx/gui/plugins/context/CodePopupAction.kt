@@ -4,8 +4,6 @@ import jadx.api.metadata.ICodeNodeRef
 import jadx.gui.treemodel.JNode
 import jadx.gui.ui.action.JNodeAction
 import jadx.gui.ui.codearea.CodeArea
-import java.util.function.Consumer
-import java.util.function.Function
 import javax.swing.KeyStroke
 
 /**
@@ -18,9 +16,9 @@ import javax.swing.KeyStroke
  */
 class CodePopupAction(
 	private val name: String,
-	private val enabledCheck: Function<ICodeNodeRef, Boolean>?,
+	private val enabledCheck: ((ICodeNodeRef) -> Boolean)?,
 	private val keyBinding: String?,
-	private val action: Consumer<ICodeNodeRef>,
+	private val action: (ICodeNodeRef) -> Unit,
 ) {
 
 	/** 为给定代码区构建动作。 */
@@ -47,11 +45,11 @@ class CodePopupAction(
 			}
 			val codeNode = node.getCodeNodeRef() ?: return false
 			// enabledCheck 允许为 null（接口声明可空），此时视为不限制
-			return data.enabledCheck?.apply(codeNode) ?: true
+			return data.enabledCheck?.invoke(codeNode) ?: true
 		}
 
 		override fun runAction(node: JNode) {
-			val r = Runnable { data.action.accept(checkNotNull(node.getCodeNodeRef())) }
+			val r = Runnable { data.action(checkNotNull(node.getCodeNodeRef())) }
 			getCodeArea().getMainWindow().getBackgroundExecutor().execute(data.name, r)
 		}
 	}

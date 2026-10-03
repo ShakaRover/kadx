@@ -19,7 +19,6 @@ import jadx.core.dex.visitors.IDexTreeVisitor
 import jadx.core.utils.exceptions.JadxRuntimeException
 import java.util.ArrayList
 import java.util.HashSet
-import java.util.function.Supplier
 
 /**
  * 检查块、指令、寄存器、SSA 变量之间的不变量与信息一致性。
@@ -130,10 +129,10 @@ object DebugChecks {
 		return tmpEdgeAttr.block == start
 	}
 
-	private fun checkBlock(mth: MethodNode, block: BlockNode, source: Supplier<String>) {
+	private fun checkBlock(mth: MethodNode, block: BlockNode, source: () -> String) {
 		val basicBlocks = mth.getBasicBlocks()
 		if (basicBlocks == null || !basicBlocks.contains(block)) {
-			throw JadxRuntimeException("Block not registered in method: $block from " + source.get())
+			throw JadxRuntimeException("Block not registered in method: $block from " + source())
 		}
 	}
 
@@ -264,12 +263,12 @@ object DebugChecks {
 		}
 	}
 
-	private fun checkPhiArg(mth: MethodNode, phiInsn: PhiInsn, arg: RegisterArg?, argName: Supplier<String>) {
+	private fun checkPhiArg(mth: MethodNode, phiInsn: PhiInsn, arg: RegisterArg?, argName: () -> String) {
 		if (arg == null) {
-			throw JadxRuntimeException("Null " + argName.get() + " in PHI insn: " + phiInsn)
+			throw JadxRuntimeException("Null " + argName() + " in PHI insn: " + phiInsn)
 		}
 		if (arg.sVar == null) {
-			throw JadxRuntimeException("Null SSA variable in " + argName.get() + " in PHI insn: " + phiInsn)
+			throw JadxRuntimeException("Null SSA variable in " + argName() + " in PHI insn: " + phiInsn)
 		}
 	}
 

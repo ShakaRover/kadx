@@ -19,8 +19,6 @@ import jadx.core.dex.nodes.MethodNode
 import jadx.core.dex.nodes.RootNode
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.function.Function
-import java.util.function.Predicate
 
 /**
  * 指令（[InsnNode]）查询与替换工具集。
@@ -115,7 +113,7 @@ object InsnUtils {
 	}
 
 	@JvmStatic
-	fun searchSingleReturnInsn(mth: MethodNode, test: Predicate<InsnNode>): InsnNode? {
+	fun searchSingleReturnInsn(mth: MethodNode, test: (InsnNode) -> Boolean): InsnNode? {
 		if (!mth.isNoCode() && mth.getPreExitBlocks().size == 1) {
 			return searchInsn(mth, InsnType.RETURN, test)
 		}
@@ -126,7 +124,7 @@ object InsnUtils {
 	 * 在方法中查找指定类型且满足条件的指令（支持内联包装指令）。
 	 */
 	@JvmStatic
-	fun searchInsn(mth: MethodNode, insnType: InsnType, test: Predicate<InsnNode>): InsnNode? {
+	fun searchInsn(mth: MethodNode, insnType: InsnType, test: (InsnNode) -> Boolean): InsnNode? {
 		if (mth.isNoCode()) {
 			return null
 		}
@@ -143,7 +141,7 @@ object InsnUtils {
 	}
 
 	@JvmStatic
-	fun replaceInsns(mth: MethodNode, replaceFunction: Function<InsnNode, InsnNode?>) {
+	fun replaceInsns(mth: MethodNode, replaceFunction: (InsnNode) -> InsnNode?) {
 		val blocks = mth.getBasicBlocks() ?: return
 		for (block in blocks) {
 			val insns = block.getInstructions()
@@ -151,7 +149,7 @@ object InsnUtils {
 			for (i in 0 until insnsCount) {
 				val insn = insns[i]
 				replaceInsnsInInsn(mth, insn, replaceFunction)
-				val replace = replaceFunction.apply(insn)
+				val replace = replaceFunction(insn)
 				if (replace != null) {
 					BlockUtils.replaceInsn(mth, block, i, replace)
 				}
@@ -160,14 +158,14 @@ object InsnUtils {
 	}
 
 	@JvmStatic
-	fun replaceInsnsInInsn(mth: MethodNode, insn: InsnNode, replaceFunction: Function<InsnNode, InsnNode?>) {
+	fun replaceInsnsInInsn(mth: MethodNode, insn: InsnNode, replaceFunction: (InsnNode) -> InsnNode?) {
 		val argsCount = insn.getArgsCount()
 		for (i in 0 until argsCount) {
 			val arg = insn.getArg(i)
 			if (arg.isInsnWrap) {
 				val wrapInsn = (arg as InsnWrapArg).wrapInsn
 				replaceInsnsInInsn(mth, wrapInsn, replaceFunction)
-				val replace = replaceFunction.apply(wrapInsn)
+				val replace = replaceFunction(wrapInsn)
 				if (replace != null) {
 					InsnRemover.unbindArgUsage(mth, arg)
 					insn.setArg(i, InsnArg.wrapInsnIntoArg(replace))
@@ -187,8 +185,8 @@ object InsnUtils {
 		return null
 	}
 
-	private fun recursiveInsnCheck(insn: InsnNode, insnType: InsnType, test: Predicate<InsnNode>): InsnNode? {
-		if (insn.getType() == insnType && test.test(insn)) {
+	private fun recursiveInsnCheck(insn: InsnNode, insnType: InsnType, test: (InsnNode) -> Boolean): InsnNode? {
+		if (insn.getType() == insnType && test(insn)) {
 			return insn
 		}
 		for (arg in insn.getArguments()) {

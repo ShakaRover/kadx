@@ -392,11 +392,11 @@ class MethodNode(
 	override fun getThrows(): List<ArgType> {
 		val throwsAttr = get(AType.METHOD_THROWS)
 		if (throwsAttr != null) {
-			return collectionMap(throwsAttr.list, java.util.function.Function { s: String -> ArgType.`object`(s) })
+			return collectionMap(throwsAttr.list) { s: String -> ArgType.`object`(s) }
 		}
 		val exceptionsAttr = get(JadxAttrType.EXCEPTIONS)
 		if (exceptionsAttr != null) {
-			return collectionMap(exceptionsAttr.list, java.util.function.Function { s: String -> ArgType.`object`(s) })
+			return collectionMap(exceptionsAttr.list) { s: String -> ArgType.`object`(s) }
 		}
 		return emptyList()
 	}

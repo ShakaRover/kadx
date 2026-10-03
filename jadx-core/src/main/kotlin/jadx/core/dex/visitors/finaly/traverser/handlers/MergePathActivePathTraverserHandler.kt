@@ -17,7 +17,6 @@ import jadx.core.dex.visitors.finaly.traverser.state.TraverserGlobalCommonState
 import jadx.core.dex.visitors.finaly.traverser.state.TraverserState
 import jadx.core.utils.exceptions.JadxRuntimeException
 import java.util.Stack
-import java.util.function.Function
 
 /**
  * “多路径合并”处理器：把已识别作用域内的多条根路径与 finally 侧一一配对合并。
@@ -54,7 +53,7 @@ class MergePathActivePathTraverserHandler(comparatorState: TraverserActivePathSt
 		val finallyTerminus: BlockNode = finallyState.getTerminus()
 		val candidateTerminus: BlockNode = candidateState.getTerminus()
 
-		val abortFunction: Function<TraverserState, Boolean> = getStateAbortOnTerminusFunction(finallyState, candidateState)
+		val abortFunction: (TraverserState) -> Boolean = getStateAbortOnTerminusFunction(finallyState, candidateState)
 
 		val allPermutationsPaths: List<Array<BlockNode>> = getAllPermutationsOfCollection(candidateState.getRoots())
 		var paths: List<TraverserActivePathState>? = null
@@ -159,13 +158,13 @@ class MergePathActivePathTraverserHandler(comparatorState: TraverserActivePathSt
 		private fun getStateAbortOnTerminusFunction(
 			finallyState: IdentifiedScopeWithTerminatorTraverserState,
 			candidateState: IdentifiedScopeWithTerminatorTraverserState,
-		): Function<TraverserState, Boolean> {
+		): (TraverserState) -> Boolean {
 			val finallyTerminus: BlockNode = finallyState.getTerminus()
 			val candidateTerminus: BlockNode = candidateState.getTerminus()
 			val finallyGlobalState: GlobalTraverserSourceState = finallyState.getGlobalState()
 			val candidateGlobalState: GlobalTraverserSourceState = candidateState.getGlobalState()
 
-			return Function { state ->
+			return { state ->
 				if (state.getGlobalState() === finallyGlobalState) {
 					isStateOnTerminus(state, finallyTerminus)
 				} else if (state.getGlobalState() === candidateGlobalState) {

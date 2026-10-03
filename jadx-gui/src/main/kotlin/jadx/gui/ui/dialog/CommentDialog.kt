@@ -17,7 +17,6 @@ import java.awt.Dimension
 import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
 import java.util.Collections
-import java.util.function.Consumer
 import javax.swing.BorderFactory
 import javax.swing.Box
 import javax.swing.BoxLayout
@@ -196,7 +195,7 @@ class CommentDialog(
 		 * 排序后写回工程，并触发代码数据重载与后台刷新。
 		 */
 		@JvmStatic
-		fun updateCommentsData(codeArea: CodeArea, updater: Consumer<MutableList<ICodeComment>>) {
+		fun updateCommentsData(codeArea: CodeArea, updater: (MutableList<ICodeComment>) -> Unit) {
 			try {
 				val project: JadxProject = codeArea.getProject()
 				var codeData = project.getCodeData()
@@ -204,7 +203,7 @@ class CommentDialog(
 					codeData = JadxCodeData()
 				}
 				val list = ArrayList<ICodeComment>(codeData.getComments())
-				updater.accept(list)
+				updater(list)
 				Collections.sort(list)
 				codeData.setComments(list)
 				project.setCodeData(codeData)

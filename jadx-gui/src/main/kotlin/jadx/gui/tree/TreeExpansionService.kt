@@ -16,8 +16,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.Collections
 import java.util.Comparator
-import java.util.function.Consumer
-import java.util.function.Supplier
 import java.util.stream.Collectors
 import javax.swing.JTree
 import javax.swing.tree.DefaultTreeModel
@@ -59,7 +57,7 @@ class TreeExpansionService(private val mainWindow: MainWindow, private val tree:
 	fun load(treeExpansions: List<String>) {
 		mainWindow.getBackgroundExecutor().execute(
 			LoadTask(
-				Supplier {
+				{
 					val expandedPaths = ArrayList<TreePath>()
 					loadPaths(treeExpansions, expandedPaths)
 					// 发送展开事件以加载子节点并等待完成
@@ -74,7 +72,7 @@ class TreeExpansionService(private val mainWindow: MainWindow, private val tree:
 					}
 					expandedPaths
 				},
-				Consumer { expandedPaths ->
+				{ expandedPaths ->
 					// 加载任务完成后再展开路径
 					expandedPaths.forEach { path -> tree.expandPath(path) }
 				},

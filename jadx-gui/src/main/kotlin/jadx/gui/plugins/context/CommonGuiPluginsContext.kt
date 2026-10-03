@@ -7,7 +7,6 @@ import jadx.gui.ui.codearea.CodeArea
 import jadx.gui.ui.codearea.JNodePopupBuilder
 import jadx.gui.utils.ui.ActionHandler
 import org.slf4j.LoggerFactory
-import java.util.function.Consumer
 
 /**
  * GUI 插件的公共上下文：集中保存所有插件注册到界面的扩展点。
@@ -67,7 +66,7 @@ class CommonGuiPluginsContext(private val mainWindow: MainWindow) {
 	/** 向「插件」菜单添加一项，点击后在后台执行 [action]。 */
 	fun addMenuAction(name: String, action: Runnable) {
 		val item = ActionHandler(
-			Consumer {
+			Runnable {
 				try {
 					mainWindow.getBackgroundExecutor().execute(name, action)
 				} catch (e: Exception) {

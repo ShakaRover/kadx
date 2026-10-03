@@ -64,11 +64,13 @@ class GuiPluginContext(
 		keyBinding: String?,
 		action: Consumer<ICodeNodeRef>,
 	) {
-		commonContext.getCodePopupActionList().add(CodePopupAction(name, enabled, keyBinding, action))
+		// 插件 API 使用 Java 函数类型，内部实现改用 Kotlin 函数类型，这里做一次适配
+		val enabledCheck: ((ICodeNodeRef) -> Boolean)? = enabled?.let { f -> { node -> f.apply(node) } }
+		commonContext.getCodePopupActionList().add(CodePopupAction(name, enabledCheck, keyBinding) { node -> action.accept(node) })
 	}
 
 	override fun addTreePopupMenuEntry(name: String, addPredicate: Predicate<ITreeNode>, action: Consumer<ITreeNode>) {
-		commonContext.getTreePopupMenuEntries().add(TreePopupMenuEntry(name, addPredicate, action))
+		commonContext.getTreePopupMenuEntries().add(TreePopupMenuEntry(name, { node -> addPredicate.test(node) }) { node -> action.accept(node) })
 	}
 
 	/** 注册一个输入分类器。 */

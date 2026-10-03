@@ -8,7 +8,6 @@ import java.util.ArrayList
 import java.util.Comparator
 import java.util.HashMap
 import java.util.IdentityHashMap
-import java.util.function.Function
 import java.util.stream.Collectors
 
 /**
@@ -22,11 +21,11 @@ class PassMerge(private val visitors: MutableList<IDexTreeVisitor>) {
 	private var mergePassesNames: Set<String> = emptySet()
 	private var namesMap: MutableMap<IDexTreeVisitor, String> = HashMap()
 
-	fun merge(customPasses: List<JadxPass>?, wrap: Function<JadxPass, IDexTreeVisitor>) {
+	fun merge(customPasses: List<JadxPass>?, wrap: (JadxPass) -> IDexTreeVisitor) {
 		if (Utils.isEmpty(customPasses)) {
 			return
 		}
-		val mergePasses = ArrayList(ListUtils.map(customPasses) { p -> MergePass(p, wrap.apply(p), p.getInfo()) })
+		val mergePasses = ArrayList(ListUtils.map(customPasses) { p -> MergePass(p, wrap(p), p.getInfo()) })
 		linkDeps(mergePasses)
 		mergePasses.sortWith(ExtDepsComparator(visitors).thenComparing(InvertedDepsComparator.INSTANCE))
 

@@ -1,7 +1,6 @@
 package jadx.gui.utils.ui
 
 import java.util.IdentityHashMap
-import java.util.function.BiConsumer
 import javax.swing.event.CaretListener
 import javax.swing.text.JTextComponent
 
@@ -17,8 +16,8 @@ import javax.swing.text.JTextComponent
  * @param L 监听器类型
  */
 class ListenersHelper<C, L> private constructor(
-	private val addMth: BiConsumer<C, L>,
-	private val removeMth: BiConsumer<C, L>,
+	private val addMth: (C, L) -> Unit,
+	private val removeMth: (C, L) -> Unit,
 ) {
 
 	private val listenerMap: MutableMap<C, MutableList<L>> = IdentityHashMap()
@@ -26,7 +25,7 @@ class ListenersHelper<C, L> private constructor(
 	/** 注册监听器并记录，便于后续统一移除。 */
 	@Synchronized
 	fun add(component: C, listener: L) {
-		addMth.accept(component, listener)
+		addMth(component, listener)
 		listenerMap.getOrPut(component) { ArrayList() }.add(listener)
 	}
 
@@ -52,7 +51,7 @@ class ListenersHelper<C, L> private constructor(
 	}
 
 	private fun remove(component: C, listener: L) {
-		removeMth.accept(component, listener)
+		removeMth(component, listener)
 	}
 
 	companion object {

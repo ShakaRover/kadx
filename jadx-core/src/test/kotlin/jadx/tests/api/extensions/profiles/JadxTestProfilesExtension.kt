@@ -50,7 +50,7 @@ class JadxTestProfilesExtension : TestTemplateInvocationContextProvider {
 		override fun getAdditionalExtensions(): List<Extension> = listOf(beforeTest())
 
 		private fun beforeTest(): BeforeTestExecutionCallback = BeforeTestExecutionCallback { execContext ->
-			testProfile.accept(execContext.getRequiredTestInstance() as IntegrationTest)
+			testProfile.apply(execContext.getRequiredTestInstance() as IntegrationTest)
 		}
 	}
 }

@@ -8,7 +8,6 @@ import java.awt.Container
 import java.awt.Font
 import java.awt.event.ActionEvent
 import java.awt.event.KeyEvent
-import java.util.function.Consumer
 import javax.swing.ActionMap
 import javax.swing.InputMap
 import javax.swing.JComponent
@@ -37,8 +36,8 @@ class ZoomActions private constructor(
 		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, ctrlButton), zoomOut)
 		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SUBTRACT, ctrlButton), zoomOut)
 		val actionMap: ActionMap = component.getActionMap()
-		actionMap.put(zoomIn, ActionHandler(Consumer<ActionEvent> { textZoom(1) }))
-		actionMap.put(zoomOut, ActionHandler(Consumer<ActionEvent> { textZoom(-1) }))
+		actionMap.put(zoomIn, ActionHandler(Runnable { textZoom(1) }))
+		actionMap.put(zoomOut, ActionHandler(Runnable { textZoom(-1) }))
 
 		component.addMouseWheelListener { e ->
 			if (e.getModifiersEx() == UiUtils.ctrlButton()) {

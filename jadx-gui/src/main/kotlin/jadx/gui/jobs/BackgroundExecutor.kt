@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
-import java.util.function.Consumer
 import javax.swing.SwingUtilities
 
 /**
@@ -117,12 +116,12 @@ class BackgroundExecutor(
 	}
 
 	/** 用一组 job 构造 [SimpleTask] 并执行，完成后在 EDT 回调。 */
-	fun execute(title: String, backgroundJobs: List<Runnable>, onFinishUiRunnable: Consumer<TaskStatus>) {
+	fun execute(title: String, backgroundJobs: List<Runnable>, onFinishUiRunnable: (TaskStatus) -> Unit) {
 		execute(SimpleTask(title, backgroundJobs, onFinishUiRunnable))
 	}
 
 	/** 用单个 job 构造 [SimpleTask] 并执行，完成后在 EDT 回调。 */
-	fun execute(title: String, backgroundRunnable: Runnable, onFinishUiRunnable: Consumer<TaskStatus>) {
+	fun execute(title: String, backgroundRunnable: Runnable, onFinishUiRunnable: (TaskStatus) -> Unit) {
 		execute(SimpleTask(title, listOf(backgroundRunnable), onFinishUiRunnable))
 	}
 

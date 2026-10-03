@@ -52,7 +52,7 @@ class UsageDialog private constructor(
 		mainWindow.getBackgroundExecutor().execute(
 			NLS.str("progress.load"),
 			Runnable { collectUsageData() },
-			java.util.function.Consumer { status ->
+			{ status ->
 				if (status == TaskStatus.CANCEL_BY_MEMORY) {
 					mainWindow.showHeapUsageBar()
 					UiUtils.errorMessage(this, NLS.str("message.memoryLow"))

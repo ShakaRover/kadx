@@ -15,9 +15,8 @@ class TestPackageInfoSupport : SmaliTest() {
 	fun test() {
 		disableCompilation()
 		val classes: List<ClassNode> = loadFromSmaliFiles()
-		val checkPkg1Alias: Consumer<ClassNode> = Consumer { cls -> assertThat(cls.alias).isEqualTo("package-info") } // shouldn't be renamed
 		assertThat(searchCls(classes, "special.pkg1.package-info"))
-			.satisfies(checkPkg1Alias)
+			.satisfies(Consumer<ClassNode> { cls -> assertThat(cls.alias).isEqualTo("package-info") }) // shouldn't be renamed
 			.code()
 			.containsLines(
 				"@Deprecated",

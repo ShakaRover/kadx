@@ -14,7 +14,6 @@ import jadx.core.dex.instructions.args.RegisterArg
 import jadx.core.dex.nodes.ClassNode
 import jadx.core.dex.nodes.ICodeNode
 import jadx.core.utils.Utils
-import java.util.function.BiConsumer
 import java.util.regex.Pattern
 
 /**
@@ -108,13 +107,13 @@ class CodeGenUtils {
 			code: ICodeWriter,
 			node: NotificationAttrNode,
 			level: CommentsLevel,
-			commentFunc: BiConsumer<ICodeWriter, String>,
+			commentFunc: (ICodeWriter, String) -> Unit,
 		) {
 			if (node.checkCommentsLevel(level)) {
 				code.startLine()
 				addCommentWithStyle(code, CommentStyle.BLOCK_CONDENSED) { commentCode, newLinePrefix ->
 					commentCode.add("JADX ").add(level.name).add(": ")
-					commentFunc.accept(commentCode, newLinePrefix)
+					commentFunc(commentCode, newLinePrefix)
 				}
 			}
 		}
@@ -136,10 +135,10 @@ class CodeGenUtils {
 		private fun addCommentWithStyle(
 			code: ICodeWriter,
 			style: CommentStyle,
-			commentFunc: BiConsumer<ICodeWriter, String>,
+			commentFunc: (ICodeWriter, String) -> Unit,
 		) {
 			appendMultiLineString(code, "", style.getStart())
-			commentFunc.accept(code, style.getOnNewLine())
+			commentFunc(code, style.getOnNewLine())
 			appendMultiLineString(code, "", style.getEnd())
 		}
 

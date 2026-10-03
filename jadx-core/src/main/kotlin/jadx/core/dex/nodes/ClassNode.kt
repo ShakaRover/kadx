@@ -521,25 +521,25 @@ class ClassNode(
 		return if (parent == this) this else parent
 	}
 
-	fun visitParentClasses(consumer: java.util.function.Consumer<ClassNode>) {
+	fun visitParentClasses(consumer: (ClassNode) -> Unit) {
 		var currentCls = this
 		var parentCls = currentCls.parentClass
 		while (parentCls != currentCls) {
-			consumer.accept(parentCls)
+			consumer(parentCls)
 			currentCls = parentCls
 			parentCls = currentCls.parentClass
 		}
 	}
 
-	fun visitSuperTypes(consumer: java.util.function.BiConsumer<ArgType, ArgType>) {
+	fun visitSuperTypes(consumer: (ArgType, ArgType) -> Unit) {
 		val typeUtils = root.typeUtils
 		val thisType = getType()
 		if (superClass != null && superClass != ArgType.OBJECT) {
-			consumer.accept(thisType, superClass!!)
+			consumer(thisType, superClass!!)
 			typeUtils.visitSuperTypes(superClass!!, consumer)
 		}
 		for (iface in interfaces) {
-			consumer.accept(thisType, iface)
+			consumer(thisType, iface)
 			typeUtils.visitSuperTypes(iface, consumer)
 		}
 	}

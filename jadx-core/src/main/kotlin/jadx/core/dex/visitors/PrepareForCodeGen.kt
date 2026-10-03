@@ -135,7 +135,7 @@ class PrepareForCodeGen : AbstractVisitor() {
 	private fun checkConstUsage(block: BlockNode) {
 		for (blockInsn in block.getInstructions()) {
 			blockInsn.visitInsns(
-				java.util.function.Consumer { insn ->
+				{ insn ->
 					if (!forbidExplicitType(insn.getType())) {
 						for (arg in insn.getArguments()) {
 							if (arg.isLiteral && arg.getType() != ArgType.INT) {

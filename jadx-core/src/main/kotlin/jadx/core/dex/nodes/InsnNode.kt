@@ -223,8 +223,14 @@ open class InsnNode(
 		return false
 	}
 
-	open fun visitInsns(visitor: java.util.function.Consumer<InsnNode>) {
-		visitor.accept(this)
+	/**
+	 * 访问本指令及内联包装指令（不短路，返回 Unit）。
+	 *
+	 * 注意：需要“遇到非 null 返回值即停止”的语义时，请调用 [visitInsns] 的泛型重载，
+	 * 并用显式类型参数（如 `visitInsns<Boolean> { ... }`）区分两个重载。
+	 */
+	open fun visitInsns(visitor: (InsnNode) -> Unit) {
+		visitor(this)
 		for (arg in arguments) {
 			if (arg.isInsnWrap) {
 				(arg as InsnWrapArg).wrapInsn.visitInsns(visitor)
@@ -232,6 +238,9 @@ open class InsnNode(
 		}
 	}
 
+	/**
+	 * 访问本指令及内联包装指令；回调返回非 null 时立即返回该值（短路）。
+	 */
 	fun <R> visitInsns(visitor: (InsnNode) -> R?): R? {
 		val result = visitor(this)
 		if (result != null) return result
@@ -245,16 +254,24 @@ open class InsnNode(
 		return null
 	}
 
-	fun visitArgs(visitor: java.util.function.Consumer<InsnArg>) {
+	/**
+	 * 访问本指令的全部参数（含内联包装指令，不短路，返回 Unit）。
+	 *
+	 * 需要短路语义时请使用 [visitArgs] 的泛型重载并传入显式类型参数。
+	 */
+	fun visitArgs(visitor: (InsnArg) -> Unit) {
 		for (arg in arguments) {
 			if (arg.isInsnWrap) {
 				(arg as InsnWrapArg).wrapInsn.visitArgs(visitor)
 			} else {
-				visitor.accept(arg)
+				visitor(arg)
 			}
 		}
 	}
 
+	/**
+	 * 访问本指令的全部参数；回调返回非 null 时立即返回该值（短路）。
+	 */
 	fun <R> visitArgs(visitor: (InsnArg) -> R?): R? {
 		for (arg in arguments) {
 			val result = if (arg.isInsnWrap) {

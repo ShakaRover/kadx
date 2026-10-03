@@ -4,8 +4,6 @@ import jadx.core.dex.instructions.BaseInvokeNode
 import jadx.core.dex.instructions.args.ArgType
 import jadx.core.dex.instructions.args.InsnArg
 import jadx.core.dex.instructions.args.RegisterArg
-import java.util.function.Function
-import java.util.function.Supplier
 
 /**
  * 方法调用（invoke）的类型更新回调。
@@ -15,9 +13,8 @@ import java.util.function.Supplier
  * - 每个可变的参数（[getNextArg] 逐个取出）。
  * 泛型返回类型/参数类型由外部通过 [getReturnType]/[getArgType] 回调动态计算。
  *
- * **Kotlin 转换说明**：
- * - `Supplier`/`Function` 保持 `java.util.function` 类型，Java 调用方零改动；
- * - [updateArg]/[updateType] 在真正处理 REJECT 前必定已赋值，故用 `lateinit` 表达。
+ * **Kotlin 转换说明**：泛型返回类型/参数类型回调使用 Kotlin 函数类型 `() -> ArgType?` 与 `(Int) -> ArgType?`；
+ * [updateArg]/[updateType] 在真正处理 REJECT 前必定已赋值，故用 `lateinit` 表达。
  */
 class InvokeUpdateCallback(
 	private val typeUpdate: TypeUpdate,
@@ -25,8 +22,8 @@ class InvokeUpdateCallback(
 	private val invoke: BaseInvokeNode,
 	private val argsCount: Int,
 	private val knownTypeVars: Set<ArgType>,
-	private val getReturnType: Supplier<ArgType?>,
-	private val getArgType: Function<Int, ArgType?>,
+	private val getReturnType: () -> ArgType?,
+	private val getArgType: (Int) -> ArgType?,
 ) : ITypeUpdateCallback {
 
 	private var isAssign = false
@@ -78,7 +75,7 @@ class InvokeUpdateCallback(
 		var result = TypeUpdateResult.SAME
 		val resultArg = invoke.getResult()
 		if (resultArg != null && !resultArg.isTypeImmutable()) {
-			val returnType = checkType(knownTypeVars, getReturnType.get())
+			val returnType = checkType(knownTypeVars, getReturnType())
 			if (returnType != null) {
 				updateArg = resultArg
 				updateType = returnType
@@ -104,7 +101,7 @@ class InvokeUpdateCallback(
 			val argOffset = invoke.getFirstArgOffset()
 			val invokeArg = invoke.getArg(argOffset + i)
 			if (!invokeArg.isTypeImmutable()) {
-				val argType = checkType(knownTypeVars, getArgType.apply(i))
+				val argType = checkType(knownTypeVars, getArgType(i))
 				if (argType != null) {
 					updateArg = invokeArg
 					updateType = argType

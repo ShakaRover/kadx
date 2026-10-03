@@ -1,7 +1,5 @@
 package jadx.gui.treemodel
 
-import java.util.function.Consumer
-
 /**
  * 可编辑节点基类。
  *
@@ -16,7 +14,7 @@ abstract class JEditableNode : JNode() {
 	@Volatile
 	private var changed = false
 
-	private val changeListeners: MutableList<Consumer<Boolean>> = ArrayList()
+	private val changeListeners: MutableList<(Boolean) -> Unit> = ArrayList()
 
 	/** 保存新内容。 */
 	abstract fun save(newContent: String)
@@ -29,14 +27,14 @@ abstract class JEditableNode : JNode() {
 		if (this.changed != changed) {
 			this.changed = changed
 			for (changeListener in changeListeners) {
-				changeListener.accept(changed)
+				changeListener(changed)
 			}
 		}
 	}
 
 	/** 注册变更监听器，并立即用当前状态回调一次。 */
-	fun addChangeListener(listener: Consumer<Boolean>) {
+	fun addChangeListener(listener: (Boolean) -> Unit) {
 		changeListeners.add(listener)
-		listener.accept(changed)
+		listener(changed)
 	}
 }

@@ -4,7 +4,6 @@ import jadx.tests.api.utils.TestUtils
 import org.assertj.core.api.AbstractStringAssert
 import org.assertj.core.error.ShouldNotContainSubsequence.shouldNotContainSubsequence
 import org.assertj.core.internal.Failures
-import java.util.function.Function
 import java.util.regex.Pattern
 import java.util.stream.Collectors
 
@@ -102,12 +101,12 @@ class JadxCodeAssertions(code: String?) : AbstractStringAssert<JadxCodeAssertion
 	}
 
 	@SafeVarargs
-	fun oneOf(vararg checks: Function<JadxCodeAssertions, JadxCodeAssertions>): JadxCodeAssertions {
+	fun oneOf(vararg checks: (JadxCodeAssertions) -> JadxCodeAssertions): JadxCodeAssertions {
 		var passed = 0
 		val failed = ArrayList<Throwable>()
 		for (check in checks) {
 			try {
-				check.apply(this)
+				check(this)
 				passed++
 			} catch (e: Throwable) {
 				failed.add(e)

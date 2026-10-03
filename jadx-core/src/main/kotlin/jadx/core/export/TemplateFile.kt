@@ -12,7 +12,6 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.nio.charset.Charset
 import java.util.HashMap
-import java.util.function.Function
 
 /**
  * 极简模板引擎。
@@ -54,7 +53,7 @@ class TemplateFile private constructor(
 	private val values = HashMap<String, String>()
 
 	/** 可选的净化器，对非 raw 的值做转义/净化。 */
-	private var valueSanitizer: @Nullable Function<String, String>? = null
+	private var valueSanitizer: ((String) -> String)? = null
 
 	/** 注册一个变量的替换值；null 会被转成字符串 "null"（与 Java `String.valueOf` 一致）。 */
 	fun add(name: String, value: Any?) {
@@ -79,7 +78,7 @@ class TemplateFile private constructor(
 	}
 
 	/** 设置值净化器；传 null 表示不做净化。 */
-	fun setValueSanitizer(valueSanitizer: @Nullable Function<String, String>?) {
+	fun setValueSanitizer(valueSanitizer: ((String) -> String)?) {
 		this.valueSanitizer = valueSanitizer
 	}
 
@@ -190,7 +189,7 @@ class TemplateFile private constructor(
 		if (!rawValue) {
 			val sanitizer = valueSanitizer
 			if (sanitizer != null) {
-				return sanitizer.apply(str)
+				return sanitizer(str)
 			}
 		}
 		return str

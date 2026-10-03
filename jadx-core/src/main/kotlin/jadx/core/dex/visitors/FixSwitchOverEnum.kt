@@ -26,7 +26,6 @@ import jadx.core.dex.visitors.shrink.CodeShrinkVisitor
 import jadx.core.utils.Utils
 import jadx.core.utils.exceptions.JadxException
 import java.util.HashMap
-import java.util.function.IntFunction
 
 /**
  * 枚举 switch 简化访问者。
@@ -91,7 +90,7 @@ class FixSwitchOverEnum : AbstractVisitor() {
 			swInsn: SwitchInsn,
 			arg: InsnArg,
 			invVar: InsnArg,
-			caseReplace: IntFunction<Any?>,
+			caseReplace: (Int) -> Any?,
 		): Boolean {
 			val regionRefAttr = swInsn.get(AType.REGION_REF) ?: return false
 			if (!swInsn.replaceArg(arg, invVar)) {
@@ -101,7 +100,7 @@ class FixSwitchOverEnum : AbstractVisitor() {
 			val caseCount = swInsn.getKeys().size
 			for (i in 0 until caseCount) {
 				val key = swInsn.getKey(i)
-				val replaceObj = caseReplace.apply(i)
+				val replaceObj = caseReplace(i)
 				swInsn.modifyKey(i, replaceObj)
 				replaceMap[key] = replaceObj
 			}

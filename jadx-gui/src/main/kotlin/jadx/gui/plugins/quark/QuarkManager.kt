@@ -15,7 +15,6 @@ import java.io.InputStreamReader
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.function.Consumer
 import javax.swing.JOptionPane
 
 /**
@@ -49,7 +48,7 @@ class QuarkManager(private val mainWindow: MainWindow, private val apkPath: Path
 		executor.execute(
 			"Quark install",
 			Runnable { checkInstall() },
-			Consumer { executor.execute("Quark analysis", Runnable { startAnalysis() }, Consumer { loadReport() }) },
+			{ executor.execute("Quark analysis", Runnable { startAnalysis() }, { loadReport() }) },
 		)
 	}
 

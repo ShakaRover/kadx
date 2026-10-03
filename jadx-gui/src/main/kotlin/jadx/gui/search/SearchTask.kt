@@ -20,8 +20,6 @@ import kotlinx.coroutines.withTimeoutOrNull
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.function.BiConsumer
-import java.util.function.Consumer
 
 /**
  * 搜索后台任务。
@@ -36,8 +34,8 @@ import java.util.function.Consumer
  */
 class SearchTask(
 	mainWindow: MainWindow,
-	private val resultsListener: Consumer<JNode>,
-	private val onFinishCallback: BiConsumer<ITaskInfo, Boolean>,
+	private val resultsListener: (JNode) -> Unit,
+	private val onFinishCallback: (ITaskInfo, Boolean) -> Unit,
 ) : CancelableBackgroundTask() {
 
 	private val backgroundExecutor: BackgroundExecutor = mainWindow.getBackgroundExecutor()
@@ -82,7 +80,7 @@ class SearchTask(
 			// 取消后忽略新结果
 			return true
 		}
-		resultsListener.accept(resultNode)
+		resultsListener(resultNode)
 		if (resultsLimit != 0 && resultsCount.incrementAndGet() >= resultsLimit) {
 			cancel()
 			return true
@@ -116,7 +114,7 @@ class SearchTask(
 		val complete = !isCanceled() &&
 			taskInfo.getStatus() == TaskStatus.COMPLETE &&
 			taskInfo.getJobsComplete() == taskInfo.getJobsCount()
-		onFinishCallback.accept(taskInfo, complete)
+		onFinishCallback(taskInfo, complete)
 	}
 
 	override fun checkMemoryUsage(): Boolean = true

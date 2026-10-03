@@ -19,8 +19,6 @@ import java.util.HashSet
 import java.util.Objects
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.function.Consumer
-import java.util.function.Function
 
 /**
  * jadx 通用工具集：命名转换、字符串拼接、集合操作、堆栈过滤、线程工厂等。
@@ -129,10 +127,10 @@ object Utils {
 	}
 
 	@JvmStatic
-	fun <T> listToString(objects: Iterable<T>, toStr: Function<T, String>): String = listToString(objects, ", ", toStr)
+	fun <T> listToString(objects: Iterable<T>, toStr: (T) -> String): String = listToString(objects, ", ", toStr)
 
 	@JvmStatic
-	fun <T> listToString(objects: Iterable<T>, joiner: String, toStr: Function<T, String>): String {
+	fun <T> listToString(objects: Iterable<T>, joiner: String, toStr: (T) -> String): String {
 		val sb = StringBuilder()
 		listToString(sb, objects, joiner, toStr)
 		return sb.toString()
@@ -144,16 +142,16 @@ object Utils {
 	}
 
 	@JvmStatic
-	fun <T> listToString(sb: StringBuilder, objects: Iterable<T>?, joiner: String, toStr: Function<T, String>) {
+	fun <T> listToString(sb: StringBuilder, objects: Iterable<T>?, joiner: String, toStr: (T) -> String) {
 		if (objects == null) {
 			return
 		}
 		val it = objects.iterator()
 		if (it.hasNext()) {
-			sb.append(toStr.apply(it.next()))
+			sb.append(toStr(it.next()))
 		}
 		while (it.hasNext()) {
-			sb.append(joiner).append(toStr.apply(it.next()))
+			sb.append(joiner).append(toStr(it.next()))
 		}
 	}
 
@@ -283,25 +281,25 @@ object Utils {
 	}
 
 	@JvmStatic
-	fun <T, R> collectionMap(list: Collection<T>?, mapFunc: Function<T, R>): List<R> {
+	fun <T, R> collectionMap(list: Collection<T>?, mapFunc: (T) -> R): List<R> {
 		if (list == null || list.isEmpty()) {
 			return Collections.emptyList()
 		}
 		val result = ArrayList<R>(list.size)
 		for (t in list) {
-			result.add(mapFunc.apply(t))
+			result.add(mapFunc(t))
 		}
 		return result
 	}
 
 	@JvmStatic
-	fun <T, R> collectionMapNoNull(list: Collection<T>?, mapFunc: Function<T, R>): List<R> {
+	fun <T, R> collectionMapNoNull(list: Collection<T>?, mapFunc: (T) -> R): List<R> {
 		if (list == null || list.isEmpty()) {
 			return Collections.emptyList()
 		}
 		val result = ArrayList<R>(list.size)
 		for (t in list) {
-			val r = mapFunc.apply(t)
+			val r = mapFunc(t)
 			if (r != null) {
 				result.add(r)
 			}
@@ -429,10 +427,10 @@ object Utils {
 	 * 根据 key 映射函数把值列表转成 map（类似 `Collectors.toMap`）。
 	 */
 	@JvmStatic
-	fun <K, V> groupBy(list: List<V>, mapKey: Function<V, K>): Map<K, V> {
+	fun <K, V> groupBy(list: List<V>, mapKey: (V) -> K): Map<K, V> {
 		val map = HashMap<K, V>(list.size)
 		for (v in list) {
-			map[mapKey.apply(v)] = v
+			map[mapKey(v)] = v
 		}
 		return map
 	}
@@ -441,17 +439,17 @@ object Utils {
 	 * 简单的树 DFS 遍历（不允许有环）。
 	 */
 	@JvmStatic
-	fun <T> treeDfsVisit(root: T, childrenProvider: Function<T, List<T>>, visitor: Consumer<T>) {
+	fun <T> treeDfsVisit(root: T, childrenProvider: (T) -> List<T>, visitor: (T) -> Unit) {
 		multiRootTreeDfsVisit(Collections.singletonList(root), childrenProvider, visitor)
 	}
 
 	@JvmStatic
-	fun <T> multiRootTreeDfsVisit(roots: List<T>, childrenProvider: Function<T, List<T>>, visitor: Consumer<T>) {
+	fun <T> multiRootTreeDfsVisit(roots: List<T>, childrenProvider: (T) -> List<T>, visitor: (T) -> Unit) {
 		val queue = ArrayDeque(roots)
 		while (true) {
 			val current = queue.pollLast() ?: return
-			visitor.accept(current)
-			for (child in childrenProvider.apply(current)) {
+			visitor(current)
+			for (child in childrenProvider(current)) {
 				queue.addLast(child)
 			}
 		}

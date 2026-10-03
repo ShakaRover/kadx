@@ -27,8 +27,6 @@ import jadx.core.utils.exceptions.JadxRuntimeException
 import java.util.ArrayList
 import java.util.Collections
 import java.util.Objects
-import java.util.function.Consumer
-import java.util.function.Predicate
 
 /**
  * 区域（Region）遍历与判断工具集。
@@ -617,27 +615,27 @@ object RegionUtils {
 	}
 
 	@JvmStatic
-	fun visitBlocks(mth: MethodNode, container: IContainer, visitor: Consumer<IBlock>) {
+	fun visitBlocks(mth: MethodNode, container: IContainer, visitor: (IBlock) -> Unit) {
 		DepthRegionTraversal.traverse(
 			mth,
 			container,
 			object : AbstractRegionVisitor() {
 				override fun processBlock(mth: MethodNode, block: IBlock) {
-					visitor.accept(block)
+					visitor(block)
 				}
 			},
 		)
 	}
 
 	@JvmStatic
-	fun visitBlockNodes(mth: MethodNode, container: IContainer, visitor: Consumer<BlockNode>) {
+	fun visitBlockNodes(mth: MethodNode, container: IContainer, visitor: (BlockNode) -> Unit) {
 		DepthRegionTraversal.traverse(
 			mth,
 			container,
 			object : AbstractRegionVisitor() {
 				override fun processBlock(mth: MethodNode, block: IBlock) {
 					if (block is BlockNode) {
-						visitor.accept(block)
+						visitor(block)
 					}
 				}
 			},
@@ -645,12 +643,12 @@ object RegionUtils {
 	}
 
 	@JvmStatic
-	fun visitRegions(mth: MethodNode, container: IContainer, visitor: Predicate<IRegion>) {
+	fun visitRegions(mth: MethodNode, container: IContainer, visitor: (IRegion) -> Boolean) {
 		DepthRegionTraversal.traverse(
 			mth,
 			container,
 			object : AbstractRegionVisitor() {
-				override fun enterRegion(mth: MethodNode, region: IRegion): Boolean = visitor.test(region)
+				override fun enterRegion(mth: MethodNode, region: IRegion): Boolean = visitor(region)
 			},
 		)
 	}

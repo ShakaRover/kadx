@@ -31,9 +31,6 @@ import java.util.HashSet
 import java.util.LinkedHashSet
 import java.util.LinkedList
 import java.util.Objects
-import java.util.function.Consumer
-import java.util.function.Function
-import java.util.function.Predicate
 
 /**
  * 基本块（CFG）操作工具集。
@@ -181,9 +178,9 @@ object BlockUtils {
 	}
 
 	@JvmStatic
-	fun checkFirstInsn(block: IBlock, predicate: Predicate<InsnNode>): Boolean {
+	fun checkFirstInsn(block: IBlock, predicate: (InsnNode) -> Boolean): Boolean {
 		val insn = getFirstInsn(block)
-		return insn != null && predicate.test(insn)
+		return insn != null && predicate(insn)
 	}
 
 	@JvmStatic
@@ -419,14 +416,14 @@ object BlockUtils {
 	}
 
 	@JvmStatic
-	fun forEachBlockFromBitSet(mth: MethodNode, bs: BitSet?, consumer: Consumer<BlockNode>) {
+	fun forEachBlockFromBitSet(mth: MethodNode, bs: BitSet?, consumer: (BlockNode) -> Unit) {
 		if (bs == null || bs === EmptyBitSet.EMPTY || bs.isEmpty()) {
 			return
 		}
 		val blocks = checkNotNull(mth.getBasicBlocks())
 		var i = bs.nextSetBit(0)
 		while (i >= 0) {
-			consumer.accept(blocks[i])
+			consumer(blocks[i])
 			i = bs.nextSetBit(i + 1)
 		}
 	}
@@ -486,13 +483,13 @@ object BlockUtils {
 	 * 访问从 start 到 end 的任意一条路径上的块（只访问一条路径）。
 	 */
 	@JvmStatic
-	fun visitBlocksOnPath(mth: MethodNode, start: BlockNode, end: BlockNode, visitor: Consumer<BlockNode>): Boolean {
-		visitor.accept(start)
+	fun visitBlocksOnPath(mth: MethodNode, start: BlockNode, end: BlockNode, visitor: (BlockNode) -> Unit): Boolean {
+		visitor(start)
 		if (start === end) {
 			return true
 		}
 		if (cleanSuccessors(start).contains(end)) {
-			visitor.accept(end)
+			visitor(end)
 			return true
 		}
 		// 对 clean 后继做 DFS
@@ -507,7 +504,7 @@ object BlockUtils {
 					queue.removeFirst() // start 已访问
 					queue.addLast(next)
 					for (b in queue) {
-						visitor.accept(b)
+						visitor(b)
 					}
 					return true
 				}
@@ -531,7 +528,7 @@ object BlockUtils {
 	@JvmStatic
 	fun collectAllPredecessors(mth: MethodNode, startBlock: BlockNode): List<BlockNode> {
 		val list = ArrayList<BlockNode>(checkNotNull(mth.getBasicBlocks()).size)
-		val nextFunc = Function<BlockNode, List<BlockNode>> { b -> b.getPredecessors() }
+		val nextFunc: (BlockNode) -> List<BlockNode> = { b -> b.getPredecessors() }
 		visitDFS(mth, startBlock, nextFunc) { b -> list.add(b) }
 		return list
 	}
@@ -539,7 +536,7 @@ object BlockUtils {
 	@JvmStatic
 	fun collectAllSuccessors(mth: MethodNode, startBlock: BlockNode, clean: Boolean): List<BlockNode> {
 		val list = ArrayList<BlockNode>(checkNotNull(mth.getBasicBlocks()).size)
-		val nextFunc = Function<BlockNode, List<BlockNode>> { b ->
+		val nextFunc: (BlockNode) -> List<BlockNode> = { b ->
 			if (clean) cleanSuccessors(b) ?: emptyList() else b.getSuccessors()
 		}
 		visitDFS(mth, startBlock, nextFunc) { b -> list.add(b) }
@@ -551,7 +548,7 @@ object BlockUtils {
 		mth: MethodNode,
 		startBlock: BlockNode,
 		clean: Boolean,
-		stopCondition: Predicate<BlockNode>,
+		stopCondition: (BlockNode) -> Boolean,
 	): List<BlockNode> {
 		val blocks = ArrayList<BlockNode>()
 		collectAllSuccessorsUntil(mth, blocks, startBlock, clean, stopCondition)
@@ -563,13 +560,13 @@ object BlockUtils {
 		blocks: MutableList<BlockNode>,
 		currentBlock: BlockNode,
 		clean: Boolean,
-		stopCondition: Predicate<BlockNode>,
+		stopCondition: (BlockNode) -> Boolean,
 	) {
 		if (blocks.contains(currentBlock)) {
 			return
 		}
 		blocks.add(currentBlock)
-		if (stopCondition.test(currentBlock)) {
+		if (stopCondition(currentBlock)) {
 			return
 		}
 		val successors = if (clean) cleanSuccessors(currentBlock) else currentBlock.getSuccessors()
@@ -635,25 +632,25 @@ object BlockUtils {
 	}
 
 	@JvmStatic
-	fun visitDFS(mth: MethodNode, visitor: Consumer<BlockNode>) {
+	fun visitDFS(mth: MethodNode, visitor: (BlockNode) -> Unit) {
 		visitDFS(mth, checkNotNull(mth.enterBlock), { b -> b.getSuccessors() }, visitor)
 	}
 
 	@JvmStatic
-	fun visitReverseDFS(mth: MethodNode, visitor: Consumer<BlockNode>) {
+	fun visitReverseDFS(mth: MethodNode, visitor: (BlockNode) -> Unit) {
 		visitDFS(mth, checkNotNull(mth.exitBlock), { b -> b.getPredecessors() }, visitor)
 	}
 
 	private fun visitDFS(
 		mth: MethodNode,
 		startBlock: BlockNode,
-		nextFunc: Function<BlockNode, List<BlockNode>>,
-		visitor: Consumer<BlockNode>,
+		nextFunc: (BlockNode) -> List<BlockNode>,
+		visitor: (BlockNode) -> Unit,
 	) {
 		val dfsIteration = DFSIteration(mth, startBlock, nextFunc)
 		while (true) {
 			val next = dfsIteration.next() ?: return
-			visitor.accept(next)
+			visitor(next)
 		}
 	}
 
@@ -672,19 +669,19 @@ object BlockUtils {
 	}
 
 	@JvmStatic
-	fun visitPredecessorsUntil(mth: MethodNode, start: BlockNode, visitor: Predicate<BlockNode>) {
+	fun visitPredecessorsUntil(mth: MethodNode, start: BlockNode, visitor: (BlockNode) -> Boolean) {
 		traversePredecessors(start, newBlocksBitSet(mth), visitor)
 	}
 
 	/**
 	 * 向上 BFS；visitor 返回 true 时停止。
 	 */
-	private fun traversePredecessors(start: BlockNode, visited: BitSet, visitor: Predicate<BlockNode>) {
+	private fun traversePredecessors(start: BlockNode, visited: BitSet, visitor: (BlockNode) -> Boolean) {
 		val queue = ArrayDeque<BlockNode>()
 		queue.add(start)
 		while (true) {
 			val current = queue.poll()
-			if (current == null || visitor.test(current)) {
+			if (current == null || visitor(current)) {
 				return
 			}
 			for (next in current.getPredecessors()) {
@@ -743,11 +740,11 @@ object BlockUtils {
 		until: BlockNode,
 		visited: BitSet,
 		clean: Boolean,
-		pred: Predicate<BlockNode>,
+		pred: (BlockNode) -> Boolean,
 	): Boolean {
 		val nodes = if (clean) cleanSuccessors(from) else from.getSuccessors()
 		for (s in nodes) {
-			if (!pred.test(s)) {
+			if (!pred(s)) {
 				continue
 			}
 			if (s === until) {
@@ -775,7 +772,7 @@ object BlockUtils {
 	 * 遍历后继直到遇到目标节点，并收集路径。
 	 */
 	@JvmStatic
-	fun collectPathUntil(from: BlockNode, until: BlockNode, clean: Boolean, pred: Predicate<BlockNode>): List<BlockNode>? {
+	fun collectPathUntil(from: BlockNode, until: BlockNode, clean: Boolean, pred: (BlockNode) -> Boolean): List<BlockNode>? {
 		val path = internalCollectPathUntil(from, until, BitSet(), clean, pred) ?: return null
 		path.add(from)
 		Collections.reverse(path)
@@ -787,11 +784,11 @@ object BlockUtils {
 		until: BlockNode,
 		visited: BitSet,
 		clean: Boolean,
-		pred: Predicate<BlockNode>,
+		pred: (BlockNode) -> Boolean,
 	): MutableList<BlockNode>? {
 		val nodes = if (clean) cleanSuccessors(from) else from.getSuccessors()
 		for (s in nodes) {
-			if (!pred.test(s)) {
+			if (!pred(s)) {
 				continue
 			}
 			if (s === until) {
@@ -855,7 +852,7 @@ object BlockUtils {
 	}
 
 	@JvmStatic
-	fun isPathExists(start: BlockNode, end: BlockNode, pred: Predicate<BlockNode>): Boolean {
+	fun isPathExists(start: BlockNode, end: BlockNode, pred: (BlockNode) -> Boolean): Boolean {
 		if (start === end) {
 			return true
 		}
@@ -1140,14 +1137,14 @@ object BlockUtils {
 	 * 访问一条没有分支/汇合的单路径上的块。
 	 */
 	@JvmStatic
-	fun visitSinglePath(startBlock: BlockNode?, visitor: Consumer<BlockNode>) {
+	fun visitSinglePath(startBlock: BlockNode?, visitor: (BlockNode) -> Unit) {
 		if (startBlock == null) {
 			return
 		}
-		visitor.accept(startBlock)
+		visitor(startBlock)
 		var next = getNextSinglePathBlock(startBlock)
 		while (next != null) {
-			visitor.accept(next)
+			visitor(next)
 			next = getNextSinglePathBlock(next)
 		}
 	}
@@ -1248,16 +1245,16 @@ object BlockUtils {
 	}
 
 	@JvmStatic
-	fun visitBlocksOnEmptyPath(start: BlockNode, visitor: Consumer<BlockNode>) {
+	fun visitBlocksOnEmptyPath(start: BlockNode, visitor: (BlockNode) -> Unit) {
 		visitBlocksOnEmptyPath(start, visitor, false)
 	}
 
 	@JvmStatic
-	fun visitBlocksOnEmptyPath(start0: BlockNode, visitor: Consumer<BlockNode>, reverse: Boolean) {
+	fun visitBlocksOnEmptyPath(start0: BlockNode, visitor: (BlockNode) -> Unit, reverse: Boolean) {
 		var start = start0
 		while (true) {
 			val next = getNextBlockOnEmptyPath(start, reverse) ?: return
-			visitor.accept(next)
+			visitor(next)
 			start = next
 		}
 	}

@@ -23,8 +23,6 @@ import jadx.core.utils.exceptions.JadxRuntimeException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.EnumMap
-import java.util.function.Function
-import java.util.function.Supplier
 
 /**
  * 类型更新的核心调度器：对一组相关 SSA 变量做类型检查与传播。
@@ -371,16 +369,16 @@ class TypeUpdate(private val root: RootNode) {
 			val argTypes = methodDetails.getArgTypes()
 			val argsCount = argTypes.size
 
-			val getReturnType: Supplier<ArgType?>
-			val getArgType: Function<Int, ArgType?>
+			val getReturnType: () -> ArgType?
+			val getArgType: (Int) -> ArgType?
 			if (typeVarsMap.isEmpty()) {
 				// 无法解析泛型 => 原样使用
-				getReturnType = Supplier { returnType }
-				getArgType = Function { argNum -> argTypes[argNum] }
+				getReturnType = { returnType }
+				getArgType = { argNum -> argTypes[argNum] }
 			} else {
 				// 应用前先解析泛型
-				getReturnType = Supplier { typeUtils.replaceTypeVariablesUsingMap(returnType, typeVarsMap) }
-				getArgType = Function { argNum -> typeUtils.replaceClassGenerics(candidateType, argTypes[argNum]) }
+				getReturnType = { typeUtils.replaceTypeVariablesUsingMap(returnType, typeVarsMap) }
+				getArgType = { argNum -> typeUtils.replaceClassGenerics(candidateType, argTypes[argNum]) }
 			}
 			return InvokeUpdateCallback(this, updateInfo, invoke, argsCount, knownTypeVars, getReturnType, getArgType).runQueue()
 		}

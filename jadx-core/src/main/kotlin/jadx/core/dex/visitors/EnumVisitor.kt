@@ -44,8 +44,6 @@ import jadx.core.utils.exceptions.JadxException
 import jadx.core.utils.exceptions.JadxRuntimeException
 import java.util.ArrayList
 import java.util.Collections
-import java.util.function.Function
-import java.util.function.Predicate
 
 /**
  * 枚举类还原访问者。
@@ -675,7 +673,7 @@ class EnumVisitor : AbstractVisitor() {
 			return
 		}
 		// 搜索 values 字段的使用点
-		val insnTest = Predicate<InsnNode> { insn -> (insn as IndexInsnNode).index == valuesFieldInfo }
+		val insnTest: (InsnNode) -> Boolean = { insn -> (insn as IndexInsnNode).index == valuesFieldInfo }
 		val useInsn = InsnUtils.searchInsn(mth, InsnType.SGET, insnTest)
 		if (useInsn == null) {
 			return
@@ -683,8 +681,8 @@ class EnumVisitor : AbstractVisitor() {
 		// 把 'values' 字段访问替换为 'values()' 方法
 		InsnUtils.replaceInsns(
 			mth,
-			Function { insn ->
-				if (insn.getType() == InsnType.SGET && insnTest.test(insn)) {
+			{ insn ->
+				if (insn.getType() == InsnType.SGET && insnTest(insn)) {
 					val valueMth = if (valuesMethod == null) {
 						getValueMthInfo(mth.root(), clsType)
 					} else {

@@ -6,7 +6,6 @@ import jadx.core.dex.nodes.ClassNode
 import jadx.core.dex.nodes.ICodeNode
 import jadx.core.dex.nodes.RootNode
 import jadx.core.utils.exceptions.JadxRuntimeException
-import java.util.function.Consumer
 
 /**
  * 可见性检查工具：判断某个节点（类/方法/字段）被另一个类使用时，
@@ -66,10 +65,10 @@ internal class VisibilityUtils(private val root: RootNode) {
 	}
 
 	/** 从目标节点开始，沿声明类链逐层应用 [action]。 */
-	private fun visitDeclaringNodes(targetNode: ICodeNode, action: Consumer<ICodeNode>) {
+	private fun visitDeclaringNodes(targetNode: ICodeNode, action: (ICodeNode) -> Unit) {
 		var currentNode: ICodeNode? = targetNode
 		while (currentNode != null) {
-			action.accept(currentNode)
+			action(currentNode)
 			currentNode = currentNode.getDeclaringClass()
 		}
 	}

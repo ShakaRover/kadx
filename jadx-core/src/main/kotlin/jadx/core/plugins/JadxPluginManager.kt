@@ -13,7 +13,6 @@ import java.util.Objects
 import java.util.SortedSet
 import java.util.TreeMap
 import java.util.TreeSet
-import java.util.function.Consumer
 
 /**
  * 插件管理器：加载、注册、解析、初始化与卸载插件。
@@ -42,7 +41,7 @@ class JadxPluginManager(private val decompiler: JadxDecompiler) {
 	private val resolvedPlugins: SortedSet<PluginContext> = TreeSet()
 	private val provideSuggestions: MutableMap<String, String> = TreeMap()
 
-	private val addPluginListeners: MutableList<Consumer<PluginContext>> = ArrayList()
+	private val addPluginListeners: MutableList<(PluginContext) -> Unit> = ArrayList()
 
 	/**
 	 * 添加冲突解决建议：当多个插件提供同一 `provides` 时，优先选择 [pluginId]。
@@ -97,7 +96,7 @@ class JadxPluginManager(private val decompiler: JadxDecompiler) {
 		if (!allPlugins.add(pluginContext)) {
 			throw IllegalArgumentException("Duplicate plugin id: " + pluginContext + ", class " + plugin.javaClass)
 		}
-		addPluginListeners.forEach { l -> l.accept(pluginContext) }
+		addPluginListeners.forEach { l -> l(pluginContext) }
 		return pluginContext
 	}
 
@@ -237,9 +236,9 @@ class JadxPluginManager(private val decompiler: JadxDecompiler) {
 	fun getCodeInputs(): List<JadxCodeInput> = getResolvedPluginContexts().flatMap { p -> p.getCodeInputs() }
 
 	/** 注册插件添加监听器，并立即对已存在的插件回调一次。 */
-	fun registerAddPluginListener(listener: Consumer<PluginContext>) {
+	fun registerAddPluginListener(listener: (PluginContext) -> Unit) {
 		this.addPluginListeners.add(listener)
 		// 对已添加的插件立即执行一次
-		getAllPluginContexts().forEach { p -> listener.accept(p) }
+		getAllPluginContexts().forEach { p -> listener(p) }
 	}
 }

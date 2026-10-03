@@ -2,7 +2,6 @@ package jadx.gui.jobs
 
 import jadx.api.utils.tasks.ITaskExecutor
 import kotlinx.coroutines.flow.Flow
-import java.util.function.Consumer
 
 /**
  * 给已有任务追加一个 `onFinish` 动作的包装器。
@@ -16,19 +15,19 @@ import java.util.function.Consumer
 class TaskWithExtraOnFinish : IBackgroundTask {
 
 	private val task: IBackgroundTask
-	private val extraOnFinish: Consumer<TaskStatus>
+	private val extraOnFinish: (TaskStatus) -> Unit
 
 	constructor(task: IBackgroundTask, extraOnFinish: Runnable) :
-		this(task, Consumer<TaskStatus> { extraOnFinish.run() })
+		this(task, { extraOnFinish.run() })
 
-	constructor(task: IBackgroundTask, extraOnFinish: Consumer<TaskStatus>) {
+	constructor(task: IBackgroundTask, extraOnFinish: (TaskStatus) -> Unit) {
 		this.task = requireNotNull(task)
 		this.extraOnFinish = requireNotNull(extraOnFinish)
 	}
 
 	override fun onFinish(taskInfo: ITaskInfo) {
 		task.onFinish(taskInfo)
-		extraOnFinish.accept(taskInfo.getStatus())
+		extraOnFinish(taskInfo.getStatus())
 	}
 
 	override fun getTitle(): String = task.getTitle()

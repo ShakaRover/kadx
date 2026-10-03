@@ -177,7 +177,7 @@ class InlineMethods : AbstractVisitor() {
 		newUseIn.remove(mth)
 		inlinedMth.setUseIn(newUseIn)
 		insn?.visitInsns(
-			java.util.function.Consumer { innerInsn ->
+			{ innerInsn ->
 				// TODO: 与 UsageInfoVisitor 共享代码
 				when (innerInsn.getType()) {
 					InsnType.INVOKE, InsnType.CONSTRUCTOR -> {

@@ -5,7 +5,6 @@ import jadx.gui.utils.UiUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.awt.Font
-import java.util.function.Consumer
 
 /**
  * 字体更新的通用适配器：负责字体对象的加载、切换以及与设置数据的同步。
@@ -23,7 +22,7 @@ class FontAdapter(defaultFont: Font) {
 	private var effectiveFont: Font
 
 	/** 字体变化时把序列化字符串写回设置；在 [bindData] 之前调用 setFont 会抛未初始化异常。 */
-	private lateinit var fontSetter: Consumer<String>
+	private lateinit var fontSetter: (String) -> Unit
 	private var uiZoom: Float = 0f
 
 	init {
@@ -36,7 +35,7 @@ class FontAdapter(defaultFont: Font) {
 	/**
 	 * 从设置数据加载当前字体，并保存 setter 以便后续同步。
 	 */
-	fun bindData(fontStr: String?, fontStrSetter: Consumer<String>) {
+	fun bindData(fontStr: String?, fontStrSetter: (String) -> Unit) {
 		font = loadFromStr(fontStr)
 		fontSetter = fontStrSetter
 	}
@@ -67,7 +66,7 @@ class FontAdapter(defaultFont: Font) {
 		} else {
 			font = defaultFont
 		}
-		fontSetter.accept(getFontStr())
+		fontSetter(getFontStr())
 		applyFontZoom()
 	}
 

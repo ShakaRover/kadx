@@ -6,7 +6,6 @@ import jadx.gui.ui.cellrenders.MethodsListRenderer
 import jadx.gui.utils.NLS
 import java.awt.BorderLayout
 import java.awt.Dimension
-import java.util.function.Consumer
 import javax.swing.BorderFactory
 import javax.swing.Box
 import javax.swing.BoxLayout
@@ -29,7 +28,7 @@ import javax.swing.WindowConstants
 class MethodsDialog(
 	mainWindow: MainWindow,
 	methods: List<JavaMethod>,
-	private val listConsumer: Consumer<List<JavaMethod>>,
+	private val listConsumer: (List<JavaMethod>) -> Unit,
 ) : CommonDialog(mainWindow) {
 
 	private lateinit var methodList: JList<JavaMethod>
@@ -96,7 +95,7 @@ class MethodsDialog(
 	private fun generateForSelected() {
 		val selectedMethods = methodList.getSelectedValuesList()
 		if (selectedMethods.isNotEmpty()) {
-			this.listConsumer.accept(selectedMethods)
+			this.listConsumer(selectedMethods)
 		}
 		dispose()
 	}

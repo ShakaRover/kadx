@@ -2,7 +2,6 @@ package jadx.core.dex.visitors.typeinference
 
 import jadx.core.dex.instructions.args.ArgType
 import jadx.core.dex.instructions.args.InsnArg
-import java.util.function.Predicate
 
 /**
  * 类型更新回调：把同一个候选类型依次应用到一组参数上。
@@ -15,8 +14,8 @@ import java.util.function.Predicate
  * - 遇到 REJECT 时默认直接返回 REJECT（可用 [setIgnoreReject] 忽略）。
  *
  * **Kotlin 转换说明**：
- * - 泛型上界 `<T extends InsnArg>` 写为 `<T : InsnArg>`，保持 Java 调用方零改动；
- * - 保持 `getXxx()/setXxx()` 方法名，Java 侧仍以 `setArgsFilter(...)` 等方式调用。
+ * - 泛型上界 `<T extends InsnArg>` 写为 `<T : InsnArg>`；
+ * - 过滤回调改为 Kotlin 函数类型 `(T) -> Boolean`。
  */
 class ArgsListUpdateCallback<T : InsnArg>(
 	private val typeUpdate: TypeUpdate,
@@ -28,7 +27,7 @@ class ArgsListUpdateCallback<T : InsnArg>(
 
 	private val argsIterator: Iterator<T> = args.iterator()
 
-	private var argsFilter: Predicate<T>? = null
+	private var argsFilter: ((T) -> Boolean)? = null
 	private var finalResultCallback: ITypeUpdateCallback? = null
 	private var ignoreReject = false
 
@@ -84,7 +83,7 @@ class ArgsListUpdateCallback<T : InsnArg>(
 		this.finalResultCallback = finalResultCallback
 	}
 
-	fun setArgsFilter(argsFilter: Predicate<T>?) {
+	fun setArgsFilter(argsFilter: ((T) -> Boolean)?) {
 		this.argsFilter = argsFilter
 	}
 
@@ -107,7 +106,7 @@ class ArgsListUpdateCallback<T : InsnArg>(
 				return null
 			}
 			val next = argsIterator.next()
-			if (filter == null || filter.test(next)) {
+			if (filter == null || filter(next)) {
 				return next
 			}
 		}

@@ -23,8 +23,6 @@ import jadx.plugins.tools.JadxPluginsTools
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.awt.event.ItemEvent
-import java.util.function.Consumer
-import java.util.function.IntSupplier
 import javax.swing.JCheckBox
 import javax.swing.JComboBox
 import javax.swing.JComponent
@@ -129,16 +127,16 @@ class PluginSettings(private val mainWindow: MainWindow, private val settings: J
 			}
 			val optName = opt.name()
 			val title = opt.description()
-			val updateFunc: Consumer<String>
+			val updateFunc: (String) -> Unit
 			val curValue: String?
 			if (opt.getFlags().contains(OptionFlag.PER_PROJECT)) {
 				val project = mainWindow.getProject()
-				updateFunc = Consumer { value -> project.updatePluginOptions { m -> m[optName] = value } }
+				updateFunc = { value -> project.updatePluginOptions { m -> m[optName] = value } }
 				curValue = project.getPluginOption(optName)
 			} else {
 				@Suppress("UNCHECKED_CAST")
 				val optionsMap = settings.getPluginOptions() as MutableMap<String, String>
-				updateFunc = Consumer { value -> optionsMap[optName] = value }
+				updateFunc = { value -> optionsMap[optName] = value }
 				curValue = optionsMap[optName]
 			}
 			val value = curValue ?: opt.defaultValue()
@@ -153,7 +151,7 @@ class PluginSettings(private val mainWindow: MainWindow, private val settings: J
 			} else {
 				val combo = JComboBox(opt.values().toTypedArray())
 				combo.selectedItem = value
-				combo.addActionListener { updateFunc.accept(combo.selectedItem as String) }
+				combo.addActionListener { updateFunc(combo.selectedItem as String) }
 				editor = combo
 			}
 			if (editor != null) {
@@ -170,14 +168,14 @@ class PluginSettings(private val mainWindow: MainWindow, private val settings: J
 	private fun getPluginOptionEditor(
 		opt: OptionDescription,
 		value: String?,
-		updateFunc: Consumer<String>,
+		updateFunc: (String) -> Unit,
 	): JComponent? {
 		when (opt.getType()) {
 			OptionType.STRING -> {
 				val textField = JTextField()
 				textField.text = value ?: ""
 				textField.document.addDocumentListener(
-					DocumentUpdateListener { updateFunc.accept(textField.text) },
+					DocumentUpdateListener { updateFunc(textField.text) },
 				)
 				return textField
 			}
@@ -189,7 +187,7 @@ class PluginSettings(private val mainWindow: MainWindow, private val settings: J
 						throw IllegalArgumentException("Failed to parse integer default value: " + opt.defaultValue())
 					}
 				}
-				numberField.addChangeListener { updateFunc.accept(numberField.value.toString()) }
+				numberField.addChangeListener { updateFunc(numberField.value.toString()) }
 				return numberField
 			}
 
@@ -198,7 +196,7 @@ class PluginSettings(private val mainWindow: MainWindow, private val settings: J
 				boolField.isSelected = value == "yes" || value == "true"
 				boolField.addItemListener { e ->
 					val editorValue = e.stateChange == ItemEvent.SELECTED
-					updateFunc.accept(if (editorValue) "yes" else "no")
+					updateFunc(if (editorValue) "yes" else "no")
 				}
 				return boolField
 			}
@@ -206,15 +204,15 @@ class PluginSettings(private val mainWindow: MainWindow, private val settings: J
 		return null
 	}
 
-	private fun safeStringToInt(value: String?, defValueSupplier: IntSupplier): Int {
+	private fun safeStringToInt(value: String?, defValueSupplier: () -> Int): Int {
 		if (value == null) {
-			return defValueSupplier.asInt
+			return defValueSupplier()
 		}
 		try {
 			return Integer.parseInt(value)
 		} catch (e: Exception) {
 			LOG.warn("Failed parse string to int: {}", value, e)
-			return defValueSupplier.asInt
+			return defValueSupplier()
 		}
 	}
 

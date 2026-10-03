@@ -6,7 +6,6 @@ import jadx.core.dex.instructions.args.RegisterArg
 import jadx.core.dex.nodes.InsnNode
 import jadx.core.dex.regions.conditions.IfCondition
 import jadx.core.utils.InsnUtils
-import java.util.function.Consumer
 
 /**
  * 三目运算指令（`cond ? a : b`），由 jadx 在区域构建阶段合成。
@@ -35,7 +34,7 @@ class TernaryInsn : InsnNode {
 			addArg(th)
 			addArg(els)
 		}
-		visitInsns(Consumer { this.inheritMetadata(it) })
+		visitInsns { this.inheritMetadata(it) }
 	}
 
 	private constructor() : super(InsnType.TERNARY, 2)
@@ -68,7 +67,7 @@ class TernaryInsn : InsnNode {
 		return conditionRef.replaceArg(from, to)
 	}
 
-	override fun visitInsns(visitor: Consumer<InsnNode>) {
+	override fun visitInsns(visitor: (InsnNode) -> Unit) {
 		super.visitInsns(visitor)
 		conditionRef.visitInsns(visitor)
 	}

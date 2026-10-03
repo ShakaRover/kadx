@@ -4,15 +4,13 @@ import jadx.api.utils.tasks.ITaskExecutor
 import jadx.core.utils.tasks.TaskExecutor
 import jadx.gui.utils.NLS
 import java.util.concurrent.atomic.AtomicReference
-import java.util.function.Consumer
-import java.util.function.Supplier
 
 /**
  * 加载任务：先在后台线程准备数据，再回到 EDT 使用该数据。
  *
  * **做什么**：
- * - 后台 job 执行 [Supplier] 并把结果写入 [AtomicReference]；
- * - [onFinish]（EDT 上）再把该数据交给 [Consumer] 用于更新 UI。
+ * - 后台 job 执行 `() -> T` 并把结果写入 [AtomicReference]；
+ * - [onFinish]（EDT 上）再把该数据交给 `(T) -> Unit` 用于更新 UI。
  *
  * **为什么用 [AtomicReference]**：后台线程写入、EDT 读取，需要保证跨线程可见性。
  *
@@ -25,14 +23,14 @@ class LoadTask<T> : CancelableBackgroundTask {
 	private val bgTask: Runnable
 	private val uiTask: Runnable
 
-	constructor(loadBgTask: Supplier<T>, uiTask: Consumer<T>) :
+	constructor(loadBgTask: () -> T, uiTask: (T) -> Unit) :
 		this(NLS.str("progress.load"), loadBgTask, uiTask)
 
-	constructor(title: String, loadBgTask: Supplier<T>, uiTask: Consumer<T>) : super() {
+	constructor(title: String, loadBgTask: () -> T, uiTask: (T) -> Unit) : super() {
 		this.title = title
 		this.taskData = AtomicReference()
-		this.bgTask = Runnable { taskData.set(loadBgTask.get()) }
-		this.uiTask = Runnable { uiTask.accept(taskData.get()) }
+		this.bgTask = Runnable { taskData.set(loadBgTask()) }
+		this.uiTask = Runnable { uiTask(taskData.get()) }
 	}
 
 	override fun getTitle(): String = title

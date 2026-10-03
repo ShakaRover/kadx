@@ -32,7 +32,6 @@ import java.util.ArrayList
 import java.util.Arrays
 import java.util.Collections
 import java.util.Locale
-import java.util.function.Predicate
 import java.util.jar.JarEntry
 import java.util.jar.JarOutputStream
 import java.util.stream.Collectors
@@ -107,10 +106,10 @@ object FileUtils {
 
 	/** 列出目录下满足 [filter] 的直接子项。 */
 	@JvmStatic
-	fun listFiles(dir: Path, filter: Predicate<in Path>): List<Path> {
+	fun listFiles(dir: Path, filter: (Path) -> Boolean): List<Path> {
 		try {
 			Files.list(dir).use { files ->
-				return files.filter(filter).collect(Collectors.toList())
+				return files.filter { filter(it) }.collect(Collectors.toList())
 			}
 		} catch (e: IOException) {
 			throw JadxRuntimeException("Failed to list files in directory: $dir", e)

@@ -12,7 +12,6 @@ import jadx.core.dex.visitors.finaly.traverser.state.TraverserGlobalCommonState
 import jadx.core.dex.visitors.finaly.traverser.state.TraverserState
 import jadx.core.utils.exceptions.JadxRuntimeException
 import java.util.concurrent.atomic.AtomicReference
-import java.util.function.Function
 
 /**
  * 遍历器控制器：负责驱动两侧（finally / candidate）状态机向前推进，直到完成比较或终止。
@@ -31,13 +30,13 @@ import java.util.function.Function
  */
 class TraverserController {
 
-	private val stateAbortCondition: Function<TraverserState, Boolean>?
+	private val stateAbortCondition: ((TraverserState) -> Boolean)?
 
 	constructor() {
 		this.stateAbortCondition = null
 	}
 
-	constructor(stateAbortCondition: Function<TraverserState, Boolean>?) {
+	constructor(stateAbortCondition: ((TraverserState) -> Boolean)?) {
 		this.stateAbortCondition = stateAbortCondition
 	}
 
@@ -153,7 +152,7 @@ class TraverserController {
 		singleState: TraverserState,
 		hasReadyToCompare: Boolean,
 	): Boolean {
-		val stateAborted = if (stateAbortCondition != null) stateAbortCondition.apply(singleState) else false
+		val stateAborted = if (stateAbortCondition != null) stateAbortCondition(singleState) else false
 		if (stateAbortCondition == null || !stateAborted) {
 			if (singleState.getCompareState() == TraverserState.ComparisonState.NOT_READY ||
 				(

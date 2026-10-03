@@ -19,7 +19,6 @@ import java.awt.Dimension
 import java.awt.event.ItemEvent
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.function.Consumer
 import javax.swing.BorderFactory
 import javax.swing.Box
 import javax.swing.BoxLayout
@@ -41,7 +40,7 @@ import javax.swing.JTextField
  */
 class ExportProjectDialog(
 	mainWindow: MainWindow,
-	private val exportListener: Consumer<ExportProjectProperties>,
+	private val exportListener: (ExportProjectProperties) -> Unit,
 ) : CommonDialog(mainWindow) {
 
 	private val exportProjectProperties: ExportProjectProperties = ExportProjectProperties()
@@ -197,7 +196,7 @@ class ExportProjectDialog(
 		}
 		mainWindow.getSettings().setLastSaveFilePath(Path.of(checkNotNull(exportPathStr)))
 		LOG.debug("Export properties: {}", exportProjectProperties)
-		exportListener.accept(exportProjectProperties)
+		exportListener(exportProjectProperties)
 		dispose()
 	}
 

@@ -14,7 +14,6 @@ import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.util.HashMap
 import java.util.HashSet
-import java.util.function.Consumer
 import java.util.stream.Collectors
 import javax.swing.BorderFactory
 import javax.swing.Box
@@ -198,16 +197,16 @@ class ExcludePkgDialog(private val mainWindow: MainWindow) : JDialog(mainWindow)
 		walkTree(false) { p -> p.initCheckbox(excluded.contains(p.fullName), font) }
 	}
 
-	private fun walkTree(findSelected: Boolean, consumer: Consumer<PkgNode>) {
+	private fun walkTree(findSelected: Boolean, consumer: (PkgNode) -> Unit) {
 		val queue = ArrayList(roots)
 		var i = 0
 		while (i < queue.size) {
 			val node = queue[i]
 			if (findSelected && node.isSelected()) {
-				consumer.accept(node)
+				consumer(node)
 			} else {
 				if (!findSelected) {
-					consumer.accept(node)
+					consumer(node)
 				}
 				for (j in 0 until node.getChildCount()) {
 					queue.add(node.getChildAt(j) as PkgNode)

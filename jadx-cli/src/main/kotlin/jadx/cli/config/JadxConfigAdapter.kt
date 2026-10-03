@@ -11,7 +11,6 @@ import jadx.core.utils.exceptions.JadxArgsValidateException
 import jadx.core.utils.exceptions.JadxRuntimeException
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.function.Consumer
 
 /**
  * jadx 配置文件的 Gson 适配器：负责把 [IJadxConfig] 对象读写为 `.json`。
@@ -21,7 +20,7 @@ import java.util.function.Consumer
  *
  * **为什么这样写**：公共 API（jadx-cli / jadx-gui 共用），构造器与 `load`/`save` 等方法签名
  * 原样保留；Gson 的排除策略放进 `companion object`，`configPath`/`defaultConfigFileName`
- * 用 Kotlin 属性暴露同名 getter，Java 调用方零改动。
+ * 用 Kotlin 属性暴露同名 getter。
  */
 class JadxConfigAdapter<T : IJadxConfig> {
 
@@ -33,14 +32,14 @@ class JadxConfigAdapter<T : IJadxConfig> {
 	var configPath: Path? = null
 		private set
 
-	constructor(configCls: Class<T>, defaultConfigName: String) : this(configCls, defaultConfigName, Consumer { })
+	constructor(configCls: Class<T>, defaultConfigName: String) : this(configCls, defaultConfigName, {})
 
-	constructor(configCls: Class<T>, defaultConfigName: String, applyGsonOptions: Consumer<GsonBuilder>) {
+	constructor(configCls: Class<T>, defaultConfigName: String, applyGsonOptions: (GsonBuilder) -> Unit) {
 		this.configCls = configCls
 		this.defaultConfigFileName = defaultConfigName + ".json"
 		val gsonBuilder = GsonUtils.defaultGsonBuilder()
 		gsonBuilder.setExclusionStrategies(GSON_EXCLUSION_STRATEGY)
-		applyGsonOptions.accept(gsonBuilder)
+		applyGsonOptions(gsonBuilder)
 		this.gson = gsonBuilder.create()
 	}
 

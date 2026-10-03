@@ -33,8 +33,6 @@ import java.io.File
 import java.util.Comparator
 import java.util.LinkedHashSet
 import java.util.concurrent.ConcurrentHashMap
-import java.util.function.Function
-import java.util.function.Predicate
 import java.util.stream.Collectors
 import java.util.stream.Stream
 
@@ -47,7 +45,7 @@ object DebugUtils {
 	private val LOG: Logger = LoggerFactory.getLogger(DebugUtils::class.java)
 
 	@JvmField
-	val TEST_MTH_FILTER: Predicate<MethodNode> = Predicate { mth -> mth.getName() == "test" }
+	val TEST_MTH_FILTER: (MethodNode) -> Boolean = { mth -> mth.getName() == "test" }
 
 	@JvmStatic
 	fun dump(mth: MethodNode) {
@@ -55,8 +53,8 @@ object DebugUtils {
 	}
 
 	@JvmStatic
-	fun dumpRaw(mth: MethodNode, desc: String, dumpCondition: Predicate<MethodNode>) {
-		if (dumpCondition.test(mth)) {
+	fun dumpRaw(mth: MethodNode, desc: String, dumpCondition: (MethodNode) -> Boolean) {
+		if (dumpCondition(mth)) {
 			dumpRaw(mth, desc)
 		}
 	}
@@ -81,9 +79,9 @@ object DebugUtils {
 	}
 
 	@JvmStatic
-	fun dumpRawVisitor(desc: String, filter: Predicate<MethodNode>): IDexTreeVisitor = object : AbstractVisitor() {
+	fun dumpRawVisitor(desc: String, filter: (MethodNode) -> Boolean): IDexTreeVisitor = object : AbstractVisitor() {
 		override fun visit(mth: MethodNode) {
-			if (filter.test(mth)) {
+			if (filter(mth)) {
 				dumpRaw(mth, desc)
 			}
 		}
@@ -244,21 +242,23 @@ object DebugUtils {
 	@JvmStatic
 	fun printMethodOverrideTop(root: RootNode) {
 		LOG.debug("Methods override top 10:")
+		val distinctByOverrideCount = distinctByKey<MethodOverrideAttr> { attr -> attr.relatedMthNodes.size }
+		val distinctByRelatedMthNodes = distinctByKey<MethodOverrideAttr> { attr -> attr.relatedMthNodes }
 		root.getClasses().stream()
 			.flatMap { c -> c.methods.stream() }
 			.filter { m -> m.contains(AType.METHOD_OVERRIDE) }
 			.map { m -> checkNotNull(m.get(AType.METHOD_OVERRIDE)) }
 			.filter { o -> o.overrideList.isNotEmpty() }
-			.filter(distinctByKey { methodOverrideAttr -> methodOverrideAttr.relatedMthNodes.size })
-			.filter(distinctByKey { it.relatedMthNodes })
+			.filter { o -> distinctByOverrideCount(o) }
+			.filter { o -> distinctByRelatedMthNodes(o) }
 			.sorted(Comparator.comparingInt { o -> -o.relatedMthNodes.size })
 			.limit(10)
 			.forEach { o -> LOG.debug("  {} : {}", o.relatedMthNodes.size, Utils.last(o.overrideList)) }
 	}
 
-	private fun <T> distinctByKey(keyExtractor: Function<in T, *>): Predicate<T> {
+	private fun <T> distinctByKey(keyExtractor: (T) -> Any?): (T) -> Boolean {
 		val seen: MutableSet<Any?> = ConcurrentHashMap.newKeySet()
-		return Predicate { t -> seen.add(keyExtractor.apply(t)) }
+		return { t -> seen.add(keyExtractor(t)) }
 	}
 
 	private var execTimes: MutableMap<String, Long>? = null

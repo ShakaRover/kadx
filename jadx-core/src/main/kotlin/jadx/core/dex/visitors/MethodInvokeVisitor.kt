@@ -70,7 +70,7 @@ class MethodInvokeVisitor : AbstractVisitor() {
 					continue
 				}
 				insn.visitInsns(
-					java.util.function.Consumer { `in` ->
+					{ `in` ->
 						if (`in` is BaseInvokeNode) {
 							processInvoke(mth, `in`)
 						}

@@ -12,7 +12,6 @@ import jadx.core.dex.nodes.IMethodDetails
 import jadx.core.dex.nodes.MethodNode
 import jadx.core.dex.nodes.RootNode
 import jadx.core.utils.Utils
-import java.util.function.BiConsumer
 
 /**
  * 泛型类型变量（type variable）处理工具。
@@ -340,7 +339,7 @@ class TypeUtils(private val root: RootNode) {
 	}
 
 	/** 递归访问某个类型的所有父类型（应用内类走 [ClassNode]，否则走 classpath）。 */
-	fun visitSuperTypes(type: ArgType, consumer: BiConsumer<ArgType, ArgType>) {
+	fun visitSuperTypes(type: ArgType, consumer: (ArgType, ArgType) -> Unit) {
 		val cls = root.resolveClass(type)
 		if (cls != null) {
 			cls.visitSuperTypes(consumer)
@@ -350,7 +349,7 @@ class TypeUtils(private val root: RootNode) {
 				for (parent in clspClass.parents.orEmpty()) {
 					val superType = checkNotNull(parent)
 					if (superType !== ArgType.OBJECT) {
-						consumer.accept(type, superType)
+						consumer(type, superType)
 						visitSuperTypes(superType, consumer)
 					}
 				}

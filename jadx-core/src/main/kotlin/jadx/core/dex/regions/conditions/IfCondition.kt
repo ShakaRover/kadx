@@ -16,7 +16,6 @@ import jadx.core.dex.nodes.InsnNode
 import jadx.core.utils.BlockUtils
 import java.util.Arrays
 import java.util.Collections
-import java.util.function.Consumer
 
 /**
  * 结构化条件表达式树。
@@ -106,7 +105,7 @@ class IfCondition private constructor(
 		return false
 	}
 
-	fun visitInsns(visitor: Consumer<InsnNode>) {
+	fun visitInsns(visitor: (InsnNode) -> Unit) {
 		if (mode == Mode.COMPARE) {
 			checkNotNull(compare).getInsn().visitInsns(visitor)
 		} else {

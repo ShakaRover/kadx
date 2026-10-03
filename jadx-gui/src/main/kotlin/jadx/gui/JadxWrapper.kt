@@ -40,7 +40,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.Collections
 import java.util.Optional
-import java.util.function.Consumer
 import java.util.stream.Collectors
 
 /**
@@ -331,7 +330,7 @@ class JadxWrapper(private val mainWindow: MainWindow) {
 		fun initGuiPluginsContext(decompiler: JadxDecompiler, mainWindow: MainWindow): CommonGuiPluginsContext {
 			val guiPluginsContext = CommonGuiPluginsContext(mainWindow)
 			decompiler.getPluginManager().registerAddPluginListener(
-				Consumer { pluginContext ->
+				{ pluginContext ->
 					val appContext = AppContext()
 					appContext.setGuiContext(guiPluginsContext.buildForPlugin(pluginContext))
 					appContext.setFilesGetter(decompiler.getArgs().filesGetter)

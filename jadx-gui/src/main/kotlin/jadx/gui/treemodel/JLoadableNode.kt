@@ -1,7 +1,6 @@
 package jadx.gui.treemodel
 
 import jadx.gui.jobs.IBackgroundTask
-import java.util.function.Predicate
 
 /**
  * “按需加载”节点基类。
@@ -19,17 +18,17 @@ abstract class JLoadableNode : JNode() {
 	/** 返回用于后台加载的任务；无需加载时返回 `null`。 */
 	abstract fun getLoadTask(): IBackgroundTask?
 
-	override fun searchNode(filter: Predicate<JNode>): JNode? {
+	override fun searchNode(filter: (JNode) -> Boolean): JNode? {
 		loadNode()
 		return super.searchNode(filter)
 	}
 
-	override fun searchDepthNode(filter: Predicate<JNode>): JNode? {
+	override fun searchDepthNode(filter: (JNode) -> Boolean): JNode? {
 		loadNode()
 		return super.searchDepthNode(filter)
 	}
 
-	override fun removeNode(filter: Predicate<JNode>): JNode? {
+	override fun removeNode(filter: (JNode) -> Boolean): JNode? {
 		loadNode()
 		return super.removeNode(filter)
 	}

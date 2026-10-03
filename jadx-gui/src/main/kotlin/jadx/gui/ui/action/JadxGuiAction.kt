@@ -5,7 +5,6 @@ import jadx.gui.utils.UiUtils
 import jadx.gui.utils.shortcut.Shortcut
 import jadx.gui.utils.ui.ActionHandler
 import java.awt.event.ActionEvent
-import java.util.function.Consumer
 import javax.swing.JComponent
 import javax.swing.KeyStroke
 
@@ -52,7 +51,7 @@ open class JadxGuiAction :
 		updateProperties()
 	}
 
-	constructor(actionModel: ActionModel, consumer: Consumer<ActionEvent>) : super(consumer) {
+	constructor(actionModel: ActionModel, consumer: (ActionEvent) -> Unit) : super(consumer) {
 		this.actionModel = actionModel
 		this.id = actionModel.name
 		updateProperties()

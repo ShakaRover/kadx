@@ -26,7 +26,6 @@ import java.util.ArrayList
 import java.util.Collections
 import java.util.HashMap
 import java.util.HashSet
-import java.util.function.Consumer
 
 /**
  * 字段初始化提取访问者。
@@ -263,7 +262,7 @@ class ExtractFieldInit : AbstractVisitor() {
 			val staticField = insn.getType() == InsnType.SPUT
 			val useType = if (staticField) InsnType.SGET else InsnType.IGET
 			// 若初始化代码引用了被排除的字段，则排除该字段
-			val exclude: Boolean? = insn.visitInsns { innerInsn ->
+			val exclude: Boolean? = insn.visitInsns<Boolean> { innerInsn ->
 				var res: Boolean? = null
 				if (innerInsn.getType() == useType) {
 					val fieldInfo = (innerInsn as IndexInsnNode).index as FieldInfo
@@ -290,7 +289,7 @@ class ExtractFieldInit : AbstractVisitor() {
 				val staticField = insn.getType() == InsnType.SPUT
 				val useType = if (staticField) InsnType.SGET else InsnType.IGET
 				insn.visitInsns(
-					Consumer { subInsn ->
+					{ subInsn ->
 						if (subInsn.getType() == useType) {
 							val fieldInfo = (subInsn as IndexInsnNode).index as FieldInfo
 							if (fieldInfo.declClass == cls.classInfo) {

@@ -14,7 +14,6 @@ import java.lang.reflect.Field
 import java.util.ArrayList
 import java.util.HashMap
 import java.util.Locale
-import java.util.function.Supplier
 
 /**
  * jcommander 的薄封装：负责参数解析、配置覆盖、命令分派以及帮助信息打印。
@@ -23,7 +22,7 @@ import java.util.function.Supplier
  * “覆盖已显式提供的参数”；打印与原生 jadx 一致的 usage 文本（含插件选项）。
  *
  * **为什么这样写**：原 Java 通过反射读写字段，Kotlin 属性的背后字段名一致，因此反射逻辑不变。
- * 私有辅助方法保留原签名（`Class<?>`、`Supplier`、`String[]` 等）。
+ * 私有辅助方法保留原签名（`Class<?>`、`String[]` 等）。
  */
 class JCommanderWrapper(private val argsObj: JadxCLIArgs) {
 
@@ -81,10 +80,10 @@ class JCommanderWrapper(private val argsObj: JadxCLIArgs) {
 
 	/** 对 Map 类型做合并（而非整体替换），其余类型直接覆盖。 */
 	@Suppress("UNCHECKED_CAST")
-	private fun mergeValues(type: Class<*>, value: Any?, prevValueProvider: Supplier<Any?>): Any? {
+	private fun mergeValues(type: Class<*>, value: Any?, prevValueProvider: () -> Any?): Any? {
 		if (type.isAssignableFrom(Map::class.java)) {
 			// 合并 map，而不是整体替换
-			val prevMap = prevValueProvider.get() as Map<Any?, Any?>?
+			val prevMap = prevValueProvider() as Map<Any?, Any?>?
 			return Utils.mergeMaps(prevMap, value as Map<Any?, Any?>?) // value 中的 key 会覆盖 prevMap
 		}
 		// 简单覆盖

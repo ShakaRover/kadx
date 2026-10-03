@@ -149,7 +149,7 @@ class MarkMethodsForInline : AbstractVisitor() {
 
 		private fun unbindSsaVars(insn: InsnNode) {
 			insn.visitArgs(
-				java.util.function.Consumer { arg ->
+				{ arg ->
 					if (arg.isRegister) {
 						val reg = arg as RegisterArg
 						val ssaVar = reg.sVar

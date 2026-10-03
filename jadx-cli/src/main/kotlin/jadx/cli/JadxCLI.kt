@@ -15,7 +15,6 @@ import jadx.plugins.tools.JadxExternalPluginsLoader
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
-import java.util.function.Consumer
 import java.util.function.Function
 
 /**
@@ -47,7 +46,7 @@ class JadxCLI {
 		fun execute(args: Array<String>): Int = execute(args, null)
 
 		@JvmStatic
-		fun execute(args: Array<String>, argsMod: Consumer<JadxArgs>?): Int {
+		fun execute(args: Array<String>, argsMod: ((JadxArgs) -> Unit)?): Int {
 			return try {
 				val cliArgs = JadxCLIArgs.processArgs(
 					args,
@@ -55,7 +54,7 @@ class JadxCLI {
 					JadxConfigAdapter(JadxCLIArgs::class.java, "cli"),
 				) ?: return 0
 				val jadxArgs = buildArgs(cliArgs)
-				argsMod?.accept(jadxArgs)
+				argsMod?.invoke(jadxArgs)
 				runSave(jadxArgs, cliArgs)
 			} catch (e: JadxArgsValidateException) {
 				LOG.error("Incorrect arguments: {}", e.message)

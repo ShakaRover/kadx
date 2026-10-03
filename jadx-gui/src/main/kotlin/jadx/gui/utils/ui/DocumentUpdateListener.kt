@@ -1,6 +1,5 @@
 package jadx.gui.utils.ui
 
-import java.util.function.Consumer
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 
@@ -12,14 +11,14 @@ import javax.swing.event.DocumentListener
  *
  * **为什么用 Java 的 [Consumer]**：保留 Java 调用方的 SAM 用法（`new DocumentUpdateListener(ev -> ...)`）。
  */
-class DocumentUpdateListener(private val listener: Consumer<DocumentEvent>) : DocumentListener {
+class DocumentUpdateListener(private val listener: (DocumentEvent) -> Unit) : DocumentListener {
 
 	override fun insertUpdate(event: DocumentEvent) {
-		listener.accept(event)
+		listener(event)
 	}
 
 	override fun removeUpdate(event: DocumentEvent) {
-		listener.accept(event)
+		listener(event)
 	}
 
 	override fun changedUpdate(event: DocumentEvent) {

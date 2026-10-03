@@ -2,7 +2,6 @@ package jadx.core.dex.visitors.usage
 
 import java.util.HashMap
 import java.util.HashSet
-import java.util.function.BiConsumer
 
 /**
  * 通用「对象 -> 使用集合」映射（用途：收集类/方法/字段的依赖与引用关系）。
@@ -37,9 +36,9 @@ internal class UseSet<K, V> {
 	fun getOrDefault(obj: K, defaultValue: Set<V>): Set<V> = useMap[obj] ?: defaultValue
 
 	/** 遍历所有 (对象, 使用集合) 条目并交给回调处理。 */
-	fun visit(consumer: BiConsumer<K, Set<V>>) {
+	fun visit(consumer: (K, Set<V>) -> Unit) {
 		for ((key, value) in useMap) {
-			consumer.accept(key, value)
+			consumer(key, value)
 		}
 	}
 

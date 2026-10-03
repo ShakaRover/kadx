@@ -2,7 +2,6 @@ package jadx.gui.jobs
 
 import jadx.api.utils.tasks.ITaskExecutor
 import jadx.core.utils.tasks.TaskExecutor
-import java.util.function.Consumer
 
 /**
  * 简单任务：不可取消、带内存检查。
@@ -21,13 +20,13 @@ import java.util.function.Consumer
 class SimpleTask(
 	private val title: String,
 	private val jobs: List<Runnable>,
-	private val onFinish: Consumer<TaskStatus>?,
+	private val onFinish: ((TaskStatus) -> Unit)?,
 ) : IBackgroundTask {
 
 	constructor(title: String, run: Runnable) : this(title, listOf(run), null)
 
 	constructor(title: String, run: Runnable, onFinish: Runnable) :
-		this(title, listOf(run), Consumer<TaskStatus> { onFinish.run() })
+		this(title, listOf(run), { onFinish.run() })
 
 	constructor(title: String, jobs: List<Runnable>) : this(title, jobs, null)
 
@@ -35,7 +34,7 @@ class SimpleTask(
 
 	fun getJobs(): List<Runnable> = jobs
 
-	fun getOnFinish(): Consumer<TaskStatus>? = onFinish
+	fun getOnFinish(): ((TaskStatus) -> Unit)? = onFinish
 
 	override fun scheduleTasks(): ITaskExecutor {
 		val executor = TaskExecutor()
@@ -44,7 +43,7 @@ class SimpleTask(
 	}
 
 	override fun onFinish(taskInfo: ITaskInfo) {
-		onFinish?.accept(taskInfo.getStatus())
+		onFinish?.invoke(taskInfo.getStatus())
 	}
 
 	override fun checkMemoryUsage(): Boolean = true

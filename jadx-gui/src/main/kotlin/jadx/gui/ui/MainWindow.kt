@@ -264,7 +264,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 	private var quickTabsTree: QuickTabsTree? = null
 
 	private val loadListeners: MutableList<ILoadListener> = ArrayList()
-	private val treeUpdateListener: MutableList<Consumer<JRoot>> = ArrayList()
+	private val treeUpdateListener: MutableList<(JRoot) -> Unit> = ArrayList()
 	private var loaded: Boolean = false
 	private var settingsOpen: Boolean = false
 	private var showUndisplayedCharsDialog: Boolean = false
@@ -593,15 +593,15 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 					closeAll()
 				}
 			},
-			Consumer { status ->
+			{ status ->
 				if (status == TaskStatus.CANCEL_BY_MEMORY) {
 					showHeapUsageBar()
 					UiUtils.errorMessage(this, NLS.str("message.memoryLow"))
-					return@Consumer
+					return@execute
 				}
 				if (status != TaskStatus.COMPLETE) {
 					LOG.warn("Loading task incomplete, status: {}", status)
-					return@Consumer
+					return@execute
 				}
 				checkLoadedStatus()
 				onOpen(onFinish)
@@ -711,7 +711,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 		backgroundExecutor.execute(
 			(if (state) "Starting" else "Stopping") + " live reload",
 			Runnable { liveReloadWorker.updateState(state) },
-			Consumer {
+			{
 				liveReloadMenuItem.setState(state)
 				liveReloadMenuItem.setEnabled(true)
 			},
@@ -844,7 +844,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 					LOG.error("Error during code cache reset", e)
 				}
 			},
-			Consumer { events().send(ReloadProject.EVENT) },
+			{ events().send(ReloadProject.EVENT) },
 		)
 	}
 
@@ -855,7 +855,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 	fun exportProject() {
 		val dialog = ExportProjectDialog(
 			this,
-			Consumer { props ->
+			{ props ->
 				val args = wrapper.getArgs()
 				if (props.isAsGradleMode()) {
 					args.exportGradleType = props.getExportGradleType()
@@ -891,7 +891,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 	fun reloadTree() {
 		treeReloading = true
 		val root = checkNotNull(treeRoot)
-		treeUpdateListener.forEach { listener -> listener.accept(root) }
+		treeUpdateListener.forEach { listener -> listener(root) }
 		treeModel.reload()
 		treeReloading = false
 	}
@@ -1219,7 +1219,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 		dockLog.addActionListener { settings.saveDockLogViewer(!settings.isDockLogViewer()) }
 
 		val quickTabsAction = ActionHandler(
-			Consumer {
+			Runnable {
 				val visible = quickTabsTree == null
 				setQuickTabsVisibility(visible)
 				settings.saveDockQuickTabs(visible)
@@ -1512,7 +1512,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 						backgroundExecutor.execute(
 							TaskWithExtraOnFinish(
 								loadTask,
-								Consumer<TaskStatus> {
+								{
 									if (!treeReloading) {
 										treeModel.nodeStructureChanged(node)
 									}
@@ -1744,7 +1744,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 		loadListeners.removeIf { listener -> listener.update(loaded) }
 	}
 
-	fun addTreeUpdateListener(listener: Consumer<JRoot>) {
+	fun addTreeUpdateListener(listener: (JRoot) -> Unit) {
 		treeUpdateListener.add(listener)
 	}
 

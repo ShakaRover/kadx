@@ -68,8 +68,6 @@ import java.util.HashSet
 import java.util.Objects
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import java.util.function.BiConsumer
-import java.util.function.Consumer
 import java.util.stream.Collectors
 import javax.swing.BorderFactory
 import javax.swing.Box
@@ -566,8 +564,8 @@ class SearchDialog private constructor(
 
 		val newSearchTask = SearchTask(
 			mainWindow,
-			Consumer { node -> addSearchResult(node) },
-			BiConsumer { status, complete -> searchFinished(status, complete) },
+			{ node -> addSearchResult(node) },
+			{ status, complete -> searchFinished(status, complete) },
 		)
 		if (!buildSearch(newSearchTask, text, searchSettings)) {
 			UiUtils.highlightAsErrorField(searchField, true)

@@ -1,12 +1,10 @@
 package jadx.gui.utils.cache
 
-import java.util.function.Function
-
 /**
  * 基于“键”对象的简单值缓存。
  *
  * **做什么**：缓存与某个 key 关联的值；当传入的 key 与上次相同（`equals`）时直接返回缓存值，
- * 否则调用 [Function] 重新加载并替换缓存。
+ * 否则调用 [loadFunc] 重新加载并替换缓存。
  *
  * **为什么不是 `data class`**：它是带可变状态的缓存容器，不需要结构化相等。
  *
@@ -25,11 +23,11 @@ class ValueCache<K, V> {
 	 * 注意：key 命中时缓存值必须存在（原 Java 直接返回 `value`，这里用 [checkNotNull] 保持非空返回）。
 	 */
 	@Synchronized
-	fun get(requestKey: K, loadFunc: Function<K, V>): V {
+	fun get(requestKey: K, loadFunc: (K) -> V): V {
 		if (key != null && key == requestKey) {
 			return checkNotNull(value)
 		}
-		val newValue = loadFunc.apply(requestKey)
+		val newValue = loadFunc(requestKey)
 		key = requestKey
 		value = newValue
 		return newValue

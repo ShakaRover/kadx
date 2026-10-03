@@ -11,7 +11,6 @@ import jadx.gui.ui.panel.ContentPanel
 import jadx.gui.ui.tab.TabbedPane
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants
 import java.util.Comparator
-import java.util.function.Predicate
 import javax.swing.JPopupMenu
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.TreeNode
@@ -128,11 +127,11 @@ abstract class JNode :
 	/**
 	 * 在直接子节点中查找第一个匹配节点（不递归、不展开）。
 	 */
-	open fun searchNode(filter: Predicate<JNode>): JNode? {
+	open fun searchNode(filter: (JNode) -> Boolean): JNode? {
 		val en = this.children()
 		while (en.hasMoreElements()) {
 			val node = en.nextElement() as JNode
-			if (filter.test(node)) {
+			if (filter(node)) {
 				return node
 			}
 		}
@@ -142,11 +141,11 @@ abstract class JNode :
 	/**
 	 * 按广度优先顺序在整棵子树中查找第一个匹配节点。
 	 */
-	open fun searchDepthNode(filter: Predicate<JNode>): JNode? {
+	open fun searchDepthNode(filter: (JNode) -> Boolean): JNode? {
 		val en = this.breadthFirstEnumeration()
 		while (en.hasMoreElements()) {
 			val node = en.nextElement() as JNode
-			if (filter.test(node)) {
+			if (filter(node)) {
 				return node
 			}
 		}
@@ -156,11 +155,11 @@ abstract class JNode :
 	/**
 	 * 移除并返回第一个匹配的直接子节点。
 	 */
-	open fun removeNode(filter: Predicate<JNode>): JNode? {
+	open fun removeNode(filter: (JNode) -> Boolean): JNode? {
 		val en = this.children()
 		while (en.hasMoreElements()) {
 			val node = en.nextElement() as JNode
-			if (filter.test(node)) {
+			if (filter(node)) {
 				this.remove(node)
 				return node
 			}

@@ -10,7 +10,6 @@ import java.text.SimpleDateFormat
 import java.util.ArrayList
 import java.util.Collections
 import java.util.Date
-import java.util.function.IntConsumer
 
 /**
  * 字符串处理工具：转义/反转义、按码点遍历、数字格式化等。
@@ -177,12 +176,12 @@ class StringUtils(args: JadxArgs) {
 		 * 按 Unicode 码点遍历字符串（正确处理代理对）。
 		 */
 		@JvmStatic
-		fun visitCodePoints(str: String, visitor: IntConsumer) {
+		fun visitCodePoints(str: String, visitor: (Int) -> Unit) {
 			val len = str.length
 			var offset = 0
 			while (offset < len) {
 				val codePoint = str.codePointAt(offset)
-				visitor.accept(codePoint)
+				visitor(codePoint)
 				offset += Character.charCount(codePoint)
 			}
 		}

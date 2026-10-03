@@ -3,7 +3,6 @@ package jadx.gui.utils.ui
 import jadx.gui.utils.UiUtils
 import jadx.gui.utils.shortcut.Shortcut
 import java.awt.event.ActionEvent
-import java.util.function.Consumer
 import javax.swing.AbstractAction
 import javax.swing.Action
 import javax.swing.Icon
@@ -16,7 +15,7 @@ import javax.swing.KeyStroke
 /**
  * 通用 Swing 动作（`Action`）实现。
  *
- * **做什么**：用 [Runnable] 或 [Consumer] 快速构造一个 `AbstractAction`，
+ * **做什么**：用 [Runnable] 或 `(ActionEvent) -> Unit` 快速构造一个 `AbstractAction`，
  * 并提供名称、描述、图标、选中态、快捷键等便捷设置方法。
  *
  * **为什么方法都声明为 `open`**：原 Java 方法默认可覆写，子类
@@ -25,13 +24,13 @@ import javax.swing.KeyStroke
  */
 open class ActionHandler : AbstractAction {
 
-	private val consumer: Consumer<ActionEvent>
+	private val consumer: (ActionEvent) -> Unit
 
 	constructor(action: Runnable) {
-		consumer = Consumer { action.run() }
+		consumer = { action.run() }
 	}
 
-	constructor(consumer: Consumer<ActionEvent>) {
+	constructor(consumer: (ActionEvent) -> Unit) {
 		this.consumer = consumer
 	}
 
@@ -40,7 +39,7 @@ open class ActionHandler : AbstractAction {
 	}
 
 	constructor() {
-		consumer = Consumer { }
+		consumer = { }
 	}
 
 	open fun setName(name: String) {
@@ -92,7 +91,7 @@ open class ActionHandler : AbstractAction {
 	}
 
 	override fun actionPerformed(e: ActionEvent) {
-		consumer.accept(e)
+		consumer(e)
 	}
 
 	open fun makeButton(): JButton {

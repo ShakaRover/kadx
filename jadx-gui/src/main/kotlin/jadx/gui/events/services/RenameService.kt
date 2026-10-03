@@ -45,7 +45,7 @@ class RenameService private constructor(private val mainWindow: MainWindow) {
 			LOG.debug("Applying rename event: {}", event)
 			val timeStarted = System.nanoTime()
 			val node = getRenameNode(event)
-			updateCodeRenames(Consumer { set -> processRename(node, event, set) })
+			updateCodeRenames { set -> processRename(node, event, set) }
 			refreshState(node, timeStarted)
 		} catch (e: Exception) {
 			LOG.error("Rename failed", e)
@@ -82,11 +82,11 @@ class RenameService private constructor(private val mainWindow: MainWindow) {
 	}
 
 	/** 把重命名集合写回项目代码数据（排序后持久化）。 */
-	private fun updateCodeRenames(updater: Consumer<MutableSet<ICodeRename>>) {
+	private fun updateCodeRenames(updater: (MutableSet<ICodeRename>) -> Unit) {
 		val project: JadxProject = mainWindow.getProject()
 		val codeData: JadxCodeData = project.getCodeData()
 		val set = HashSet(codeData.getRenames())
-		updater.accept(set)
+		updater(set)
 		val list = ArrayList(set)
 		Collections.sort(list)
 		codeData.setRenames(list)
@@ -130,7 +130,7 @@ class RenameService private constructor(private val mainWindow: MainWindow) {
 				refreshClasses(updatedTopClasses)
 				LOG.debug("Finished rename, took " + (System.nanoTime() - timeStarted) + " ns")
 			},
-			Consumer { status ->
+			{ status ->
 				if (status == TaskStatus.CANCEL_BY_MEMORY) {
 					mainWindow.showHeapUsageBar()
 					UiUtils.errorMessage(mainWindow, NLS.str("message.memoryLow"))

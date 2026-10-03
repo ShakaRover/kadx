@@ -31,8 +31,6 @@ import java.util.Collections
 import java.util.EnumSet
 import java.util.HashMap
 import java.util.Locale
-import java.util.function.Function
-import java.util.function.Supplier
 
 /**
  * jadx CLI 的全部参数对象。
@@ -559,19 +557,19 @@ open class JadxCLIArgs : IJadxConfig {
 
 	/**
 	 * 枚举转换器基类：把 `--xxx value` 的短横线小写形式转成枚举名。
-	 * 保留 [Function]/[Supplier] 参数类型，与原 Java 签名一致。
+	 * 解析/取值回调改为 Kotlin 函数类型 `(String) -> E` 与 `() -> Array<E>`。
 	 */
 	abstract class BaseEnumConverter<E : Enum<E>>(
-		private val parse: Function<String, E>,
-		private val values: Supplier<Array<E>>,
+		private val parse: (String) -> E,
+		private val values: () -> Array<E>,
 	) : IStringConverter<E> {
 
 		override fun convert(value: String): E {
 			try {
-				return parse.apply(stringAsEnumName(value))
+				return parse(stringAsEnumName(value))
 			} catch (e: Exception) {
 				throw JadxArgsValidateException(
-					"'" + value + "' is unknown, possible values are: " + JadxCLIArgs.enumValuesString(values.get()),
+					"'" + value + "' is unknown, possible values are: " + JadxCLIArgs.enumValuesString(values()),
 				)
 			}
 		}
@@ -586,62 +584,62 @@ open class JadxCLIArgs : IJadxConfig {
 
 	class CommentsLevelConverter :
 		BaseEnumConverter<CommentsLevel>(
-			Function { name -> CommentsLevel.valueOf(name) },
-			Supplier { CommentsLevel.values() },
+			{ name -> CommentsLevel.valueOf(name) },
+			{ CommentsLevel.values() },
 		)
 
 	class UseKotlinMethodsForVarNamesConverter :
 		BaseEnumConverter<UseKotlinMethodsForVarNames>(
-			Function { name -> UseKotlinMethodsForVarNames.valueOf(name) },
-			Supplier { UseKotlinMethodsForVarNames.values() },
+			{ name -> UseKotlinMethodsForVarNames.valueOf(name) },
+			{ UseKotlinMethodsForVarNames.values() },
 		)
 
 	class DeobfuscationMapFileModeConverter :
 		BaseEnumConverter<GeneratedRenamesMappingFileMode>(
-			Function { name -> GeneratedRenamesMappingFileMode.valueOf(name) },
-			Supplier { GeneratedRenamesMappingFileMode.values() },
+			{ name -> GeneratedRenamesMappingFileMode.valueOf(name) },
+			{ GeneratedRenamesMappingFileMode.values() },
 		)
 
 	class ResourceNameSourceConverter :
 		BaseEnumConverter<ResourceNameSource>(
-			Function { name -> ResourceNameSource.valueOf(name) },
-			Supplier { ResourceNameSource.values() },
+			{ name -> ResourceNameSource.valueOf(name) },
+			{ ResourceNameSource.values() },
 		)
 
 	class UseSourceNameAsClassNameConverter :
 		BaseEnumConverter<UseSourceNameAsClassNameAlias>(
-			Function { name -> UseSourceNameAsClassNameAlias.valueOf(name) },
-			Supplier { UseSourceNameAsClassNameAlias.values() },
+			{ name -> UseSourceNameAsClassNameAlias.valueOf(name) },
+			{ UseSourceNameAsClassNameAlias.values() },
 		)
 
 	class DecompilationModeConverter :
 		BaseEnumConverter<DecompilationMode>(
-			Function { name -> DecompilationMode.valueOf(name) },
-			Supplier { DecompilationMode.values() },
+			{ name -> DecompilationMode.valueOf(name) },
+			{ DecompilationMode.values() },
 		)
 
 	class ExportGradleTypeConverter :
 		BaseEnumConverter<ExportGradleType>(
-			Function { name -> ExportGradleType.valueOf(name) },
-			Supplier { ExportGradleType.values() },
+			{ name -> ExportGradleType.valueOf(name) },
+			{ ExportGradleType.values() },
 		)
 
 	class LogLevelConverter :
 		BaseEnumConverter<LogHelper.LogLevelEnum>(
-			Function { name -> LogHelper.LogLevelEnum.valueOf(name) },
-			Supplier { LogHelper.LogLevelEnum.values() },
+			{ name -> LogHelper.LogLevelEnum.valueOf(name) },
+			{ LogHelper.LogLevelEnum.values() },
 		)
 
 	class IntegerFormatConverter :
 		BaseEnumConverter<IntegerFormat>(
-			Function { name -> IntegerFormat.valueOf(name) },
-			Supplier { IntegerFormat.values() },
+			{ name -> IntegerFormat.valueOf(name) },
+			{ IntegerFormat.values() },
 		)
 
 	class CallGraphSaveModeConverter :
 		BaseEnumConverter<CallGraphSaveMode>(
-			Function { name -> CallGraphSaveMode.valueOf(name) },
-			Supplier { CallGraphSaveMode.values() },
+			{ name -> CallGraphSaveMode.valueOf(name) },
+			{ CallGraphSaveMode.values() },
 		)
 
 	companion object {

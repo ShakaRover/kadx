@@ -34,7 +34,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.util.Collections
 import java.util.StringJoiner
-import java.util.function.Consumer
 
 /**
  * 一个 jadx 项目：持有 [ProjectData] 并在其变化时驱动保存与界面刷新。
@@ -160,8 +159,8 @@ class JadxProject private constructor(
 	}
 
 	/** 不直接暴露选项 map，以便拦截修改并触发保存。 */
-	fun updatePluginOptions(update: Consumer<MutableMap<String, String>>) {
-		update.accept(data.getPluginOptions())
+	fun updatePluginOptions(update: (MutableMap<String, String>) -> Unit) {
+		update(data.getPluginOptions())
 		changed()
 	}
 

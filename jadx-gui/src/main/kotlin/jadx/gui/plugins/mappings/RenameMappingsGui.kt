@@ -28,7 +28,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.util.Collections
 import java.util.Locale
-import java.util.function.Consumer
 import javax.swing.Action
 import javax.swing.JFileChooser
 import javax.swing.JMenu
@@ -70,11 +69,11 @@ class RenameMappingsGui(private val mainWindow: MainWindow) {
 	fun addMenuActions(menu: JMenu) {
 		val openMenu = JMenu(NLS.str("file.open_mappings"))
 		openMenu.add(
-			ActionHandler(Consumer { openMappings(MappingFormat.PROGUARD_FILE, true) })
+			ActionHandler(Runnable { openMappings(MappingFormat.PROGUARD_FILE, true) })
 				.withNameAndDesc("Proguard (inverted)"),
 		)
 		openMenu.add(
-			ActionHandler(Consumer { openMappings(MappingFormat.PROGUARD_FILE, false) })
+			ActionHandler(Runnable { openMappings(MappingFormat.PROGUARD_FILE, false) })
 				.withNameAndDesc("Proguard"),
 		)
 		openMappingsMenu = openMenu
@@ -88,17 +87,17 @@ class RenameMappingsGui(private val mainWindow: MainWindow) {
 		for (mappingFormat in MappingFormat.values()) {
 			if (mappingFormat != MappingFormat.PROGUARD_FILE) {
 				openMenu.add(
-					ActionHandler(Consumer { openMappings(mappingFormat, false) })
+					ActionHandler(Runnable { openMappings(mappingFormat, false) })
 						.withNameAndDesc(mappingFormat.name),
 				)
 			}
 			saveAsMenu.add(
-				ActionHandler(Consumer { saveMappingsAs(mappingFormat) })
+				ActionHandler(Runnable { saveMappingsAs(mappingFormat) })
 					.withNameAndDesc(mappingFormat.name),
 			)
 		}
 
-		val closeAction = ActionHandler(Consumer { closeMappingsAndRemoveFromProject() })
+		val closeAction = ActionHandler(Runnable { closeMappingsAndRemoveFromProject() })
 			.withNameAndDesc(NLS.str("file.close_mappings"))
 		closeMappingsAction = closeAction
 
@@ -202,7 +201,7 @@ class RenameMappingsGui(private val mainWindow: MainWindow) {
 		saveInBackground(
 			getCurrentMappingFormat(),
 			checkNotNull(mainWindow.getProject().getMappingsPath()),
-			Consumer { mainWindow.update() },
+			{ mainWindow.update() },
 		)
 	}
 
@@ -261,13 +260,13 @@ class RenameMappingsGui(private val mainWindow: MainWindow) {
 		saveInBackground(
 			mappingFormat,
 			savePath,
-			Consumer {
+			{
 				mappingNode = null
 				mainWindow.reloadTree()
 			},
 		)
 	}
-	private fun saveInBackground(mappingFormat: MappingFormat, savePath: Path, onFinishUiRunnable: Consumer<TaskStatus>) {
+	private fun saveInBackground(mappingFormat: MappingFormat, savePath: Path, onFinishUiRunnable: (TaskStatus) -> Unit) {
 		mainWindow.getBackgroundExecutor().execute(
 			NLS.str("progress.save_mappings"),
 			Runnable {

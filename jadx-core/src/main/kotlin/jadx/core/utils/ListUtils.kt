@@ -7,9 +7,6 @@ import java.util.Enumeration
 import java.util.LinkedHashSet
 import java.util.Objects
 import java.util.TreeSet
-import java.util.function.BiPredicate
-import java.util.function.Function
-import java.util.function.Predicate
 
 /**
  * 列表/集合操作工具集。
@@ -56,7 +53,7 @@ object ListUtils {
 	}
 
 	@JvmStatic
-	fun <T, U> orderedEquals(list1: List<T>, list2: List<U>, comparer: BiPredicate<T, U>): Boolean {
+	fun <T, U> orderedEquals(list1: List<T>, list2: List<U>, comparer: (T, U) -> Boolean): Boolean {
 		if (list1 === list2) {
 			return true
 		}
@@ -68,7 +65,7 @@ object ListUtils {
 		while (iter1.hasNext() && iter2.hasNext()) {
 			val item1 = iter1.next()
 			val item2 = iter2.next()
-			if (!comparer.test(item1, item2)) {
+			if (!comparer(item1, item2)) {
 				return false
 			}
 		}
@@ -76,13 +73,13 @@ object ListUtils {
 	}
 
 	@JvmStatic
-	fun <T, R> map(list: Collection<T>?, mapFunc: Function<T, R>): List<R> {
+	fun <T, R> map(list: Collection<T>?, mapFunc: (T) -> R): List<R> {
 		if (list == null || list.isEmpty()) {
 			return Collections.emptyList()
 		}
 		val result = ArrayList<R>(list.size)
 		for (t in list) {
-			result.add(mapFunc.apply(t))
+			result.add(mapFunc(t))
 		}
 		return result
 	}
@@ -201,13 +198,13 @@ object ListUtils {
 	}
 
 	@JvmStatic
-	fun <T> filter(list: Collection<T>?, filter: Predicate<T>): List<T> {
+	fun <T> filter(list: Collection<T>?, filter: (T) -> Boolean): List<T> {
 		if (list == null || list.isEmpty()) {
 			return Collections.emptyList()
 		}
 		val result = ArrayList<T>()
 		for (element in list) {
-			if (filter.test(element)) {
+			if (filter(element)) {
 				result.add(element)
 			}
 		}
@@ -220,13 +217,13 @@ object ListUtils {
 	 * @return 匹配 0 个或多个时返回 null
 	 */
 	@JvmStatic
-	fun <T> filterOnlyOne(list: List<T>?, filter: Predicate<T>): T? {
+	fun <T> filterOnlyOne(list: List<T>?, filter: (T) -> Boolean): T? {
 		if (list == null || list.isEmpty()) {
 			return null
 		}
 		var found: T? = null
 		for (element in list) {
-			if (filter.test(element)) {
+			if (filter(element)) {
 				if (found != null) {
 					// 找到第二个
 					return null
@@ -238,12 +235,12 @@ object ListUtils {
 	}
 
 	@JvmStatic
-	fun <T> allMatch(list: Collection<T>?, test: Predicate<T>): Boolean {
+	fun <T> allMatch(list: Collection<T>?, test: (T) -> Boolean): Boolean {
 		if (list == null || list.isEmpty()) {
 			return false
 		}
 		for (element in list) {
-			if (!test.test(element)) {
+			if (!test(element)) {
 				return false
 			}
 		}
@@ -251,15 +248,15 @@ object ListUtils {
 	}
 
 	@JvmStatic
-	fun <T> noneMatch(list: Collection<T>?, test: Predicate<T>): Boolean = !anyMatch(list, test)
+	fun <T> noneMatch(list: Collection<T>?, test: (T) -> Boolean): Boolean = !anyMatch(list, test)
 
 	@JvmStatic
-	fun <T> anyMatch(list: Collection<T>?, test: Predicate<T>): Boolean {
+	fun <T> anyMatch(list: Collection<T>?, test: (T) -> Boolean): Boolean {
 		if (list == null || list.isEmpty()) {
 			return false
 		}
 		for (element in list) {
-			if (test.test(element)) {
+			if (test(element)) {
 				return true
 			}
 		}
