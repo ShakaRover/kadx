@@ -1,4 +1,9 @@
-package jadx.tests.integration.others;
+package jadx.tests.integration.others
+
+object TestCodeMetadata2Fixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.others;
 
 public class TestCodeMetadata2Fixture {
 
@@ -26,4 +31,6 @@ public class TestCodeMetadata2Fixture {
 			};
 		}
 	}
+}
+"""
 }

@@ -1,4 +1,9 @@
-package jadx.tests.integration.others;
+package jadx.tests.integration.others
+
+object TestFieldAccessReorderFixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.others;
 
 import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
 
@@ -21,4 +26,6 @@ public class TestFieldAccessReorderFixture {
 			assertThat(test()).isTrue();
 		}
 	}
+}
+"""
 }

@@ -1,4 +1,9 @@
-package jadx.tests.integration.others;
+package jadx.tests.integration.others
+
+object TestDefConstructorNotRemovedFixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.others;
 
 public class TestDefConstructorNotRemovedFixture {
 
@@ -37,4 +42,6 @@ public class TestDefConstructorNotRemovedFixture {
 			new B("b");
 		}
 	}
+}
+"""
 }

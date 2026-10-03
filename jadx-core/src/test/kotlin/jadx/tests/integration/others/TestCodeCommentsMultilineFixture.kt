@@ -1,4 +1,9 @@
-package jadx.tests.integration.others;
+package jadx.tests.integration.others
+
+object TestCodeCommentsMultilineFixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.others;
 
 public class TestCodeCommentsMultilineFixture {
 
@@ -11,4 +16,6 @@ public class TestCodeCommentsMultilineFixture {
 			return 3;
 		}
 	}
+}
+"""
 }

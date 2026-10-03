@@ -1,4 +1,9 @@
-package jadx.tests.integration.others;
+package jadx.tests.integration.others
+
+object TestDefConstructorWithAnnotationFixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.others;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -17,4 +22,6 @@ public class TestDefConstructorWithAnnotationFixture {
 		public @interface AnnotationTest {
 		}
 	}
+}
+"""
 }

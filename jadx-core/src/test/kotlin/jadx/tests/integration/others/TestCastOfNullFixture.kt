@@ -1,4 +1,9 @@
-package jadx.tests.integration.others;
+package jadx.tests.integration.others
+
+object TestCastOfNullFixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.others;
 
 import java.util.List;
 
@@ -22,4 +27,6 @@ public class TestCastOfNullFixture {
 		public void m(List<String> list) {
 		}
 	}
+}
+"""
 }

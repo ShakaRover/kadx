@@ -1,4 +1,9 @@
-package jadx.tests.integration.others;
+package jadx.tests.integration.others
+
+object TestCodeComments2aFixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.others;
 
 import java.util.Random;
 
@@ -16,4 +21,6 @@ public class TestCodeComments2aFixture {
 			return f;
 		}
 	}
+}
+"""
 }

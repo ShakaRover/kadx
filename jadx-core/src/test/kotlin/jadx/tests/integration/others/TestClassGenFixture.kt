@@ -1,4 +1,9 @@
-package jadx.tests.integration.others;
+package jadx.tests.integration.others
+
+object TestClassGenFixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.others;
 
 public class TestClassGenFixture {
 
@@ -13,4 +18,6 @@ public class TestClassGenFixture {
 			public abstract int test2();
 		}
 	}
+}
+"""
 }

@@ -1,4 +1,9 @@
-package jadx.tests.integration.others;
+package jadx.tests.integration.others
+
+object TestArgInlineFixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.others;
 
 public class TestArgInlineFixture {
 
@@ -11,4 +16,6 @@ public class TestArgInlineFixture {
 			}
 		}
 	}
+}
+"""
 }

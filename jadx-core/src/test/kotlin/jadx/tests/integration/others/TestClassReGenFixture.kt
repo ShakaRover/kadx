@@ -1,4 +1,9 @@
-package jadx.tests.integration.others;
+package jadx.tests.integration.others
+
+object TestClassReGenFixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.others;
 
 public class TestClassReGenFixture {
 
@@ -12,4 +17,6 @@ public class TestClassReGenFixture {
 			return 0;
 		}
 	}
+}
+"""
 }

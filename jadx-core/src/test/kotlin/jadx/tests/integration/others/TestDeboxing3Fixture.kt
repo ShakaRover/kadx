@@ -1,4 +1,9 @@
-package jadx.tests.integration.others;
+package jadx.tests.integration.others
+
+object TestDeboxing3Fixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.others;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,4 +30,6 @@ public class TestDeboxing3Fixture {
 			return pair.first + l > System.currentTimeMillis();
 		}
 	}
+}
+"""
 }

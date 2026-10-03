@@ -1,4 +1,9 @@
-package jadx.tests.integration.others;
+package jadx.tests.integration.others
+
+object TestConstStringConcatFixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.others;
 
 import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
 
@@ -24,4 +29,6 @@ public class TestConstStringConcatFixture {
 			assertThat(test3("v", 4)).isEqualTo("value v = 4");
 		}
 	}
+}
+"""
 }

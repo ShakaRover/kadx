@@ -1,4 +1,9 @@
-package jadx.tests.integration.others;
+package jadx.tests.integration.others
+
+object TestFieldInitOrder2Fixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.others;
 
 import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
 
@@ -13,4 +18,6 @@ public class TestFieldInitOrder2Fixture {
 			assertThat(VALUE).isEqualTo("SOME_VALUE");
 		}
 	}
+}
+"""
 }

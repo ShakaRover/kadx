@@ -1,4 +1,9 @@
-package jadx.tests.integration.others;
+package jadx.tests.integration.others
+
+object TestFieldInit3Fixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.others;
 
 import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
 
@@ -36,4 +41,6 @@ public class TestFieldInit3Fixture {
 			assertThat(new D().field).isEqualTo(4);
 		}
 	}
+}
+"""
 }

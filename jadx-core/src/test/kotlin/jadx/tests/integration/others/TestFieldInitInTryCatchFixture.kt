@@ -1,4 +1,11 @@
-package jadx.tests.integration.others;
+package jadx.tests.integration.others
+
+object TestFieldInitInTryCatchFixture {
+	class TestCls
+	class TestCls2
+	class TestCls3
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.others;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -43,4 +50,6 @@ public class TestFieldInitInTryCatchFixture {
 			}
 		}
 	}
+}
+"""
 }

@@ -1,4 +1,9 @@
-package jadx.tests.integration.others;
+package jadx.tests.integration.others
+
+object TestFieldInit2Fixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.others;
 
 public class TestFieldInit2Fixture {
 
@@ -22,4 +27,6 @@ public class TestFieldInit2Fixture {
 		public TestCls(int z) {
 		}
 	}
+}
+"""
 }

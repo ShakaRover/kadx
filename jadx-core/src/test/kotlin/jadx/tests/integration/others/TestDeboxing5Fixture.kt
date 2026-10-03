@@ -1,4 +1,9 @@
-package jadx.tests.integration.others;
+package jadx.tests.integration.others
+
+object TestDeboxing5Fixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.others;
 
 import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
 
@@ -35,4 +40,6 @@ public class TestDeboxing5Fixture {
 			verify(new String[] { "1" }, "Float");
 		}
 	}
+}
+"""
 }

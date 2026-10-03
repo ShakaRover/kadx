@@ -1,4 +1,9 @@
-package jadx.tests.integration.others;
+package jadx.tests.integration.others
+
+object TestCodeComments2Fixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.others;
 
 public class TestCodeComments2Fixture {
 
@@ -11,4 +16,6 @@ public class TestCodeComments2Fixture {
 			return 3;
 		}
 	}
+}
+"""
 }
