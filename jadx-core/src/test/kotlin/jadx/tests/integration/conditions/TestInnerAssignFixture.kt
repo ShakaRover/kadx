@@ -1,0 +1,41 @@
+package jadx.tests.integration.conditions
+
+object TestInnerAssignFixture {
+	class TestCls
+
+	const val JAVA_SOURCE = """package jadx.tests.integration.conditions;
+
+import static jadx.tests.api.utils.assertj.JadxAssertions.assertThat;
+
+public class TestInnerAssignFixture {
+
+	public static class TestCls {
+		private String result;
+
+		@SuppressWarnings("checkstyle:InnerAssignment")
+		public void test(String str) {
+			int len;
+			if (str.isEmpty() || (len = str.length()) > 5) {
+				result += "bad";
+			} else {
+				result += "good, len: " + len;
+			}
+			result += ", str: " + str;
+			System.out.println("done");
+		}
+
+		private String runTest(String str) {
+			result = "";
+			test(str);
+			return result;
+		}
+
+		public void check() {
+			assertThat(runTest("")).isEqualTo("bad, str: ");
+			assertThat(runTest("1234")).isEqualTo("good, len: 4, str: 1234");
+			assertThat(runTest("1234567")).isEqualTo("bad, str: 1234567");
+		}
+	}
+}
+"""
+}
