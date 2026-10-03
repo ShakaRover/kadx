@@ -166,7 +166,7 @@ class ClassGen(
 		CodeGenUtils.addInputFileInfo(clsCode, cls)
 
 		annotationGen.addForClass(clsCode)
-		clsCode.startLineWithNum(cls.getSourceLine()).add(af.makeString(cls.checkCommentsLevel(CommentsLevel.INFO)))
+		clsCode.startLineWithNum(cls.sourceLine).add(af.makeString(cls.checkCommentsLevel(CommentsLevel.INFO)))
 		if (af.isInterface()) {
 			if (af.isAnnotation()) {
 				clsCode.add('@')
@@ -285,7 +285,7 @@ class ClassGen(
 		nodes.addAll(cls.innerClasses)
 		nodes.addAll(cls.methods)
 		nodes.removeIf { node -> skipNode(node) }
-		nodes.sortBy { it.getSourceLine() }
+		nodes.sortBy { it.sourceLine }
 		for (node in nodes) {
 			if (node is ClassNode) {
 				addInnerClass(clsCode, node)

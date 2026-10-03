@@ -144,14 +144,14 @@ class CodeArea internal constructor(panel: ContentPanel, jnode: JNode) :
 				return TaskWithExtraOnFinish(
 					loadTask,
 					Runnable {
-						setText(getCodeInfo().getCodeStr())
+						setText(getCodeInfo().codeStr)
 						setCaretPosition(0)
 						setLoaded()
 					},
 				)
 			}
 		}
-		return LoadTask<String>({ getCodeInfo().getCodeStr() }) { code ->
+		return LoadTask<String>({ getCodeInfo().codeStr }) { code ->
 			setText(code)
 			setCaretPosition(0)
 			setLoaded()
@@ -160,7 +160,7 @@ class CodeArea internal constructor(panel: ContentPanel, jnode: JNode) :
 
 	override fun refresh() {
 		cachedCodeInfo = null
-		setText(getCodeInfo().getCodeStr())
+		setText(getCodeInfo().codeStr)
 	}
 
 	override fun createPopupMenu(): JPopupMenu {
@@ -345,8 +345,8 @@ class CodeArea internal constructor(panel: ContentPanel, jnode: JNode) :
 			if (!codeInfo.hasMetadata()) {
 				return null
 			}
-			val ann = codeInfo.getCodeMetadata().getAt(pos) ?: return null
-			return when (ann.getAnnType()) {
+			val ann = codeInfo.codeMetadata.getAt(pos) ?: return null
+			return when (ann.annType) {
 				AnnType.CLASS ->
 					jadxWrapper.getDecompiler().getJavaNodeByCodeAnnotation(codeInfo, ann) as? JavaClass
 
@@ -428,7 +428,7 @@ class CodeArea internal constructor(panel: ContentPanel, jnode: JNode) :
 			LOG.warn("No code info metadata for {}", codeInfo)
 			return null
 		}
-		return codeInfo.getCodeMetadata()
+		return codeInfo.codeMetadata
 	}
 
 	/**
@@ -441,7 +441,7 @@ class CodeArea internal constructor(panel: ContentPanel, jnode: JNode) :
 			LOG.debug("No code info metadata for {}", codeInfo)
 			return emptyMap()
 		}
-		val lineMapping = codeInfo.getCodeMetadata().getLineMapping()
+		val lineMapping = codeInfo.codeMetadata.getLineMapping()
 		if (lineMapping.isEmpty()) {
 			LOG.debug("Line mappings are empty for {}", codeInfo)
 			return emptyMap()

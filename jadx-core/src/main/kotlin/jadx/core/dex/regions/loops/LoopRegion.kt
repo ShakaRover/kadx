@@ -132,7 +132,7 @@ class LoopRegion(
 
 	val sourceLine: Int get() {
 		val lastInsn = BlockUtils.getLastInsn(header)
-		val headerLine = lastInsn?.getSourceLine() ?: 0
+		val headerLine = lastInsn?.sourceLine ?: 0
 		if (headerLine != 0) {
 			return headerLine
 		}

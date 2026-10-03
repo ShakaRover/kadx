@@ -42,13 +42,13 @@ class CaretPositionFix(private val codeArea: AbstractCodeArea) {
 
 			val codeInfo: ICodeInfo = codeArea.getCodeInfo()
 			if (codeInfo.hasMetadata()) {
-				val metadata = codeInfo.getCodeMetadata()
+				val metadata = codeInfo.codeMetadata
 				val ann: ICodeAnnotation? = metadata.getAt(pos)
 				if (ann is InsnCodeOffset) {
 					codeRawOffset = ann.getOffset()
 					val javaNode = metadata.getNodeAt(pos)
 					if (javaNode != null) {
-						javaNodePos = javaNode.getDefPosition()
+						javaNodePos = javaNode.defPosition
 					}
 				}
 			}
@@ -106,7 +106,7 @@ class CaretPositionFix(private val codeArea: AbstractCodeArea) {
 		if (javaNodePos != -1 && codeInfo.hasMetadata()) {
 			val cls: JClass? = codeArea.getJClass()
 			if (cls != null) {
-				val codeMetadata = codeInfo.getCodeMetadata()
+				val codeMetadata = codeInfo.codeMetadata
 				for ((annPos, ann) in codeMetadata.getAsMap()) {
 					if (annPos >= javaNodePos) {
 						if (ann is InsnCodeOffset && ann.getOffset() == codeRawOffset) {

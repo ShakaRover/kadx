@@ -25,7 +25,7 @@ class JadxClassNodeAssertions(cls: ClassNode) : AbstractObjectAssert<JadxClassNo
 		isNotNull()
 		val code = actual.getCode()
 		assertThat(code).isNotNull()
-		val codeStr = code.getCodeStr()
+		val codeStr = code.codeStr
 		assertThat(codeStr).isNotBlank()
 		return JadxCodeAssertions(codeStr)
 	}
@@ -41,7 +41,7 @@ class JadxClassNodeAssertions(cls: ClassNode) : AbstractObjectAssert<JadxClassNo
 		isNotNull()
 		val code = actual.reloadCode()
 		assertThat(code).isNotNull()
-		val codeStr = code.getCodeStr()
+		val codeStr = code.codeStr
 		assertThat(codeStr).isNotBlank()
 
 		val codeAssertions = JadxCodeAssertions(codeStr)
@@ -66,10 +66,10 @@ class JadxClassNodeAssertions(cls: ClassNode) : AbstractObjectAssert<JadxClassNo
 
 	fun checkCodeAnnotationFor(refStr: String, refOffset: Int, node: ICodeAnnotation): JadxClassNodeAssertions {
 		val code = actual.getCode()
-		val codePos = code.getCodeStr().indexOf(refStr)
+		val codePos = code.codeStr.indexOf(refStr)
 		assertThat(codePos).describedAs("String '%s' not found", refStr).isNotEqualTo(-1)
 		val refPos = codePos + refOffset
-		for (entry in code.getCodeMetadata().getAsMap().entries) {
+		for (entry in code.codeMetadata.getAsMap().entries) {
 			if (entry.key == refPos) {
 				assertThat(entry.value).isEqualTo(node)
 				return this

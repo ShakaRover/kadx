@@ -36,7 +36,7 @@ object SaveCode {
 		if (code === ICodeInfo.EMPTY) {
 			return
 		}
-		val codeStr = code.getCodeStr()
+		val codeStr = code.codeStr
 		if (codeStr.isEmpty()) {
 			return
 		}
@@ -52,7 +52,7 @@ object SaveCode {
 	}
 
 	fun save(codeInfo: ICodeInfo, file: File) {
-		save(codeInfo.getCodeStr(), file)
+		save(codeInfo.codeStr, file)
 	}
 
 	fun save(code: String, file: File) {

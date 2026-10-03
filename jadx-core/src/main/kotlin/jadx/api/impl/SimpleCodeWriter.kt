@@ -128,7 +128,7 @@ open class SimpleCodeWriter : ICodeWriter {
 	}
 
 	override fun add(cw: ICodeWriter): ICodeWriter {
-		checkNotNull(buf).append(cw.getCodeStr())
+		checkNotNull(buf).append(cw.codeStr)
 		return this
 	}
 
@@ -228,7 +228,7 @@ open class SimpleCodeWriter : ICodeWriter {
 
 	override fun getRawAnnotations(): Map<Int, ICodeAnnotation> = emptyMap()
 
-	override fun getCodeStr(): String = checkNotNull(buf).toString()
+	override val codeStr: String get() = checkNotNull(buf).toString()
 
-	override fun toString(): String = getCodeStr()
+	override fun toString(): String = codeStr
 }

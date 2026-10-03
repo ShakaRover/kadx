@@ -43,7 +43,7 @@ class TestCodeComments : IntegrationTest() {
 			.containsOne("// method comment")
 			.containsOne("System.out.println(\"comment\"); // insn comment")
 
-		val code = cls.getCode().getCodeStr()
+		val code = cls.getCode().codeStr
 		assertThat(cls)
 			.reloadCode(this)
 			.isEqualTo(code)

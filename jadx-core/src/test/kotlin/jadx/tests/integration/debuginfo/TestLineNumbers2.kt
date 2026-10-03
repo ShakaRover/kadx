@@ -17,7 +17,7 @@ class TestLineNumbers2 : IntegrationTest() {
 		printLineNumbers()
 
 		val cls = getClassNode(TestLineNumbers2Fixture.TestCls::class.java)
-		val linesMapStr = cls.getCode().getCodeMetadata().getLineMapping().toString()
+		val linesMapStr = cls.getCode().codeMetadata.getLineMapping().toString()
 		if (isJavaInput()) {
 			assertThat(linesMapStr).isEqualTo("{6=16, 9=17, 12=21, 13=22, 14=23, 15=24, 16=25, 18=27, 21=30, 22=31}")
 		} else {

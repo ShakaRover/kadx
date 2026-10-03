@@ -14,7 +14,7 @@ import jadx.gui.ui.codearea.CodeArea
 class JsonPrettifyAction(codeArea: CodeArea) : JNodeAction(ActionModel.JSON_PRETTIFY, codeArea) {
 
 	override fun runAction(node: JNode) {
-		val originString = getCodeArea().getCodeInfo().getCodeStr()
+		val originString = getCodeArea().getCodeInfo().codeStr
 		val je = JsonParser.parseString(originString)
 		val prettyString = GSON.toJson(je)
 		getCodeArea().setText(prettyString)

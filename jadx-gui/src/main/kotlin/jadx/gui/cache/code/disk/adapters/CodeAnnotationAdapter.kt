@@ -65,7 +65,7 @@ class CodeAnnotationAdapter(root: RootNode) : DataAdapter<ICodeAnnotation?> {
 			out.writeByte(0)
 			return
 		}
-		val typeInfo = adaptersByCls[value.getAnnType()]
+		val typeInfo = adaptersByCls[value.annType]
 			?: throw RuntimeException("Unexpected code annotation type: ${value.javaClass.simpleName}")
 		out.writeByte(typeInfo.tag)
 		typeInfo.adapter.write(out, value)

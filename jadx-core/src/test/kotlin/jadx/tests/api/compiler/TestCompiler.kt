@@ -73,7 +73,7 @@ class TestCompiler(private val options: CompilerOptions) : Closeable {
 	fun compileNodes(clsNodeList: List<ClassNode>) {
 		val jfObjects = ArrayList<JavaFileObject>(clsNodeList.size)
 		for (clsNode in clsNodeList) {
-			jfObjects.add(StringJavaFileObject(clsNode.fullName, clsNode.getCode().getCodeStr()))
+			jfObjects.add(StringJavaFileObject(clsNode.fullName, clsNode.getCode().codeStr))
 		}
 		compile(jfObjects)
 	}

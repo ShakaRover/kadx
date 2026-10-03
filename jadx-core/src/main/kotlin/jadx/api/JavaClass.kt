@@ -49,7 +49,7 @@ class JavaClass : JavaNode {
 	}
 
 	/** 反编译后的代码字符串。 */
-	fun getCode(): String = getCodeInfo().getCodeStr()
+	fun getCode(): String = getCodeInfo().codeStr
 
 	/** 反编译后的代码信息（触发反编译并加载内部列表）。 */
 	fun getCodeInfo(): ICodeInfo {
@@ -104,7 +104,7 @@ class JavaClass : JavaNode {
 	fun getSmali(): String = cls.disassembledCode
 
 	override fun isOwnCodeAnnotation(ann: ICodeAnnotation): Boolean {
-		if (ann.getAnnType() == ICodeAnnotation.AnnType.CLASS) {
+		if (ann.annType == ICodeAnnotation.AnnType.CLASS) {
 			return ann == cls
 		}
 		return false
@@ -119,11 +119,11 @@ class JavaClass : JavaNode {
 	fun getClassNode(): ClassNode = cls
 
 	/** 获取指定位置的代码注解。 */
-	fun getAnnotationAt(pos: Int): ICodeAnnotation? = getCodeInfo().getCodeMetadata().getAt(pos)
+	fun getAnnotationAt(pos: Int): ICodeAnnotation? = getCodeInfo().codeMetadata.getAt(pos)
 
 	/** 位置 -> Java 节点的使用映射。 */
 	fun getUsageMap(): Map<Int, JavaNode> {
-		val map = getCodeInfo().getCodeMetadata().getAsMap()
+		val map = getCodeInfo().codeMetadata.getAsMap()
 		if (map.isEmpty() || decompiler == null) {
 			return emptyMap()
 		}
@@ -145,7 +145,7 @@ class JavaClass : JavaNode {
 			return emptyList()
 		}
 		val result = ArrayList<Int>()
-		codeInfo.getCodeMetadata().searchDown<Any?>(0) { pos, ann ->
+		codeInfo.codeMetadata.searchDown<Any?>(0) { pos, ann ->
 			if (javaNode.isOwnCodeAnnotation(ann)) {
 				result.add(pos)
 			}
@@ -157,7 +157,7 @@ class JavaClass : JavaNode {
 	override val useIn: List<JavaNode> get() = getRootDecompiler().convertNodes(cls.useIn)
 
 	/** 反编译行号 -> 源码行号。 */
-	fun getSourceLine(decompiledLine: Int): Int? = getCodeInfo().getCodeMetadata().getLineMapping()[decompiledLine]
+	fun getSourceLine(decompiledLine: Int): Int? = getCodeInfo().codeMetadata.getLineMapping()[decompiledLine]
 
 	/**
 	 * 反编译类并加载字段/方法等内部列表；已加载则直接返回 null。
@@ -275,7 +275,7 @@ class JavaClass : JavaNode {
 		cls.removeAlias()
 	}
 
-	override fun getDefPos(): Int = cls.getDefPosition()
+	override fun getDefPos(): Int = cls.defPosition
 
 	override fun getName(): String = cls.shortName
 

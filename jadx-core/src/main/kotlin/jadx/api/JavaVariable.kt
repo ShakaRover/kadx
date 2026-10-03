@@ -43,7 +43,7 @@ class JavaVariable(
 
 	override fun getTopParentClass(): JavaClass = mth.getTopParentClass()
 
-	override fun getDefPos(): Int = varNode.getDefPosition()
+	override fun getDefPos(): Int = varNode.defPosition
 
 	override val useIn: List<JavaNode> get() = listOf<JavaNode>(mth)
 
@@ -52,7 +52,7 @@ class JavaVariable(
 	}
 
 	override fun isOwnCodeAnnotation(ann: ICodeAnnotation): Boolean {
-		if (ann.getAnnType() == ICodeAnnotation.AnnType.VAR_REF) {
+		if (ann.annType == ICodeAnnotation.AnnType.VAR_REF) {
 			val varRef = ann as VarRef
 			return varRef.getRefPos() == getDefPos()
 		}

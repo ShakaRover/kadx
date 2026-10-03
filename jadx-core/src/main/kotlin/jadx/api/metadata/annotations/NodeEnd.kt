@@ -20,7 +20,7 @@ class NodeEnd private constructor() : ICodeAnnotation {
 		val VALUE: NodeEnd = NodeEnd()
 	}
 
-	override fun getAnnType(): ICodeAnnotation.AnnType = ICodeAnnotation.AnnType.END
+	override val annType: ICodeAnnotation.AnnType get() = ICodeAnnotation.AnnType.END
 
 	override fun toString(): String = "END"
 }

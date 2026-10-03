@@ -27,7 +27,7 @@ class InMemoryCodeCache : ICodeCache {
 
 	override fun get(clsFullName: String): ICodeInfo = storage[clsFullName] ?: ICodeInfo.EMPTY
 
-	override fun getCode(clsFullName: String): String? = storage[clsFullName]?.getCodeStr()
+	override fun getCode(clsFullName: String): String? = storage[clsFullName]?.codeStr
 
 	override fun contains(clsFullName: String): Boolean = storage.containsKey(clsFullName)
 

@@ -423,8 +423,8 @@ open class InsnNode(
 		if (!isAttrStorageEmpty()) {
 			sb.append(' ').append(getAttributesString())
 		}
-		if (getSourceLine() != 0) {
-			sb.append(" (LINE:${getSourceLine()})")
+		if (sourceLine != 0) {
+			sb.append(" (LINE:$sourceLine)")
 		}
 	}
 

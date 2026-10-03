@@ -142,7 +142,7 @@ class CommentSearchProvider(
 			val javaMethod = (node as JMethod).javaMethod
 			val codeInfo: ICodeInfo = javaMethod.getTopParentClass().getCodeInfo()
 			val methodDefPos = javaMethod.getDefPos()
-			val jump = codeInfo.getCodeMetadata().searchDown<JumpPosition?>(methodDefPos) { p, ann ->
+			val jump = codeInfo.codeMetadata.searchDown<JumpPosition?>(methodDefPos) { p, ann ->
 				if (ann is InsnCodeOffset && ann.getOffset() == offset) {
 					JumpPosition(node, p)
 				} else {

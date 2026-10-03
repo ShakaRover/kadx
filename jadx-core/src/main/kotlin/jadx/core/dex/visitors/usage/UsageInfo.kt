@@ -98,7 +98,7 @@ class UsageInfo(private val root: RootNode) : IUsageInfoData {
 	}
 
 	fun clsUse(node: ICodeNode, useType: ArgType?) {
-		val consumer: (ClassNode) -> Unit = when (node.getAnnType()) {
+		val consumer: (ClassNode) -> Unit = when (node.annType) {
 			ICodeAnnotation.AnnType.CLASS -> { depCls -> clsUse(node as ClassNode, depCls) }
 
 			ICodeAnnotation.AnnType.METHOD -> { depCls -> clsUse(node as MethodNode, depCls) }
@@ -108,7 +108,7 @@ class UsageInfo(private val root: RootNode) : IUsageInfoData {
 				{ depCls -> clsUse(fldCls, depCls) }
 			}
 
-			else -> throw JadxRuntimeException("Unexpected use type: " + node.getAnnType())
+			else -> throw JadxRuntimeException("Unexpected use type: " + node.annType)
 		}
 		processType(useType, consumer)
 	}
@@ -163,7 +163,7 @@ class UsageInfo(private val root: RootNode) : IUsageInfoData {
 
 	fun fieldUse(node: ICodeNode, useFld: FieldInfo) {
 		val fld = root.resolveField(useFld) ?: return
-		when (node.getAnnType()) {
+		when (node.annType) {
 			ICodeAnnotation.AnnType.CLASS -> {
 				// TODO: 支持“类里的字段”用法？现在用字段父类代表“类里用类”
 				clsUse(node as ClassNode, fld.parentClass)

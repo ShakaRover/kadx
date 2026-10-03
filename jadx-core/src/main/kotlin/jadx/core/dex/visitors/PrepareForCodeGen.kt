@@ -320,7 +320,7 @@ class PrepareForCodeGen : AbstractVisitor() {
 		if (node.contains(AFlag.DONT_GENERATE)) {
 			return current
 		}
-		val line = node.getSourceLine()
+		val line = node.sourceLine
 		if (line == 0) {
 			return current
 		}

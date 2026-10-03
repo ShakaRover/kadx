@@ -11,7 +11,7 @@ import jadx.api.metadata.impl.CodeMetadataStorage
  * **做什么**：构造时把原始 `Map` 交给 [CodeMetadataStorage.build] 建成可快速反向查找的
  * 元数据存储；[hasMetadata] 通过引用比较判断是否为空元数据（与原 Java `!=` 等价）。
  *
- * 公共 API；getter 保留显式函数形态。
+ * 公共 API；属性在 JVM 上仍生成同名 getter。
  */
 class AnnotatedCodeInfo(
 	code: String,
@@ -22,9 +22,9 @@ class AnnotatedCodeInfo(
 	private val code: String = code
 	private val metadata: ICodeMetadata = CodeMetadataStorage.build(lineMapping, annotations)
 
-	override fun getCodeStr(): String = code
+	override val codeStr: String get() = code
 
-	override fun getCodeMetadata(): ICodeMetadata = metadata
+	override val codeMetadata: ICodeMetadata get() = metadata
 
 	// 原 Java 用引用比较 metadata != ICodeMetadata.EMPTY，Kotlin 对应 `!==`
 	override fun hasMetadata(): Boolean = metadata !== ICodeMetadata.EMPTY

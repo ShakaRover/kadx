@@ -207,7 +207,7 @@ class DebugInfoApplyVisitor : AbstractVisitor() {
 						val newArgReg = newArg as RegisterArg
 						applyDebugInfo(mth, checkNotNull(newArgReg.sVar), oldArgReg.getType(), oldArgReg.name)
 					}
-					ret.setSourceLine(origRet.getSourceLine())
+					ret.setSourceLine(origRet.sourceLine)
 				}
 			}
 		}

@@ -561,7 +561,7 @@ class JadxDecompiler : Closeable {
 		if (ann == null) {
 			return null
 		}
-		return when (ann.getAnnType()) {
+		return when (ann.annType) {
 			ICodeAnnotation.AnnType.CLASS -> convertClassNode(ann as ClassNode)
 			ICodeAnnotation.AnnType.METHOD -> convertMethodNode(ann as MethodNode)
 			ICodeAnnotation.AnnType.FIELD -> convertFieldNode(ann as FieldNode)
@@ -570,7 +570,7 @@ class JadxDecompiler : Closeable {
 			ICodeAnnotation.AnnType.VAR -> resolveVarNode(ann as VarNode)
 			ICodeAnnotation.AnnType.VAR_REF -> resolveVarRef(codeInfo, ann as VarRef)
 			ICodeAnnotation.AnnType.OFFSET -> null
-			else -> throw JadxRuntimeException("Unknown annotation type: " + ann.getAnnType() + ", class: " + ann.javaClass)
+			else -> throw JadxRuntimeException("Unknown annotation type: " + ann.annType + ", class: " + ann.javaClass)
 		}
 	}
 
@@ -583,10 +583,10 @@ class JadxDecompiler : Closeable {
 		if (codeInfo == null) {
 			throw JadxRuntimeException("Missing code info for resolve VarRef: $varRef")
 		}
-		val varNodeAnn = codeInfo.getCodeMetadata().getAt(varRef.getRefPos())
-		if (varNodeAnn != null && varNodeAnn.getAnnType() == ICodeAnnotation.AnnType.DECLARATION) {
+		val varNodeAnn = codeInfo.codeMetadata.getAt(varRef.getRefPos())
+		if (varNodeAnn != null && varNodeAnn.annType == ICodeAnnotation.AnnType.DECLARATION) {
 			val nodeRef = (varNodeAnn as NodeDeclareRef).getNode()
-			if (nodeRef.getAnnType() == ICodeAnnotation.AnnType.VAR) {
+			if (nodeRef.annType == ICodeAnnotation.AnnType.VAR) {
 				return resolveVarNode(nodeRef as VarNode)
 			}
 		}
@@ -596,17 +596,17 @@ class JadxDecompiler : Closeable {
 	fun convertNodes(nodesList: Collection<ICodeNodeRef>): List<JavaNode> = nodesList.mapNotNull { obj -> getJavaNodeByRef(obj) }
 
 	fun getJavaNodeAtPosition(codeInfo: ICodeInfo, pos: Int): JavaNode? {
-		val ann = codeInfo.getCodeMetadata().getAt(pos)
+		val ann = codeInfo.codeMetadata.getAt(pos)
 		return getJavaNodeByCodeAnnotation(codeInfo, ann)
 	}
 
 	fun getClosestJavaNode(codeInfo: ICodeInfo, pos: Int): JavaNode? {
-		val ann = codeInfo.getCodeMetadata().getClosestUp(pos)
+		val ann = codeInfo.codeMetadata.getClosestUp(pos)
 		return getJavaNodeByCodeAnnotation(codeInfo, ann)
 	}
 
 	fun getEnclosingNode(codeInfo: ICodeInfo, pos: Int): JavaNode? {
-		val obj = codeInfo.getCodeMetadata().getNodeAt(pos) ?: return null
+		val obj = codeInfo.codeMetadata.getNodeAt(pos) ?: return null
 		return getJavaNodeByRef(obj)
 	}
 

@@ -111,13 +111,13 @@ open class VarNode(
 	/** 变量引用视图。 */
 	fun getVarRef(): VarRef = varRef
 
-	override fun getDefPosition(): Int = defPos
+	override val defPosition: Int get() = defPos
 
 	override fun setDefPosition(pos: Int) {
 		this.defPos = pos
 	}
 
-	override fun getAnnType(): ICodeAnnotation.AnnType = ICodeAnnotation.AnnType.VAR
+	override val annType: ICodeAnnotation.AnnType get() = ICodeAnnotation.AnnType.VAR
 
 	override fun hashCode(): Int {
 		var h = 31 * getReg() + getSsa()

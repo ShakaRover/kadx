@@ -28,7 +28,7 @@ class TestCodeMetadata : IntegrationTest() {
 		val testMth: MethodNode = getMethod(cls, "test")
 		val callMth: MethodNode = getMethod(cls, "call")
 
-		val callDefPos = callMth.getDefPosition()
+		val callDefPos = callMth.defPosition
 		assertThat(callDefPos).isNotZero()
 
 		val javaClass: JavaClass = JadxInternalAccess.convertClassNode(jadxDecompiler, cls)
@@ -37,14 +37,14 @@ class TestCodeMetadata : IntegrationTest() {
 		assertThat(callUsePlaces).hasSize(1)
 		val callUse = callUsePlaces[0]
 
-		val metadata: ICodeMetadata = cls.getCode().getCodeMetadata()
+		val metadata: ICodeMetadata = cls.getCode().codeMetadata
 		println(metadata)
 		val callDef: ICodeNodeRef? = metadata.getNodeAt(callUse)
 		assertThat(callDef).isSameAs(testMth)
 
 		val endPos = AtomicInteger()
 		val testEnd = metadata.searchUp(callDefPos) { pos, ann ->
-			if (ann.getAnnType() == AnnType.END) {
+			if (ann.annType == AnnType.END) {
 				endPos.set(pos)
 				ann
 			} else {

@@ -125,7 +125,7 @@ class TernaryMod private constructor() :
 				val thenArg = InsnArg.wrapInsnIntoArg(thenInsn.copyWithoutResult())
 				val elseArg = InsnArg.wrapInsnIntoArg(elseInsn.copyWithoutResult())
 				val ternInsn = TernaryInsn(checkNotNull(ifRegion.condition), resArg.duplicate(), thenArg, elseArg)
-				val branchLine = maxOf(thenInsn.getSourceLine(), elseInsn.getSourceLine())
+				val branchLine = maxOf(thenInsn.sourceLine, elseInsn.sourceLine)
 				ternInsn.setSourceLine(maxOf(ifRegion.sourceLine, branchLine))
 
 				InsnRemover.unbindInsn(mth, thenInsn)
@@ -181,9 +181,9 @@ class TernaryMod private constructor() :
 		}
 		private fun verifyLineHints(mth: MethodNode, thenInsn: InsnNode, elseInsn: InsnNode): Boolean {
 			if (mth.contains(AFlag.USE_LINES_HINTS) &&
-				thenInsn.getSourceLine() != elseInsn.getSourceLine()
+				thenInsn.sourceLine != elseInsn.sourceLine
 			) {
-				if (thenInsn.getSourceLine() != 0 && elseInsn.getSourceLine() != 0) {
+				if (thenInsn.sourceLine != 0 && elseInsn.sourceLine != 0) {
 					// 有时源码行号不准确
 					return checkLineStats(thenInsn, elseInsn)
 				}
@@ -252,7 +252,7 @@ class TernaryMod private constructor() :
 					continue
 				}
 				val assignInsn = (arg as RegisterArg).assignInsn ?: continue
-				val sourceLine = assignInsn.getSourceLine()
+				val sourceLine = assignInsn.sourceLine
 				if (sourceLine != 0) {
 					map[sourceLine] = (map[sourceLine] ?: 0) + 1
 				}

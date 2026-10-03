@@ -58,7 +58,7 @@ class AnnotatedCodeWriter(args: JadxArgs) : SimpleCodeWriter(args) {
 
 	override fun add(cw: ICodeWriter): ICodeWriter {
 		if (!cw.isMetadataSupported()) {
-			checkNotNull(buf).append(cw.getCodeStr())
+			checkNotNull(buf).append(cw.codeStr)
 			return this
 		}
 		val code = cw as AnnotatedCodeWriter

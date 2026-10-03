@@ -113,7 +113,7 @@ class Smali private constructor() {
 	}
 
 	/** @return 反汇编得到的完整 smali 文本 */
-	fun getCode(): String = codeInfo.getCodeStr()
+	fun getCode(): String = codeInfo.codeStr
 
 	/** @return 方法定义在 smali 文本中的位置，未找到返回 -1 */
 	fun getMethodDefPos(mthFullRawID: String): Int = insnMap[mthFullRawID]?.getDefPos() ?: -1

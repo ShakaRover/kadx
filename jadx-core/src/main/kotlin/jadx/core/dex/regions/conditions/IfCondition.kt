@@ -117,7 +117,7 @@ class IfCondition private constructor(
 
 	val sourceLine: Int get() {
 		for (insn in collectInsns()) {
-			val line = insn.getSourceLine()
+			val line = insn.sourceLine
 			if (line != 0) {
 				return line
 			}

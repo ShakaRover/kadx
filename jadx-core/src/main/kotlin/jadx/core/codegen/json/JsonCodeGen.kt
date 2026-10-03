@@ -79,7 +79,7 @@ class JsonCodeGen(cls: ClassNode) {
 		val cw: ICodeWriter = SimpleCodeWriter(args)
 		CodeGenUtils.addErrorsAndComments(cw, cls)
 		classGen.addClassDeclaration(cw)
-		jsonCls.declaration = cw.getCodeStr()
+		jsonCls.declaration = cw.codeStr
 
 		addFields(cls, jsonCls, classGen)
 		addMethods(cls, jsonCls, classGen)
@@ -122,7 +122,7 @@ class JsonCodeGen(cls: ClassNode) {
 
 			val cw: ICodeWriter = SimpleCodeWriter(args)
 			classGen.addField(cw, field)
-			jsonField.declaration = cw.getCodeStr()
+			jsonField.declaration = cw.codeStr
 			jsonField.accessFlags = field.accessFlags.rawValue()
 			fieldsList.add(jsonField)
 		}
@@ -147,7 +147,7 @@ class JsonCodeGen(cls: ClassNode) {
 			val mthGen = MethodGen(classGen, mth)
 			val cw: ICodeWriter = AnnotatedCodeWriter(args)
 			mthGen.addDefinition(cw)
-			jsonMth.declaration = cw.getCodeStr()
+			jsonMth.declaration = cw.codeStr
 			jsonMth.accessFlags = mth.accessFlags.rawValue()
 			jsonMth.lines = fillMthCode(mth, mthGen)
 			jsonMth.offset = "0x" + java.lang.Long.toHexString(mth.methodCodeOffset)
@@ -167,13 +167,13 @@ class JsonCodeGen(cls: ClassNode) {
 			throw JadxRuntimeException("Method generation error", e)
 		}
 		val code: ICodeInfo = cw.finish()
-		val codeStr = code.getCodeStr()
+		val codeStr = code.codeStr
 		if (codeStr.isEmpty()) {
 			return emptyList()
 		}
 
 		val lines = Pattern.compile(args.codeNewLineStr).split(codeStr)
-		val metadata: ICodeMetadata = code.getCodeMetadata()
+		val metadata: ICodeMetadata = code.codeMetadata
 		val lineMapping = metadata.getLineMapping()
 		val mthCodeOffset = mth.methodCodeOffset + 16
 
@@ -201,7 +201,7 @@ class JsonCodeGen(cls: ClassNode) {
 	private fun getTypeAlias(classGen: ClassGen, clsType: ArgType): String {
 		val code: ICodeWriter = SimpleCodeWriter(args)
 		classGen.useType(code, clsType)
-		return code.getCodeStr()
+		return code.codeStr
 	}
 
 	private fun getClassTypeStr(cls: ClassNode): String {

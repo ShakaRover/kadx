@@ -415,7 +415,7 @@ class UsageDialogPlus private constructor(
 		if (usePositions.isEmpty()) {
 			return
 		}
-		val code = codeInfo.getCodeStr()
+		val code = codeInfo.codeStr
 		val wrapper: JadxWrapper = mainWindow.getWrapper()
 		for (pos in usePositions) {
 			val line = CodeUtils.getLineForPos(code, pos)

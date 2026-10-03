@@ -343,8 +343,8 @@ abstract class IntegrationTest : TestUtils() {
 	}
 
 	private fun printCodeWithLineNumbers(code: ICodeInfo) {
-		val codeStr = code.getCodeStr()
-		val lineMapping = code.getCodeMetadata().getLineMapping()
+		val codeStr = code.codeStr
+		val lineMapping = code.codeMetadata.getLineMapping()
 		val lines = codeStr.split(Regex("\\R"))
 		for (i in lines.indices) {
 			val line = lines[i]
@@ -359,8 +359,8 @@ abstract class IntegrationTest : TestUtils() {
 	}
 
 	private fun printCodeWithOffsets(code: ICodeInfo) {
-		val codeStr = code.getCodeStr()
-		val metadata: ICodeMetadata = code.getCodeMetadata()
+		val codeStr = code.codeStr
+		val metadata: ICodeMetadata = code.codeMetadata
 		var lineStartPos = 0
 		val newLineStr = args.codeNewLineStr
 		val newLineLen = newLineStr.length

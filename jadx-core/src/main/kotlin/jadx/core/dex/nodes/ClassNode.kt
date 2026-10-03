@@ -92,10 +92,10 @@ class ClassNode(
 		}
 
 		private fun processDefinitionAnnotations(codeInfo: ICodeInfo) {
-			val annotations = codeInfo.getCodeMetadata().getAsMap()
+			val annotations = codeInfo.codeMetadata.getAsMap()
 			if (annotations.isEmpty()) return
 			for ((pos, ann) in annotations as Map<Int, ICodeAnnotation>) {
-				if (ann.getAnnType() == ICodeAnnotation.AnnType.DECLARATION) {
+				if (ann.annType == ICodeAnnotation.AnnType.DECLARATION) {
 					val declareRef = ann as NodeDeclareRef
 					declareRef.setDefPos(pos)
 					declareRef.getNode().setDefPosition(pos)
@@ -103,7 +103,7 @@ class ClassNode(
 			}
 			val values: MutableList<ICodeAnnotation> = ArrayList(annotations.values)
 			values.removeIf { v ->
-				if (v.getAnnType() == ICodeAnnotation.AnnType.VAR_REF) {
+				if (v.annType == ICodeAnnotation.AnnType.VAR_REF) {
 					val varRef = v as VarRef
 					if (varRef.getRefPos() == 0) {
 						LOG.debug("Var reference '{}' incorrect (ref pos is zero) and was removed from metadata", varRef)
@@ -635,7 +635,7 @@ class ClassNode(
 			for (innerClass in allInlinedClasses) {
 				innerClass.getDisassembledCode(code)
 			}
-			smali = code.finish().getCodeStr()
+			smali = code.finish().codeStr
 		}
 		return checkNotNull(smali)
 	}
@@ -676,7 +676,7 @@ class ClassNode(
 
 	val totalDepsCount: Int get() = dependencies.size + codegenDeps.size
 
-	override fun getAnnType() = ICodeAnnotation.AnnType.CLASS
+	override val annType get() = ICodeAnnotation.AnnType.CLASS
 
 	override fun hashCode(): Int = classInfo.hashCode()
 

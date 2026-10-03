@@ -173,7 +173,7 @@ class DebugInfoAttachVisitor : AbstractVisitor() {
 	private fun setMethodSourceLine(mth: MethodNode, insnArr: Array<InsnNode?>) {
 		for (insn in insnArr) {
 			if (insn != null) {
-				val line = insn.getSourceLine()
+				val line = insn.sourceLine
 				if (line != 0) {
 					mth.setSourceLine(line - 1)
 					return

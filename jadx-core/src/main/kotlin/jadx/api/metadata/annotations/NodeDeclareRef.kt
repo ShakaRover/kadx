@@ -30,7 +30,7 @@ class NodeDeclareRef(private val node: ICodeNodeRef) : ICodeAnnotation {
 		this.defPos = defPos
 	}
 
-	override fun getAnnType(): ICodeAnnotation.AnnType = ICodeAnnotation.AnnType.DECLARATION
+	override val annType: ICodeAnnotation.AnnType get() = ICodeAnnotation.AnnType.DECLARATION
 
 	override fun equals(other: Any?): Boolean {
 		if (this === other) {

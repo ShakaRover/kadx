@@ -35,7 +35,7 @@ class JavaField internal constructor(
 	/** 字段类型（解析类别名之后）。 */
 	fun getType(): ArgType = ArgType.tryToResolveClassAlias(field.root(), field.type)
 
-	override fun getDefPos(): Int = field.getDefPosition()
+	override fun getDefPos(): Int = field.defPosition
 
 	override val useIn: List<JavaNode> get() = declaringClass.getRootDecompiler().convertNodes(this.field.useIn)
 
@@ -44,7 +44,7 @@ class JavaField internal constructor(
 	}
 
 	override fun isOwnCodeAnnotation(ann: ICodeAnnotation): Boolean {
-		if (ann.getAnnType() == ICodeAnnotation.AnnType.FIELD) {
+		if (ann.annType == ICodeAnnotation.AnnType.FIELD) {
 			return ann == field
 		}
 		return false

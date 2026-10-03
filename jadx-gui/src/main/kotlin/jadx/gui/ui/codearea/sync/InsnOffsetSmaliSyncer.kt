@@ -54,10 +54,10 @@ class InsnOffsetSmaliSyncer(private val from: SmaliArea) : IToJavaSyncStrategy {
 		val it = methodDecl
 		while (it.hasNext()) {
 			val entry = it.next()
-			if (entry.value.getAnnType() == ICodeAnnotation.AnnType.END) {
+			if (entry.value.annType == ICodeAnnotation.AnnType.END) {
 				break
 			}
-			if (entry.value.getAnnType() != ICodeAnnotation.AnnType.OFFSET) {
+			if (entry.value.annType != ICodeAnnotation.AnnType.OFFSET) {
 				continue
 			}
 			if (prev != null) {

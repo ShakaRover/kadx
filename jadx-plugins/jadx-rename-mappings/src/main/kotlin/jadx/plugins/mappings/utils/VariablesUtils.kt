@@ -26,10 +26,10 @@ public object VariablesUtils {
 
 	public fun collect(mth: MethodNode): List<VarInfo> {
 		val codeInfo = mth.topParentClass.getCode()
-		val mthDefPos = mth.getDefPosition()
-		val mthLineEndPos = CodeUtils.getLineEndForPos(codeInfo.getCodeStr(), mthDefPos)
+		val mthDefPos = mth.defPosition
+		val mthLineEndPos = CodeUtils.getLineEndForPos(codeInfo.codeStr, mthDefPos)
 		val codeVisitor = CodeVisitor(mth)
-		codeInfo.getCodeMetadata().searchDown(mthLineEndPos) { pos, ann -> codeVisitor.process(pos, ann) }
+		codeInfo.codeMetadata.searchDown(mthLineEndPos) { pos, ann -> codeVisitor.process(pos, ann) }
 		return codeVisitor.vars
 	}
 
@@ -46,7 +46,7 @@ public object VariablesUtils {
 				if (declRef is VarNode) {
 					if (declRef.getMth() !== mth) { // 已经越过当前方法、进入其他方法时停止
 						if (vars.isNotEmpty()) {
-							vars[vars.size - 1].endOpIdx = declRef.getDefPosition() - 1
+							vars[vars.size - 1].endOpIdx = declRef.defPosition - 1
 						}
 						return true
 					}

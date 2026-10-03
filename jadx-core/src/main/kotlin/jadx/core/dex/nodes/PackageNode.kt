@@ -167,7 +167,7 @@ class PackageNode(
 
 	override fun typeName(): String = "package"
 
-	override fun getAnnType() = ICodeAnnotation.AnnType.PKG
+	override val annType get() = ICodeAnnotation.AnnType.PKG
 
 	override fun root(): RootNode = root
 

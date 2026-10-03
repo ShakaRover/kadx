@@ -30,7 +30,7 @@ abstract class VarRef : ICodeAnnotation {
 	/** 引用位置（VarNode 在代码元数据中的位置）。 */
 	abstract fun getRefPos(): Int
 
-	override fun getAnnType(): ICodeAnnotation.AnnType = ICodeAnnotation.AnnType.VAR_REF
+	override val annType: ICodeAnnotation.AnnType get() = ICodeAnnotation.AnnType.VAR_REF
 
 	/** 位置已知的引用。 */
 	class FixedVarRef(private val refPos: Int) : VarRef() {
@@ -39,7 +39,7 @@ abstract class VarRef : ICodeAnnotation {
 
 	/** 绑定到 [VarNode] 的引用，位置实时取自定义位置。 */
 	class RelatedVarRef(private val varNode: VarNode) : VarRef() {
-		override fun getRefPos(): Int = varNode.getDefPosition()
+		override fun getRefPos(): Int = varNode.defPosition
 
 		override fun toString(): String = "VarRef{" + varNode + ", name=" + varNode.getName() + ", mth=" + varNode.getMth() + '}'
 	}

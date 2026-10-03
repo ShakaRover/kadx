@@ -92,17 +92,17 @@ object CodeUtils {
 		if (end < start) {
 			return ""
 		}
-		return codeInfo.getCodeStr().substring(start, end)
+		return codeInfo.codeStr.substring(start, end)
 	}
 
 	/**
 	 * 在方法定义之前查找第一个空行，以便把方法的注释与注解一并包含进来。
 	 */
 	private fun getMethodStart(mth: MethodNode, codeInfo: ICodeInfo): Int {
-		val pos = mth.getDefPosition()
+		val pos = mth.defPosition
 		val newLineStr = mth.root().getArgs().codeNewLineStr
 		val emptyLine = newLineStr + newLineStr
-		val emptyLinePos = codeInfo.getCodeStr().lastIndexOf(emptyLine, pos)
+		val emptyLinePos = codeInfo.codeStr.lastIndexOf(emptyLine, pos)
 		return if (emptyLinePos == -1) pos else emptyLinePos + emptyLine.length
 	}
 
@@ -119,17 +119,17 @@ object CodeUtils {
 		if (!codeInfo.hasMetadata()) {
 			return -1
 		}
-		val end = codeInfo.getCodeMetadata().searchDown(
-			mth.getDefPosition() + 1,
+		val end = codeInfo.codeMetadata.searchDown(
+			mth.defPosition + 1,
 			object : BiFunction<Int, ICodeAnnotation, Int?> {
 				/** 当前处于第几层嵌套的类 / 方法声明中。 */
 				var nested = 0
 
 				override fun apply(pos: Int, ann: ICodeAnnotation): Int? {
-					when (ann.getAnnType()) {
+					when (ann.annType) {
 						ICodeAnnotation.AnnType.DECLARATION -> {
 							val node: ICodeNodeRef = (ann as NodeDeclareRef).getNode()
-							when (node.getAnnType()) {
+							when (node.annType) {
 								ICodeAnnotation.AnnType.CLASS, ICodeAnnotation.AnnType.METHOD -> nested++
 								else -> {}
 							}

@@ -52,7 +52,7 @@ abstract class ConditionRegion(parent: IRegion?) :
 		for (block in conditionBlocksValue) {
 			val lastInsn = BlockUtils.getLastInsn(block)
 			if (lastInsn != null) {
-				val sourceLine = lastInsn.getSourceLine()
+				val sourceLine = lastInsn.sourceLine
 				if (sourceLine != 0) {
 					return sourceLine
 				}

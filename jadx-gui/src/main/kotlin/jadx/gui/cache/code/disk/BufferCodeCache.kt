@@ -59,7 +59,7 @@ class BufferCodeCache(private val backCache: ICodeCache) : ICodeCache {
 	override fun getCode(clsFullName: String): String? {
 		val codeInfo = cache[clsFullName]
 		if (codeInfo != null) {
-			return codeInfo.getCodeStr()
+			return codeInfo.codeStr
 		}
 		return backCache.getCode(clsFullName)
 	}

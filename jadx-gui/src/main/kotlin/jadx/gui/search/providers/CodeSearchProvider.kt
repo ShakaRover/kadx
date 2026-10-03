@@ -86,7 +86,7 @@ class CodeSearchProvider(
 
 	private fun getEnclosingNode(javaCls: JavaClass, pos: Int): JNode? {
 		try {
-			val metadata: ICodeMetadata = javaCls.getCodeInfo().getCodeMetadata()
+			val metadata: ICodeMetadata = javaCls.getCodeInfo().codeMetadata
 			val nodeRef = metadata.getNodeAt(pos) ?: return null
 			val encNode = wrapper.getJavaNodeByRef(nodeRef)
 			if (encNode != null) {

@@ -30,10 +30,10 @@ class TestLineNumbers : IntegrationTest() {
 
 		// 校验源码行号（仅指令与方法可用）
 		val testClassLine = 16
-		assertThat(testClassLine + 3).isEqualTo(func.getSourceLine())
-		assertThat(testClassLine + 9).isEqualTo(innerFunc.getSourceLine())
-		assertThat(testClassLine + 12).isEqualTo(innerFunc2.getSourceLine())
-		assertThat(testClassLine + 20).isEqualTo(innerFunc3.getSourceLine())
+		assertThat(testClassLine + 3).isEqualTo(func.sourceLine)
+		assertThat(testClassLine + 9).isEqualTo(innerFunc.sourceLine)
+		assertThat(testClassLine + 12).isEqualTo(innerFunc2.sourceLine)
+		assertThat(testClassLine + 20).isEqualTo(innerFunc3.sourceLine)
 
 		// 校验反编译输出行
 		checkLine(code, field, "int field;")
@@ -46,7 +46,7 @@ class TestLineNumbers : IntegrationTest() {
 	}
 
 	private fun checkLine(code: String, node: LineAttrNode, str: String) {
-		val line = CodeUtils.getLineForPos(code, node.getDefPosition())
+		val line = CodeUtils.getLineForPos(code, node.defPosition)
 		assertThat(line).contains(str)
 	}
 }

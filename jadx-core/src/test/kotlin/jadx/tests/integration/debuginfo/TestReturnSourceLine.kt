@@ -20,7 +20,7 @@ class TestReturnSourceLine : IntegrationTest() {
 
 		val cls = getClassNode(TestReturnSourceLineFixture.TestCls::class.java)
 		val codeInfo = cls.getCode()
-		val lines = codeInfo.getCodeStr().split(Regex("\\R"))
+		val lines = codeInfo.codeStr.split(Regex("\\R"))
 
 		val test1 = checkNotNull(cls.searchMethodByShortId("test1(Z)I"))
 		checkLine(lines, codeInfo, test1, 3, "return 1;")
@@ -37,11 +37,11 @@ class TestReturnSourceLine : IntegrationTest() {
 	}
 
 	private fun checkLine(lines: List<String>, cw: ICodeInfo, node: LineAttrNode, offset: Int, str: String) {
-		val nodeDefLine = CodeUtils.getLineNumForPos(cw.getCodeStr(), node.getDefPosition(), "\n")
+		val nodeDefLine = CodeUtils.getLineNumForPos(cw.codeStr, node.defPosition, "\n")
 		val decompiledLine = nodeDefLine + offset
 		assertThat(lines[decompiledLine - 1]).containsOne(str)
-		val sourceLine = cw.getCodeMetadata().getLineMapping()[decompiledLine]
+		val sourceLine = cw.codeMetadata.getLineMapping()[decompiledLine]
 		assertThat(sourceLine).isNotNull()
-		assertThat(checkNotNull(sourceLine)).isEqualTo(node.getSourceLine() + offset)
+		assertThat(checkNotNull(sourceLine)).isEqualTo(node.sourceLine + offset)
 	}
 }

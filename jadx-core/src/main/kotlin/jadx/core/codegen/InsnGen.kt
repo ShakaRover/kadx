@@ -256,7 +256,7 @@ open class InsnGen(
 				makeInsnBody(code, insn, if (flag == Flags.BODY_ONLY) BODY_ONLY_FLAG else BODY_ONLY_NOWRAP_FLAGS)
 			} else {
 				if (flag != Flags.INLINE) {
-					code.startLineWithNum(insn.getSourceLine())
+					code.startLineWithNum(insn.sourceLine)
 					InsnCodeOffset.attach(code, insn)
 					if (insn.contains(AFlag.COMMENT_OUT)) {
 						code.add("// ")

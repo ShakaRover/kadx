@@ -55,7 +55,7 @@ class TestUserRenames : IntegrationTest() {
 			.containsOne("int renamedZ = renamedY + 1;")
 			.containsOne("return renamedZ;")
 
-		val code = cls.getCode().getCodeStr()
+		val code = cls.getCode().codeStr
 		assertThat(cls)
 			.reloadCode(this)
 			.isEqualTo(code)

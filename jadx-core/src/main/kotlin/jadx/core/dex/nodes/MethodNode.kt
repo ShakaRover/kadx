@@ -237,11 +237,11 @@ class MethodNode(
 
 	fun collectArgNodes(): List<VarNode> {
 		val codeInfo: ICodeInfo = topParentClass.getCode()
-		val mthDefPos = getDefPosition()
-		val lineEndPos = getLineEndForPos(codeInfo.getCodeStr(), mthDefPos)
+		val mthDefPos = defPosition
+		val lineEndPos = getLineEndForPos(codeInfo.codeStr, mthDefPos)
 		val argsCount = mthInfo.argsCount
 		val args = ArrayList<VarNode>(argsCount)
-		codeInfo.getCodeMetadata().searchDown(mthDefPos) { pos, ann ->
+		codeInfo.codeMetadata.searchDown(mthDefPos) { pos, ann ->
 			if (pos > lineEndPos) return@searchDown true
 			if (ann is NodeDeclareRef) {
 				val declRef = ann.getNode()
@@ -575,7 +575,7 @@ class MethodNode(
 		methodsUsed.removeIf { !it.useIn.contains(this) }
 	}
 
-	override fun getAnnType() = ICodeAnnotation.AnnType.METHOD
+	override val annType get() = ICodeAnnotation.AnnType.METHOD
 
 	override fun hashCode(): Int = mthInfo.hashCode()
 

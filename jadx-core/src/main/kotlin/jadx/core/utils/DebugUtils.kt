@@ -124,7 +124,7 @@ object DebugUtils {
 		val cw = SimpleCodeWriter()
 		cw.startLine('|').add(mth.toString())
 		printRegion(mth, region, cw, "|  ", printInsns)
-		LOG.debug("{}{}", '\n', cw.finish().getCodeStr())
+		LOG.debug("{}{}", '\n', cw.finish().codeStr)
 	}
 
 	private fun printRegion(mth: MethodNode, region: IRegion, cw: ICodeWriter, indent0: String, printInsns: Boolean) {
@@ -172,7 +172,7 @@ object DebugUtils {
 				val ig = InsnGen(mg, true)
 				val code = SimpleCodeWriter()
 				ig.makeInsn(insn, code)
-				val codeStr = code.getCodeStr()
+				val codeStr = code.codeStr
 
 				val insnStrings = codeStr.split(Regex("\\R"))
 					.filter { StringUtils.notBlank(it) }

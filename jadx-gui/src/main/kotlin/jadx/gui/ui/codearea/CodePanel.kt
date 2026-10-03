@@ -110,7 +110,7 @@ class CodePanel(private val codeArea: AbstractCodeArea) : JPanel() {
 		if (!codeInfo.hasMetadata()) {
 			return false
 		}
-		val lineMapping = codeInfo.getCodeMetadata().getLineMapping()
+		val lineMapping = codeInfo.codeMetadata.getLineMapping()
 		if (lineMapping.isEmpty()) {
 			return false
 		}

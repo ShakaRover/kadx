@@ -54,7 +54,7 @@ class CodeMetadataStorage private constructor(
 
 	override fun searchUp(position: Int, annType: AnnType): ICodeAnnotation? {
 		for (v in navMap.tailMap(position, true).values) {
-			if (v.getAnnType() === annType) {
+			if (v.annType === annType) {
 				return v
 			}
 		}
@@ -63,7 +63,7 @@ class CodeMetadataStorage private constructor(
 
 	override fun searchUp(position: Int, limitPos: Int, annType: AnnType): ICodeAnnotation? {
 		for (v in navMap.subMap(position, true, limitPos, true).values) {
-			if (v.getAnnType() === annType) {
+			if (v.annType === annType) {
 				return v
 			}
 		}
@@ -94,12 +94,12 @@ class CodeMetadataStorage private constructor(
 	override fun getNodeAt(position: Int): ICodeNodeRef? {
 		var nesting = 0
 		for (ann in navMap.tailMap(position, true).values) {
-			when (ann.getAnnType()) {
+			when (ann.annType) {
 				AnnType.END -> nesting++
 
 				AnnType.DECLARATION -> {
 					val node = (ann as NodeDeclareRef).getNode()
-					val nodeType = node.getAnnType()
+					val nodeType = node.annType
 					if (nodeType === AnnType.CLASS || nodeType === AnnType.METHOD) {
 						if (nesting == 0) {
 							return node
@@ -118,9 +118,9 @@ class CodeMetadataStorage private constructor(
 
 	override fun getNodeBelow(position: Int): ICodeNodeRef? {
 		for (ann in navMap.headMap(position, true).descendingMap().values) {
-			if (ann.getAnnType() === AnnType.DECLARATION) {
+			if (ann.annType === AnnType.DECLARATION) {
 				val node = (ann as NodeDeclareRef).getNode()
-				val nodeType = node.getAnnType()
+				val nodeType = node.annType
 				if (nodeType === AnnType.CLASS || nodeType === AnnType.METHOD) {
 					return node
 				}

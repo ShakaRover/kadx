@@ -42,7 +42,7 @@ class HtmlPanel(panel: TabbedPane, jnode: JNode) : ContentPanel(panel, jnode) {
 
 	/** 用 [jnode] 的 HTML 代码刷新内容，并把光标移到开头。 */
 	fun loadContent(jnode: JNode) {
-		textArea.setText(jnode.getCodeInfo().getCodeStr())
+		textArea.setText(jnode.getCodeInfo().codeStr)
 		textArea.setCaretPosition(0) // otherwise the start view will be the last line
 	}
 

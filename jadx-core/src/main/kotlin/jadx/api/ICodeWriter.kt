@@ -71,7 +71,7 @@ interface ICodeWriter {
 	fun finish(): ICodeInfo
 
 	/** 返回已写入的代码字符串。 */
-	fun getCodeStr(): String
+	val codeStr: String
 
 	/** 返回已写入内容的长度。 */
 	fun getLength(): Int

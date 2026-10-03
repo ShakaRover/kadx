@@ -20,7 +20,7 @@ class TestCodeMetadata3 : IntegrationTest() {
 		disableCompilation()
 		val cls: ClassNode = getClassNode(TestCodeMetadata3Fixture.TestCls::class.java)
 		val codeInfo: ICodeInfo = cls.getCode()
-		println(codeInfo.getCodeMetadata())
+		println(codeInfo.codeMetadata)
 
 		val testMth: MethodNode = getMethod(cls, "test")
 		val javaClass: JavaClass = toJavaClass(cls)

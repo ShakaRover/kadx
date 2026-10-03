@@ -189,7 +189,7 @@ object BlockUtils {
 
 	fun getFirstSourceLine(block: IBlock): Int {
 		for (insn in block.instructions) {
-			val line = insn.getSourceLine()
+			val line = insn.sourceLine
 			if (line != 0) {
 				return line
 			}
@@ -1484,7 +1484,7 @@ object BlockUtils {
 		if (firstArg.isSameConst(secondArg)) {
 			return true
 		}
-		if (i1.getSourceLine() != i2.getSourceLine()) {
+		if (i1.sourceLine != i2.sourceLine) {
 			return false
 		}
 		return firstArg == secondArg

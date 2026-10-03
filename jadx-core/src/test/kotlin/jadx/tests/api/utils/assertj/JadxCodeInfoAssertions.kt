@@ -15,13 +15,13 @@ class JadxCodeInfoAssertions(codeInfo: ICodeInfo) : AbstractObjectAssert<JadxCod
 
 	fun code(): JadxCodeAssertions {
 		isNotNull()
-		val codeStr = actual.getCodeStr()
+		val codeStr = actual.codeStr
 		assertThat(codeStr).isNotBlank()
 		return JadxCodeAssertions(codeStr)
 	}
 
 	fun checkCodeOffsets(): JadxCodeInfoAssertions {
-		val dupOffsetCount = actual.getCodeMetadata().getAsMap().values
+		val dupOffsetCount = actual.codeMetadata.getAsMap().values
 			.filterIsInstance<InsnCodeOffset>()
 			.groupBy { it.getOffset() }
 			.values

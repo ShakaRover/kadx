@@ -128,7 +128,7 @@ open class CommentAction :
 		try {
 			val wrapper = getCodeArea().jadxWrapper
 			val codeInfo: ICodeInfo = getCodeArea().getCodeInfo()
-			val metadata = codeInfo.getCodeMetadata()
+			val metadata = codeInfo.codeMetadata
 			val lineStartPos = getCodeArea().getLineStartFor(pos)
 
 			// 通过指令偏移添加方法行注释
@@ -144,9 +144,9 @@ open class CommentAction :
 
 			// 检查本行的定义
 			val nodeDef: ICodeNodeRef? = metadata.searchUp(pos) { off, ann ->
-				if (lineStartPos <= off && ann.getAnnType() == AnnType.DECLARATION) {
+				if (lineStartPos <= off && ann.annType == AnnType.DECLARATION) {
 					val defRef = (ann as NodeDeclareRef).getNode()
-					if (defRef.getAnnType() != AnnType.VAR) {
+					if (defRef.annType != AnnType.VAR) {
 						return@searchUp defRef
 					}
 				}
@@ -160,7 +160,7 @@ open class CommentAction :
 			// 检查是否位于节点定义上方的注释行
 			if (isCommentLine(pos)) {
 				val nodeRef: ICodeNodeRef? = metadata.searchDown(pos) { off, ann ->
-					if (off > pos && ann.getAnnType() == AnnType.DECLARATION) {
+					if (off > pos && ann.annType == AnnType.DECLARATION) {
 						return@searchDown (ann as NodeDeclareRef).getNode()
 					}
 					null

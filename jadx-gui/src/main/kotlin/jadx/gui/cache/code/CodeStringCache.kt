@@ -77,7 +77,7 @@ class CodeStringCache(backCache: ICodeCache) : DelegateCodeCache(backCache) {
 
 	override fun add(clsFullName: String, codeInfo: ICodeInfo) {
 		changes.tryEmit(Unit)
-		codeCache[clsFullName] = codeInfo.getCodeStr()
+		codeCache[clsFullName] = codeInfo.codeStr
 		backCache.add(clsFullName, codeInfo)
 	}
 

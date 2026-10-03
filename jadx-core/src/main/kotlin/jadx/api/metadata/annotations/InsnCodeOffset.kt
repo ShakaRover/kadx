@@ -53,7 +53,7 @@ class InsnCodeOffset(private val offset: Int) : ICodeAnnotation {
 	/** 字节码偏移。 */
 	fun getOffset(): Int = offset
 
-	override fun getAnnType(): ICodeAnnotation.AnnType = ICodeAnnotation.AnnType.OFFSET
+	override val annType: ICodeAnnotation.AnnType get() = ICodeAnnotation.AnnType.OFFSET
 
 	override fun toString(): String = "offset=" + offset
 }

@@ -166,12 +166,12 @@ class SimpleCodePanel(mainWindow: MainWindow) : JPanel() {
 			// Get the code information of the node
 			val codeInfo: ICodeInfo = node.getCodeInfo()
 			if (codeInfo !== ICodeInfo.EMPTY) {
-				return codeInfo.getCodeStr()
+				return codeInfo.codeStr
 			}
 
 			// If it is a class node, try to get the class code
 			if (node is JClass) {
-				return node.getCodeInfo().getCodeStr()
+				return node.getCodeInfo().codeStr
 			}
 		}
 		return null

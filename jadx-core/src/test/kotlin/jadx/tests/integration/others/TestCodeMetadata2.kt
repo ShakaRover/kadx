@@ -30,7 +30,7 @@ class TestCodeMetadata2 : IntegrationTest() {
 		assertThat(emptyUsePlaces).hasSize(1)
 		val callUse = emptyUsePlaces[0]
 
-		val metadata: ICodeMetadata = cls.getCode().getCodeMetadata()
+		val metadata: ICodeMetadata = cls.getCode().codeMetadata
 		assertThat(metadata.getNodeAt(callUse)).isSameAs(testMth)
 	}
 }

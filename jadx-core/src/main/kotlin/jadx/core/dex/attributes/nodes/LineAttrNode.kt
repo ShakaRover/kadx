@@ -10,40 +10,40 @@ import jadx.core.dex.attributes.ILineAttributeNode
  * - [sourceLine]：原始源码中的行号（0 表示未知）；
  * - [defPosition]：在反编译生成代码中的字符偏移（声明位置），供 UI 定位。
  *
- * **Kotlin 转换说明**：字段私有 + 显式 `getXxx/setXxx` 覆写 [ILineAttributeNode]，
- * 避免 Kotlin 属性生成的 getter 与接口方法签名产生歧义。
+ * **Kotlin 转换说明**：字段私有 + Kotlin 属性覆写 [ILineAttributeNode] 的只读 getter，
+ * 写入仍用显式 `setSourceLine/setDefPosition`，JVM 方法名与原来一致。
  */
 abstract class LineAttrNode :
 	AttrNode(),
 	ILineAttributeNode {
 
-	private var sourceLine: Int = 0
+	private var sourceLineValue: Int = 0
 
 	/** 节点在反编译代码中声明位置的字符偏移 */
-	private var defPosition: Int = 0
+	private var defPositionValue: Int = 0
 
-	override fun getSourceLine(): Int = sourceLine
+	override val sourceLine: Int get() = sourceLineValue
 
 	override fun setSourceLine(sourceLine: Int) {
-		this.sourceLine = sourceLine
+		this.sourceLineValue = sourceLine
 	}
 
-	override fun getDefPosition(): Int = this.defPosition
+	override val defPosition: Int get() = defPositionValue
 
 	override fun setDefPosition(defPosition: Int) {
-		this.defPosition = defPosition
+		this.defPositionValue = defPosition
 	}
 
 	/** 若本节点还没有源码行号，则从另一个节点继承 */
 	open fun addSourceLineFrom(lineAttrNode: LineAttrNode) {
-		if (this.getSourceLine() == 0) {
-			this.setSourceLine(lineAttrNode.getSourceLine())
+		if (this.sourceLine == 0) {
+			this.setSourceLine(lineAttrNode.sourceLine)
 		}
 	}
 
 	/** 从另一个节点完整拷贝行号与声明位置 */
 	open fun copyLines(lineAttrNode: LineAttrNode) {
-		setSourceLine(lineAttrNode.getSourceLine())
-		setDefPosition(lineAttrNode.getDefPosition())
+		setSourceLine(lineAttrNode.sourceLine)
+		setDefPosition(lineAttrNode.defPosition)
 	}
 }

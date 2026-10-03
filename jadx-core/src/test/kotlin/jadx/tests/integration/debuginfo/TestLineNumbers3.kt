@@ -16,7 +16,7 @@ class TestLineNumbers3 : IntegrationTest() {
 	fun test() {
 		val cls = getClassNode(TestLineNumbers3Fixture.TestCls::class.java)
 		assertThat(cls).code().containsOne("super(message == null ? \"\" : message.toString());")
-		val linesMapStr = cls.getCode().getCodeMetadata().getLineMapping().toString()
+		val linesMapStr = cls.getCode().codeMetadata.getLineMapping().toString()
 		assertThat(linesMapStr).isEqualTo("{4=13, 5=14, 6=15}")
 	}
 }

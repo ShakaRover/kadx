@@ -105,7 +105,7 @@ class MethodGen(classGen: ClassGen, mth: MethodNode) {
 			code.startLine("*/")
 		}
 
-		code.startLineWithNum(mth.getSourceLine())
+		code.startLineWithNum(mth.sourceLine)
 		code.add(ai.makeString(mth.checkCommentsLevel(CommentsLevel.INFO)))
 		if (clsAccFlags.isInterface() && !mth.isNoCode() && !mth.accessFlags.isStatic()) {
 			// add 'default' for method with code in interface
@@ -439,7 +439,7 @@ class MethodGen(classGen: ClassGen, mth: MethodNode) {
 				code.startLine("*/")
 				code.startLine("//  ")
 			} else {
-				code.startLineWithNum(insn.getSourceLine())
+				code.startLineWithNum(insn.sourceLine)
 			}
 			InsnCodeOffset.attach(code, insn)
 			val resArg = insn.result

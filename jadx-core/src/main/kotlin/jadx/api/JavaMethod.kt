@@ -73,17 +73,17 @@ class JavaMethod internal constructor(
 	/** 是否为静态初始化方法（`<clinit>`）。 */
 	fun isClassInit(): Boolean = mth.methodInfo.isClassInit()
 
-	override fun getDefPos(): Int = mth.getDefPosition()
+	override fun getDefPos(): Int = mth.defPosition
 
 	/** 本方法的反编译代码字符串。 */
-	fun getCodeStr(): String = mth.codeStr
+	val codeStr: String get() = mth.codeStr
 
 	override fun removeAlias() {
 		mth.methodInfo.removeAlias()
 	}
 
 	override fun isOwnCodeAnnotation(ann: ICodeAnnotation): Boolean {
-		if (ann.getAnnType() == ICodeAnnotation.AnnType.METHOD) {
+		if (ann.annType == ICodeAnnotation.AnnType.METHOD) {
 			return ann == mth
 		}
 		return false

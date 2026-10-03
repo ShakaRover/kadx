@@ -87,18 +87,18 @@ class JClassPopupMenu(private val mainWindow: MainWindow, jClass: JClass) : JPop
 		}
 
 		private fun getCode(jClass: JClass, exportType: JClassExportType): String = when (exportType) {
-			JClassExportType.Code -> jClass.getCodeInfo().getCodeStr()
+			JClassExportType.Code -> jClass.getCodeInfo().codeStr
 
 			JClassExportType.Smali -> jClass.smali
 
 			JClassExportType.Simple -> {
 				val jClassSimple: JNode = JCodeMode(jClass, DecompilationMode.SIMPLE)
-				jClassSimple.getCodeInfo().getCodeStr()
+				jClassSimple.getCodeInfo().codeStr
 			}
 
 			JClassExportType.Fallback -> {
 				val jClassFallback: JNode = JCodeMode(jClass, DecompilationMode.FALLBACK)
-				jClassFallback.getCodeInfo().getCodeStr()
+				jClassFallback.getCodeInfo().codeStr
 			}
 		}
 	}

@@ -83,7 +83,7 @@ class InsnOffsetJavaSyncer(private val from: CodeArea) :
 		// 搜索第一个指令偏移
 		val firstInsnOffset = (fromInsnOffsetRange.start.value as InsnCodeOffset).getOffset()
 		val highlightPosStart: Int? = toMetadata.searchDown(toMthRange.start.key) { offset, ann ->
-			if (ann.getAnnType() != ICodeAnnotation.AnnType.OFFSET) {
+			if (ann.annType != ICodeAnnotation.AnnType.OFFSET) {
 				return@searchDown null
 			}
 			val pos = (ann as InsnCodeOffset).getOffset()
@@ -99,7 +99,7 @@ class InsnOffsetJavaSyncer(private val from: CodeArea) :
 		// 搜索第二个指令偏移
 		val secondInsnOffset = (fromInsnOffsetRange.end.value as InsnCodeOffset).getOffset()
 		val highlightPosEnd: Int? = toMetadata.searchDown(highlightPosStart) { offset, ann ->
-			if (ann.getAnnType() != ICodeAnnotation.AnnType.OFFSET) {
+			if (ann.annType != ICodeAnnotation.AnnType.OFFSET) {
 				return@searchDown null
 			}
 			val pos = (ann as InsnCodeOffset).getOffset()
@@ -132,11 +132,11 @@ class InsnOffsetJavaSyncer(private val from: CodeArea) :
 		val codeMetadata = area.codeMetadata ?: return null
 		val toMthDecl: Map.Entry<Int, ICodeAnnotation>? =
 			codeMetadata.searchDown<Map.Entry<Int, ICodeAnnotation>?>(0) { offset, ann ->
-				if (ann.getAnnType() != ICodeAnnotation.AnnType.DECLARATION) {
+				if (ann.annType != ICodeAnnotation.AnnType.DECLARATION) {
 					return@searchDown null
 				}
 				val node = (ann as NodeDeclareRef).getNode()
-				if (node.getAnnType() != ICodeAnnotation.AnnType.METHOD) {
+				if (node.annType != ICodeAnnotation.AnnType.METHOD) {
 					return@searchDown null
 				}
 				val mth = node as MethodNode
@@ -150,7 +150,7 @@ class InsnOffsetJavaSyncer(private val from: CodeArea) :
 		}
 		val toMthEnd: Map.Entry<Int, ICodeAnnotation>? =
 			codeMetadata.searchDown<Map.Entry<Int, ICodeAnnotation>?>(toMthDecl.key) { offset, ann ->
-				if (ann.getAnnType() != ICodeAnnotation.AnnType.END) {
+				if (ann.annType != ICodeAnnotation.AnnType.END) {
 					return@searchDown null
 				}
 				SimpleEntry(offset, ann)
@@ -166,11 +166,11 @@ class InsnOffsetJavaSyncer(private val from: CodeArea) :
 		val codeMetadata = from.codeMetadata ?: return null
 		val mthDef: Map.Entry<Int, ICodeAnnotation>? =
 			codeMetadata.searchUp<Map.Entry<Int, ICodeAnnotation>?>(startPos) { offset, ann ->
-				if (ann.getAnnType() != ICodeAnnotation.AnnType.DECLARATION) {
+				if (ann.annType != ICodeAnnotation.AnnType.DECLARATION) {
 					return@searchUp null
 				}
 				val node = (ann as NodeDeclareRef).getNode()
-				if (node.getAnnType() != ICodeAnnotation.AnnType.METHOD) {
+				if (node.annType != ICodeAnnotation.AnnType.METHOD) {
 					return@searchUp null
 				}
 				SimpleEntry(offset, ann)
@@ -180,7 +180,7 @@ class InsnOffsetJavaSyncer(private val from: CodeArea) :
 		}
 		val mthEnd: Map.Entry<Int, ICodeAnnotation>? =
 			codeMetadata.searchDown<Map.Entry<Int, ICodeAnnotation>?>(startPos) { offset, ann ->
-				if (ann.getAnnType() != ICodeAnnotation.AnnType.END) {
+				if (ann.annType != ICodeAnnotation.AnnType.END) {
 					return@searchDown null
 				}
 				SimpleEntry(offset, ann)
@@ -227,7 +227,7 @@ class InsnOffsetJavaSyncer(private val from: CodeArea) :
 			if (offset <= limit) {
 				return@searchUp null
 			}
-			if (ann.getAnnType() != ICodeAnnotation.AnnType.OFFSET) {
+			if (ann.annType != ICodeAnnotation.AnnType.OFFSET) {
 				return@searchUp null
 			}
 			SimpleEntry(offset, ann)
@@ -241,7 +241,7 @@ class InsnOffsetJavaSyncer(private val from: CodeArea) :
 			if (offset >= limit) {
 				return@searchDown null
 			}
-			if (ann.getAnnType() != ICodeAnnotation.AnnType.OFFSET) {
+			if (ann.annType != ICodeAnnotation.AnnType.OFFSET) {
 				return@searchDown null
 			}
 			SimpleEntry(offset, ann)

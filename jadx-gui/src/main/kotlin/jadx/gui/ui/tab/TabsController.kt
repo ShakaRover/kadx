@@ -160,8 +160,8 @@ class TabsController(private val mainWindow: MainWindow) {
 	 * 在 jumpCls 中搜索并跳转到原始节点。
 	 */
 	private fun jumpToInnerClass(node: JNode, codeParent: JavaClass, jumpCls: JClass, fromTree: Boolean) {
-		codeParent.getCodeInfo().getCodeMetadata().searchDown<Boolean?>(0) { pos, ann ->
-			if (ann.getAnnType() == ICodeAnnotation.AnnType.DECLARATION) {
+		codeParent.getCodeInfo().codeMetadata.searchDown<Boolean?>(0) { pos, ann ->
+			if (ann.annType == ICodeAnnotation.AnnType.DECLARATION) {
 				val declNode = (ann as NodeDeclareRef).getNode()
 				if (declNode == node.getJavaNode()?.getCodeNodeRef()) {
 					codeJump(JumpPosition(jumpCls, pos), fromTree)

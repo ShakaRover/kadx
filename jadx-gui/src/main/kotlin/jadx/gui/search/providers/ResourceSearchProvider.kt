@@ -81,7 +81,7 @@ class ResourceSearchProvider(
 	private fun search(resNode: JResource): JNode? {
 		val content: String
 		try {
-			content = resNode.getCodeInfo().getCodeStr()
+			content = resNode.getCodeInfo().codeStr
 		} catch (e: Exception) {
 			LOG.error("Failed to load resource node content", e)
 			return null
@@ -208,7 +208,7 @@ class ResourceSearchProvider(
 			return true
 		}
 		try {
-			val charsCount = resNode.getCodeInfo().getCodeStr().length
+			val charsCount = resNode.getCodeInfo().codeStr.length
 			val size = charsCount * 8L
 			if (size > sizeLimit) {
 				LOG.info(

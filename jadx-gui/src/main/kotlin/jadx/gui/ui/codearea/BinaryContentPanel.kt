@@ -63,7 +63,7 @@ class BinaryContentPanel(panel: TabbedPane, jnode: JNode) :
 				LOG.error("Failed to directly load resource binary data {}: {}", binaryNode.getName(), e.message)
 			}
 		}
-		return ByteArrayData(binaryNode.getCodeInfo().getCodeStr().toByteArray(StandardCharsets.US_ASCII))
+		return ByteArrayData(binaryNode.getCodeInfo().codeStr.toByteArray(StandardCharsets.US_ASCII))
 	}
 
 	override fun getCodeArea(): AbstractCodeArea? = null

@@ -42,12 +42,12 @@ class DiskCodeCacheTest : IntegrationTest() {
 		val readCodeInfo = cache.get(clsKey)
 
 		assertThat(readCodeInfo).isNotNull()
-		assertThat(readCodeInfo.getCodeStr()).isEqualTo(codeInfo.getCodeStr())
-		assertThat(readCodeInfo.getCodeMetadata().getLineMapping())
-			.isEqualTo(codeInfo.getCodeMetadata().getLineMapping())
-		LOG.info("Disk code annotations: {}", readCodeInfo.getCodeMetadata().getAsMap())
-		assertThat(readCodeInfo.getCodeMetadata().getAsMap())
-			.hasSameSizeAs(codeInfo.getCodeMetadata().getAsMap())
+		assertThat(readCodeInfo.codeStr).isEqualTo(codeInfo.codeStr)
+		assertThat(readCodeInfo.codeMetadata.getLineMapping())
+			.isEqualTo(codeInfo.codeMetadata.getLineMapping())
+		LOG.info("Disk code annotations: {}", readCodeInfo.codeMetadata.getAsMap())
+		assertThat(readCodeInfo.codeMetadata.getAsMap())
+			.hasSameSizeAs(codeInfo.codeMetadata.getAsMap())
 
 		cache.close()
 	}

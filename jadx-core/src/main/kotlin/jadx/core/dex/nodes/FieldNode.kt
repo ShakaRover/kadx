@@ -82,7 +82,7 @@ class FieldNode(
 
 	override fun root(): RootNode = parentClass.root()
 
-	override fun getAnnType() = ICodeAnnotation.AnnType.FIELD
+	override val annType get() = ICodeAnnotation.AnnType.FIELD
 
 	override fun hashCode(): Int = fieldInfo.hashCode()
 

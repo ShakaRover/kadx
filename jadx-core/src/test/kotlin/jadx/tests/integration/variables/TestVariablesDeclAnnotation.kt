@@ -35,10 +35,10 @@ class TestVariablesDeclAnnotation : IntegrationTest() {
 		val testMth: MethodNode = testMthOpt ?: error("method not found: $mthName")
 
 		val codeInfo: ICodeInfo = cls.getCode()
-		val mthDefPos = testMth.getDefPosition()
-		val lineEndPos = CodeUtils.getLineEndForPos(codeInfo.getCodeStr(), mthDefPos)
+		val mthDefPos = testMth.defPosition
+		val lineEndPos = CodeUtils.getLineEndForPos(codeInfo.codeStr, mthDefPos)
 		val argNames2 = ArrayList<String?>()
-		codeInfo.getCodeMetadata().searchDown(mthDefPos) { pos, ann ->
+		codeInfo.codeMetadata.searchDown(mthDefPos) { pos, ann ->
 			if (pos > lineEndPos) {
 				return@searchDown true // 到行尾即停止
 			}

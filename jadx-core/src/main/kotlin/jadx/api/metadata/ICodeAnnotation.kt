@@ -7,7 +7,7 @@ package jadx.api.metadata
  * “这个位置对应哪个类 / 方法 / 字段 / 变量 / 字节码偏移”等信息。UI 点击代码时
  * 就靠这些注解定位到对应的 dex 节点。
  *
- * **Kotlin 转换说明**：`getAnnType()` 保持显式函数形态（而非 Kotlin 属性），
+ * **Kotlin 转换说明**：`annType` 以 Kotlin 属性声明，JVM 上仍生成 `getAnnType()`，
  * Java 实现方与调用方零改动。
  */
 interface ICodeAnnotation {
@@ -43,5 +43,5 @@ interface ICodeAnnotation {
 	}
 
 	/** 返回注解种类。 */
-	fun getAnnType(): AnnType
+	val annType: AnnType
 }

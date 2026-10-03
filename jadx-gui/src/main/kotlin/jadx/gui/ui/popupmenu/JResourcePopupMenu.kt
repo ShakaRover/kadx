@@ -141,7 +141,7 @@ class JResourcePopupMenu(private val mainWindow: MainWindow, resource: JResource
 		}
 
 		private fun exportString(resource: JResource, savePath: Path) {
-			SaveCode.save(resource.getCodeInfo().getCodeStr(), savePath.toFile())
+			SaveCode.save(resource.getCodeInfo().codeStr, savePath.toFile())
 		}
 	}
 }

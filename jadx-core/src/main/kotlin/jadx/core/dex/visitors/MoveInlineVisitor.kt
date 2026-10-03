@@ -126,7 +126,7 @@ class MoveInlineVisitor : AbstractVisitor() {
 			}
 			val assignArg = ssaVar.assign
 			val parentInsn = assignArg.getParentInsn() ?: return false
-			if (parentInsn.getSourceLine() != move.getSourceLine() ||
+			if (parentInsn.sourceLine != move.sourceLine ||
 				moveArg.contains(AType.REG_DEBUG_INFO)
 			) {
 				// 保留调试信息

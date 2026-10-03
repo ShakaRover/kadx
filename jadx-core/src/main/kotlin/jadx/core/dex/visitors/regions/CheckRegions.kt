@@ -115,7 +115,7 @@ class CheckRegions : AbstractVisitor() {
 				}
 			}
 			code.newLine()
-			return code.getCodeStr()
+			return code.codeStr
 		}
 	}
 }

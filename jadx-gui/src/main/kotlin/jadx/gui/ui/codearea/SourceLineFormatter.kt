@@ -17,7 +17,7 @@ class SourceLineFormatter(private val codeInfo: ICodeInfo) : LineNumberFormatter
 	private val maxLength: Int = calcMaxLength(codeInfo)
 
 	override fun format(lineNumber: Int): String {
-		val sourceLine = codeInfo.getCodeMetadata().getLineMapping()[lineNumber]
+		val sourceLine = codeInfo.codeMetadata.getLineMapping()[lineNumber]
 			?: return ""
 		return sourceLine.toString()
 	}
@@ -27,7 +27,7 @@ class SourceLineFormatter(private val codeInfo: ICodeInfo) : LineNumberFormatter
 	companion object {
 		/** 计算行号映射里最大的源码行号需要几位数字。 */
 		private fun calcMaxLength(codeInfo: ICodeInfo): Int {
-			val maxLine = codeInfo.getCodeMetadata().getLineMapping().values.maxOrNull() ?: 1
+			val maxLine = codeInfo.codeMetadata.getLineMapping().values.maxOrNull() ?: 1
 			return getNumberLength(maxLine)
 		}
 

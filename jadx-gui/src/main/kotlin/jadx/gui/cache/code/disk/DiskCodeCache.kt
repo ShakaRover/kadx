@@ -116,8 +116,8 @@ class DiskCodeCache(root: RootNode, projectCacheDir: Path) : ICodeCache {
 				val clsId = clsData.clsId
 				val code = clsData.tmpCodeInfo
 				if (code != null) {
-					FileUtils.writeFile(getJavaFile(clsId), code.getCodeStr())
-					codeMetadataAdapter.write(getMetadataFile(clsId), code.getCodeMetadata())
+					FileUtils.writeFile(getJavaFile(clsId), code.codeStr)
+					codeMetadataAdapter.write(getMetadataFile(clsId), code.codeMetadata)
 				}
 			} catch (e: Exception) {
 				LOG.error("Failed to write code cache for $clsFullName", e)
@@ -136,7 +136,7 @@ class DiskCodeCache(root: RootNode, projectCacheDir: Path) : ICodeCache {
 			val clsData = getClsData(clsFullName)
 			val tmpCodeInfo = clsData.tmpCodeInfo
 			if (tmpCodeInfo != null) {
-				return tmpCodeInfo.getCodeStr()
+				return tmpCodeInfo.codeStr
 			}
 			val javaFile = getJavaFile(clsData.clsId)
 			if (!Files.exists(javaFile)) {

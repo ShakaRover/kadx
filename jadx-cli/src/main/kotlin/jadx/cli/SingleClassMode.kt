@@ -96,7 +96,7 @@ class SingleClassMode {
 			} else {
 				LOG.info("Saving class '{}' to file '{}'", clsForProcess.fullName, resultOut.absolutePath)
 			}
-			SaveCode.save(codeInfo.getCodeStr(), resultOut)
+			SaveCode.save(codeInfo.codeStr, resultOut)
 			return true
 		}
 	}

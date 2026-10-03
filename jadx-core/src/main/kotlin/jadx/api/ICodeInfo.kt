@@ -6,15 +6,16 @@ import jadx.api.metadata.ICodeMetadata
 /**
  * 反编译后单个类的代码信息（代码文本 + 元数据）。
  *
- * 这是公共 API：jadx-cli / jadx-gui / 插件都会读取它。方法名与 JVM 签名必须保持不变。
+ * 这是公共 API：jadx-cli / jadx-gui / 插件都会读取它。接口属性在 JVM 上仍生成
+ * `getCodeStr()` / `getCodeMetadata()`，Java 实现方与调用方零改动。
  */
 interface ICodeInfo {
 
 	/** 获取反编译后的代码字符串。 */
-	fun getCodeStr(): String
+	val codeStr: String
 
 	/** 获取代码元数据（用于定位类/方法/字段/变量的代码位置）。 */
-	fun getCodeMetadata(): ICodeMetadata
+	val codeMetadata: ICodeMetadata
 
 	/** 是否包含元数据。 */
 	fun hasMetadata(): Boolean

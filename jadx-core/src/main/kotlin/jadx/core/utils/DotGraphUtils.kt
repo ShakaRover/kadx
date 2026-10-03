@@ -151,7 +151,7 @@ class DotGraphUtils {
 		dot.startLine('}')
 		dot.startLine()
 
-		return dot.finish().getCodeStr()
+		return dot.finish().codeStr
 	}
 
 	private fun processMethodRegion(mth: MethodNode) {
