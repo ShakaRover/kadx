@@ -32,7 +32,6 @@ import jadx.core.dex.visitors.ssa.SSATransform
 import jadx.core.utils.exceptions.JadxOverflowException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.Optional
 
 /**
  * 类型推导主 Pass：为每个 SSA 变量计算“最合适的类型”。
@@ -144,7 +143,7 @@ class TypeInferenceVisitor : AbstractVisitor() {
 		val typeInfo = ssaVar.typeInfo
 		val bounds = typeInfo.getBounds()
 		val bestTypeOpt = selectBestTypeFromBounds(bounds)
-		if (bestTypeOpt.isEmpty()) {
+		if (bestTypeOpt == null) {
 			if (Consts.DEBUG_TYPE_INFERENCE) {
 				LOG.warn("Failed to select best type from bounds, count={} : ", bounds.size)
 				for (bound in bounds) {
@@ -153,7 +152,7 @@ class TypeInferenceVisitor : AbstractVisitor() {
 			}
 			return
 		}
-		val candidateType = bestTypeOpt.get()
+		val candidateType = bestTypeOpt
 		val result = typeUpdate.apply(mth, ssaVar, candidateType)
 		if (Consts.DEBUG_TYPE_INFERENCE && result == TypeUpdateResult.REJECT) {
 			if (ssaVar.typeInfo.getType() == candidateType) {
@@ -165,7 +164,7 @@ class TypeInferenceVisitor : AbstractVisitor() {
 	}
 
 	/** 从所有边界中选出“最宽”的类型（比较器取最大值）。 */
-	private fun selectBestTypeFromBounds(bounds: Set<ITypeBound>): Optional<ArgType> {
+	private fun selectBestTypeFromBounds(bounds: Set<ITypeBound>): ArgType? {
 		val comparator = typeUpdate.typeCompare.comparator
 		var best: ArgType? = null
 		for (bound in bounds) {
@@ -174,7 +173,7 @@ class TypeInferenceVisitor : AbstractVisitor() {
 				best = type
 			}
 		}
-		return Optional.ofNullable(best)
+		return best
 	}
 
 	private fun attachBounds(ssaVar: SSAVar) {

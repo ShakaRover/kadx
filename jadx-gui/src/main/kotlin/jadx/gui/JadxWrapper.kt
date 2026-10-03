@@ -39,7 +39,6 @@ import jadx.plugins.tools.JadxExternalPluginsLoader
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.Collections
-import java.util.Optional
 import java.util.stream.Collectors
 
 /**
@@ -96,7 +95,7 @@ class JadxWrapper(private val mainWindow: MainWindow) {
 	 * TODO: 后续可考虑移入 core 包。
 	 */
 	fun unloadClasses() {
-		getCurrentDecompiler().ifPresent { decompiler ->
+		getCurrentDecompiler()?.let { decompiler ->
 			for (cls in checkNotNull(decompiler.getRoot()).getClasses()) {
 				val clsState: ProcessState = cls.state
 				cls.unload()
@@ -248,9 +247,9 @@ class JadxWrapper(private val mainWindow: MainWindow) {
 		getSettings().sync()
 	}
 
-	fun getCurrentDecompiler(): Optional<JadxDecompiler> {
+	fun getCurrentDecompiler(): JadxDecompiler? {
 		synchronized(DECOMPILER_UPDATE_SYNC) {
-			return Optional.ofNullable(decompiler)
+			return decompiler
 		}
 	}
 

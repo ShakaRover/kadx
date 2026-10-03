@@ -3,7 +3,6 @@ package jadx.core.dex.trycatch
 import jadx.core.dex.nodes.BlockNode
 import jadx.core.utils.exceptions.JadxRuntimeException
 import java.util.Objects
-import java.util.Optional
 
 /**
  * try 体的一条出口边：表示从 try 体内的一个块离开到目标块。
@@ -22,21 +21,21 @@ class TryEdge(
 	val source: BlockNode,
 	val target: BlockNode,
 	val type: TryEdgeType,
-	private val handler: Optional<ExceptionHandler>,
+	private val handler: ExceptionHandler?,
 ) {
 
 	constructor(source: BlockNode, target: BlockNode, type: TryEdgeType) :
-		this(source, target, type, Optional.empty())
+		this(source, target, type, null)
 
 	constructor(source: BlockNode, target: BlockNode, handler: ExceptionHandler) :
-		this(source, target, TryEdgeType.HANDLER, Optional.of(handler))
+		this(source, target, TryEdgeType.HANDLER, handler)
 
 	init {
-		if (isHandlerExit() && handler.isEmpty()) {
+		if (isHandlerExit() && handler == null) {
 			throw JadxRuntimeException(
 				"Attempted to add a null exception handler as an edge of \"$type\" type",
 			)
-		} else if (isNotHandlerExit() && handler.isPresent()) {
+		} else if (isNotHandlerExit() && handler != null) {
 			throw JadxRuntimeException(
 				"Attempted to add an exception handler as an edge of \"$type\" type",
 			)
@@ -51,10 +50,10 @@ class TryEdge(
 		sb.append(" -> ")
 		sb.append(target.toString())
 		sb.append("] - Handler: ")
-		if (handler.isEmpty()) {
+		if (handler == null) {
 			sb.append("None")
 		} else {
-			sb.append(handler.get().toString())
+			sb.append(handler.toString())
 		}
 		return sb.toString()
 	}
@@ -79,11 +78,11 @@ class TryEdge(
 		if (!isHandlerExit()) {
 			throw JadxRuntimeException("Attempted to get the exception handler of a non-handler edge type")
 		}
-		if (handler.isEmpty()) {
+		if (handler == null) {
 			throw JadxRuntimeException(
 				"Attempted to get the exception handler of a handler edge type, however none was present",
 			)
 		}
-		return handler.get()
+		return handler
 	}
 }

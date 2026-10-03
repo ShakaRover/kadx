@@ -6,7 +6,6 @@ import jadx.core.plugins.AppContext
 import jadx.core.plugins.PluginContext
 import jadx.gui.ui.MainWindow
 import jadx.plugins.tools.JadxExternalPluginsLoader
-import java.util.Optional
 import java.util.SortedSet
 
 /**
@@ -23,10 +22,9 @@ import java.util.SortedSet
 class CollectPlugins(private val mainWindow: MainWindow) {
 
 	fun build(): CloseablePlugins {
-		val currentDecompiler: Optional<JadxDecompiler> = mainWindow.getWrapper().getCurrentDecompiler()
-		if (currentDecompiler.isPresent) {
-			val decompiler = currentDecompiler.get()
-			val plugins: SortedSet<PluginContext> = decompiler.getPluginManager().getResolvedPluginContexts()
+		val currentDecompiler: JadxDecompiler? = mainWindow.getWrapper().getCurrentDecompiler()
+		if (currentDecompiler != null) {
+			val plugins: SortedSet<PluginContext> = currentDecompiler.getPluginManager().getResolvedPluginContexts()
 			return CloseablePlugins(ArrayList(plugins), null)
 		}
 		// 在临时上下文中收集并初始化插件

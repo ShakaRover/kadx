@@ -681,7 +681,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 	private fun prepareInitialView() {
 		UiUtils.uiThreadGuard()
 		// 只有一个类时直接打开
-		wrapper.getCurrentDecompiler().ifPresent { decompiler ->
+		wrapper.getCurrentDecompiler()?.let { decompiler ->
 			val classes = decompiler.getClasses()
 			if (classes.size == 1) {
 				val singleCls = checkNotNull(cacheObject.getNodeCache().makeFrom(classes[0]))
@@ -830,7 +830,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 			NLS.str("preferences.cache.task.delete"),
 			Runnable {
 				try {
-					wrapper.getCurrentDecompiler().ifPresent { jadx ->
+					wrapper.getCurrentDecompiler()?.let { jadx ->
 						try {
 							jadx.getArgs().codeCache.close()
 						} catch (e: Exception) {

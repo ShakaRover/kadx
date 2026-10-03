@@ -32,7 +32,6 @@ import java.nio.file.Files.newBufferedReader
 import java.nio.file.Files.newBufferedWriter
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
-import java.util.Optional
 import java.nio.file.Paths.get as getPath
 
 class JadxPluginsTools private constructor() {
@@ -49,7 +48,7 @@ class JadxPluginsTools private constructor() {
 		val fetchVersions: () -> List<JadxPluginMetadata> = if (resolver.hasVersion(locationId)) {
 			{
 				val version = resolver.resolve(locationId)
-					.orElseThrow { JadxRuntimeException("Failed to resolve plugin location: $locationId") }
+					?: throw JadxRuntimeException("Failed to resolve plugin location: $locationId")
 				listOf(version)
 			}
 		} else {
@@ -87,7 +86,7 @@ class JadxPluginsTools private constructor() {
 	fun resolveMetadata(locationId: String): JadxPluginMetadata {
 		val resolver = getResolver(locationId)
 		val pluginMetadata = resolver.resolve(locationId)
-			.orElseThrow { RuntimeException("Failed to resolve locationId: $locationId") }
+			?: throw RuntimeException("Failed to resolve locationId: $locationId")
 		fillMetadata(pluginMetadata)
 		return pluginMetadata
 	}
@@ -128,20 +127,20 @@ class JadxPluginsTools private constructor() {
 		return updates
 	}
 
-	fun update(pluginId: String): Optional<JadxPluginUpdate> {
+	fun update(pluginId: String): JadxPluginUpdate? {
 		val plugins = loadPluginsJson()
 		val plugin = plugins.installed.firstOrNull { it.pluginId == pluginId }
 			?: throw RuntimeException("Plugin not found: $pluginId")
 
 		val newVersion = update(plugin)
 		if (newVersion == null) {
-			return Optional.empty()
+			return null
 		}
 		plugins.updated = System.currentTimeMillis()
 		plugins.installed.remove(plugin)
 		plugins.installed.add(newVersion)
 		savePluginsJson(plugins)
-		return Optional.of(JadxPluginUpdate(plugin, newVersion))
+		return JadxPluginUpdate(plugin, newVersion)
 	}
 
 	fun uninstall(pluginId: String): Boolean {
@@ -194,11 +193,7 @@ class JadxPluginsTools private constructor() {
 		if (!resolver.isUpdateSupported()) {
 			return null
 		}
-		val updateOpt = resolver.resolve(plugin.locationId!!)
-		if (updateOpt.isEmpty) {
-			return null
-		}
-		val update = updateOpt.get()
+		val update = resolver.resolve(plugin.locationId!!) ?: return null
 		if (update.version == plugin.version) {
 			return null
 		}

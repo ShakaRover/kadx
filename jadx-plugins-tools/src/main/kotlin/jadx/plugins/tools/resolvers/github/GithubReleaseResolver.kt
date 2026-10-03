@@ -7,7 +7,6 @@ import jadx.plugins.tools.resolvers.github.data.Asset
 import jadx.plugins.tools.resolvers.github.data.Release
 import jadx.plugins.tools.utils.PluginUtils.extractVersion
 import jadx.plugins.tools.utils.PluginUtils.removePrefix
-import java.util.Optional
 import java.util.regex.Pattern
 
 class GithubReleaseResolver : IJadxPluginResolver {
@@ -77,11 +76,11 @@ class GithubReleaseResolver : IJadxPluginResolver {
 
 	override fun isUpdateSupported(): Boolean = true
 
-	override fun resolve(locationId: String): Optional<JadxPluginMetadata> {
-		val info = parseLocation(locationId) ?: return Optional.empty()
+	override fun resolve(locationId: String): JadxPluginMetadata? {
+		val info = parseLocation(locationId) ?: return null
 		val release = GithubTools.fetchRelease(info)
 		val metadata = buildMetadata(release, info)
-		return Optional.of(metadata)
+		return metadata
 	}
 
 	override fun resolveVersions(locationId: String, page: Int, perPage: Int): List<JadxPluginMetadata> {

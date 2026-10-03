@@ -4,7 +4,6 @@ import jadx.core.dex.nodes.IRegion
 import jadx.core.dex.nodes.MethodNode
 import jadx.core.utils.DotGraphUtils
 import java.io.File
-import java.util.Optional
 import java.util.regex.Matcher
 
 /**
@@ -21,7 +20,7 @@ import java.util.regex.Matcher
 class DotGraphVisitor private constructor(
 	private val useRegions: Boolean,
 	private val rawInsn: Boolean,
-	private val highlightRegion: Optional<IRegion> = Optional.empty(),
+	private val highlightRegion: IRegion? = null,
 ) : AbstractVisitor() {
 
 	override fun getName(): String = "DotGraphVisitor"
@@ -63,6 +62,6 @@ class DotGraphVisitor private constructor(
 		 * 用法：`DotGraphVisitor.debugDumpWithRegionHighlight(region).visit(mth);`
 		 */
 		@JvmStatic
-		fun debugDumpWithRegionHighlight(region: IRegion): DotGraphVisitor = DotGraphVisitor(false, false, Optional.of(region))
+		fun debugDumpWithRegionHighlight(region: IRegion): DotGraphVisitor = DotGraphVisitor(false, false, region)
 	}
 }

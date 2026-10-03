@@ -820,7 +820,7 @@ class JadxSettingsWindow(
 	private fun shouldReload(): Boolean = needReloadFlag || startSettingsHash != calcSettingsHash()
 
 	private fun calcSettingsHash(): String {
-		val decompiler = mainWindow.getWrapper().getCurrentDecompiler().orElse(null)
+		val decompiler = mainWindow.getWrapper().getCurrentDecompiler()
 		return settings.toJadxArgs().makeCodeArgsHash(decompiler)
 	}
 

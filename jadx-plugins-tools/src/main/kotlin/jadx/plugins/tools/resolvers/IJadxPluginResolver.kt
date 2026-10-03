@@ -1,7 +1,6 @@
 package jadx.plugins.tools.resolvers
 
 import jadx.plugins.tools.data.JadxPluginMetadata
-import java.util.Optional
 
 interface IJadxPluginResolver {
 	/**
@@ -17,7 +16,7 @@ interface IJadxPluginResolver {
 	/**
 	 * Fetch the latest version plugin metadata by location
 	 */
-	fun resolve(locationId: String): Optional<JadxPluginMetadata>
+	fun resolve(locationId: String): JadxPluginMetadata?
 
 	/**
 	 * Fetch several latest versions (pageable) of plugin by locationId.

@@ -39,7 +39,6 @@ import org.slf4j.LoggerFactory
 import java.util.ArrayList
 import java.util.Collections
 import java.util.LinkedHashSet
-import java.util.Optional
 
 /**
  * 类型修正访问器：当类型推导无法直接得到确定类型时，尝试一系列“补救手段”。
@@ -150,7 +149,7 @@ class FixTypesVisitor : AbstractVisitor() {
 		val typeInfo = ssaVar.typeInfo
 		val bounds = typeInfo.getBounds()
 		val bestTypeOpt = selectBestTypeFromBounds(bounds)
-		if (bestTypeOpt.isEmpty()) {
+		if (bestTypeOpt == null) {
 			if (Consts.DEBUG_TYPE_INFERENCE) {
 				LOG.warn("Failed to select best type from bounds, count={} : ", bounds.size)
 				for (bound in bounds) {
@@ -159,7 +158,7 @@ class FixTypesVisitor : AbstractVisitor() {
 			}
 			return false
 		}
-		val candidateType = bestTypeOpt.get()
+		val candidateType = bestTypeOpt
 		val result = typeUpdate.apply(mth, ssaVar, candidateType)
 		if (result == TypeUpdateResult.REJECT) {
 			if (Consts.DEBUG_TYPE_INFERENCE) {
@@ -178,7 +177,7 @@ class FixTypesVisitor : AbstractVisitor() {
 	 * 从所有边界里选出“最窄”的类型。
 	 * 原 Java 用 Stream.max(comparator) 实现，这里改写为等价的普通循环（热点路径）。
 	 */
-	private fun selectBestTypeFromBounds(bounds: Set<ITypeBound>): Optional<ArgType> {
+	private fun selectBestTypeFromBounds(bounds: Set<ITypeBound>): ArgType? {
 		var best: ArgType? = null
 		val comparator = typeUpdate.typeCompare.comparator
 		for (bound in bounds) {
@@ -187,7 +186,7 @@ class FixTypesVisitor : AbstractVisitor() {
 				best = type
 			}
 		}
-		return Optional.ofNullable(best)
+		return best
 	}
 
 	private fun tryPossibleTypes(mth: MethodNode, ssaVar: SSAVar, type: ArgType): Boolean {
@@ -442,7 +441,7 @@ class FixTypesVisitor : AbstractVisitor() {
 		if (casts.isEmpty()) {
 			return 0
 		}
-		val bestType = selectBestTypeFromBounds(bounds).orElse(ArgType.UNKNOWN)
+		val bestType = selectBestTypeFromBounds(bounds) ?: ArgType.UNKNOWN
 		if (!bestType.isGenericType()) {
 			return 0
 		}

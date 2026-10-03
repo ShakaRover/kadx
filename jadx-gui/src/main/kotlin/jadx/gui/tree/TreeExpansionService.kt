@@ -39,7 +39,7 @@ class TreeExpansionService(private val mainWindow: MainWindow, private val tree:
 
 	/** 收集当前展开的节点路径并序列化为字符串列表；无展开或未打开项目时返回空列表。 */
 	fun save(): List<String> {
-		if (tree.getRowCount() == 0 || mainWindow.getWrapper().getCurrentDecompiler().isEmpty()) {
+		if (tree.getRowCount() == 0 || mainWindow.getWrapper().getCurrentDecompiler() == null) {
 			return Collections.emptyList()
 		}
 		val expandedPaths = collectExpandedPaths(tree)

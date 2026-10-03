@@ -32,7 +32,6 @@ import java.awt.Color
 import java.io.File
 import java.util.Collections
 import java.util.HashSet
-import java.util.Optional
 import java.util.regex.Matcher
 
 /**
@@ -51,14 +50,14 @@ class DotGraphUtils {
 	private val rawInsn: Boolean
 
 	// 若存在，非区域模式下仍会绘制该区域及其子区域
-	private var highlightRegion: Optional<IRegion>
+	private val highlightRegion: IRegion?
 
 	// 高亮区域处理过一次后置位，避免重复处理其子块
 	private var processedHighlightRegion = false
 
-	constructor(useRegions: Boolean, rawInsn: Boolean) : this(useRegions, rawInsn, Optional.empty())
+	constructor(useRegions: Boolean, rawInsn: Boolean) : this(useRegions, rawInsn, null)
 
-	constructor(useRegions: Boolean, rawInsn: Boolean, highlightRegion: Optional<IRegion>) {
+	constructor(useRegions: Boolean, rawInsn: Boolean, highlightRegion: IRegion?) {
 		this.useRegions = useRegions
 		this.rawInsn = rawInsn
 		this.highlightRegion = highlightRegion
@@ -119,8 +118,8 @@ class DotGraphUtils {
 				blocks = Collections.singletonList(block)
 			}
 			for (block in blocks) {
-				if (processedHighlightRegion && highlightRegion.isPresent &&
-					RegionUtils.isRegionContainsBlock(highlightRegion.get(), block)
+				if (processedHighlightRegion && highlightRegion != null &&
+					RegionUtils.isRegionContainsBlock(highlightRegion, block)
 				) {
 					// 高亮区域已处理过，其内部块无需再处理
 					continue
@@ -249,11 +248,11 @@ class DotGraphUtils {
 	}
 
 	private fun processBlock(mth: MethodNode, block: BlockNode, error: Boolean, pseudoInRegion: Boolean) {
-		if (!processedHighlightRegion && highlightRegion.isPresent &&
-			RegionUtils.isRegionContainsBlock(highlightRegion.get(), block)
+		if (!processedHighlightRegion && highlightRegion != null &&
+			RegionUtils.isRegionContainsBlock(highlightRegion, block)
 		) {
 			processedHighlightRegion = true
-			processRegion(mth, highlightRegion.get(), null)
+			processRegion(mth, highlightRegion, null)
 			return
 		}
 

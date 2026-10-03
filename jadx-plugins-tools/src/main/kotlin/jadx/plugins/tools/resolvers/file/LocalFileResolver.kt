@@ -4,7 +4,6 @@ import jadx.plugins.tools.data.JadxPluginMetadata
 import jadx.plugins.tools.resolvers.IJadxPluginResolver
 import jadx.plugins.tools.utils.PluginUtils.removePrefix
 import java.io.File
-import java.util.Optional
 
 class LocalFileResolver : IJadxPluginResolver {
 	override fun id(): String = "file"
@@ -13,9 +12,9 @@ class LocalFileResolver : IJadxPluginResolver {
 
 	private fun isValidFileLocation(locationId: String): Boolean = locationId.startsWith("file:") && (locationId.endsWith(".jar") || locationId.endsWith(".zip"))
 
-	override fun resolve(locationId: String): Optional<JadxPluginMetadata> {
+	override fun resolve(locationId: String): JadxPluginMetadata? {
 		if (!isValidFileLocation(locationId)) {
-			return Optional.empty()
+			return null
 		}
 		val pluginFile = File(removePrefix(locationId, "file:"))
 		if (!pluginFile.isFile) {
@@ -25,14 +24,14 @@ class LocalFileResolver : IJadxPluginResolver {
 			this.locationId = locationId
 			this.path = pluginFile.absolutePath
 		}
-		return Optional.of(metadata)
+		return metadata
 	}
 
 	override fun resolveVersions(locationId: String, page: Int, perPage: Int): List<JadxPluginMetadata> {
 		if (page > 1) {
 			return emptyList()
 		}
-		return resolve(locationId).map { listOf(it) }.orElseGet { emptyList() }
+		return resolve(locationId)?.let { listOf(it) } ?: emptyList()
 	}
 
 	override fun hasVersion(locationId: String): Boolean = false
