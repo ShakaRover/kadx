@@ -36,6 +36,7 @@ public class TestI18n {
 	private static Path i18nPath;
 	private static Path refPath;
 	private static Path guiJavaPath;
+	private static Path guiKotlinPath;
 
 	@BeforeAll
 	public static void init() {
@@ -45,6 +46,9 @@ public class TestI18n {
 		assertThat(refPath).exists();
 		guiJavaPath = get("src/main/java");
 		assertThat(guiJavaPath).exists();
+		// GUI 正在从 Java 迁移到 Kotlin，源码分散在两个源码根目录，两处都要扫描 NLS 用法
+		guiKotlinPath = get("src/main/kotlin");
+		assertThat(guiKotlinPath).exists();
 	}
 
 	@Test
@@ -171,7 +175,13 @@ public class TestI18n {
 
 	private static Set<String> collectKeysFromCode() throws IOException {
 		Set<String> keys = new HashSet<>();
-		try (Stream<Path> walk = Files.walk(guiJavaPath)) {
+		collectKeysFromCode(guiJavaPath, keys);
+		collectKeysFromCode(guiKotlinPath, keys);
+		return keys;
+	}
+
+	private static void collectKeysFromCode(Path srcPath, Set<String> keys) throws IOException {
+		try (Stream<Path> walk = Files.walk(srcPath)) {
 			walk.filter(TestI18n::filterCodeFiles)
 					.forEach(codeFile -> {
 						try {
@@ -183,7 +193,6 @@ public class TestI18n {
 						}
 					});
 		}
-		return keys;
 	}
 
 	private static boolean filterCodeFiles(Path filePath) {
