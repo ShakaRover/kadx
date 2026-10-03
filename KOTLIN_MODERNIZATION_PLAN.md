@@ -126,6 +126,16 @@
 | N2 残留 | 剩余 `ExecutorService`/`new Thread` | 逐处评估是否适合协程；部分为库/同步语义刻意保留 |
 | KDoc | 清理旧注释里过时的 “保留 @JvmStatic/协程未引入” 描述 | 纯文档 |
 
+### N3i-b / N3i-c 补充完成
+- **N3i-b**（6c7438c3, 2cdc47c1, f6a0b103, d48fd726）：`IZipEntry`/`IJadxZipSecurity`/`ITaskInfo`/`IBackgroundTask`/`Cancelable`/`ITypeBound`/`ITypeConstraint`/`IEditorTheme` 等 26 接口 + 66 override → 属性。
+- **N3i-c**（7455ea90, 4fd89f3b）：**region/block 全层级**（`IBlock`/`IRegion`/`IBranchRegion`/`IConditionRegion` + `BlockNode`/`Region`…）+ `ICodeNode`/`IDexNode`/`IMethodDetails` + `jadx.api` 的 `JavaNode`/`ICodeInfo`/`ICodeWriter`/`ICodeAnnotation` 等 → 属性；约 149 个声明 + ~1218 调用点。
+- **N3 收尾**（ba861390）：38 处过时 KDoc 修正；70 个 `@JvmField` 移除；线程/Executor 逐处评估（均属刻意保留）。
+
+### 最终测量（剩余文件数）
+`@JvmStatic` 158 · `@JvmField` 50 · `fun getX` 541 · `fun isX` 233 · `java.util.function` 65 · `Optional` 2 · `requireNonNull` 13 · `String.format` 47 · `.stream()` 8 · `Collectors` 9；协程 20 文件。`./gradlew build` 绿。
+
+**剩余均为结构性不可转/刻意保留**：JDK/Swing 库方法 override（如 `getPreferredSize`）、带参方法、与现有成员重名、`jadx.api.plugins.*` 公共接口（保守保留）、`jadx.api.data` 实现（Gson 字段反射，转属性需 `@SerializedName` 且会改 JSON）。收益递减，建议到此收口。
+
 ## 5. 风险
 
 - **EDT 死锁 / UI 冻结**：协程化最大的坑。所有 `Dispatchers.Swing` 的使用必须保证不阻塞 EDT（耗时操作 `withContext(Dispatchers.IO)`）。
