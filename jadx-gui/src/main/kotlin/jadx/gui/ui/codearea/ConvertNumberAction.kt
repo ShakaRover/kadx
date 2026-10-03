@@ -29,9 +29,9 @@ class ConvertNumberAction(codeArea: CodeArea) : CommentAction(ActionModel.CONVER
 	}
 
 	override fun popupMenuWillBecomeVisible(e: PopupMenuEvent) {
-		if (codeArea.getNode() is JClass) {
+		if (getCodeArea().getNode() is JClass) {
 			// 尝试从光标下的单词解析数字，并动态设置菜单文字
-			val word = getWordByPosition(codeArea.getCaretPosition())
+			val word = getWordByPosition(getCodeArea().getCaretPosition())
 			val conversions = getConversionsFromWord(word)
 			if (conversions.isNotEmpty()) {
 				val text = conversions.joinToString(" | ")
@@ -55,19 +55,19 @@ class ConvertNumberAction(codeArea: CodeArea) : CommentAction(ActionModel.CONVER
 			return
 		}
 		val newText = codeComment ?: return
-		val comment = getCommentRef(codeArea.getCaretPosition()) ?: return
+		val comment = getCommentRef(getCodeArea().getCaretPosition()) ?: return
 		val newComment = JadxCodeComment(comment.getNodeRef(), comment.getCodeRef(), newText, CommentStyle.LINE)
-		CommentDialog.updateCommentsData(codeArea) { list -> list.add(newComment) }
+		CommentDialog.updateCommentsData(getCodeArea()) { list -> list.add(newComment) }
 	}
 
 	/**
 	 * 类似 `AbstractCodeArea::getWordByPosition`，但额外支持负数前面的 `-`。
 	 */
 	fun getWordByPosition(offset: Int): String? {
-		val token: Token = codeArea.getWordTokenAtOffset(offset) ?: return null
+		val token: Token = getCodeArea().getWordTokenAtOffset(offset) ?: return null
 		var str = token.getLexeme()
 		try {
-			val prev = codeArea.getText(token.getOffset() - 1, 1)
+			val prev = getCodeArea().getText(token.getOffset() - 1, 1)
 			if (prev == "-") {
 				str = "-$str"
 			}

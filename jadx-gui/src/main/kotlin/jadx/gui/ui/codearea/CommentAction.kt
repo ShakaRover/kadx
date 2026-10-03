@@ -51,7 +51,7 @@ open class CommentAction :
 	}
 
 	override fun popupMenuWillBecomeVisible(e: PopupMenuEvent) {
-		if (enabled && updateCommentAction(UiUtils.getOffsetAtMousePosition(codeArea))) {
+		if (enabled && updateCommentAction(UiUtils.getOffsetAtMousePosition(getCodeArea()))) {
 			setNameAndDesc(if (updateComment) NLS.str("popup.update_comment") else NLS.str("popup.add_comment"))
 			setEnabled(true)
 		} else {
@@ -86,19 +86,19 @@ open class CommentAction :
 			return
 		}
 		if (JadxGuiAction.isSource(e)) {
-			updateCommentAction(codeArea.getCaretPosition())
+			updateCommentAction(getCodeArea().getCaretPosition())
 		}
 		val comment = actionComment
 		if (comment == null) {
-			UiUtils.showMessageBox(codeArea.getMainWindow(), NLS.str("msg.cant_add_comment"))
+			UiUtils.showMessageBox(getCodeArea().getMainWindow(), NLS.str("msg.cant_add_comment"))
 			return
 		}
-		CommentDialog.show(codeArea, comment, updateComment)
+		CommentDialog.show(getCodeArea(), comment, updateComment)
 	}
 
 	protected fun searchForExistComment(blankComment: ICodeComment): ICodeComment? {
 		try {
-			val project = codeArea.getProject()
+			val project = getCodeArea().getProject()
 			val codeData: JadxCodeData? = project.getCodeData()
 			if (codeData == null || codeData.getComments().isEmpty()) {
 				return null
@@ -126,10 +126,10 @@ open class CommentAction :
 			return null
 		}
 		try {
-			val wrapper = codeArea.getJadxWrapper()
-			val codeInfo: ICodeInfo = codeArea.getCodeInfo()
+			val wrapper = getCodeArea().getJadxWrapper()
+			val codeInfo: ICodeInfo = getCodeArea().getCodeInfo()
 			val metadata = codeInfo.getCodeMetadata()
-			val lineStartPos = codeArea.getLineStartFor(pos)
+			val lineStartPos = getCodeArea().getLineStartFor(pos)
 
 			// 通过指令偏移添加方法行注释
 			val offsetAnn = metadata.searchUp(pos, lineStartPos, AnnType.OFFSET)
@@ -180,8 +180,8 @@ open class CommentAction :
 	/** 判断 [pos] 所在行是否全部由注释 token 组成。 */
 	protected fun isCommentLine(pos: Int): Boolean {
 		try {
-			val line = codeArea.getLineOfOffset(pos)
-			val lineTokens = codeArea.getTokenListForLine(line)
+			val line = getCodeArea().getLineOfOffset(pos)
+			val lineTokens = getCodeArea().getTokenListForLine(line)
 			var commentFound = false
 			var t: Token? = lineTokens
 			while (t != null) {
