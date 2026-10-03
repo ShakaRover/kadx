@@ -68,8 +68,9 @@ class ToStringParser private constructor(mthToString: MethodNode) {
 					val prevArg = assign.getArg(0)
 					if (prevArg.isRegister && prevArg is RegisterArg) {
 						val prevSv = checkNotNull(prevArg.sVar) { "SSA var not set for $prevArg" }
-						if (prevSv.assignInsn is IndexInsnNode) {
-							val info: FieldInfo? = (prevSv.assignInsn as IndexInsnNode).index as? FieldInfo
+						val prevAssignInsn = prevSv.assignInsn
+						if (prevAssignInsn is IndexInsnNode) {
+							val info: FieldInfo? = prevAssignInsn.index as? FieldInfo
 							handleFieldInfo(requireNotNull(info) { "Failed to get nested FieldInfo from index" })
 						}
 					}

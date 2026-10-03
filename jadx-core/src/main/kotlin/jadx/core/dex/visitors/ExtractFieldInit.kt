@@ -101,7 +101,7 @@ class ExtractFieldInit : AbstractVisitor() {
 				val insn = fieldInit.putInsn
 				val arg = insn.getArg(0)
 				if (arg is InsnWrapArg) {
-					(arg as InsnWrapArg).wrapInsn.add(AFlag.DECLARE_VAR)
+					arg.wrapInsn.add(AFlag.DECLARE_VAR)
 				}
 				InsnRemover.remove(classInitMth, insn)
 				addFieldInitAttr(classInitMth, fieldInit.fieldNode, insn)
@@ -147,7 +147,7 @@ class ExtractFieldInit : AbstractVisitor() {
 					val putInsn = fieldInit.putInsn
 					val arg = putInsn.getArg(0)
 					if (arg is InsnWrapArg) {
-						(arg as InsnWrapArg).wrapInsn.add(AFlag.DECLARE_VAR)
+						arg.wrapInsn.add(AFlag.DECLARE_VAR)
 					}
 					InsnRemover.remove(info.constructorMth, putInsn)
 				}

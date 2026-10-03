@@ -65,7 +65,7 @@ class UsageDialog private constructor(
 
 	private fun prepareUsageData() {
 		if (mainWindow.getSettings().isReplaceConsts() && node is JField) {
-			val fld: FieldNode = (node as JField).getJavaField().getFieldNode()
+			val fld: FieldNode = node.getJavaField().getFieldNode()
 			val constField = CollectConstValues.getFieldConstValue(fld) != null
 			if (constField && !fld.accessFlags.isPrivate()) {
 				// 执行完整反编译，为全量代码扫描做准备
@@ -87,14 +87,14 @@ class UsageDialog private constructor(
 	private fun buildUsageQuery(): Map<JavaNode, List<JavaNode>> {
 		val map = HashMap<JavaNode, List<JavaNode>>()
 		if (node is JMethod) {
-			val javaMethod: JavaMethod = (node as JMethod).getJavaMethod()
+			val javaMethod: JavaMethod = node.getJavaMethod()
 			for (mth in getMethodWithOverrides(javaMethod)) {
 				map[mth] = mth.getUseIn()
 			}
 			return map
 		}
 		if (node is JClass) {
-			val javaCls: JavaClass = (node as JClass).getCls()
+			val javaCls: JavaClass = node.getCls()
 			map[javaCls] = javaCls.getUseIn()
 			// 把构造函数的引用并入类的引用
 			for (javaMth in javaCls.getMethods()) {
@@ -105,7 +105,7 @@ class UsageDialog private constructor(
 			return map
 		}
 		if (node is JField && mainWindow.getSettings().isReplaceConsts()) {
-			val fld: FieldNode = (node as JField).getJavaField().getFieldNode()
+			val fld: FieldNode = node.getJavaField().getFieldNode()
 			val constField = CollectConstValues.getFieldConstValue(fld) != null
 			if (constField && !fld.accessFlags.isPrivate()) {
 				// 搜索全部类以收集被替换常量的引用
