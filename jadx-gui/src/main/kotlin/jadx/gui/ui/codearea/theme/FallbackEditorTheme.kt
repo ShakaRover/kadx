@@ -13,9 +13,9 @@ class FallbackEditorTheme : IEditorTheme {
 
 	private lateinit var baseTheme: Theme
 
-	override fun getId(): String = "fallback"
+	override val id: String get() = "fallback"
 
-	override fun getName(): String = "Fallback"
+	override val name: String get() = "Fallback"
 
 	override fun load() {
 		baseTheme = Theme(RSyntaxTextArea())

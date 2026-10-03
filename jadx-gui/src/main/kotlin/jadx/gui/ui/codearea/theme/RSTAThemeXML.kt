@@ -11,13 +11,11 @@ import java.nio.file.Path
  *
  * **做什么**：读取用户指定的 `.xml` 主题文件；解析失败时退回默认主题。
  */
-class RSTAThemeXML(private val themePath: Path, private val name: String) : IEditorTheme {
+class RSTAThemeXML(private val themePath: Path, override val name: String) : IEditorTheme {
 
 	private var loadedTheme: Theme? = null
 
-	override fun getId(): String = "file:$themePath"
-
-	override fun getName(): String = name
+	override val id: String get() = "file:$themePath"
 
 	override fun load() {
 		try {

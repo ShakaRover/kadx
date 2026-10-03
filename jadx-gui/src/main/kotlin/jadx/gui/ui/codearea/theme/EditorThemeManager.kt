@@ -29,7 +29,7 @@ class EditorThemeManager(settings: JadxSettings) {
 		if (StringUtils.isEmpty(settings.editorTheme)) {
 			// 没有配置主题时，把注册的第一个主题设为默认
 			val defaultTheme = themes[0]
-			settings.setEditorTheme(defaultTheme.getId())
+			settings.setEditorTheme(defaultTheme.id)
 		}
 	}
 
@@ -46,7 +46,7 @@ class EditorThemeManager(settings: JadxSettings) {
 
 	/** 注册一个主题；同 ID 的旧主题会被替换并移到列表末尾。 */
 	fun registerTheme(editorTheme: IEditorTheme) {
-		val prev = themesMap.put(editorTheme.getId(), editorTheme)
+		val prev = themesMap.put(editorTheme.id, editorTheme)
 		if (prev != null) {
 			themes.remove(prev)
 		}
@@ -56,7 +56,7 @@ class EditorThemeManager(settings: JadxSettings) {
 	/** 按 ID 切换主题（已存在同名主题时直接返回）。 */
 	@Synchronized
 	fun setTheme(id: String) {
-		if (currentTheme.getId() == id) {
+		if (currentTheme.id == id) {
 			// 已经是当前主题
 			return
 		}
@@ -94,13 +94,13 @@ class EditorThemeManager(settings: JadxSettings) {
 		try {
 			currentTheme.unload()
 		} catch (t: Throwable) {
-			LOG.warn("Failed to unload editor theme: {}", currentTheme.getId(), t)
+			LOG.warn("Failed to unload editor theme: {}", currentTheme.id, t)
 		}
 	}
 
 	companion object {
 		private val LOG = LoggerFactory.getLogger(EditorThemeManager::class.java)
 
-		private fun toThemeIdAndName(t: IEditorTheme): ThemeIdAndName = ThemeIdAndName(t.getId(), t.getName())
+		private fun toThemeIdAndName(t: IEditorTheme): ThemeIdAndName = ThemeIdAndName(t.id, t.name)
 	}
 }

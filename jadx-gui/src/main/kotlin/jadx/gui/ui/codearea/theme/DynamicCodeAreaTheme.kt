@@ -21,9 +21,9 @@ import javax.swing.UIManager
  */
 class DynamicCodeAreaTheme : IEditorTheme {
 
-	override fun getId(): String = "DynamicCodeAreaTheme"
+	override val id: String get() = "DynamicCodeAreaTheme"
 
-	override fun getName(): String = NLS.str("preferences.dynamic_editor_theme")
+	override val name: String get() = NLS.str("preferences.dynamic_editor_theme")
 
 	override fun apply(textArea: RSyntaxTextArea) {
 		// 从 UIManager 读取当前 UI 主题的颜色

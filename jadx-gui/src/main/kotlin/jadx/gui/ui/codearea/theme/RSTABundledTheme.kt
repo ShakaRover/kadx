@@ -14,9 +14,9 @@ class RSTABundledTheme(private val themeName: String) : IEditorTheme {
 
 	private var loadedTheme: Theme? = null
 
-	override fun getId(): String = "RSTA:$themeName"
+	override val id: String get() = "RSTA:$themeName"
 
-	override fun getName(): String = themeName
+	override val name: String get() = themeName
 
 	override fun load() {
 		val path = RSTA_THEME_PATH + themeName + ".xml"
