@@ -209,7 +209,7 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | G17 | `ui/codearea/theme` + `ui/hexviewer`(+`search`,`service`) | 18 | ✅ 64be4cf2 |
 | G18 | `plugins/{context,quark,mappings}` + `utils/plugins` | 18 | ✅ 087aa7d0 |
 | G19 | `ui`(不含 MainWindow)+`startpage`+`filedialog`+`menu`+`cellrenders`+`export`+`treenodes` | 22 | ✅ 3032ef69 |
-| G20 | gui 顶层（除 MainWindow）+ `cache/code` + `events` + `tree` | 15 | ⏳ |
+| G20 | gui 顶层（除 MainWindow）+ `cache/code` + `events` + `tree` | 15 | ✅ a524054a |
 | G20b | `ui/MainWindow`（单个大文件） | 1 | ⏳ |
 | G03 | `treemodel` | 21 |
 | G04 | `ui/action` | 18 |
