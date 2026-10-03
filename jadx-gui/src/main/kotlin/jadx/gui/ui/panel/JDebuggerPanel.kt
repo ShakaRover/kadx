@@ -550,9 +550,9 @@ class JDebuggerPanel(private val mainWindow: MainWindow) : JPanel() {
 
 		abstract fun getTypeID(): Long
 
-		abstract fun updateValue(value: String): ValueTreeNode
+		abstract fun updateValue(value: String?): ValueTreeNode
 
-		abstract fun updateType(value: String): ValueTreeNode
+		abstract fun updateType(value: String?): ValueTreeNode
 
 		abstract fun updateTypeID(id: Long): ValueTreeNode
 
