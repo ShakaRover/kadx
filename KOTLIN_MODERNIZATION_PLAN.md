@@ -110,12 +110,21 @@
 
 ## 7. 待办（下一阶段）
 
+### N3i/N3j 已完成（commits 3bb2ee0b, 01c02aa0, 9724666f, 21c72c02, ea57d409, 3de33196, d626c0fb）
+- **getter→属性**：约 **650 个** `fun getX/isX()` 已转（jadx-core 293 + gui 333 + plugins 24；均用 `get() =` 保持不新增字段）。
+- **`@JvmStatic`/`@JvmField` 清理**：约 **1200 处**移除（core 602+293、gui 192+76、plugins 146…）。
+- **保留（有意）**：`jadx.api.*`/`jadx.api.plugins.*` 公共插件面；`JadxAssertions`；`fun main`；JUnit `@MethodSource`/`@BeforeAll`（反射需静态）；有显式 getter/setter 或字段/Getter 冲突的 `@JvmField`。
+- **测量（剩余文件数）**：`@JvmStatic` 159 · `@JvmField` 67 · `fun getX` 591 · `fun isX` 248 · `java.util.function` 65 · `String.format` 47。
+  剩余的 `fun getX/isX` 多为 interface/override/abstract 成员或与现有属性重名的（结构性不可转）；剩余注解为公共 API / 反射 / 冲突保留。
+
+### 可选继续
+
 | ID | 范围 | 风险/说明 |
 |----|------|-----------|
-| **N3i** | 显式 `fun getX()`/`fun isX()` → Kotlin 属性（756/310 文件） | 大而机械；**仅内部类**；`jadx.api.*`/`jadx.api.plugins.*` 与 Java 互操作面保留。需同步改所有调用点 |
-| **N3j** | 移除无 Java 调用方的 `@JvmStatic`(328)/`@JvmField`(91) | 需逐个确认无 Java 调用方；**`JadxAssertions`（fixture 静态导入）、公共插件 API、反射点必须保留** |
-| N2 残留 | 剩余 `ExecutorService`(8)/`new Thread`(10) | 逐处评估是否适合协程；`FileUtils.parallelStream` 等保留 |
-| N3d 残留 | 剩余 `String.format`(47) | 多为 locale/填充敏感，可保留 |
+| N3i-b | 剩余 clash getter（约 172 in gui + 503 in core） | 需重命名成员或保留为函数，收益递减 |
+| N3j-b | 剩余 `@JvmField`(67 文件) | 逐个评估 Java 表面；多为冲突/显式存取器 |
+| N2 残留 | 剩余 `ExecutorService`/`new Thread` | 逐处评估是否适合协程；部分为库/同步语义刻意保留 |
+| KDoc | 清理旧注释里过时的 “保留 @JvmStatic/协程未引入” 描述 | 纯文档 |
 
 ## 5. 风险
 
