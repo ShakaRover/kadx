@@ -197,7 +197,8 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | G05 | `jobs` | 17 | ✅ bec31313（phase 5.1，无协程） |
 | G06 | `ui/tab` + `ui/tab/dnd` | 22 | ✅ d08f718e |
 | G07 | `ui/dialog` | 15 | ✅ a403c555 |
-| G08 | `ui/panel` + `ui/popupmenu` | 20 | ⏳ |
+| G08 | `ui/panel` + `ui/popupmenu` | 20 | ✅ a344f543 |
+| G09 | `ui/codearea/sync` + `sync/fallback` | 24 | ⏳ |
 | G03 | `treemodel` | 21 |
 | G04 | `ui/action` | 18 |
 | G05 | `jobs` | 17 |
