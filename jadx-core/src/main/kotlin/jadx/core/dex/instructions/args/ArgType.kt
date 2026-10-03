@@ -20,7 +20,6 @@ import jadx.core.utils.Utils.listToString
 import jadx.core.utils.exceptions.JadxRuntimeException
 import java.util.Arrays
 import java.util.Collections
-import java.util.Objects
 
 /**
  * DEX 指令操作数的类型系统抽象基类。
@@ -519,8 +518,8 @@ abstract class ArgType private constructor() {
 
 	/** 通配符类型实现 */
 	protected class WildcardType(type: ArgType, bound: WildcardBound) : ObjectType(CLASS_OBJECT) {
-		private val type: ArgType = Objects.requireNonNull(type)
-		private val bound: WildcardBound = Objects.requireNonNull(bound)
+		private val type: ArgType = requireNotNull(type)
+		private val bound: WildcardBound = requireNotNull(bound)
 
 		override fun isWildcard(): Boolean = true
 		override fun isGeneric(): Boolean = true

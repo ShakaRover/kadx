@@ -4,7 +4,6 @@ import jadx.api.data.impl.JadxCodeData
 import jadx.gui.search.providers.ResourceFilter
 import java.nio.file.Path
 import java.util.Collections
-import java.util.Objects
 
 /**
  * 项目文件（`.jadx`）的持久化数据。
@@ -34,7 +33,7 @@ class ProjectData {
 	fun getFiles(): List<Path> = files
 
 	fun setFiles(files: List<Path>) {
-		this.files = Objects.requireNonNull(files)
+		this.files = requireNotNull(files)
 	}
 
 	fun getTreeExpansionsV2(): List<String> = treeExpansionsV2

@@ -16,7 +16,6 @@ import jadx.core.dex.nodes.InsnNode
 import jadx.core.dex.nodes.MethodNode
 import jadx.core.utils.exceptions.JadxRuntimeException
 import java.util.ArrayList
-import java.util.Objects
 import java.util.stream.Collectors
 
 /**
@@ -75,7 +74,7 @@ class InsnRemover {
 		if (toRemove.isEmpty()) {
 			return
 		}
-		instrList = Objects.requireNonNull(block.instructions)
+		instrList = requireNotNull(block.instructions)
 		unbindInsns(mth, toRemove)
 		removeAll(checkNotNull(instrList), toRemove)
 		toRemove.clear()

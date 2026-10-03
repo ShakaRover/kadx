@@ -11,7 +11,6 @@ import org.w3c.dom.Element
 import java.io.ByteArrayInputStream
 import java.nio.charset.StandardCharsets
 import java.util.EnumSet
-import java.util.Objects
 
 /**
  * AndroidManifest.xml 解析器。
@@ -42,7 +41,7 @@ class AndroidManifestParser {
 		security: IJadxSecurity,
 	) {
 		this.parseAttrs = parseAttrs
-		this.security = Objects.requireNonNull(security)
+		this.security = requireNotNull(security)
 
 		this.androidManifest = parseAndroidManifest(androidManifestRes)
 		this.appStrings = parseAppStrings(appStrings)

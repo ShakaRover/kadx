@@ -65,7 +65,6 @@ import java.awt.event.ItemListener
 import java.util.Collections
 import java.util.EnumSet
 import java.util.HashSet
-import java.util.Objects
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.stream.Collectors
@@ -719,7 +718,7 @@ class SearchDialog private constructor(
 	}
 
 	private fun addSearchResult(node: JNode) {
-		Objects.requireNonNull(node)
+		requireNotNull(node)
 		synchronized(pendingResults) {
 			UiUtils.notUiThreadGuard()
 			pendingResults.add(node)

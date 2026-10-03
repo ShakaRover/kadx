@@ -9,7 +9,6 @@ import jadx.api.plugins.options.OptionDescription
 import jadx.core.plugins.versions.VerifyRequiredVersion
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.Objects
 import java.util.SortedSet
 import java.util.TreeMap
 import java.util.TreeSet
@@ -62,7 +61,7 @@ class JadxPluginManager(private val decompiler: JadxDecompiler) {
 
 	/** 注册单个插件（已存在或版本不兼容时跳过），并重新解析。 */
 	fun register(plugin: JadxPlugin) {
-		Objects.requireNonNull(plugin)
+		requireNotNull(plugin)
 		val addedPlugin = addPlugin(plugin, VerifyRequiredVersion())
 		if (addedPlugin == null) {
 			LOG.debug("Can't register plugin, it was disabled: {}", plugin.getPluginInfo().getPluginId())

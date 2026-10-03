@@ -1,7 +1,6 @@
 package jadx.gui.treemodel
 
 import jadx.api.ResourceFile
-import java.util.Objects
 
 /**
  * 资源文件内部的子资源。
@@ -21,7 +20,7 @@ class JSubResource(
 
 	/** 所属的基础资源文件节点。原 Java 为 public 字段，这里用 `@JvmField` 保留。 */
 	@JvmField
-	var baseRes: JResource = Objects.requireNonNull(baseRes)
+	var baseRes: JResource = requireNotNull(baseRes)
 
 	fun getBaseRes(): JResource = baseRes
 

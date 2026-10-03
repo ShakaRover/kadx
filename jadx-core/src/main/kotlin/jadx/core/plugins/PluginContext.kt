@@ -25,7 +25,6 @@ import jadx.core.utils.files.FileUtils
 import jadx.zip.ZipReader
 import java.io.Closeable
 import java.nio.file.Path
-import java.util.Objects
 import java.util.function.Supplier
 
 /**
@@ -106,7 +105,7 @@ class PluginContext internal constructor(
 
 	override fun registerOptions(options: JadxPluginOptions) {
 		try {
-			this.options = Objects.requireNonNull(options)
+			this.options = requireNotNull(options)
 			options.setOptions(getArgs().pluginOptions)
 		} catch (e: Exception) {
 			throw JadxRuntimeException("Failed to apply options for plugin: " + getPluginId(), e)
@@ -152,7 +151,7 @@ class PluginContext internal constructor(
 		this.appContext = appContext
 	}
 
-	override fun getGuiContext(): JadxGuiContext? = Objects.requireNonNull<AppContext>(appContext).getGuiContext()
+	override fun getGuiContext(): JadxGuiContext? = requireNotNull(appContext).getGuiContext()
 
 	override fun getPluginInstance(): JadxPlugin = plugin
 
@@ -164,7 +163,7 @@ class PluginContext internal constructor(
 
 	override fun plugins(): IJadxPlugins = pluginsData
 
-	override fun files(): IJadxFiles = JadxFilesData(pluginInfo, Objects.requireNonNull<AppContext>(appContext).getFilesGetter())
+	override fun files(): IJadxFiles = JadxFilesData(pluginInfo, requireNotNull(appContext).getFilesGetter())
 
 	@Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
 	override fun loadCodeFiles(files: java.util.List<Path>, closeable: Closeable?): ICodeLoader = MergeCodeLoader(

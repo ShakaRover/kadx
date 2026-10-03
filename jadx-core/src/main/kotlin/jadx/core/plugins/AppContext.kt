@@ -2,7 +2,6 @@ package jadx.core.plugins
 
 import jadx.api.plugins.gui.JadxGuiContext
 import jadx.core.plugins.files.IJadxFilesGetter
-import java.util.Objects
 
 /**
  * 插件运行时的应用级上下文：GUI 上下文与文件目录提供者。
@@ -12,8 +11,7 @@ import java.util.Objects
  *
  * **Kotlin 转换说明**：公共 getter 保留显式函数（`getGuiContext` / `getFilesGetter`），
  * Java 调用方（jadx-gui 的 `CollectPlugins`、`JadxWrapper`）零改动。
- * `getFilesGetter` 内部仍用 [Objects.requireNonNull] 复刻原 Java 在未设置时抛
- * [NullPointerException] 的行为。
+ * `getFilesGetter` 内部在未设置时显式抛出 [NullPointerException]，复刻原 Java 在未设置时抛 NPE 的行为。
  */
 class AppContext {
 
@@ -30,7 +28,8 @@ class AppContext {
 	}
 
 	/** 获取文件目录提供者；未设置时抛出 NPE（与原 Java 的 `Objects.requireNonNull` 一致）。 */
-	fun getFilesGetter(): IJadxFilesGetter = Objects.requireNonNull<IJadxFilesGetter>(filesGetter)
+	fun getFilesGetter(): IJadxFilesGetter = filesGetter
+		?: throw NullPointerException("filesGetter is not set")
 
 	fun setFilesGetter(filesGetter: IJadxFilesGetter) {
 		this.filesGetter = filesGetter

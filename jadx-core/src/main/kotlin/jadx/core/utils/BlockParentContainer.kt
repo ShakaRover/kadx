@@ -2,7 +2,6 @@ package jadx.core.utils
 
 import jadx.core.dex.nodes.IBlock
 import jadx.core.dex.nodes.IContainer
-import java.util.Objects
 
 /**
  * “块 + 其父容器”的配对。
@@ -12,8 +11,8 @@ import java.util.Objects
  */
 class BlockParentContainer(parent: IContainer, block: IBlock) {
 
-	val block: IBlock = Objects.requireNonNull(block)
-	val parent: IContainer = Objects.requireNonNull(parent)
+	val block: IBlock = requireNotNull(block)
+	val parent: IContainer = requireNotNull(parent)
 
 	override fun toString(): String = "BlockParentContainer{$block, parent=$parent}"
 }
