@@ -14,7 +14,7 @@ import javax.swing.text.Highlighter.HighlightPainter
  * **做什么**：用指定颜色在代码区高亮某一行或某段字符，并可选滚动到该位置。
  * 高亮是“临时”的：1 秒后由 [Timer] 自动移除，避免高亮残留。
  *
- * **为什么用 [Timer]**：保持原 Swing 线程模型（EDT 上定时回调），不引入协程。
+ * **为什么用 [Timer]**：保持 Swing 线程模型（EDT 上定时回调）。
  */
 class CodeSyncHighlighter(private val color: Color?) {
 

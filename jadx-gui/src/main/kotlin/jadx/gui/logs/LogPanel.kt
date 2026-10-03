@@ -25,7 +25,7 @@ import javax.swing.event.ChangeListener
  * **做什么**：顶部提供模式/级别下拉框与「清空 / 停靠 / 隐藏」按钮，
  * 中部是显示日志的代码区。切换选项会重新注册 [LogAppender] 并按当前 [LogOptions] 过滤。
  *
- * **线程模型**：保持原 Swing 模型，不引入协程；仅通过 `ChangeListener` 监听标签切换。
+ * **线程模型**：所有 UI 更新都在 EDT 上执行；仅通过 `ChangeListener` 监听标签切换。
  */
 class LogPanel(
 	private val mainWindow: MainWindow,

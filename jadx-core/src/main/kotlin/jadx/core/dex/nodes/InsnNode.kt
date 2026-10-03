@@ -18,8 +18,7 @@ import jadx.core.utils.exceptions.JadxRuntimeException
 import jadx.core.utils.InsnUtils.containsVar as insnContainsVar
 
 open class InsnNode(
-	// Java 子类直接访问 protected 字段 insnType/offset，故用 @JvmField 暴露字段（不生成 getter/setter）
-	@JvmField protected val insnType: InsnType,
+	protected val insnType: InsnType,
 	argsCount: Int = 0,
 ) : LineAttrNode() {
 	@get:JvmName("resultValue")
@@ -30,6 +29,7 @@ open class InsnNode(
 	@get:JvmName("argumentsValue")
 	val arguments: MutableList<InsnArg> = if (argsCount == 0) ArrayList() else ArrayList(argsCount)
 
+	// 显式 getter/setter getOffset()/setOffset() 与属性访问器冲突，故用 @JvmField 暴露字段
 	@JvmField
 	protected var offset: Int = -1
 

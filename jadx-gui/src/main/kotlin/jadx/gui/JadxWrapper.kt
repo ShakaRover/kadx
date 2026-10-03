@@ -48,9 +48,9 @@ import java.util.Collections
  * - 根据设置注册代码缓存（内存 / 磁盘）与 usage 缓存；
  * - 初始化 GUI 插件上下文，并向插件暴露项目数据。
  *
- * **线程模型（阶段 5.1 保持不变）**：使用 `DECOMPILER_UPDATE_SYNC` 监视器锁保护
+ * **线程模型**：使用 `DECOMPILER_UPDATE_SYNC` 监视器锁保护
  * [decompiler] 字段的读写，与原 Java 的 `synchronized` 块一致；[decompiler] 标记为
- * `@Volatile`，未引入协程。
+ * `@Volatile`。
  *
  * **为什么保留显式 getter**：这是 GUI 内部与 Java `MainWindow` 共用的 API，
  * 保持 `getXxx()` 方法名可让 Java 调用方零改动。

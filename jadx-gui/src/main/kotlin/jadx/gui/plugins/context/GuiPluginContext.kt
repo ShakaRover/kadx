@@ -35,7 +35,7 @@ import javax.swing.KeyStroke
  * **做什么**：把核心 [JadxGuiContext] 接口接到实际的 Swing 界面上：
  * UI 线程调度、菜单/弹窗/快捷键注册、剪贴板、图标、节点查询与重命名等。
  *
- * **线程模型**：保持原 Swing 模型（`UiUtils.uiRun` / `invokeLater`），不引入协程。
+ * **线程模型**：保持 Swing 模型（`UiUtils.uiRun` / `invokeLater`），UI 更新在 EDT 上执行。
  */
 class GuiPluginContext(
 	private val commonContext: CommonGuiPluginsContext,

@@ -75,8 +75,7 @@ import javax.swing.WindowConstants
  * **做什么**：构建反编译、去混淆、重命名、缓存、外观、快捷键、项目、插件、其它等设置组，
  * 并把用户改动即时写回 [JadxSettings]；保存时按需触发项目重载。
  *
- * **线程模型**：保持原 Swing 线程模型，使用 `SwingUtilities.invokeLater` 与 [UiUtils.uiRun]，
- * 不引入协程。
+ * **线程模型**：保持 Swing 线程模型，使用 `SwingUtilities.invokeLater` 与 [UiUtils.uiRun]。
  */
 class JadxSettingsWindow(
 	private val mainWindow: MainWindow,

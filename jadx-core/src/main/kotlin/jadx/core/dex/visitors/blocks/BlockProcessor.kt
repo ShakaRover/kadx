@@ -866,7 +866,6 @@ class BlockProcessor : AbstractVisitor() {
 		override val attrType: IJadxAttrType<DebugModAttr> get() = TYPE
 
 		companion object {
-			@JvmField
 			val TYPE: IJadxAttrType<DebugModAttr> = IJadxAttrType.create("DebugModAttr")
 		}
 	}

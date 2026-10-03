@@ -64,8 +64,8 @@ import javax.swing.tree.TreeSelectionModel
  * **做什么**：根节点为初始节点，展开节点时按需异步收集其引用并插入子节点；
  * 双击展开/折叠，右键菜单可跳转或复制引用路径。
  *
- * **为什么保留 Swing 线程模型**：后台收集走 [MainWindow.getBackgroundExecutor]，
- * 树更新回到 EDT，不引入协程。
+ * **为什么保留 Swing 线程模型**：后台收集走 [MainWindow.getBackgroundExecutor]（协程调度），
+ * 树更新回到 EDT。
  */
 class UsageDialogPlus private constructor(
 	mainWindow: MainWindow,

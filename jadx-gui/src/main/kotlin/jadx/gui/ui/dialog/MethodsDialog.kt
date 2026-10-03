@@ -23,7 +23,7 @@ import javax.swing.WindowConstants
  *
  * **做什么**：构造时立即展示（模态），确认后通过 [listConsumer] 回调选中的方法列表。
  *
- * **为什么保留 Swing 线程模型**：所有操作都在 EDT 上，不引入协程。
+ * **为什么保留 Swing 线程模型**：所有操作都在 EDT 上。
  */
 class MethodsDialog(
 	mainWindow: MainWindow,

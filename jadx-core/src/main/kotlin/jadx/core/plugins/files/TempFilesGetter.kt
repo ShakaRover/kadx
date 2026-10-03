@@ -29,8 +29,7 @@ class TempFilesGetter private constructor() : IJadxFilesGetter {
 	}
 
 	companion object {
-		/** 全局单例（Java 侧写作 `TempFilesGetter.INSTANCE`）。 */
-		@JvmField
+		/** 全局单例。 */
 		val INSTANCE: TempFilesGetter = TempFilesGetter()
 	}
 

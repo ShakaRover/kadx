@@ -58,8 +58,8 @@ import javax.swing.tree.TreePath
  * **为什么用 `object` + `@JvmStatic`/`@JvmField`**：原 Java 全部是静态成员，
  * 这样能保证 Java 调用方（以及已迁移的 Kotlin 调用方）零改动。
  *
- * **Swing 线程模型**：[uiRun]/[uiRunAndWait]/[bgRun] 仍使用 `SwingUtilities` 与单线程
- * Executor，未引入协程，保持与原实现完全一致。
+ * **Swing 线程模型**：[uiRun]/[uiRunAndWait]/[bgRun] 使用 `SwingUtilities` 与单线程
+ * Executor 投递任务。
  */
 object UiUtils {
 

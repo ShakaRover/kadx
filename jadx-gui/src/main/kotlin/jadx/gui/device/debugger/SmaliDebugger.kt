@@ -75,8 +75,8 @@ import java.util.concurrent.atomic.AtomicInteger
  * **做什么**：与远端 ART/JVM 建立 JDWP 连接，收发命令与事件，
  * 支持断点、单步、查看/修改变量与字段。
  *
- * **线程模型**：保留原 Java 的阻塞 socket I/O、单线程事件队列与
- * `SynchronousQueue` 同步机制，不引入协程。
+ * **线程模型**：阻塞 socket I/O、单线程事件队列与
+ * `SynchronousQueue` 同步机制。
  */
 class SmaliDebugger private constructor(
 	private val suspendListener: SuspendListener,

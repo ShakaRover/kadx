@@ -8,13 +8,13 @@ package jadx.core
  * **做什么**：集中存放 jadx 各模块共用的编译期常量与少量运行期常量，
  * 避免魔法字符串散落各处。
  *
- * **为什么用 `object` + `const val` / `@JvmField`**：原 Java 类只有
+ * **为什么用 `object` + `const val`**：原 Java 类只有
  * `public static final` 字段和私有构造器，没有任何实例语义；转成 Kotlin
- * 单例 `object` 后，Java 调用方仍可写 `Consts.DEBUG`、`Consts.CLASS_OBJECT`，
- * Kotlin 调用方同样写 `Consts.XXX`，公共 API 零改动。
+ * 单例 `object` 后，`const val` 常量在 Java 侧仍是 static final 字段，
+ * Kotlin 调用方写 `Consts.XXX`。
  *
  * **注意**：[DEBUG_EVENTS] 的值依赖运行时版本判断（[Jadx.isDevVersion]），
- * 因此不能声明为 `const val`（`const` 要求编译期常量），只能用 `@JvmField val`。
+ * 因此不能声明为 `const val`（`const` 要求编译期常量），只能用 `val`。
  */
 object Consts {
 
@@ -48,7 +48,6 @@ object Consts {
 	const val DEBUG_RESTRUCTURE = false
 
 	/** 是否打印事件总线调试日志：仅开发版（版本号为 `dev`）打开。 */
-	@JvmField
 	val DEBUG_EVENTS: Boolean = Jadx.isDevVersion()
 
 	// ===== 常用 Java 类型全名 =====

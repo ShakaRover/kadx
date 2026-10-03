@@ -16,7 +16,7 @@ import java.util.regex.Pattern
  * **做什么**：封装对单个设备的常用操作：端口转发、启动应用、读取 logcat、
  * 读取系统属性、枚举进程，以及监听可调试（JDWP）进程。
  *
- * **线程模型**：保留原 Java 的阻塞 socket I/O 与后台 `Thread`，不引入协程。
+ * **线程模型**：阻塞 socket I/O 与后台 `Thread`。
  */
 class ADBDevice(private var info: ADBDeviceInfo) {
 	/** Android 版本号缓存。 */

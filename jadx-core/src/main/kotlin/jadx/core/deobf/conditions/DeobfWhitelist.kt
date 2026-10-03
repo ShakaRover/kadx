@@ -18,7 +18,6 @@ class DeobfWhitelist : AbstractDeobfCondition() {
 
 	companion object {
 		/** 默认白名单（包用 `.*` 结尾，类用全名） */
-		@JvmField
 		val DEFAULT_LIST: List<String> = listOf(
 			"android.support.v4.*",
 			"android.support.v7.*",
@@ -29,7 +28,6 @@ class DeobfWhitelist : AbstractDeobfCondition() {
 		)
 
 		/** 默认白名单的命令行字符串形式（以空格分隔） */
-		@JvmField
 		val DEFAULT_STR: String = Utils.listToString(DEFAULT_LIST, " ")
 	}
 

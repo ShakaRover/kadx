@@ -14,14 +14,12 @@ import java.util.regex.Pattern
  * - 非法字符清理（[removeInvalidChars] / [removeInvalidCharsMiddle] / [removeNonPrintableCharacters]）。
  *
  * **Kotlin 转换说明**：全部是静态工具方法，放入 `companion object` 并用 `@JvmStatic`
- * 暴露；[VALID_JAVA_IDENTIFIER] 是被 Java 以字段方式访问的常量，用 `@JvmField` 保持
- * 静态字段的 JVM 表面不变。私有构造器保持“不可实例化”。
+ * 暴露；[VALID_JAVA_IDENTIFIER] 是内部使用的正则常量。私有构造器保持“不可实例化”。
  */
 class NameMapper private constructor() {
 
 	companion object {
 		/** 合法的单个 Java 标识符正则（可包含 Unicode 标识符字符） */
-		@JvmField
 		val VALID_JAVA_IDENTIFIER: Pattern = Pattern.compile(
 			"\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*",
 		)

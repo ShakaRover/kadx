@@ -60,7 +60,7 @@ import javax.swing.table.TableColumn
  * **做什么**：统一维护结果表模型/视图、进度面板、打开与复制结果等逻辑，
  * 由 [SearchDialog]、[UsageDialog]、[UsageDialogPlus] 继承。
  *
- * **为什么保留 Swing 线程模型**：所有 UI 更新都在 EDT 上执行，不引入协程。
+ * **为什么保留 Swing 线程模型**：所有 UI 更新都在 EDT 上执行。
  *
  * **为什么不是 `data class`**：它是有状态的 Swing 窗口。
  */

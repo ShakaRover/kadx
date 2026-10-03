@@ -69,7 +69,6 @@ class AttributeStorageTest {
 	}
 
 	companion object {
-		@JvmField
 		val TEST: AType<TestAttr> = AType()
 
 		private val SYNTHETIC = AFlag.SYNTHETIC

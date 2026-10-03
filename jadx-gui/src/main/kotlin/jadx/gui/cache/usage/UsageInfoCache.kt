@@ -16,8 +16,8 @@ import java.nio.file.Path
  * - [set]：写入内存缓存并持久化到磁盘；
  * - [close]：清空内存缓存与已加载的原始数据。
  *
- * **线程模型（保持原 Swing 模型）**：使用静态锁对象 [LOAD_DATA_SYNC] 串行化磁盘加载，
- * 避免多个后台线程重复读取同一文件。本类不引入协程。
+ * **线程模型**：使用静态锁对象 [LOAD_DATA_SYNC] 串行化磁盘加载，
+ * 避免多个后台线程重复读取同一文件。
  */
 class UsageInfoCache(cacheDir: Path, inputFiles: List<File>) : IUsageInfoCache {
 

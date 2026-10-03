@@ -15,11 +15,10 @@ import javax.swing.WindowConstants
  * **做什么**：提供 [commonWindowInit]（模态、ESC 关闭、记忆窗口位置）与
  * 覆写的 [dispose]（关闭前保存窗口位置）。
  *
- * **为什么 `mainWindow` 用 `@JvmField`**：Java 子类（如 `ExportProjectDialog`）
- * 仍按字段方式访问 `mainWindow`，因此必须生成同名 `protected` 字段。
+ * **`mainWindow`**：以 `protected` 属性暴露给子类（如 `ExportProjectDialog`）访问。
  */
 abstract class CommonDialog(
-	@JvmField protected val mainWindow: MainWindow,
+	protected val mainWindow: MainWindow,
 ) : JDialog(mainWindow) {
 
 	/**

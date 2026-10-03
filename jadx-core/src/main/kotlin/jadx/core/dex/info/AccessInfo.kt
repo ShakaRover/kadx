@@ -13,8 +13,7 @@ import org.intellij.lang.annotations.MagicConstant
  * 判断与生成 Java 修饰符字符串的方法。
  *
  * Kotlin 转换说明：
- * - 原 Java 静态常量 [VISIBILITY_FLAGS] 改为 companion 中的 `@JvmField val`，
- *   Java 调用方仍写 `AccessInfo.VISIBILITY_FLAGS`；
+ * - 原 Java 静态常量 [VISIBILITY_FLAGS] 改为 companion 中的 `val`；
  * - 所有 `isXxx()` / `getXxx()` 保持为显式方法（不转属性），因为仓库中已有大量
  *   Kotlin 调用点使用显式 `isXxx()` 形式，保持方法最机械、最安全。
  */
@@ -32,7 +31,6 @@ class AccessInfo(
 
 	companion object {
 		/** 三个互斥的可见性标志位（public/protected/private）的合并掩码。 */
-		@JvmField
 		val VISIBILITY_FLAGS: Int = AccessFlags.PUBLIC or AccessFlags.PROTECTED or AccessFlags.PRIVATE
 	}
 

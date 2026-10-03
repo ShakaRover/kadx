@@ -35,7 +35,7 @@ import javax.swing.tree.TreePath
  * **做什么**：把工程的包列表构建成层级树，支持全选/反选/取消选择，
  * 点击「确定」写回排除列表并重开。
  *
- * **为什么保留 Swing 线程模型**：全部操作在 EDT 上，不引入协程。
+ * **为什么保留 Swing 线程模型**：全部操作在 EDT 上。
  */
 class ExcludePkgDialog(private val mainWindow: MainWindow) : JDialog(mainWindow) {
 

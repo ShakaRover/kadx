@@ -36,7 +36,7 @@ import javax.swing.JTextField
  * **做什么**：让用户选择导出路径、是否导出为 Gradle 工程、是否跳过资源/源码解码，
  * 确认后通过 [exportListener] 回调把 [ExportProjectProperties] 交给导出任务。
  *
- * **为什么保留 Swing 写法**：本阶段只做语法迁移，事件仍走 EDT，不引入协程。
+ * **为什么保留 Swing 写法**：事件仍走 EDT，确认后通过 [exportListener] 交给后台导出任务。
  */
 class ExportProjectDialog(
 	mainWindow: MainWindow,

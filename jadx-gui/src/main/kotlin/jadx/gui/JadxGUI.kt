@@ -23,10 +23,9 @@ import javax.swing.SwingUtilities
  * **做什么**：解析命令行参数并加载 GUI 配置，注册日志收集器与系统信息输出，
  * 然后在 Swing 事件派发线程（EDT）上初始化外观、创建主窗口并注册“打开文件”系统事件处理器。
  *
- * **线程模型（阶段 5.1 保持不变）**：初始化工作分两段：
+ * **线程模型**：初始化工作分两段：
  * 1. 配置加载、日志注册在主线程执行；
- * 2. 所有 Swing 组件创建都通过 [SwingUtilities.invokeLater] 投递到 EDT，
- *    与原 Java 完全一致，未引入协程。
+ * 2. 所有 Swing 组件创建都通过 [SwingUtilities.invokeLater] 投递到 EDT。
  *
  * **为什么是 `class` + `companion object` + `@JvmStatic fun main`**：
  * 打包配置（`mainClass.set("jadx.gui.JadxGUI")`）要求 JVM 入口仍是 `jadx.gui.JadxGUI` 类。

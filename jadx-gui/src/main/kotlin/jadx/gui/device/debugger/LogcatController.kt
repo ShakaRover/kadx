@@ -20,7 +20,7 @@ import java.util.TreeSet
  * **做什么**：定时（每 1 秒）从设备拉取二进制 logcat，解析出 [LogcatInfo]，
  * 按 [LogcatFilter] 过滤后推给 [LogcatPanel] 展示。
  *
- * **线程模型**：沿用原 Java 的 [Timer] + [TimerTask] 后台线程，不引入协程。
+ * **线程模型**：[Timer] + [TimerTask] 后台线程。
  */
 class LogcatController
 @Throws(IOException::class)

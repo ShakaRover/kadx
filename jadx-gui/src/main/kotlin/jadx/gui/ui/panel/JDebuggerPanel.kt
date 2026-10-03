@@ -55,8 +55,8 @@ import javax.swing.tree.TreePath
  * **做什么**：左侧显示线程/堆栈帧，右侧显示变量树与日志；顶部工具栏提供重跑、停止、
  * 运行/暂停、单步等按钮；同时注册 F7/F8/F9 等调试快捷键。
  *
- * **线程模型**：本阶段严格保持原 Swing 模型——所有 UI 更新通过 `SwingUtilities.invokeLater`
- * 或 [UiUtils.uiRun] 投递到 EDT，不引入协程。
+ * **线程模型**：所有 UI 更新通过 `SwingUtilities.invokeLater`
+ * 或 [UiUtils.uiRun] 投递到 EDT。
  */
 class JDebuggerPanel(private val mainWindow: MainWindow) : JPanel() {
 

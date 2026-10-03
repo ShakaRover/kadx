@@ -26,8 +26,7 @@ import javax.swing.SwingUtilities
  * **做什么**：对方法/字段直接生成对应 hook 代码；对类弹出方法选择对话框，
  * 为选中的每个方法生成 hook 片段。
  *
- * **线程模型**：保持 Swing 原样——类选择对话框通过 [SwingUtilities.invokeLater]
- * 回到 EDT 打开，不引入协程。
+ * **线程模型**：类选择对话框通过 [SwingUtilities.invokeLater] 回到 EDT 打开。
  */
 class FridaAction(codeArea: CodeArea) : JNodeAction(ActionModel.FRIDA_COPY, codeArea) {
 

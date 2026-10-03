@@ -34,8 +34,8 @@ import java.util.function.Consumer
  * 2. 后台线程重新加载受影响的类代码并刷新缓存；
  * 3. 回到 UI 线程刷新已打开的标签页与类树。
  *
- * **线程模型（阶段 5.1 保持不变）**：仍使用 [jadx.gui.jobs.BackgroundExecutor] +
- * [UiUtils.uiRunAndWait] 在 EDT 上执行 UI 更新，未引入协程。
+ * **线程模型**：[jadx.gui.jobs.BackgroundExecutor]（协程调度）负责后台加载，
+ * [UiUtils.uiRunAndWait] 回到 EDT 执行 UI 更新。
  */
 class RenameService private constructor(private val mainWindow: MainWindow) {
 

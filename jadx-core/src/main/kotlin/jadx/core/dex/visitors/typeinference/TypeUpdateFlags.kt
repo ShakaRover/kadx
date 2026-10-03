@@ -11,8 +11,7 @@ import java.util.EnumSet
  * - `IGNORE_UNKNOWN`：遇到无法判断的层级关系时直接拒绝；
  * - `KEEP_GENERICS`：不允许因更宽类型而丢失泛型信息。
  *
- * **Kotlin 转换说明**：静态常量放入 `companion object` 并用 `@JvmField` 暴露，
- * Java 侧仍可写 `TypeUpdateFlags.FLAGS_EMPTY`。
+ * **Kotlin 转换说明**：静态常量放入 `companion object`，Kotlin 侧写 `TypeUpdateFlags.FLAGS_EMPTY`。
  */
 class TypeUpdateFlags private constructor(private val flags: Set<FlagsEnum>) {
 
@@ -34,16 +33,12 @@ class TypeUpdateFlags private constructor(private val flags: Set<FlagsEnum>) {
 	}
 
 	companion object {
-		@JvmField
 		val FLAGS_EMPTY: TypeUpdateFlags = build()
 
-		@JvmField
 		val FLAGS_WIDER: TypeUpdateFlags = build(FlagsEnum.ALLOW_WIDER)
 
-		@JvmField
 		val FLAGS_WIDER_IGNORE_SAME: TypeUpdateFlags = build(FlagsEnum.ALLOW_WIDER, FlagsEnum.IGNORE_SAME)
 
-		@JvmField
 		val FLAGS_APPLY_DEBUG: TypeUpdateFlags = build(FlagsEnum.ALLOW_WIDER, FlagsEnum.KEEP_GENERICS, FlagsEnum.IGNORE_UNKNOWN)
 
 		private fun build(vararg flags: FlagsEnum): TypeUpdateFlags {

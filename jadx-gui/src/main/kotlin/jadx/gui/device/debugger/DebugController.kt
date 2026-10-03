@@ -37,8 +37,8 @@ import javax.swing.tree.DefaultMutableTreeNode
  * **做什么**：实现 [IDebugController]，负责启动/停止调试、单步、暂停/继续，
  * 并在收到挂起事件时刷新线程、栈帧、寄存器与字段。
  *
- * **线程模型**：保留原 Java 的 `updateQueue` / `lazyQueue` 单线程执行器与
- * Swing `UiUtils.uiRun`，不引入协程。
+ * **线程模型**：`updateQueue` / `lazyQueue` 单线程执行器与
+ * Swing `UiUtils.uiRun`。
  */
 class DebugController :
 	SmaliDebugger.SuspendListener,

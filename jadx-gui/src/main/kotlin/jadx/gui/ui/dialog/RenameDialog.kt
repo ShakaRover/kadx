@@ -34,7 +34,7 @@ import javax.swing.SwingUtilities
  * **做什么**：展示当前名字并实时校验新名字，确认后发送 [NodeRenamedByUser] 事件，
  * 由重命名服务真正执行替换。
  *
- * **为什么保留 Swing 线程模型**：对话框在 EDT 上创建与显示，不引入协程。
+ * **为什么保留 Swing 线程模型**：对话框在 EDT 上创建与显示。
  */
 class RenameDialog private constructor(
 	mainWindow: MainWindow,

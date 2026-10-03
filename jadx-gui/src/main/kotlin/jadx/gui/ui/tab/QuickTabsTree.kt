@@ -25,7 +25,7 @@ import javax.swing.tree.TreeNode
  * 单击叶子节点即选中对应标签页。
  *
  * **为什么保留 Swing 线程模型**：所有更新都发生在 EDT（由 `TabsController` 触发），
- * 不引入协程或额外线程。
+ * 不额外起线程。
  *
  * **为什么不是 `data class`**：这是有状态的 Swing 组件。
  */

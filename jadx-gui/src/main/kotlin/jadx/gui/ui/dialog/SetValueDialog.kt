@@ -32,7 +32,7 @@ import javax.swing.WindowConstants
  * **做什么**：让用户选择值类型（int/String/long/float/double/Object id）并输入新值，
  * 通过 [jadx.gui.ui.panel.IDebugController.modifyRegValue] 应用。
  *
- * **为什么保留 Swing 线程模型**：全部逻辑在 EDT 上执行，不引入协程。
+ * **为什么保留 Swing 线程模型**：全部逻辑在 EDT 上执行。
  */
 class SetValueDialog(
 	private val mainWindow: MainWindow,

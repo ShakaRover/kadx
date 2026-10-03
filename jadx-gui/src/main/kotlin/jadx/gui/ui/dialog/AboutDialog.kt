@@ -23,7 +23,7 @@ import javax.swing.SwingConstants
  *
  * **做什么**：构造时立即构建界面（[initUI]），点击关闭按钮即销毁窗口。
  *
- * **为什么保持 Swing 线程模型**：全部工作在 EDT 上完成，不引入协程。
+ * **为什么保持 Swing 线程模型**：全部工作在 EDT 上完成。
  */
 class AboutDialog : JDialog() {
 

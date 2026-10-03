@@ -11,7 +11,7 @@ import java.util.BitSet
  *
  * **Kotlin 转换说明**：
  * - 继承 Java 的 [BitSet]，用 `override fun` 精确匹配 JVM 方法签名；
- * - [EMPTY] 用 `@JvmField` 暴露静态字段，Java 侧 `EmptyBitSet.EMPTY` 保持不变；
+ * - [EMPTY] 是共享的单例常量；
  * - [serialVersionUID] 用 `const val` 生成静态字段，满足 Java 序列化要求。
  */
 class EmptyBitSet : BitSet(0) {
@@ -49,7 +49,6 @@ class EmptyBitSet : BitSet(0) {
 	companion object {
 		private const val serialVersionUID: Long = -1194884945157778639L
 
-		@JvmField
 		val EMPTY: BitSet = EmptyBitSet()
 	}
 }

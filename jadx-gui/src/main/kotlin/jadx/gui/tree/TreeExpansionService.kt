@@ -29,8 +29,8 @@ import javax.swing.tree.TreePath
  * **为什么要过滤子路径**：只保存“最外层”的展开节点即可覆盖其所有后代，
  * 因此按路径长度倒序排序后剔除是已保存路径后代的项。
  *
- * **线程模型（阶段 5.1 保持不变）**：恢复过程使用 [LoadTask] 在后台加载，
- * 通过 [UiUtils.uiRunAndWait] 回到 EDT 执行展开，未引入协程。
+ * **线程模型**：恢复过程使用 [LoadTask] 在后台加载，
+ * 通过 [UiUtils.uiRunAndWait] 回到 EDT 执行展开。
  */
 class TreeExpansionService(private val mainWindow: MainWindow, private val tree: JTree) {
 

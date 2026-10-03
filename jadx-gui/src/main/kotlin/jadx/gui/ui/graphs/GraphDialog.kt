@@ -36,7 +36,7 @@ import javax.swing.WindowConstants
  * **做什么**：统一处理窗口位置保存/恢复、ESC 关闭、菜单整体启用/禁用，
  * 以及一个「保存为 SVG」按钮；子类只需实现 [addMenuBar] 并调用 [GraphPanel.setGraph]。
  *
- * **线程模型**：保持原 Swing 模型，不引入协程。
+ * **线程模型**：保持 Swing 模型，UI 更新在 EDT 上执行。
  */
 abstract class GraphDialog(
 	private val mainWindow: MainWindow,

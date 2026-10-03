@@ -41,7 +41,6 @@ import java.util.concurrent.ConcurrentHashMap
 object DebugUtils {
 	private val LOG: Logger = LoggerFactory.getLogger(DebugUtils::class.java)
 
-	@JvmField
 	val TEST_MTH_FILTER: (MethodNode) -> Boolean = { mth -> mth.name == "test" }
 
 	fun dump(mth: MethodNode) {

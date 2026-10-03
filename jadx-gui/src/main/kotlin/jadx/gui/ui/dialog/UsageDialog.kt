@@ -36,8 +36,8 @@ import javax.swing.WindowConstants
  *
  * **做什么**：构造时收集用法数据，加载完成后填入结果表并高亮节点名。
  *
- * **为什么保留 Swing 线程模型**：数据收集走 [MainWindow.getBackgroundExecutor]，
- * UI 更新回到 EDT，不引入协程。
+ * **为什么保留 Swing 线程模型**：数据收集走 [MainWindow.getBackgroundExecutor]（协程调度），
+ * UI 更新回到 EDT。
  */
 class UsageDialog private constructor(
 	mainWindow: MainWindow,

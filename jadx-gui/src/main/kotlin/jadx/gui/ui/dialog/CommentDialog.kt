@@ -33,7 +33,7 @@ import javax.swing.SwingConstants
  *
  * **做什么**：输入注释文本并选择注释风格，写入工程的 [JadxCodeData]。
  *
- * **为什么保留 Swing 线程模型**：对话框逻辑全部在 EDT 上执行，不引入协程。
+ * **为什么保留 Swing 线程模型**：对话框逻辑全部在 EDT 上执行。
  */
 class CommentDialog(
 	private val codeArea: CodeArea,

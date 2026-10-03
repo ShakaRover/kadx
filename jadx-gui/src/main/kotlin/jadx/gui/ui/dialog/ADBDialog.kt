@@ -52,8 +52,7 @@ import javax.swing.tree.TreeSelectionModel
  * **做什么**：监听设备状态与 JDWP 进程变化，把设备/进程展示为树；
  * 双击进程即尝试附加调试器。
  *
- * **为什么保留 Swing 线程模型**：网络监听在回调线程触发，UI 更新统一回到 EDT，
- * 不引入协程。
+ * **为什么保留 Swing 线程模型**：网络监听在回调线程触发，UI 更新统一回到 EDT。
  */
 class ADBDialog(private val mainWindow: MainWindow) :
 	JDialog(mainWindow),

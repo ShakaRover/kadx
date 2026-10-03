@@ -26,7 +26,7 @@ import java.util.Collections
  * **做什么**：维护 `caches.json` 中的缓存记录列表（项目路径 -> 缓存目录），
  * 负责为项目计算/校验缓存目录、在项目路径变化时迁移记录、以及删除不再使用的缓存。
  *
- * **线程模型（阶段 5.1 保持不变）**：[loadCaches]、[saveCaches]、[removeCacheEntry]
+ * **线程模型**：[loadCaches]、[saveCaches]、[removeCacheEntry]
  * 仍在 `this` 上加锁（[Synchronized]），与原 Java `synchronized` 方法一致。
  */
 class CacheManager(private val settings: JadxSettings) {

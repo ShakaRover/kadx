@@ -36,7 +36,7 @@ import javax.swing.border.TitledBorder
  *
  * **做什么**：构建起始页 UI；列表支持双击打开、右键菜单打开/移除、悬停高亮移除按钮。
  *
- * **为什么保留 Swing 线程模型**：所有交互都在 EDT 上，未引入协程。
+ * **为什么保留 Swing 线程模型**：所有交互都在 EDT 上。
  */
 class StartPagePanel(tabbedPane: TabbedPane, node: StartPageNode) : ContentPanel(tabbedPane, node) {
 

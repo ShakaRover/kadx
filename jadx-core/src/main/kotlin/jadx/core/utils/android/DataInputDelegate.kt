@@ -12,13 +12,13 @@ import java.io.IOException
  * 只需继承本类并覆写少量方法，其余方法自动委托。
  *
  * **Kotlin 转换说明**：
- * - `mDelegate` 用 `@JvmField protected` 暴露，保留原 Java 的 protected 字段访问语义；
+ * - `mDelegate` 以 `protected` 属性暴露给子类；
  * - 每个方法都保留原 Java 的 `throws IOException`，通过 `@Throws` 写入 JVM 异常表，
  *   使 Java 调用方仍能看到受检异常声明；
  * - [readLine] 在 [DataInput] 约定下可能返回 null，故返回类型标为可空。
  */
 abstract class DataInputDelegate(
-	@JvmField protected val mDelegate: DataInput,
+	protected val mDelegate: DataInput,
 ) : DataInput {
 
 	@Throws(IOException::class)

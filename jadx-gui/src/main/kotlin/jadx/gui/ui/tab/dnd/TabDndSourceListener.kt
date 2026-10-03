@@ -11,7 +11,7 @@ import javax.swing.JComponent
 /**
  * 拖拽源监听器：维护拖拽光标，并在拖拽结束时隐藏 glass pane。
  *
- * **线程模型**：AWT 拖拽事件在 EDT 上派发，这里保持原有同步处理，不引入协程。
+ * **线程模型**：AWT 拖拽事件在 EDT 上派发，这里保持同步处理。
  */
 class TabDndSourceListener(private val dnd: TabDndController) : DragSourceListener {
 

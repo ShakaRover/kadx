@@ -14,8 +14,7 @@ import javax.swing.JPanel
  * **做什么**：内容面板是标签栏里真正显示内容的 Swing 组件（代码、图片、字体、HTML、调试器等）。
  * 基类持有所属的 [TabbedPane] 与对应的树节点 [JNode]，并提供取主窗口、设置、控制器等便捷方法。
  *
- * **线程模型**：本阶段只做语法迁移，所有方法都假定在 Swing 事件线程（EDT）上调用，
- * 不引入协程。
+ * **线程模型**：所有方法都假定在 Swing 事件线程（EDT）上调用。
  *
  * **Java 互操作**：原 Java 的 `protected` 字段 `tabbedPane`/`node` 仍以 `@JvmField`
  * 暴露，Java 子类（如 `QuarkReportPanel`）可直接访问；同时保留显式 `getXxx()` 函数，

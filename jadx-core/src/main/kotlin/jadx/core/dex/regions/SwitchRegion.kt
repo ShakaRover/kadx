@@ -82,7 +82,6 @@ class SwitchRegion(parent: IRegion?, val header: BlockNode) :
 		 * 默认分支的哨兵 key。用匿名对象而不是 null/字符串，保证与普通常量不会冲突，
 		 * 且比较时用引用相等（[CaseInfo.isDefaultCase]）。
 		 */
-		@JvmField
 		val DEFAULT_CASE_KEY: Any = object : Any() {
 			override fun toString(): String = "default"
 		}
