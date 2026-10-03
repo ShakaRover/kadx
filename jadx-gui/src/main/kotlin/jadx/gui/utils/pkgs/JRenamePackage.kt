@@ -63,7 +63,6 @@ class JRenamePackage(
 			Pattern.compile("(\\.)?PKG(\\.PKG)*".replace("PKG", NameMapper.VALID_JAVA_IDENTIFIER.pattern()))
 
 		/** 校验新包名是否合法（非空、非保留字、逐段均为合法标识符）。 */
-		@JvmStatic
 		fun isValidPackageName(newName: String?): Boolean {
 			if (newName == null || newName.isEmpty() || NameMapper.isReserved(newName)) {
 				return false

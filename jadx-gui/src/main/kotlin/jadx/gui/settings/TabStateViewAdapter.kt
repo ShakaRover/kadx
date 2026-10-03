@@ -37,11 +37,11 @@ class TabStateViewAdapter {
 		}
 		tvs.setCaret(viewState.getCaretPos())
 		tvs.setView(ViewPoint(viewState.getViewPoint()))
-		tvs.setActive(viewState.isActive())
-		tvs.setPinned(viewState.isPinned())
-		tvs.setBookmarked(viewState.isBookmarked())
-		tvs.setHidden(viewState.isHidden())
-		tvs.setPreviewTab(viewState.isPreviewTab())
+		tvs.setActive(viewState.isActive)
+		tvs.setPinned(viewState.isPinned)
+		tvs.setBookmarked(viewState.isBookmarked)
+		tvs.setHidden(viewState.isHidden)
+		tvs.setPreviewTab(viewState.isPreviewTab)
 		return tvs
 	}
 
@@ -56,11 +56,11 @@ class TabStateViewAdapter {
 			}
 			val view = checkNotNull(tvs.getView()) { "View is not set for: $tvs" }
 			val viewState = EditorViewState(node, tvs.getSubPath() ?: "", tvs.getCaret(), view.toPoint())
-			viewState.setActive(tvs.isActive())
-			viewState.setPinned(tvs.isPinned())
-			viewState.setBookmarked(tvs.isBookmarked())
-			viewState.setHidden(tvs.isHidden())
-			viewState.setPreviewTab(tvs.isPreviewTab())
+			viewState.setActive(tvs.isActive)
+			viewState.setPinned(tvs.isPinned)
+			viewState.setBookmarked(tvs.isBookmarked)
+			viewState.setHidden(tvs.isHidden)
+			viewState.setPreviewTab(tvs.isPreviewTab)
 			return viewState
 		} catch (e: Exception) {
 			LOG.error("Failed to load tab state: {}", tvs, e)
@@ -80,7 +80,7 @@ class TabStateViewAdapter {
 			"class" -> {
 				val javaClass: JavaClass? = mw.getWrapper().searchJavaClassByRawName(checkNotNull(tvs.getTabPath()))
 				if (javaClass != null) {
-					return mw.getCacheObject().getNodeCache().makeFrom(javaClass)
+					return mw.getCacheObject().nodeCache.makeFrom(javaClass)
 				}
 			}
 

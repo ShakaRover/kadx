@@ -21,6 +21,5 @@ object IconsCache {
 	 *
 	 * @param name 图标资源名（不含 `icons/` 前缀与 `.svg` 后缀）
 	 */
-	@JvmStatic
 	fun getSVGIcon(name: String): ImageIcon = SVG_ICONS.computeIfAbsent(name) { UiUtils.openSvgIcon(it) }
 }

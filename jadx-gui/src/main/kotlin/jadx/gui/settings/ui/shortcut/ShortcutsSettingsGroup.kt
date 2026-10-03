@@ -34,7 +34,7 @@ class ShortcutsSettingsGroup(
 	private fun makeShortcutsGroup(category: ActionCategory): SettingsGroup {
 		val group = SettingsGroup(category.getName())
 		for (actionModel in ActionModel.select(category)) {
-			val shortcut = settings.getShortcuts().get(actionModel)
+			val shortcut = settings.shortcuts.get(actionModel)
 			val edit = ShortcutEdit(actionModel, settingsWindow, settings)
 			edit.setShortcut(shortcut)
 			group.addRow(actionModel.getName(), edit)

@@ -73,8 +73,8 @@ class RecentProjectListCellRenderer(baseFont: Font) :
 		isSelected: Boolean,
 		cellHasFocus: Boolean,
 	): Component {
-		fileNameLabel.text = value.getProjectName()
-		pathLabel.text = value.getAbsolutePath()
+		fileNameLabel.text = value.projectName
+		pathLabel.text = value.absolutePath
 
 		val isThisRemoveButtonHovered = index == StartPagePanel.hoveredRemoveBtnIndex
 		removeProjectBtn.icon = if (isThisRemoveButtonHovered) Icons.CLOSE else Icons.CLOSE_INACTIVE
@@ -92,7 +92,7 @@ class RecentProjectListCellRenderer(baseFont: Font) :
 			removeProjectBtn.foreground = defaultForeground
 		}
 
-		toolTipText = value.getAbsolutePath()
+		toolTipText = value.absolutePath
 		return this
 	}
 
@@ -114,7 +114,7 @@ class RecentProjectListCellRenderer(baseFont: Font) :
 	 * 返回移除按钮在渲染组件坐标系中的边界。
 	 * 这对 `JList` 上的鼠标监听判断点击是否落在图标上至关重要。
 	 */
-	fun getRemoveIconBounds(): Rectangle? = removeBtnBounds
+	val removeIconBounds: Rectangle? get() = removeBtnBounds
 
 	companion object {
 		private const val serialVersionUID: Long = 5550591869239586857L

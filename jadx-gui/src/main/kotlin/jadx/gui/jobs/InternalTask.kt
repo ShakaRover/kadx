@@ -71,7 +71,7 @@ class InternalTask(
 
 	fun getJob(): Job? = job
 
-	fun isRunning(): Boolean = running.get()
+	val isRunning: Boolean get() = running.get()
 
 	/** 原子地把“首次刷新”标志从 true 翻转为 false；仅第一次返回 true。 */
 	fun checkForFirstUpdate(): Boolean = firstUpdate.compareAndExchange(true, false)

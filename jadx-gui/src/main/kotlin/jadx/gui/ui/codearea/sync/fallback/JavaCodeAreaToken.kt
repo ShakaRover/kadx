@@ -13,7 +13,7 @@ class JavaCodeAreaToken(area: CodeArea, at: Int) : AbstractCodeAreaToken(area, a
 			return false
 		}
 		// 赋值紧跟词元
-		if (line.getStr().contains("=")) {
+		if (line.str.contains("=")) {
 			return area.getText(startPos + length, 2) == " ="
 		}
 		// 以 ';' 结尾

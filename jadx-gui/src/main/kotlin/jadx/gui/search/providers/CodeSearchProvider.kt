@@ -32,7 +32,7 @@ class CodeSearchProvider(
 	private val includedClasses: Set<JavaClass>?,
 ) : BaseSearchProvider(mw, searchSettings, classes) {
 
-	private val codeCache: ICodeCache = mw.getWrapper().getArgs().codeCache
+	private val codeCache: ICodeCache = mw.getWrapper().args.codeCache
 	private val wrapper: JadxWrapper = mw.getWrapper()
 
 	private var code: String? = null

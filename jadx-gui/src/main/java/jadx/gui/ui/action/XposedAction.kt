@@ -24,7 +24,7 @@ class XposedAction(codeArea: CodeArea) : JNodeAction(ActionModel.XPOSED_COPY, co
 		} catch (e: Exception) {
 			LOG.error("Failed to generate Xposed code snippet", e)
 			JOptionPane.showMessageDialog(
-				getCodeArea().getMainWindow(),
+				getCodeArea().mainWindow,
 				e.localizedMessage,
 				NLS.str("error_dialog.title"),
 				JOptionPane.ERROR_MESSAGE,
@@ -42,7 +42,7 @@ class XposedAction(codeArea: CodeArea) : JNodeAction(ActionModel.XPOSED_COPY, co
 	}
 
 	private fun generateMethodSnippet(jMethod: JMethod): String {
-		val javaMethod = jMethod.getJavaMethod()
+		val javaMethod = jMethod.javaMethod
 		val methodNode = javaMethod.getMethodNode()
 		val methodInfo = methodNode.getMethodInfo()
 
@@ -126,7 +126,7 @@ class XposedAction(codeArea: CodeArea) : JNodeAction(ActionModel.XPOSED_COPY, co
 	}
 
 	private fun generateFieldSnippet(jField: JField): String {
-		val javaField = jField.getJavaField()
+		val javaField = jField.javaField
 		val static = if (javaField.getAccessFlags().isStatic()) "Static" else ""
 		val type = PRIMITIVE_TYPE_MAPPING.getOrDefault(javaField.getFieldNode().type.toString(), "Object")
 		val xposedMethod = "XposedHelpers.get${static}${type}Field"
@@ -140,7 +140,7 @@ class XposedAction(codeArea: CodeArea) : JNodeAction(ActionModel.XPOSED_COPY, co
 	}
 
 	private val language: XposedCodegenLanguage
-		get() = getCodeArea().getMainWindow().getSettings().getXposedCodegenLanguage()
+		get() = getCodeArea().mainWindow.getSettings().xposedCodegenLanguage
 
 	companion object {
 		private val LOG: Logger = LoggerFactory.getLogger(XposedAction::class.java)

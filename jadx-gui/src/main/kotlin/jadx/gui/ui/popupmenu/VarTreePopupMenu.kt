@@ -61,7 +61,7 @@ class VarTreePopupMenu(private val mainWindow: MainWindow) : JPopupMenu() {
 			override fun actionPerformed(event: ActionEvent) {
 				try {
 					mainWindow.getDebuggerPanel()
-						.getDbgController()
+						.dbgController
 						.modifyRegValue(checkNotNull(valNode), ArgType.INT, 0)
 				} catch (e: Exception) {
 					LOG.error("Change to zero failed", e)
@@ -73,7 +73,7 @@ class VarTreePopupMenu(private val mainWindow: MainWindow) : JPopupMenu() {
 			override fun actionPerformed(event: ActionEvent) {
 				try {
 					mainWindow.getDebuggerPanel()
-						.getDbgController()
+						.dbgController
 						.modifyRegValue(checkNotNull(valNode), ArgType.INT, 1)
 				} catch (e: Exception) {
 					LOG.error("Change to one failed", e)

@@ -86,8 +86,8 @@ class JDebuggerPanel(private val mainWindow: MainWindow) : JPanel() {
 		leftSplitter = JSplitPane()
 		rightSplitter = JSplitPane()
 
-		leftSplitter.setDividerLocation(mainWindow.getSettings().getDebuggerStackFrameSplitterLoc())
-		rightSplitter.setDividerLocation(mainWindow.getSettings().getDebuggerVarTreeSplitterLoc())
+		leftSplitter.setDividerLocation(mainWindow.getSettings().debuggerStackFrameSplitterLoc)
+		rightSplitter.setDividerLocation(mainWindow.getSettings().debuggerVarTreeSplitterLoc)
 
 		val stackFramePanel = JPanel(BorderLayout())
 		threadBox = JComboBox()
@@ -122,7 +122,7 @@ class JDebuggerPanel(private val mainWindow: MainWindow) : JPanel() {
 			): Component {
 				val c = super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus)
 				if (value is ValueTreeNode) {
-					if (value.isUpdated()) {
+					if (value.isUpdated) {
 						setForeground(Color.RED)
 					}
 				}
@@ -312,7 +312,7 @@ class JDebuggerPanel(private val mainWindow: MainWindow) : JPanel() {
 		controllerShortCutDispatcher = object : KeyEventDispatcher {
 			override fun dispatchKeyEvent(e: KeyEvent): Boolean {
 				if (e.getID() == KeyEvent.KEY_PRESSED &&
-					mainWindow.getTabbedPane().getFocusedComp() is SmaliArea
+					mainWindow.getTabbedPane().focusedComp is SmaliArea
 				) {
 					if (e.getModifiersEx() == KeyEvent.SHIFT_DOWN_MASK &&
 						e.getKeyCode() == KeyEvent.VK_F8
@@ -376,24 +376,24 @@ class JDebuggerPanel(private val mainWindow: MainWindow) : JPanel() {
 					log(NLS.str("logcat.error_fail_start"))
 					LOG.error("Logcat failed to start", e)
 				}
-				leftSplitter.setDividerLocation(mainWindow.getSettings().getDebuggerStackFrameSplitterLoc())
-				rightSplitter.setDividerLocation(mainWindow.getSettings().getDebuggerVarTreeSplitterLoc())
+				leftSplitter.setDividerLocation(mainWindow.getSettings().debuggerStackFrameSplitterLoc)
+				rightSplitter.setDividerLocation(mainWindow.getSettings().debuggerVarTreeSplitterLoc)
 				mainWindow.showDebuggerPanel()
 			}
 		}
 		return ok
 	}
 
-	fun getDbgController(): IDebugController = controller
+	val dbgController: IDebugController get() = controller
 
-	fun getLeftSplitterLocation(): Int = leftSplitter.getDividerLocation()
+	val leftSplitterLocation: Int get() = leftSplitter.getDividerLocation()
 
-	fun getRightSplitterLocation(): Int = rightSplitter.getDividerLocation()
+	val rightSplitterLocation: Int get() = rightSplitter.getDividerLocation()
 
 	fun loadSettings() {
 		UiUtils.uiThreadGuard()
 
-		val font: Font = mainWindow.getSettings().getCodeFont()
+		val font: Font = mainWindow.getSettings().codeFont
 		variableTree.setFont(font.deriveFont(font.getSize() + 1f))
 		variableTree.setRowHeight(-1)
 		stackFrameList.setFont(font)
@@ -453,7 +453,7 @@ class JDebuggerPanel(private val mainWindow: MainWindow) : JPanel() {
 				elements.forEach { model.addElement(it) }
 			}
 			threadBox.updateUI()
-			stackFrameList.setFont(mainWindow.getSettings().getCodeFont())
+			stackFrameList.setFont(mainWindow.getSettings().codeFont)
 		}
 	}
 
@@ -463,7 +463,7 @@ class JDebuggerPanel(private val mainWindow: MainWindow) : JPanel() {
 			if (!elements.isEmpty()) {
 				val model = stackFrameList.getModel() as DefaultListModel<IListElement>
 				model.addAll(elements)
-				stackFrameList.setFont(mainWindow.getSettings().getCodeFont())
+				stackFrameList.setFont(mainWindow.getSettings().codeFont)
 			}
 			stackFrameList.repaint()
 		}
@@ -540,7 +540,7 @@ class JDebuggerPanel(private val mainWindow: MainWindow) : JPanel() {
 			this.updatedFlag = updated
 		}
 
-		fun isUpdated(): Boolean = updatedFlag
+		val isUpdated: Boolean get() = updatedFlag
 
 		abstract fun getName(): String
 

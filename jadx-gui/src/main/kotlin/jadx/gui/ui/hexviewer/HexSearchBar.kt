@@ -184,7 +184,7 @@ class HexSearchBar(textArea: SectCodeArea) : JToolBar() {
 		searchField.setText("")
 	}
 
-	fun getSearchParameters(): SearchParameters {
+	val searchParameters: SearchParameters get() {
 		val searchParameters = SearchParameters()
 		searchParameters.setMatchCase(matchCaseCB.isSelected())
 		searchParameters.setMatchMode(SearchParameters.MatchMode.fromBoolean(markAllCB.isSelected()))
@@ -192,7 +192,7 @@ class HexSearchBar(textArea: SectCodeArea) : JToolBar() {
 		searchParameters.setSearchDirection(searchDirection)
 
 		val startPosition: Long
-		if (searchParameters.isSearchFromCursor()) {
+		if (searchParameters.isSearchFromCursor) {
 			startPosition = hexCodeArea.getActiveCaretPosition().getDataPosition()
 		} else {
 			startPosition = when (searchDirection) {

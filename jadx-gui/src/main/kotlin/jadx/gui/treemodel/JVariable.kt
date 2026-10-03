@@ -25,7 +25,7 @@ class JVariable(
 ) : JNode(),
 	JRenameNode {
 
-	fun getJavaVarNode(): JavaVariable = `var`
+	val javaVarNode: JavaVariable get() = `var`
 
 	override fun getJavaNode(): JavaNode = `var`
 

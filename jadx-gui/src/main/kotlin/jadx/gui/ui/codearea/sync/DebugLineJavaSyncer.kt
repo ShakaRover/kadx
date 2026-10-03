@@ -19,7 +19,7 @@ class DebugLineJavaSyncer(private val from: CodeArea) :
 		// 目标可能是 java / simple / fallback 视图，不能只依赖当前行，
 		// 需要用行号映射做关联。
 		try {
-			val toLineMapping = to.getFunctionUniqueLineMappings()
+			val toLineMapping = to.functionUniqueLineMappings
 			if (toLineMapping.isEmpty()) {
 				return false
 			}
@@ -73,7 +73,7 @@ class DebugLineJavaSyncer(private val from: CodeArea) :
 	 * 有些中间行没有映射，需要一直回溯（例如 Simple 视图里多条指令行属于同一源码行）。
 	 */
 	private fun getClosestSourceLine(lineNum: Int): Int? {
-		val lineMapping = from.getFunctionUniqueLineMappings()
+		val lineMapping = from.functionUniqueLineMappings
 		if (lineMapping.isEmpty()) {
 			return null
 		}

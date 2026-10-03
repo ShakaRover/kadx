@@ -105,7 +105,7 @@ open class JadxGuiAction :
 				return
 			}
 		}
-		val shortcutType = shortcut?.getTypeString() ?: "null"
+		val shortcutType = shortcut?.typeString ?: "null"
 		actionPerformed(ActionEvent(this, ActionEvent.ACTION_PERFORMED, COMMAND_PREFIX + shortcutType))
 	}
 
@@ -135,7 +135,6 @@ open class JadxGuiAction :
 		private const val COMMAND_PREFIX = "JadxGuiAction.Command."
 
 		/** 判断该事件是否由本类触发（通过 action command 前缀识别）。 */
-		@JvmStatic
 		fun isSource(event: ActionEvent): Boolean {
 			val command = event.actionCommand
 			return command != null && command.startsWith(COMMAND_PREFIX)

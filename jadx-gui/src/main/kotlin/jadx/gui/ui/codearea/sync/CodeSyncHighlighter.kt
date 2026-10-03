@@ -41,7 +41,6 @@ class CodeSyncHighlighter(private val color: Color?) {
 
 	companion object {
 		/** 使用主题的悬停色创建默认高亮器。 */
-		@JvmStatic
 		fun defaultHighlighter(): CodeSyncHighlighter = CodeSyncHighlighter(UIManager.getColor("TabbedPane.hoverColor"))
 	}
 }

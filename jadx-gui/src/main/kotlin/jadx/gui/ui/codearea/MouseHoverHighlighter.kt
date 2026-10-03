@@ -82,12 +82,12 @@ internal class MouseHoverHighlighter(
 	}
 
 	private fun updateToolTip(node: JavaNode?) {
-		val mainWindow: MainWindow = codeArea.getMainWindow()
-		if (node == null || mainWindow.getSettings().isDisableTooltipOnHover()) {
+		val mainWindow: MainWindow = codeArea.mainWindow
+		if (node == null || mainWindow.getSettings().isDisableTooltipOnHover) {
 			codeArea.setToolTipText(null)
 			return
 		}
-		val nodeCache: JNodeCache = mainWindow.getCacheObject().getNodeCache()
+		val nodeCache: JNodeCache = mainWindow.getCacheObject().nodeCache
 		val jNode: JNode? = nodeCache.makeFrom(node)
 		codeArea.setToolTipText(jNode?.getTooltip())
 	}

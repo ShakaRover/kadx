@@ -138,7 +138,7 @@ class CacheSettingsGroup(private val settingsWindow: JadxSettingsWindow) : ISett
 		custom.add(selectDirBtn)
 		panel.add(custom)
 
-		val cacheDir = settingsWindow.getMainWindow().getSettings().getCacheDir()
+		val cacheDir = settingsWindow.getMainWindow().getSettings().cacheDir
 		if (cacheDir == null) {
 			defOpt.isSelected = true
 			changeCacheLocation(null)
@@ -169,14 +169,14 @@ class CacheSettingsGroup(private val settingsWindow: JadxSettingsWindow) : ISett
 		val settings = settingsWindow.getMainWindow().getSettings()
 
 		val codeCacheModeComboBox = JComboBox(CodeCacheMode.values())
-		codeCacheModeComboBox.selectedItem = settings.getCodeCacheMode()
+		codeCacheModeComboBox.selectedItem = settings.codeCacheMode
 		codeCacheModeComboBox.addActionListener {
 			settings.setCodeCacheMode(codeCacheModeComboBox.selectedItem as CodeCacheMode)
 			settingsWindow.needReload()
 		}
 
 		val usageCacheModeComboBox = JComboBox(UsageCacheMode.values())
-		usageCacheModeComboBox.selectedItem = settings.getUsageCacheMode()
+		usageCacheModeComboBox.selectedItem = settings.usageCacheMode
 		usageCacheModeComboBox.addActionListener {
 			settings.setUsageCacheMode(usageCacheModeComboBox.selectedItem as UsageCacheMode)
 			settingsWindow.needReload()

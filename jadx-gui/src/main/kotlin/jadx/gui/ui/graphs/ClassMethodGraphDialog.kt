@@ -146,7 +146,6 @@ class ClassMethodGraphDialog(mainWindow: MainWindow, private val cls: ClassNode)
 		private const val FONT = "fontname=\"Courier\" fontsize=12"
 		private const val CALLER_DEPTH_LIMIT = 10
 
-		@JvmStatic
 		fun open(window: MainWindow, node: JClass) {
 			val cls = node.getCls().getClassNode()
 			val graphDialog = ClassMethodGraphDialog(window, cls)

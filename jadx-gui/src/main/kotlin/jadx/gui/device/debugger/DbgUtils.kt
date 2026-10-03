@@ -104,14 +104,14 @@ object DbgUtils {
 		val cls = mainWindow.getWrapper().getDecompiler()
 			.searchJavaClassOrItsParentByOrigFullName(fullName)
 		if (cls != null) {
-			val jc = mainWindow.getCacheObject().getNodeCache().makeFrom(cls)
+			val jc = mainWindow.getCacheObject().nodeCache.makeFrom(cls)
 			return jc?.getRootClass()
 		}
 		return null
 	}
 
 	/** 由 Java 类构造界面节点。 */
-	fun getJClass(cls: JavaClass, mainWindow: MainWindow): JClass = checkNotNull(mainWindow.getCacheObject().getNodeCache().makeFrom(cls))
+	fun getJClass(cls: JavaClass, mainWindow: MainWindow): JClass = checkNotNull(mainWindow.getCacheObject().nodeCache.makeFrom(cls))
 
 	/** 按类签名查找类节点。 */
 	fun getClassNodeBySig(clsSig: String, mainWindow: MainWindow): ClassNode? {
@@ -128,7 +128,7 @@ object DbgUtils {
 
 		fun getMainActivityCls(): JavaClass = mainActivityCls
 
-		fun getProcessName(): String = appPackage + '/' + mainActivityCls.getClassNode().classInfo.fullName
+		val processName: String get() = appPackage + '/' + mainActivityCls.getClassNode().classInfo.fullName
 	}
 
 	/** 从 AndroidManifest 解析应用包名与主 Activity；失败时弹窗并返回 null。 */

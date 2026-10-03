@@ -30,7 +30,6 @@ class PluginWithOptions(private val plugin: JadxPlugin?, private val options: Ja
 
 	companion object {
 		/** 空占位单例。 */
-		@JvmField
 		val NULL = PluginWithOptions(null, null)
 	}
 }

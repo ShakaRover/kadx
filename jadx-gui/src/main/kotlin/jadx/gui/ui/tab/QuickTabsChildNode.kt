@@ -20,7 +20,7 @@ class QuickTabsChildNode(private val node: JNode) : QuickTabsBaseNode() {
 	override fun toString(): String = node.toString()
 
 	/** 返回被包装的树节点。 */
-	fun getJNode(): JNode = node
+	val jNode: JNode get() = node
 
 	override fun onTreePopupMenu(mainWindow: MainWindow): JPopupMenu? {
 		var menu = node.onTreePopupMenu(mainWindow)

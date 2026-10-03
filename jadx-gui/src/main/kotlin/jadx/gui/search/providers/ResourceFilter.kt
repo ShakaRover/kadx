@@ -28,7 +28,7 @@ class ResourceFilter private constructor(
 	private val contentTypes: Set<ResourceContentType> = if (contentTypes.isEmpty()) emptySet() else contentTypes
 	private val extSet: Set<String> = if (extSet.isEmpty()) emptySet() else extSet
 
-	fun isAnyFile(): Boolean = anyFile
+	val isAnyFile: Boolean get() = anyFile
 
 	fun getContentTypes(): Set<ResourceContentType> = contentTypes
 
@@ -42,7 +42,6 @@ class ResourceFilter private constructor(
 		private const val VAR_TEXT = "\$TEXT"
 		private const val VAR_BIN = "\$BIN"
 
-		@JvmField
 		val DEFAULT_STR: String = VAR_TEXT
 
 		/**
@@ -50,7 +49,6 @@ class ResourceFilter private constructor(
 		 *
 		 * 表达式按 `|`、`,`、空格切分；以 `$` 开头的是内容类型变量，其余视为扩展名。
 		 */
-		@JvmStatic
 		fun parse(filterStr: String): ResourceFilter {
 			val str = filterStr.trim()
 			if (str.isEmpty() || str == "*") {
@@ -79,9 +77,8 @@ class ResourceFilter private constructor(
 		}
 
 		/** 把过滤器格式化回表达式字符串。 */
-		@JvmStatic
 		fun format(filter: ResourceFilter): String {
-			if (filter.isAnyFile()) {
+			if (filter.isAnyFile) {
 				return "*"
 			}
 			val list: MutableList<String> = ArrayList()
@@ -97,7 +94,6 @@ class ResourceFilter private constructor(
 		}
 
 		/** 在保留扩展名过滤的前提下，替换内容类型集合。 */
-		@JvmStatic
 		fun withContentType(filterStr: String, contentTypes: Set<ResourceContentType>): String {
 			val filter = parse(filterStr)
 			return format(ResourceFilter(contentTypes, filter.getExtSet()))

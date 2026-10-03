@@ -26,7 +26,7 @@ class EditorThemeManager(settings: JadxSettings) {
 
 	init {
 		registerThemes()
-		if (StringUtils.isEmpty(settings.getEditorTheme())) {
+		if (StringUtils.isEmpty(settings.editorTheme)) {
 			// 没有配置主题时，把注册的第一个主题设为默认
 			val defaultTheme = themes[0]
 			settings.setEditorTheme(defaultTheme.getId())
@@ -84,10 +84,10 @@ class EditorThemeManager(settings: JadxSettings) {
 	}
 
 	/** 返回所有主题的「ID + 显示名」数组，供下拉框使用。 */
-	fun getThemeIdNameArray(): Array<ThemeIdAndName> = themes.map { toThemeIdAndName(it) }.toTypedArray()
+	val themeIdNameArray: Array<ThemeIdAndName> get() = themes.map { toThemeIdAndName(it) }.toTypedArray()
 
 	/** 返回当前主题的「ID + 显示名」。 */
-	fun getCurrentThemeIdName(): ThemeIdAndName = toThemeIdAndName(currentTheme)
+	val currentThemeIdName: ThemeIdAndName get() = toThemeIdAndName(currentTheme)
 
 	/** 卸载当前主题（忽略卸载过程中的异常，避免影响界面关闭）。 */
 	fun unload() {

@@ -230,7 +230,7 @@ class SearchDialog private constructor(
 		addSearchHistoryButton()
 		searchField.putClientProperty(FlatClientProperties.TEXT_FIELD_SHOW_CLEAR_BUTTON, true)
 
-		val autoSearch = mainWindow.getSettings().isUseAutoSearch()
+		val autoSearch = mainWindow.getSettings().isUseAutoSearch
 		val searchBtn = JButton(NLS.str("search_dialog.search_button"))
 		searchBtn.setVisible(!autoSearch)
 		searchBtn.addActionListener { searchEmitter.emitSearch() }
@@ -275,7 +275,7 @@ class SearchDialog private constructor(
 		searchInPanel.add(makeOptionsCheckBox(NLS.str("search_dialog.resource"), SearchOptions.RESOURCE))
 		searchInPanel.add(makeOptionsCheckBox(NLS.str("search_dialog.comments"), SearchOptions.COMMENT))
 
-		packageField = JTextField(Math.min(100, getMaxPkgLen()))
+		packageField = JTextField(Math.min(100, maxPkgLen))
 		TextStandardActions.attach(packageField)
 		packageField.putClientProperty(FlatClientProperties.TEXT_FIELD_SHOW_CLEAR_BUTTON, true)
 		packageField.setToolTipText(NLS.str("search_dialog.limit_package"))
@@ -290,7 +290,7 @@ class SearchDialog private constructor(
 		TextStandardActions.attach(resExtField)
 		resExtField.putClientProperty(FlatClientProperties.TEXT_FIELD_SHOW_CLEAR_BUTTON, true)
 		resExtField.setToolTipText(NLS.str("preferences.res_file_ext"))
-		val resFilterStr = mainWindow.getProject().getSearchResourcesFilter()
+		val resFilterStr = mainWindow.getProject().searchResourcesFilter
 		resExtField.setText(resFilterStr)
 
 		val resFilter = ResourceFilter.parse(resFilterStr)
@@ -342,7 +342,7 @@ class SearchDialog private constructor(
 		resExtFilePanel.add(binResBox)
 		resExtFilePanel.preferredSize = calcMinSizeForTitledBorder(resExtFilePanel)
 
-		resSizeLimit = JSpinner(SpinnerNumberModel(mainWindow.getProject().getSearchResourcesSizeLimit(), 0, Int.MAX_VALUE, 1))
+		resSizeLimit = JSpinner(SpinnerNumberModel(mainWindow.getProject().searchResourcesSizeLimit, 0, Int.MAX_VALUE, 1))
 		resSizeLimit.setToolTipText(NLS.str("preferences.res_skip_file"))
 
 		val sizeLimitPanel = JPanel(BorderLayout())
@@ -397,14 +397,14 @@ class SearchDialog private constructor(
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
 	}
 
-	private fun getMaxPkgLen(): Int {
+	private val maxPkgLen: Int get() {
 		val cacheObject: CacheObject = mainWindow.getCacheObject()
 		val maxPkgLength = cacheObject.getMaxPkgLength()
 		if (maxPkgLength != 0) {
 			return maxPkgLength
 		}
 		var max = 1
-		for (pkg in mainWindow.getWrapper().getRootNode().getPackages()) {
+		for (pkg in mainWindow.getWrapper().rootNode.packages) {
 			val len = pkg.getPkgInfo().fullName.length
 			if (len > max) {
 				max = len
@@ -428,7 +428,7 @@ class SearchDialog private constructor(
 		searchHistoryButton.setToolTipText(NLS.str("search_dialog.search_history"))
 		searchHistoryButton.addActionListener {
 			val popupMenu = JPopupMenu()
-			val searchHistory = mainWindow.getProject().getSearchHistory()
+			val searchHistory = mainWindow.getProject().searchHistory
 			if (searchHistory.isEmpty()) {
 				popupMenu.add("(empty)")
 			} else {
@@ -480,7 +480,7 @@ class SearchDialog private constructor(
 		searchJob = null
 		searchEmitter = SearchEventEmitter()
 		val searchEvents: Flow<String>
-		if (mainWindow.getSettings().isUseAutoSearch()) {
+		if (mainWindow.getSettings().isUseAutoSearch) {
 			searchEvents = listOf(
 				UiFlowUtils.textFieldChanges(searchField),
 				UiFlowUtils.textFieldEnterPress(searchField),
@@ -490,7 +490,7 @@ class SearchDialog private constructor(
 				UiFlowUtils.textFieldEnterPress(resExtField),
 				UiFlowUtils.spinnerChanges(resSizeLimit),
 				UiFlowUtils.spinnerEnterPress(resSizeLimit),
-				searchEmitter.getFlow(),
+				searchEmitter.flow,
 			).merge()
 		} else {
 			searchEvents = listOf(
@@ -498,7 +498,7 @@ class SearchDialog private constructor(
 				UiFlowUtils.textFieldEnterPress(packageField),
 				UiFlowUtils.textFieldEnterPress(resExtField),
 				UiFlowUtils.spinnerEnterPress(resSizeLimit),
-				searchEmitter.getFlow(),
+				searchEmitter.flow,
 			).merge()
 		}
 		searchJob = scope.launch {
@@ -528,7 +528,7 @@ class SearchDialog private constructor(
 			updateTableHighlight()
 			prepareForSearch()
 		}
-		task.setResultsLimit(mainWindow.getSettings().getSearchResultsPerPage())
+		task.setResultsLimit(mainWindow.getSettings().searchResultsPerPage)
 		progressJob?.cancel()
 		progressJob = scope.launch {
 			task.getProgressFlow().collect { progress -> updateProgress(progress) }
@@ -578,7 +578,7 @@ class SearchDialog private constructor(
 	private fun buildSearch(newSearchTask: SearchTask, text: String, searchSettings: SearchSettings): Boolean {
 		var searchClasses: List<JavaClass>
 		if (options.contains(SearchOptions.ACTIVE_TAB)) {
-			val currentPos = mainWindow.getTabbedPane().getCurrentPosition()
+			val currentPos = mainWindow.getTabbedPane().currentPosition
 			if (currentPos == null) {
 				resultsInfoLabel.setText("Can't search in current tab")
 				return false
@@ -596,8 +596,8 @@ class SearchDialog private constructor(
 				return false
 			}
 		} else {
-			searchClasses = includedClsCache.get(mainWindow.getSettings().getExcludedPackages()) {
-				mainWindow.getWrapper().getIncludedClassesWithInners()
+			searchClasses = includedClsCache.get(mainWindow.getSettings().excludedPackages) {
+				mainWindow.getWrapper().includedClassesWithInners
 			}
 		}
 		val searchPkg: JavaPackage? = searchSettings.getSearchPackage()
@@ -621,7 +621,7 @@ class SearchDialog private constructor(
 			if (options.contains(SearchOptions.FIELD)) {
 				merged.add(FieldSearchProvider(mainWindow, searchSettings, searchClasses))
 			}
-			if (!merged.isEmpty()) {
+			if (!merged.isEmpty) {
 				merged.prepare()
 				newSearchTask.addProviderJob(merged)
 			}
@@ -649,7 +649,7 @@ class SearchDialog private constructor(
 		return true
 	}
 	override fun openItem(node: JNode) {
-		if (mainWindow.getSettings().isUseAutoSearch()) {
+		if (mainWindow.getSettings().isUseAutoSearch) {
 			// 自动搜索时只保存能打开节点的搜索词
 			mainWindow.getProject().addToSearchHistory(searchField.getText())
 		}
@@ -738,7 +738,7 @@ class SearchDialog private constructor(
 		cache.setLastSearch(text)
 		cache.setLastSearchPackage(packageField.getText())
 		cache.getLastSearchOptions()[searchPreset] = options
-		if (!mainWindow.getSettings().isUseAutoSearch()) {
+		if (!mainWindow.getSettings().isUseAutoSearch) {
 			mainWindow.getProject().addToSearchHistory(text)
 		}
 	}
@@ -838,7 +838,7 @@ class SearchDialog private constructor(
 	private inner class SearchEventEmitter {
 		private val events = MutableSharedFlow<String>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
-		fun getFlow(): Flow<String> = events
+		val flow: Flow<String> get() = events
 
 		fun emitSearch() {
 			events.tryEmit(searchField.getText())
@@ -852,26 +852,22 @@ class SearchDialog private constructor(
 		/** 输入防抖窗口（毫秒）。 */
 		private const val SEARCH_DEBOUNCE_MS = 100L
 
-		@JvmStatic
 		fun search(window: MainWindow, preset: SearchPreset) {
 			val searchDialog = SearchDialog(window, preset, emptySet())
 			show(searchDialog, window)
 		}
 
-		@JvmStatic
 		fun searchInActiveTab(window: MainWindow, preset: SearchPreset) {
 			val searchDialog = SearchDialog(window, preset, EnumSet.of(SearchOptions.ACTIVE_TAB))
 			show(searchDialog, window)
 		}
 
-		@JvmStatic
 		fun searchText(window: MainWindow, text: String) {
 			val searchDialog = SearchDialog(window, SearchPreset.TEXT, emptySet())
 			searchDialog.initSearchText = text
 			show(searchDialog, window)
 		}
 
-		@JvmStatic
 		fun searchPackage(window: MainWindow, packageName: String) {
 			val searchDialog = SearchDialog(window, SearchPreset.TEXT, emptySet())
 			searchDialog.initSearchPackage = packageName

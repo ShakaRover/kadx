@@ -171,7 +171,7 @@ class ResourceSearchProvider(
 	private fun shouldProcess(resNode: JResource): Boolean {
 		if (checkNotNull(resNode.getResFile()).getType() == ResourceType.ARSC) {
 			// 不检查生成的资源表大小，否则会连带跳过所有子文件
-			return resourceFilter.isAnyFile() ||
+			return resourceFilter.isAnyFile ||
 				resourceFilter.getContentTypes().contains(ResourceContentType.CONTENT_TEXT) ||
 				resourceFilter.getExtSet().contains("xml")
 		}
@@ -183,7 +183,7 @@ class ResourceSearchProvider(
 
 	private fun isAllowedFileType(resNode: JResource): Boolean {
 		val resFile: ResourceFile = checkNotNull(resNode.getResFile())
-		if (resourceFilter.isAnyFile()) {
+		if (resourceFilter.isAnyFile) {
 			return true
 		}
 		val resContentType = resNode.getContentType()

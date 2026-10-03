@@ -171,7 +171,6 @@ class ArgTypeAdapter : DataAdapter<ArgType?> {
 	}
 
 	companion object {
-		@JvmField
 		val INSTANCE = ArgTypeAdapter()
 	}
 }

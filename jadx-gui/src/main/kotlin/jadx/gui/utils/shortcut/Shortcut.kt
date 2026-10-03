@@ -29,20 +29,20 @@ class Shortcut private constructor() {
 
 	fun getMouseButton(): Int? = mouseButton
 
-	fun isKeyboard(): Boolean = keyCode != null
+	val isKeyboard: Boolean get() = keyCode != null
 
-	fun isMouse(): Boolean = mouseButton != null
+	val isMouse: Boolean get() = mouseButton != null
 
-	fun isNone(): Boolean = !isMouse() && !isKeyboard()
+	val isNone: Boolean get() = !isMouse && !isKeyboard
 
 	/** 是否为合法的键盘快捷键（非禁用键、修饰键合法）。 */
-	fun isValidKeyboard(): Boolean {
+	val isValidKeyboard: Boolean get() {
 		val kc = keyCode ?: return false
-		return !FORBIDDEN_KEY_CODES.contains(kc) && isValidModifiers()
+		return !FORBIDDEN_KEY_CODES.contains(kc) && isValidModifiers
 	}
 
 	/** 修饰键是否只包含允许的掩码。 */
-	fun isValidModifiers(): Boolean {
+	val isValidModifiers: Boolean get() {
 		var modifiersTest = modifiers ?: return false
 		for (modifier in ALLOWED_MODIFIERS) {
 			modifiersTest = modifiersTest and modifier.inv()
@@ -52,7 +52,7 @@ class Shortcut private constructor() {
 
 	/** 转换为 Swing [KeyStroke]；非键盘快捷键返回 `null`。 */
 	fun toKeyStroke(): KeyStroke? {
-		if (!isKeyboard()) {
+		if (!isKeyboard) {
 			return null
 		}
 		val kc = keyCode ?: return null
@@ -61,15 +61,15 @@ class Shortcut private constructor() {
 	}
 
 	override fun toString(): String = when {
-		isKeyboard() -> keyToString()
-		isMouse() -> mouseToString()
+		isKeyboard -> keyToString()
+		isMouse -> mouseToString()
 		else -> "NONE"
 	}
 
 	/** 返回类型展示字符串（`Keyboard` / `Mouse` / `null`）。 */
-	fun getTypeString(): String? = when {
-		isKeyboard() -> "Keyboard"
-		isMouse() -> "Mouse"
+	val typeString: String? get() = when {
+		isKeyboard -> "Keyboard"
+		isMouse -> "Mouse"
 		else -> null
 	}
 
@@ -123,10 +123,8 @@ class Shortcut private constructor() {
 			),
 		)
 
-		@JvmStatic
 		fun keyboard(keyCode: Int): Shortcut = keyboard(keyCode, 0)
 
-		@JvmStatic
 		fun keyboard(keyCode: Int, modifiers: Int): Shortcut {
 			val shortcut = Shortcut()
 			shortcut.keyCode = keyCode
@@ -134,14 +132,12 @@ class Shortcut private constructor() {
 			return shortcut
 		}
 
-		@JvmStatic
 		fun mouse(mouseButton: Int): Shortcut {
 			val shortcut = Shortcut()
 			shortcut.mouseButton = mouseButton
 			return shortcut
 		}
 
-		@JvmStatic
 		fun none(): Shortcut {
 			val shortcut = Shortcut()
 			// 必须至少有一个非空属性才能被序列化，否则会回退到默认快捷键

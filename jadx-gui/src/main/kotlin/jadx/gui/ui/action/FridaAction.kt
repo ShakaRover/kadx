@@ -37,7 +37,7 @@ class FridaAction(codeArea: CodeArea) : JNodeAction(ActionModel.FRIDA_COPY, code
 		} catch (e: Exception) {
 			LOG.error("Failed to generate Frida code snippet", e)
 			JOptionPane.showMessageDialog(
-				getCodeArea().getMainWindow(),
+				getCodeArea().mainWindow,
 				e.localizedMessage,
 				NLS.str("error_dialog.title"),
 				JOptionPane.ERROR_MESSAGE,
@@ -71,7 +71,7 @@ class FridaAction(codeArea: CodeArea) : JNodeAction(ActionModel.FRIDA_COPY, code
 
 	private fun generateMethodSnippet(jMth: JMethod): String {
 		val classSnippet = generateClassSnippet(jMth.getJParent())
-		val methodSnippet = getMethodSnippet(jMth.getJavaMethod(), jMth.getJParent())
+		val methodSnippet = getMethodSnippet(jMth.javaMethod, jMth.getJParent())
 		return "$classSnippet\n$methodSnippet"
 	}
 
@@ -129,7 +129,7 @@ class FridaAction(codeArea: CodeArea) : JNodeAction(ActionModel.FRIDA_COPY, code
 
 	private fun showMethodSelectionDialog(jc: JClass) {
 		val javaClass = jc.getCls()
-		MethodsDialog(getCodeArea().getMainWindow(), javaClass.getMethods()) { result ->
+		MethodsDialog(getCodeArea().mainWindow, javaClass.getMethods()) { result ->
 			val fridaSnippet = generateClassAllMethodSnippet(jc, result)
 			copySnipped(fridaSnippet)
 		}
@@ -146,7 +146,7 @@ class FridaAction(codeArea: CodeArea) : JNodeAction(ActionModel.FRIDA_COPY, code
 	}
 
 	private fun generateFieldSnippet(jf: JField): String {
-		val javaField = jf.getJavaField()
+		val javaField = jf.javaField
 		var rawFieldName = StringEscapeUtils.escapeEcmaScript(javaField.getRawName())
 		val fieldName = javaField.getName()
 

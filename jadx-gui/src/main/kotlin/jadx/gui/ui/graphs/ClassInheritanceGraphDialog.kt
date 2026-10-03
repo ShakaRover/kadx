@@ -214,7 +214,6 @@ class ClassInheritanceGraphDialog(mainWindow: MainWindow, private val cls: Class
 
 		private const val FONT = "fontname=\"Courier\" fontsize=12"
 
-		@JvmStatic
 		fun open(window: MainWindow, node: JClass) {
 			val cls = node.getCls().getClassNode()
 			val graphDialog = ClassInheritanceGraphDialog(window, cls)

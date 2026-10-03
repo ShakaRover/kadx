@@ -22,7 +22,7 @@ class JadxExceptionHandler private constructor(private val mainWindow: MainWindo
 	override fun uncaughtException(thread: Thread, ex: Throwable) {
 		LOG.error("Exception was thrown", ex)
 		val excData = buildExceptionData(ex)
-		if (excData.getIOExc() != null) {
+		if (excData.iOExc != null) {
 			IOExceptionMessageBox.show(mainWindow, excData)
 		} else {
 			ExceptionDialog.show(mainWindow, excData)
@@ -79,7 +79,6 @@ class JadxExceptionHandler private constructor(private val mainWindow: MainWindo
 		const val MAIN_PROJECT_STRING: String = "skylot/jadx"
 
 		/** 把本处理器安装为 JVM 默认的未捕获异常处理器。 */
-		@JvmStatic
 		fun register(mainWindow: MainWindow) {
 			Thread.setDefaultUncaughtExceptionHandler(JadxExceptionHandler(mainWindow))
 		}

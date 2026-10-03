@@ -33,11 +33,11 @@ class IssuesPanel(private val mainWindow: MainWindow) : JPanel() {
 	init {
 		initUI()
 		issuesListener = IssuesListener(this)
-		LogCollector.getInstance().registerListener(issuesListener)
+		LogCollector.instance.registerListener(issuesListener)
 	}
 
 	/** 已记录的错误数量。 */
-	fun getErrorsCount(): Int = issuesListener.getErrors()
+	val errorsCount: Int get() = issuesListener.getErrors()
 
 	private fun initUI() {
 		val label = JLabel(NLS.str("issues_panel.label"))

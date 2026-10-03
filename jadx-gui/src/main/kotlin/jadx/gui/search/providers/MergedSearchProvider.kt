@@ -22,7 +22,7 @@ class MergedSearchProvider : ISearchProvider {
 		list.add(provider)
 	}
 
-	fun isEmpty(): Boolean = list.isEmpty()
+	val isEmpty: Boolean get() = list.isEmpty()
 
 	/** 开始搜索前重置游标并汇总总量。 */
 	fun prepare() {

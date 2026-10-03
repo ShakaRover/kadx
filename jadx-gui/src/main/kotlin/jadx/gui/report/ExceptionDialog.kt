@@ -66,14 +66,14 @@ class ExceptionDialog private constructor(mainWindow: MainWindow?, data: Excepti
 		} catch (t: Throwable) {
 			LOG.error("Failed to get program command line", t)
 		}
-		val stackTrace = Utils.getFullStackTrace(data.getException())
+		val stackTrace = Utils.getFullStackTrace(data.exception)
 		val issueLink = buildNewIssueLink(data, details, stackTrace)
 
 		val messageArea = JTextArea()
 		TextStandardActions.attach(messageArea)
 		messageArea.isEditable = false
 		if (mainWindow != null) {
-			messageArea.font = mainWindow.getSettings().getCodeFont()
+			messageArea.font = mainWindow.getSettings().codeFont
 		}
 		messageArea.foreground = Color.BLACK
 		messageArea.background = Color.WHITE
@@ -138,18 +138,17 @@ class ExceptionDialog private constructor(mainWindow: MainWindow?, data: Excepti
 
 		private const val FMT_DETAIL_LENGTH = "-13"
 
-		@JvmStatic
 		fun show(mainWindow: MainWindow?, data: ExceptionData) {
 			UiUtils.uiRun { ExceptionDialog(mainWindow, data) }
 		}
 
 		/** 构造 GitHub 新建 issue 的链接；无可用项目时返回 null。 */
 		private fun buildNewIssueLink(data: ExceptionData, details: Map<String, String>, stackTrace: String): Link? {
-			val project = data.getGithubProject()
+			val project = data.githubProject
 			if (project.isEmpty()) {
 				return null
 			}
-			val ex = data.getException()
+			val ex = data.exception
 			val issueTitle = try {
 				URLEncoder.encode(ex.toString(), StandardCharsets.UTF_8)
 			} catch (e: Exception) {
@@ -176,7 +175,6 @@ class ExceptionDialog private constructor(mainWindow: MainWindow?, data: Excepti
 		}
 
 		/** 抛出一个嵌套异常，供「查看错误对话框」菜单项测试用。 */
-		@JvmStatic
 		fun throwTestException() {
 			try {
 				throw RuntimeException("Inner exception message")
@@ -186,7 +184,6 @@ class ExceptionDialog private constructor(mainWindow: MainWindow?, data: Excepti
 		}
 
 		/** 触发一次测试异常并弹出错误对话框。 */
-		@JvmStatic
 		fun showTestExceptionDialog() {
 			try {
 				throwTestException()

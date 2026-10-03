@@ -137,7 +137,6 @@ class CertificateManager(private val cert: Certificate) {
 		private const val CERTIFICATE_TYPE_NAME = "X.509"
 
 		/** 解析输入流中的全部证书并生成展示文本。 */
-		@JvmStatic
 		fun decode(input: InputStream): String {
 			val strBuild = StringBuilder()
 			val certificates = readCertificates(input)
@@ -149,7 +148,6 @@ class CertificateManager(private val cert: Certificate) {
 		}
 
 		/** 读取输入流中的证书集合；失败时返回空集合。 */
-		@JvmStatic
 		fun readCertificates(input: InputStream): Collection<Certificate> = try {
 			val cf = CertificateFactory.getInstance(CERTIFICATE_TYPE_NAME)
 			cf.generateCertificates(input)
@@ -158,13 +156,11 @@ class CertificateManager(private val cert: Certificate) {
 			Collections.emptyList<Certificate>()
 		}
 
-		@JvmStatic
 		fun append(str: StringBuilder, name: String, value: String) {
 			str.append(name).append(": ").append(value).append('\n')
 		}
 
 		/** 计算证书指纹（十六进制、空格分隔）。 */
-		@JvmStatic
 		@Throws(NoSuchAlgorithmException::class, CertificateEncodingException::class)
 		fun getThumbPrint(cert: X509Certificate, type: String): String {
 			val md = MessageDigest.getInstance(type)
@@ -175,7 +171,6 @@ class CertificateManager(private val cert: Certificate) {
 		}
 
 		/** 把字节数组转成大写十六进制串（每个字节后跟一个空格）。 */
-		@JvmStatic
 		fun hexify(bytes: ByteArray): String {
 			val hexDigits = charArrayOf(
 				'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F',

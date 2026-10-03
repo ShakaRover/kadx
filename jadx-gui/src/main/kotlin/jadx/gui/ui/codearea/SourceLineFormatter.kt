@@ -32,7 +32,6 @@ class SourceLineFormatter(private val codeInfo: ICodeInfo) : LineNumberFormatter
 		}
 
 		/** 返回整数 [num] 的十进制位数（`num < 10` 时为 1）。 */
-		@JvmStatic
 		fun getNumberLength(num: Int): Int = if (num < 10) 1 else 1 + Math.log10(num.toDouble()).toInt()
 	}
 }

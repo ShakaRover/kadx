@@ -131,7 +131,7 @@ class RenameDialog private constructor(
 		lbl.setLabelFor(nodeLabel)
 
 		renameField = JTextField(40)
-		renameField.setFont(mainWindow.getSettings().getCodeFont())
+		renameField.setFont(mainWindow.getSettings().codeFont)
 		renameField.getDocument().addDocumentListener(DocumentUpdateListener { checkNewName(renameField.getText()) })
 		renameField.addActionListener { rename() }
 		TextStandardActions(renameField)
@@ -172,7 +172,6 @@ class RenameDialog private constructor(
 		 *
 		 * @return 固定返回 `true`（与原 Java 保持一致，表示已提交打开请求）
 		 */
-		@JvmStatic
 		fun rename(mainWindow: MainWindow, node: JRenameNode): Boolean {
 			SwingUtilities.invokeLater {
 				val renameDialog = RenameDialog(mainWindow, node)
@@ -182,14 +181,12 @@ class RenameDialog private constructor(
 			return true
 		}
 
-		@JvmStatic
 		fun buildRenamePopup(mainWindow: MainWindow, node: JRenameNode): JPopupMenu {
 			val menu = JPopupMenu()
 			menu.add(buildRenamePopupMenuItem(mainWindow, node))
 			return menu
 		}
 
-		@JvmStatic
 		fun buildRenamePopupMenuItem(mainWindow: MainWindow, node: JRenameNode): JMenuItem {
 			val jmi = JMenuItem(NLS.str("popup.rename"))
 			jmi.addActionListener { rename(mainWindow, node) }

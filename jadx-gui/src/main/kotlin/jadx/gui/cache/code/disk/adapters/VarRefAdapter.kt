@@ -13,7 +13,6 @@ import java.io.IOException
 class VarRefAdapter : DataAdapter<VarRef> {
 
 	companion object {
-		@JvmField
 		val INSTANCE = VarRefAdapter()
 	}
 

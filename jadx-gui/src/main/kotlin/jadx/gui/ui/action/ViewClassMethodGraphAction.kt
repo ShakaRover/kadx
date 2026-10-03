@@ -34,11 +34,11 @@ class ViewClassMethodGraphAction(codeArea: CodeArea) : JNodeAction(ActionModel.V
 			} else {
 				throw JadxRuntimeException("Unsupported node type: " + node.javaClass)
 			}
-			ClassMethodGraphDialog.open(getCodeArea().getMainWindow(), classNode)
+			ClassMethodGraphDialog.open(getCodeArea().mainWindow, classNode)
 		} catch (e: Exception) {
 			LOG.error("Failed to view graph", e)
 			JOptionPane.showMessageDialog(
-				getCodeArea().getMainWindow(),
+				getCodeArea().mainWindow,
 				e.localizedMessage,
 				NLS.str("error_dialog.title"),
 				JOptionPane.ERROR_MESSAGE,

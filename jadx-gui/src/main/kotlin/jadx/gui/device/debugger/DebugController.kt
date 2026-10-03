@@ -103,7 +103,7 @@ class DebugController :
 			store.reset()
 		}
 		BreakpointManager.setDebugController(this)
-		initBreakpoints(BreakpointManager.getAllBreakpoints())
+		initBreakpoints(BreakpointManager.allBreakpoints)
 		return true
 	}
 
@@ -201,7 +201,7 @@ class DebugController :
 		if (appData == null) {
 			return ""
 		}
-		return appData.getProcessName()
+		return appData.processName
 	}
 
 	private fun castType(type: ArgType): RuntimeType {
@@ -243,11 +243,11 @@ class DebugController :
 			try {
 				val frame = checkNotNull(cur.frame)
 				checkNotNull(debugger).setValueSync(
-					valNode.getRuntimeRegNum(),
+					valNode.runtimeRegNum,
 					type,
 					value,
 					frame.getThreadID(),
-					frame.getFrame().getID(),
+					frame.getFrame().iD,
 				)
 				lazyQueue.execute {
 					setRegsNotUpdated()
@@ -263,7 +263,7 @@ class DebugController :
 				checkNotNull(debugger).setValueSync(
 					valNode.getObjectID(),
 					(valNode.getRuntimeValue() as RuntimeField).getFieldID(),
-					valNode.getRuntimeField().getType(),
+					valNode.runtimeField.type,
 					value,
 				)
 				lazyQueue.execute {
@@ -323,31 +323,31 @@ class DebugController :
 		if (!isDebugging()) {
 			return
 		}
-		if (info.isTerminated()) {
+		if (info.isTerminated) {
 			debuggerPanel.log("Debugger exited.")
 			setDebuggerState(true, true)
 			debugger = null
 			return
 		}
 		setDebuggerState(true, false)
-		val threadID = info.getThreadID()
+		val threadID = info.threadID
 		var refreshLevel = 2 // 更新全部线程、栈帧、寄存器与字段
 		val frame = cur.frame
 		if (frame != null) {
 			if (threadID == frame.getThreadID() &&
-				info.getClassID() == frame.getClsID() &&
-				info.getMethodID() == frame.getMthID()
+				info.classID == frame.clsID &&
+				info.methodID == frame.mthID
 			) {
 				refreshLevel = 1 // 只更新相关寄存器或字段
 			}
 			setRegsNotUpdated()
 		}
 		if (refreshLevel == 2) {
-			updateAllInfo(threadID, info.getOffset())
+			updateAllInfo(threadID, info.offset)
 		} else {
 			if (cur.smali != null && frame != null) {
-				refreshRegInfo(info.getOffset())
-				refreshCurFrame(threadID, info.getOffset())
+				refreshRegInfo(info.offset)
+				refreshCurFrame(threadID, info.offset)
 				if (updateAllFldAndReg) {
 					debuggerPanel.resetRegTreeNodes()
 					updateAllRegisters(frame)
@@ -355,13 +355,13 @@ class DebugController :
 					val node = toBeUpdatedTreeNode
 					lazyQueue.execute { node?.let { updateRegOrField(it) } }
 				}
-				markCodeOffset(info.getOffset())
+				markCodeOffset(info.offset)
 			} else {
 				debuggerPanel.resetRegTreeNodes()
 			}
 			if (frame != null) {
 				// 更新当前栈帧中的代码偏移
-				frame.updateCodeOffset(info.getOffset())
+				frame.updateCodeOffset(info.offset)
 				debuggerPanel.refreshStackFrameList(emptyList())
 			}
 		}
@@ -371,7 +371,7 @@ class DebugController :
 		val list = checkNotNull(cur.regAdapter).getInfoAt(codeOffset)
 		for (info in list) {
 			val reg = checkNotNull(cur.frame).getRegNodes()[info.getSmaliRegNum()]
-			if (info.isLoad()) {
+			if (info.isLoad) {
 				applyDbgInfo(reg, info.getName(), info.getType())
 			} else {
 				reg.setAlias("")
@@ -396,7 +396,7 @@ class DebugController :
 	private fun updateField(node: FieldTreeNode) {
 		try {
 			setFieldsNotUpdated()
-			checkNotNull(debugger).getValueSync(node.getObjectID(), node.getRuntimeField())
+			checkNotNull(debugger).getValueSync(node.getObjectID(), node.runtimeField)
 			decodeRuntimeValue(node)
 			debuggerPanel.updateThisTree(node)
 		} catch (e: SmaliDebuggerException) {
@@ -415,8 +415,8 @@ class DebugController :
 			val frame = checkNotNull(cur.frame)
 			register = checkNotNull(debugger).getRegisterSync(
 				frame.getThreadID(),
-				frame.getFrame().getID(),
-				regNode.getRuntimeRegNum(),
+				frame.getFrame().iD,
+				regNode.runtimeRegNum,
 				typeToUse,
 			)
 		} catch (e: SmaliDebuggerException) {
@@ -470,7 +470,7 @@ class DebugController :
 					return
 				}
 				if (rst is FieldInfo) {
-					toBeUpdatedTreeNode = frame.getFieldNodes()
+					toBeUpdatedTreeNode = frame.fieldNodes
 						.firstOrNull { f -> f.getName() == rst.name }
 				}
 			}
@@ -480,7 +480,7 @@ class DebugController :
 	private fun updateAllThreads() {
 		val threads: List<Long>
 		try {
-			threads = checkNotNull(debugger).getAllThreadsSync()
+			threads = checkNotNull(debugger).allThreadsSync
 		} catch (e: SmaliDebuggerException) {
 			logErr(e)
 			return
@@ -532,9 +532,9 @@ class DebugController :
 
 	private fun fetchStackFrameNames(ele: FrameNode) {
 		try {
-			val clsID = ele.getFrame().getClassID()
+			val clsID = ele.getFrame().classID
 			val clsSig = checkNotNull(debugger).getClassSignatureSync(clsID)
-			val mthSig = checkNotNull(debugger).getMethodSignatureSync(clsID, ele.getFrame().getMethodID())
+			val mthSig = checkNotNull(debugger).getMethodSignatureSync(clsID, ele.getFrame().methodID)
 			ele.setSignatures(clsSig, mthSig)
 		} catch (e: SmaliDebuggerException) {
 			logErr(e)
@@ -575,8 +575,8 @@ class DebugController :
 			}
 		}
 		try {
-			val thisID = checkNotNull(debugger).getThisID(frame.getThreadID(), frame.getFrame().getID())
-			val flds = checkNotNull(debugger).getAllFieldsSync(frame.getClsID())
+			val thisID = checkNotNull(debugger).getThisID(frame.getThreadID(), frame.getFrame().iD)
+			val flds = checkNotNull(debugger).getAllFieldsSync(frame.clsID)
 			val nodes = ArrayList<FieldTreeNode>(flds.size)
 			for (fld in flds) {
 				val fldNode = FieldTreeNode(fld, thisID)
@@ -595,13 +595,13 @@ class DebugController :
 	}
 
 	private fun updateAllFieldValues(thisID: Long, frame: FrameNode) {
-		val nodes = frame.getFieldNodes()
+		val nodes = frame.fieldNodes
 		if (nodes.isNotEmpty()) {
 			val flds = ArrayList<FieldTreeNode>(nodes.size)
 			val rts = ArrayList<RuntimeField>(nodes.size)
 			nodes.forEach { n ->
-				val f = n.getRuntimeField()
-				if (f.isBelongToThis()) {
+				val f = n.runtimeField
+				if (f.isBelongToThis) {
 					flds.add(n)
 					rts.add(f)
 				}
@@ -627,7 +627,7 @@ class DebugController :
 	private fun fetchAllRegisters(frame: FrameNode) {
 		val regs = checkNotNull(cur.regAdapter).getInitializedList(frame.getCodeOffset())
 		for (reg in regs) {
-			val info = checkNotNull(cur.regAdapter).getInfo(reg.getRuntimeRegNum(), frame.getCodeOffset())
+			val info = checkNotNull(cur.regAdapter).getInfo(reg.runtimeRegNum, frame.getCodeOffset())
 			val regNode = frame.getRegNodes()[reg.regNum]
 			if (info != null) {
 				applyDbgInfo(regNode, info)
@@ -658,7 +658,7 @@ class DebugController :
 	private fun setFieldsNotUpdated() {
 		val frame = cur.frame
 		if (frame != null) {
-			for (node in frame.getFieldNodes()) {
+			for (node in frame.fieldNodes) {
 				node.setUpdated(false)
 			}
 		}
@@ -674,7 +674,7 @@ class DebugController :
 			regNodes.add(rn)
 			inRtOrder.add(rn)
 		}
-		inRtOrder.sortWith(compareBy { it.getRuntimeRegNum() })
+		inRtOrder.sortWith(compareBy { it.runtimeRegNum })
 		frame.setRegNodes(regNodes)
 		debuggerPanel.updateRegTreeNodes(inRtOrder)
 		debuggerPanel.refreshRegisterTree()
@@ -683,7 +683,7 @@ class DebugController :
 
 	private fun decodeRuntimeValue(valNode: RuntimeValueTreeNode): Boolean {
 		val rValue = valNode.getRuntimeValue()
-		val type = rValue.getType()
+		val type = rValue.type
 		if (!valNode.isAbsoluteType()) {
 			valNode.updateType(null)
 		}
@@ -779,8 +779,8 @@ class DebugController :
 					val frame = checkNotNull(cur.frame)
 					val rr = checkNotNull(debugger).getRegisterSync(
 						frame.getThreadID(),
-						frame.getFrame().getID(),
-						reg.getRuntimeRegNum(),
+						frame.getFrame().iD,
+						reg.runtimeRegNum,
 						RuntimeType.INT,
 					)
 					reg.updateReg(rr)
@@ -843,7 +843,7 @@ class DebugController :
 					cur.regAdapter = regAdaMap.computeIfAbsent(cur.mthFullID) {
 						RegisterObserver.merge(
 							getRuntimeDebugInfo(frame),
-							getSmaliRegisterList(),
+							smaliRegisterList,
 							art,
 							cur.mthFullID,
 						)
@@ -859,7 +859,7 @@ class DebugController :
 		}
 	}
 
-	private fun getSmaliRegisterList(): List<SmaliRegister> {
+	private val smaliRegisterList: List<SmaliRegister> get() {
 		val smali = cur.smali ?: return emptyList()
 		val regCount = smali.getRegCount(cur.mthFullID)
 		val paramStart = smali.getParamRegStart(cur.mthFullID)
@@ -879,7 +879,7 @@ class DebugController :
 
 	private fun getRuntimeDebugInfo(frame: FrameNode): List<RuntimeVarInfo> {
 		try {
-			val dbgInfo = checkNotNull(debugger).getRuntimeDebugInfo(frame.getClsID(), frame.getMthID())
+			val dbgInfo = checkNotNull(debugger).getRuntimeDebugInfo(frame.clsID, frame.mthID)
 			if (dbgInfo != null) {
 				return dbgInfo.getInfoList()
 			}
@@ -1082,9 +1082,9 @@ class DebugController :
 			this.frame = frame
 		}
 
-		fun getClsID(): Long = frame.getClassID()
+		val clsID: Long get() = frame.classID
 
-		fun getMthID(): Long = frame.getMethodID()
+		val mthID: Long get() = frame.methodID
 
 		fun getThreadID(): Long = threadID
 
@@ -1111,7 +1111,7 @@ class DebugController :
 			}
 		}
 
-		fun getCodeOffset(): Long = if (codeOffset == -1L) frame.getCodeIndex() else codeOffset
+		fun getCodeOffset(): Long = if (codeOffset == -1L) frame.codeIndex else codeOffset
 
 		fun setRegNodes(regNodes: List<RegTreeNode>) {
 			this.regNodes = regNodes
@@ -1119,7 +1119,7 @@ class DebugController :
 
 		fun getRegNodes(): List<RegTreeNode> = regNodes
 
-		fun getFieldNodes(): List<FieldTreeNode> = thisNodes
+		val fieldNodes: List<FieldTreeNode> get() = thisNodes
 
 		fun setFieldNodes(thisNodes: List<FieldTreeNode>) {
 			this.thisNodes = thisNodes
@@ -1157,12 +1157,12 @@ class DebugController :
 					sbCache.append(String.format("index: %04x ", off))
 				}
 				if (clsSig == null) {
-					sbCache.append("clsID: ").append(frame.getClassID())
+					sbCache.append("clsID: ").append(frame.classID)
 				} else {
 					sbCache.append(clsSig).append("->")
 				}
 				if (mthSig == null) {
-					sbCache.append(" mthID: ").append(frame.getMethodID())
+					sbCache.append(" mthID: ").append(frame.methodID)
 				} else {
 					sbCache.append(mthSig)
 				}
@@ -1234,13 +1234,13 @@ class DebugController :
 
 		fun getRuntimeReg(): RuntimeRegister? = runtimeReg
 
-		fun getRuntimeRegNum(): Int = smaliReg.getRuntimeRegNum()
+		val runtimeRegNum: Int get() = smaliReg.runtimeRegNum
 
 		override fun getType(): String? {
 			if (type != null) {
 				return type
 			}
-			return runtimeReg?.getType()?.getDesc()
+			return runtimeReg?.type?.getDesc()
 		}
 
 		override fun getRuntimeValue(): RuntimeValue = checkNotNull(runtimeReg)
@@ -1270,7 +1270,7 @@ class DebugController :
 			objectID = id
 		}
 
-		fun getRuntimeField(): RuntimeField = field
+		val runtimeField: RuntimeField get() = this.field
 
 		fun setAlias(alias: String?) {
 			this.alias = alias
@@ -1293,7 +1293,7 @@ class DebugController :
 
 		override fun getValue(): String? = value
 
-		override fun getType(): String = checkNotNull(ArgType.parse(field.getFieldType())).toString()
+		override fun getType(): String = checkNotNull(ArgType.parse(field.fieldType)).toString()
 
 		override fun getRuntimeValue(): RuntimeValue = field
 

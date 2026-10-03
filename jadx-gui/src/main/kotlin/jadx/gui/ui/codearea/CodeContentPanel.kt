@@ -31,7 +31,7 @@ class CodeContentPanel(panel: TabbedPane, jnode: JNode) :
 		updateUI()
 	}
 
-	fun getSearchBar(): SearchBar = codePanel.getSearchBar()
+	val searchBar: SearchBar get() = codePanel.getSearchBar()
 
 	override fun getCodeArea(): AbstractCodeArea = codePanel.getCodeArea()
 

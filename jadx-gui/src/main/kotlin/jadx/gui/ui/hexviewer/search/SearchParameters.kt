@@ -31,13 +31,13 @@ class SearchParameters {
 		this.startPosition = startPosition
 	}
 
-	fun isSearchFromCursor(): Boolean = searchFromCursor
+	val isSearchFromCursor: Boolean get() = searchFromCursor
 
 	fun setSearchFromCursor(searchFromCursor: Boolean) {
 		this.searchFromCursor = searchFromCursor
 	}
 
-	fun isMatchCase(): Boolean = matchCase
+	val isMatchCase: Boolean get() = matchCase
 
 	fun setMatchCase(matchCase: Boolean) {
 		this.matchCase = matchCase
@@ -59,8 +59,8 @@ class SearchParameters {
 	fun setFromParameters(searchParameters: SearchParameters) {
 		condition = searchParameters.getCondition()
 		startPosition = searchParameters.getStartPosition()
-		searchFromCursor = searchParameters.isSearchFromCursor()
-		matchCase = searchParameters.isMatchCase()
+		searchFromCursor = searchParameters.isSearchFromCursor
+		matchCase = searchParameters.isMatchCase
 		matchMode = searchParameters.getMatchMode()
 		searchDirection = searchParameters.getSearchDirection()
 	}
@@ -77,7 +77,6 @@ class SearchParameters {
 
 		companion object {
 			/** 把「是否全部匹配」布尔值转换成枚举。 */
-			@JvmStatic
 			fun fromBoolean(multipleMatches: Boolean): MatchMode = if (multipleMatches) MULTIPLE else SINGLE
 		}
 	}

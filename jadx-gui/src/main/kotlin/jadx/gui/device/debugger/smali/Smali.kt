@@ -101,7 +101,6 @@ class Smali private constructor() {
 		private const val FMT_S_SWITCH_CASE_TAG = "s_case_" + FMT_TARGET_OFFSET + ":"
 
 		/** 反汇编一个类（含其内部类）。 */
-		@JvmStatic
 		fun disassemble(cls: ClassNode): Smali {
 			val topCls = cls.topParentClass
 			val code = SmaliWriter(topCls)
@@ -599,7 +598,7 @@ class Smali private constructor() {
 
 	@Suppress("UNCHECKED_CAST")
 	private fun writeEncodedValue(smali: SmaliWriter, value: EncodedValue, wrapArray: Boolean) {
-		val stringUtils = smali.getClassNode().root().stringUtils
+		val stringUtils = smali.classNode.root().stringUtils
 		when (value.type) {
 			EncodedType.ENCODED_ARRAY -> {
 				smali.add("{")
@@ -680,7 +679,7 @@ class Smali private constructor() {
 		}
 	}
 
-	private fun getInsnColStart(): Int {
+	private val insnColStart: Int get() {
 		var start = 0
 		if (printFileOffset) {
 			start += 8 + 1 + 1 // 加 1 个空格和 1 个 ':'
@@ -750,7 +749,7 @@ class Smali private constructor() {
 	}
 
 	private fun fmtSwitchPayload(insn: InsnData, fmtTarget: String, fmtTag: String, line: LineInfo, payload: ISwitchPayload) {
-		var lineStart = getInsnColStart()
+		var lineStart = insnColStart
 		lineStart += CODE_OFFSET_COLUMN_WIDTH + 1 + 1 // 加 1 个空格和 1 个 ':'
 		val basicIndent = String(ByteArray(lineStart)).replace("\u0000", " ")
 		val indent = JadxArgs.DEFAULT_INDENT_STR + basicIndent
@@ -930,7 +929,7 @@ class Smali private constructor() {
 		}
 
 		fun write(smali: SmaliWriter) {
-			val lineOffset = getInsnColStart()
+			val lineOffset = insnColStart
 			for ((codeOffset, lines) in insnOffsetMap) {
 				writeTip(smali, codeOffset, lineOffset)
 				smaliMthNode.setInsnInfo(codeOffset, lineOffset + smali.getLength())

@@ -61,7 +61,7 @@ class RenameService private constructor(private val mainWindow: MainWindow) {
 		val decompiler: JadxDecompiler = mainWindow.getWrapper().getDecompiler()
 		val javaNode = decompiler.getJavaNodeByRef(event.getNode())
 		if (javaNode != null) {
-			val node = mainWindow.getCacheObject().getNodeCache().makeFrom(javaNode)
+			val node = mainWindow.getCacheObject().nodeCache.makeFrom(javaNode)
 			if (node is JRenameNode) {
 				return node
 			}
@@ -83,7 +83,7 @@ class RenameService private constructor(private val mainWindow: MainWindow) {
 	/** 把重命名集合写回项目代码数据（排序后持久化）。 */
 	private fun updateCodeRenames(updater: (MutableSet<ICodeRename>) -> Unit) {
 		val project: JadxProject = mainWindow.getProject()
-		val codeData: JadxCodeData = project.getCodeData()
+		val codeData: JadxCodeData = project.codeData
 		val set = HashSet(codeData.getRenames())
 		updater(set)
 		val list = ArrayList(set)
@@ -100,7 +100,7 @@ class RenameService private constructor(private val mainWindow: MainWindow) {
 		val toUpdate = ArrayList<JavaNode>()
 		node.addUpdateNodes(toUpdate)
 
-		val nodeCache: JNodeCache = mainWindow.getCacheObject().getNodeCache()
+		val nodeCache: JNodeCache = mainWindow.getCacheObject().nodeCache
 		val updatedTopClasses: MutableSet<JClass> = toUpdate
 			.mapNotNull { nodeCache.makeFrom(it.getTopParentClass()) }
 			.toMutableSet()
@@ -115,7 +115,7 @@ class RenameService private constructor(private val mainWindow: MainWindow) {
 				mainWindow.getWrapper().reloadCodeData()
 				// 在后台线程重新加载所有受影响类的代码（不使用 codeArea.backgroundRefreshClass，
 				// 以免再起一个后台任务）。
-				for (tab in mainWindow.getTabbedPane().getTabs()) {
+				for (tab in mainWindow.getTabbedPane().tabs) {
 					val rootClass = tab.getNode().getRootClass()
 					if (rootClass != null && updatedTopClasses.contains(rootClass)) {
 						rootClass.reload(mainWindow.getCacheObject())
@@ -145,7 +145,7 @@ class RenameService private constructor(private val mainWindow: MainWindow) {
 				try {
 					cls.reload(cache)
 				} catch (e: Exception) {
-					LOG.error("Failed to reload class: {}", cls.getFullName(), e)
+					LOG.error("Failed to reload class: {}", cls.fullName, e)
 				}
 			}
 		} else {
@@ -155,7 +155,7 @@ class RenameService private constructor(private val mainWindow: MainWindow) {
 				try {
 					cls.unload(cache)
 				} catch (e: Exception) {
-					LOG.error("Failed to unload class: {}", cls.getFullName(), e)
+					LOG.error("Failed to unload class: {}", cls.fullName, e)
 				}
 			}
 		}
@@ -163,7 +163,7 @@ class RenameService private constructor(private val mainWindow: MainWindow) {
 
 	/** 在 EDT 上刷新受影响的已打开标签页（仅类代码面板）。 */
 	private fun refreshTabs(tabbedPane: TabbedPane, updatedClasses: MutableSet<JClass>) {
-		for (tab in tabbedPane.getTabs()) {
+		for (tab in tabbedPane.tabs) {
 			val rootClass = tab.getNode().getRootClass()
 			if (rootClass != null && updatedClasses.remove(rootClass)) {
 				val contentPanel = tab as ClassCodeContentPanel
@@ -177,7 +177,6 @@ class RenameService private constructor(private val mainWindow: MainWindow) {
 		private val LOG: Logger = LoggerFactory.getLogger(RenameService::class.java)
 
 		/** 在全局事件总线上注册重命名监听器。 */
-		@JvmStatic
 		fun init(mainWindow: MainWindow) {
 			val renameService = RenameService(mainWindow)
 			mainWindow.events().global()

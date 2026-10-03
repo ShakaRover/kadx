@@ -34,7 +34,7 @@ class BinarySearchServiceImpl(private val codeArea: SectCodeArea) : BinarySearch
 		val searchAssessor = findSearchAssessor()
 		val condition = searchParameters.getCondition()
 		searchStatusListener.clearStatus()
-		if (condition.isEmpty()) {
+		if (condition.isEmpty) {
 			searchAssessor.clearMatches()
 			codeArea.repaint()
 			return
@@ -42,7 +42,7 @@ class BinarySearchServiceImpl(private val codeArea: SectCodeArea) : BinarySearch
 
 		val position = when (searchParameters.getSearchDirection()) {
 			SearchParameters.SearchDirection.FORWARD -> {
-				if (searchParameters.isSearchFromCursor()) {
+				if (searchParameters.isSearchFromCursor) {
 					codeArea.getActiveCaretPosition().getDataPosition()
 				} else {
 					0L
@@ -50,7 +50,7 @@ class BinarySearchServiceImpl(private val codeArea: SectCodeArea) : BinarySearch
 			}
 
 			SearchParameters.SearchDirection.BACKWARD -> {
-				if (searchParameters.isSearchFromCursor()) {
+				if (searchParameters.isSearchFromCursor) {
 					codeArea.getActiveCaretPosition().getDataPosition() - 1
 				} else {
 					val searchDataSize = when (condition.getSearchMode()) {
@@ -144,7 +144,7 @@ class BinarySearchServiceImpl(private val codeArea: SectCodeArea) : BinarySearch
 		val condition = searchParameters.getCondition()
 
 		var position = searchParameters.getStartPosition()
-		val findText = if (searchParameters.isMatchCase()) {
+		val findText = if (searchParameters.isMatchCase) {
 			condition.getSearchText()
 		} else {
 			// 与 Java 的 String.toLowerCase() 一致：使用系统默认 Locale
@@ -194,7 +194,7 @@ class BinarySearchServiceImpl(private val codeArea: SectCodeArea) : BinarySearch
 				lastPosition = searchPosition
 				val singleChar = String(charData, charset)[0]
 
-				if (searchParameters.isMatchCase()) {
+				if (searchParameters.isMatchCase) {
 					if (singleChar != findText[matchCharLength]) {
 						break
 					}

@@ -71,7 +71,6 @@ class LogViewerDialog private constructor(
 		 * @param mainWindow 主窗口
 		 * @param logOptions 初始日志过滤选项
 		 */
-		@JvmStatic
 		fun open(mainWindow: MainWindow, logOptions: LogOptions) {
 			val logDialog: LogViewerDialog
 			val current = openLogDialog

@@ -20,11 +20,11 @@ class ViewCallGraphAction(codeArea: CodeArea) : JNodeAction(ActionModel.VIEW_CAL
 
 	override fun runAction(node: JNode) {
 		try {
-			CallGraphDialog.open(getCodeArea().getMainWindow(), node as JMethod)
+			CallGraphDialog.open(getCodeArea().mainWindow, node as JMethod)
 		} catch (e: Exception) {
 			LOG.error("Failed to view graph", e)
 			JOptionPane.showMessageDialog(
-				getCodeArea().getMainWindow(),
+				getCodeArea().mainWindow,
 				e.localizedMessage,
 				NLS.str("error_dialog.title"),
 				JOptionPane.ERROR_MESSAGE,

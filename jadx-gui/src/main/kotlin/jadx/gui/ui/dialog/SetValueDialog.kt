@@ -109,7 +109,7 @@ class SetValueDialog(
 					if (type != null) {
 						ok = mainWindow
 							.getDebuggerPanel()
-							.getDbgController()
+							.dbgController
 							.modifyRegValue(valNode, type.key, type.value)
 					} else {
 						UiUtils.showMessageBox(mainWindow, NLS.str("set_value_dialog.sel_type"))

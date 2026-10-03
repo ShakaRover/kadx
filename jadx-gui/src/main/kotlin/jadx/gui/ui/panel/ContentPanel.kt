@@ -42,10 +42,10 @@ abstract class ContentPanel protected constructor(panel: TabbedPane, jnode: JNod
 	fun getTabbedPane(): TabbedPane = checkNotNull(tabbedPane)
 
 	/** 标签栏控制器。 */
-	fun getTabsController(): TabsController = getTabbedPane().getTabsController()
+	val tabsController: TabsController get() = getTabbedPane().tabsController
 
 	/** 主窗口。 */
-	fun getMainWindow(): MainWindow = getTabbedPane().getMainWindow()
+	val mainWindow: MainWindow get() = getTabbedPane().getMainWindow()
 
 	/** 对应的树节点。 */
 	fun getNode(): JNode = checkNotNull(node)
@@ -60,7 +60,7 @@ abstract class ContentPanel protected constructor(panel: TabbedPane, jnode: JNod
 	}
 
 	/** 全局设置。 */
-	fun getSettings(): JadxSettings = getMainWindow().getSettings()
+	val settings: JadxSettings get() = mainWindow.getSettings()
 
 	/** 该节点是否支持快速标签页。 */
 	fun supportsQuickTabs(): Boolean = getNode().supportsQuickTabs()

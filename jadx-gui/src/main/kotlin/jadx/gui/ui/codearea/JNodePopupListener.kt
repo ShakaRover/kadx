@@ -30,7 +30,7 @@ class JNodePopupListener(private val codeArea: CodeArea) : PopupMenuListener {
 	}
 
 	override fun popupMenuWillBecomeVisible(e: PopupMenuEvent) {
-		updateNode(codeArea.getNodeUnderMouse())
+		updateNode(codeArea.nodeUnderMouse)
 	}
 
 	override fun popupMenuWillBecomeInvisible(e: PopupMenuEvent) {

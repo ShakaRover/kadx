@@ -82,7 +82,7 @@ class SmaliArea internal constructor(contentPanel: ContentPanel, node: JClass, s
 		return textNode
 	}
 
-	fun isShowingDalvikBytecode(): Boolean = model is DebugModel
+	val isShowingDalvikBytecode: Boolean get() = model is DebugModel
 
 	override fun getJClass(): JClass = node as JClass
 
@@ -91,7 +91,7 @@ class SmaliArea internal constructor(contentPanel: ContentPanel, node: JClass, s
 	}
 
 	override fun getFont(): Font {
-		if (!::model.isInitialized || isDisposed()) {
+		if (!::model.isInitialized || isDisposed) {
 			return super.getFont()
 		}
 		return model.getFont()
@@ -140,11 +140,11 @@ class SmaliArea internal constructor(contentPanel: ContentPanel, node: JClass, s
 
 	private inner class NormalModel(smaliArea: SmaliArea) : SmaliModel() {
 		init {
-			smaliArea.getContentPanel().getMainWindow().getEditorThemeManager().apply(smaliArea)
+			smaliArea.getContentPanel().mainWindow.getEditorThemeManager().apply(smaliArea)
 			setSyntaxEditingStyle(AbstractCodeArea.SYNTAX_STYLE_SMALI)
 		}
 
-		override fun loadCode(): String = getJClass().getSmali()
+		override fun loadCode(): String = getJClass().smali
 
 		override fun loadUI(code: String) {
 			setText(code)
@@ -197,9 +197,9 @@ class SmaliArea internal constructor(contentPanel: ContentPanel, node: JClass, s
 			bpMap.forEach { (_, v) -> v.remove() }
 		}
 
-		override fun getFont(): Font = smaliV2Style.getFont()
+		override fun getFont(): Font = smaliV2Style.font
 
-		override fun getFontForTokenType(type: Int): Font = smaliV2Style.getFont()
+		override fun getFontForTokenType(type: Int): Font = smaliV2Style.font
 
 		private fun loadV2Style() {
 			setSyntaxScheme(smaliV2Style)
@@ -323,11 +323,11 @@ class SmaliArea internal constructor(contentPanel: ContentPanel, node: JClass, s
 
 	private inner class SmaliV2Style(smaliArea: SmaliArea) : SyntaxScheme(true) {
 		init {
-			smaliArea.getContentPanel().getMainWindow().getEditorThemeManager().apply(smaliArea)
+			smaliArea.getContentPanel().mainWindow.getEditorThemeManager().apply(smaliArea)
 			updateTheme()
 		}
 
-		fun getFont(): Font = getContentPanel().getMainWindow().getSettings().getSmaliFont()
+		val font: Font get() = getContentPanel().mainWindow.getSettings().smaliFont
 
 		fun refreshTheme(): Boolean {
 			val refresh = getSyntaxScheme() !== this

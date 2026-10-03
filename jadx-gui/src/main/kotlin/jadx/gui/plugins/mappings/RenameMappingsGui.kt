@@ -112,14 +112,14 @@ class RenameMappingsGui(private val mainWindow: MainWindow) {
 		renamesChanged = false
 		mappingNode = null
 		if (loaded) {
-			val rootNode: RootNode = mainWindow.getWrapper().getRootNode()
+			val rootNode: RootNode = mainWindow.getWrapper().rootNode
 			rootNode.registerCodeDataUpdateListener { onRename() }
 		} else {
 			// 工程或窗口关闭
 			val project: JadxProject = mainWindow.getProject()
 			val settings: JadxSettings = mainWindow.getSettings()
-			if (project.getMappingsPath() != null &&
-				settings.getUserRenamesMappingsMode() == UserRenamesMappingsMode.READ_AND_AUTOSAVE_BEFORE_CLOSING
+			if (project.mappingsPath != null &&
+				settings.userRenamesMappingsMode == UserRenamesMappingsMode.READ_AND_AUTOSAVE_BEFORE_CLOSING
 			) {
 				saveMappings()
 			}
@@ -129,8 +129,8 @@ class RenameMappingsGui(private val mainWindow: MainWindow) {
 	private fun onRename() {
 		val project: JadxProject = mainWindow.getProject()
 		val settings: JadxSettings = mainWindow.getSettings()
-		if (project.getMappingsPath() != null &&
-			settings.getUserRenamesMappingsMode() == UserRenamesMappingsMode.READ_AND_AUTOSAVE_EVERY_CHANGE
+		if (project.mappingsPath != null &&
+			settings.userRenamesMappingsMode == UserRenamesMappingsMode.READ_AND_AUTOSAVE_EVERY_CHANGE
 		) {
 			saveMappings()
 		} else {
@@ -143,16 +143,16 @@ class RenameMappingsGui(private val mainWindow: MainWindow) {
 	fun onUpdate(loaded: Boolean) {
 		val project: JadxProject = mainWindow.getProject()
 		openMappingsMenu?.setEnabled(loaded)
-		saveMappingsAction?.setEnabled(loaded && renamesChanged && project.getMappingsPath() != null)
+		saveMappingsAction?.setEnabled(loaded && renamesChanged && project.mappingsPath != null)
 		saveMappingsAsMenu?.setEnabled(loaded)
-		closeMappingsAction?.setEnabled(project.getMappingsPath() != null)
+		closeMappingsAction?.setEnabled(project.mappingsPath != null)
 	}
 	private fun treeUpdate(treeRoot: JRoot) {
 		if (mappingNode != null) {
 			// 已经添加过
 			return
 		}
-		val mappingsPath: Path = mainWindow.getProject().getMappingsPath() ?: return
+		val mappingsPath: Path = mainWindow.getProject().mappingsPath ?: return
 		val node: JNode = treeRoot.followStaticPath("JInputs")
 		val currentNode = node.removeNode { it.javaClass == JInputMapping::class.java }
 		if (currentNode != null) {
@@ -199,8 +199,8 @@ class RenameMappingsGui(private val mainWindow: MainWindow) {
 	private fun saveMappings() {
 		renamesChanged = false
 		saveInBackground(
-			getCurrentMappingFormat(),
-			checkNotNull(mainWindow.getProject().getMappingsPath()),
+			currentMappingFormat,
+			checkNotNull(mainWindow.getProject().mappingsPath),
 			{ mainWindow.update() },
 		)
 	}
@@ -209,7 +209,7 @@ class RenameMappingsGui(private val mainWindow: MainWindow) {
 		val fileDialog = FileDialogWrapper(mainWindow, FileOpenMode.CUSTOM_SAVE)
 		fileDialog.setTitle(NLS.str("file.save_mappings_as"))
 		if (mappingFormat.hasSingleFile()) {
-			val currentDir = Utils.getOrElse(fileDialog.getCurrentDir(), CommonFileUtils.CWD_PATH)
+			val currentDir = Utils.getOrElse(fileDialog.currentDir, CommonFileUtils.CWD_PATH)
 			fileDialog.setSelectedFile(currentDir.resolve("mappings." + mappingFormat.fileExt))
 			fileDialog.setFileExtList(Collections.singletonList(mappingFormat.fileExt))
 			fileDialog.setSelectionMode(JFileChooser.FILES_ONLY)
@@ -270,20 +270,20 @@ class RenameMappingsGui(private val mainWindow: MainWindow) {
 		mainWindow.getBackgroundExecutor().execute(
 			NLS.str("progress.save_mappings"),
 			Runnable {
-				MappingExporter(mainWindow.getWrapper().getRootNode())
-					.exportMappings(savePath, mainWindow.getProject().getCodeData(), mappingFormat)
+				MappingExporter(mainWindow.getWrapper().rootNode)
+					.exportMappings(savePath, mainWindow.getProject().codeData, mappingFormat)
 			},
 			onFinishUiRunnable,
 		)
 	}
 
-	private fun getCurrentMappingFormat(): MappingFormat {
+	private val currentMappingFormat: MappingFormat get() {
 		val project: JadxProject = mainWindow.getProject()
 		val fmtStr = project.getPluginOption(RenameMappingsOptions.FORMAT_OPT)
 		if (fmtStr != null) {
 			return MappingFormat.valueOf(fmtStr)
 		}
-		val mappingsPath = project.getMappingsPath()
+		val mappingsPath = project.mappingsPath
 		try {
 			return checkNotNull(MappingReader.detectFormat(mappingsPath))
 		} catch (e: IOException) {

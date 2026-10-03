@@ -49,7 +49,7 @@ class JadxSettings(private val configAdapter: JadxConfigAdapter<JadxSettingsData
 	private val fontSettings: FontSettings = FontSettings()
 
 	private lateinit var settingsData: JadxSettingsData
-	fun getSettingsJsonString(): String = configAdapter.objectToJsonString(settingsData)
+	val settingsJsonString: String get() = configAdapter.objectToJsonString(settingsData)
 
 	fun loadSettingsFromJsonString(jsonStr: String) {
 		loadSettingsData(configAdapter.jsonStringToObject(jsonStr))
@@ -116,48 +116,48 @@ class JadxSettings(private val configAdapter: JadxConfigAdapter<JadxSettingsData
 
 	fun toJadxArgs(): JadxArgs = settingsData.toJadxArgs()
 
-	fun getFiles(): List<String> = settingsData.files
+	val files: List<String> get() = settingsData.files
 
-	fun getCmdSelectClass(): String? = settingsData.cmdSelectClass
+	val cmdSelectClass: String? get() = settingsData.cmdSelectClass
 
-	fun getLastOpenFilePath(): Path = settingsData.lastOpenFilePath
+	val lastOpenFilePath: Path get() = settingsData.lastOpenFilePath
 
 	fun setLastOpenFilePath(lastOpenFilePath: Path) {
 		settingsData.lastOpenFilePath = lastOpenFilePath
 	}
 
-	fun getLastSaveProjectPath(): Path = settingsData.lastSaveProjectPath
+	val lastSaveProjectPath: Path get() = settingsData.lastSaveProjectPath
 
 	fun setLastSaveProjectPath(lastSaveProjectPath: Path) {
 		settingsData.lastSaveProjectPath = lastSaveProjectPath
 	}
 
-	fun getLastSaveFilePath(): Path = settingsData.lastSaveFilePath
+	val lastSaveFilePath: Path get() = settingsData.lastSaveFilePath
 
 	fun setLastSaveFilePath(lastSaveFilePath: Path) {
 		settingsData.lastSaveFilePath = lastSaveFilePath
 	}
 
-	fun isFlattenPackage(): Boolean = settingsData.flattenPackage
+	val isFlattenPackage: Boolean get() = settingsData.flattenPackage
 
 	fun setFlattenPackage(flattenPackage: Boolean) {
 		settingsData.flattenPackage = flattenPackage
 	}
 
-	fun isCheckForUpdates(): Boolean = settingsData.checkForUpdates
+	val isCheckForUpdates: Boolean get() = settingsData.checkForUpdates
 
 	fun setCheckForUpdates(checkForUpdates: Boolean) {
 		settingsData.checkForUpdates = checkForUpdates
 		sync()
 	}
 
-	fun isDisableTooltipOnHover(): Boolean = settingsData.disableTooltipOnHover
+	val isDisableTooltipOnHover: Boolean get() = settingsData.disableTooltipOnHover
 
 	fun setDisableTooltipOnHover(disableTooltipOnHover: Boolean) {
 		settingsData.disableTooltipOnHover = disableTooltipOnHover
 	}
 
-	fun getRecentProjects(): List<Path> = Collections.unmodifiableList(settingsData.recentProjects)
+	val recentProjects: List<Path> get() = Collections.unmodifiableList(settingsData.recentProjects)
 
 	fun addRecentProject(projectPath: Path?) {
 		if (projectPath == null) {
@@ -200,125 +200,125 @@ class JadxSettings(private val configAdapter: JadxConfigAdapter<JadxSettingsData
 		}
 		window.bounds = bounds
 		if (window is MainWindow) {
-			(window as JFrame).setExtendedState(getMainWindowExtendedState())
+			(window as JFrame).setExtendedState(mainWindowExtendedState)
 		}
 		return true
 	}
-	fun getMainWindowExtendedState(): Int = settingsData.mainWindowExtendedState
+	val mainWindowExtendedState: Int get() = settingsData.mainWindowExtendedState
 
 	fun setMainWindowExtendedState(mainWindowExtendedState: Int) {
 		settingsData.mainWindowExtendedState = mainWindowExtendedState
 	}
 
-	fun isShowHeapUsageBar(): Boolean = settingsData.showHeapUsageBar
+	val isShowHeapUsageBar: Boolean get() = settingsData.showHeapUsageBar
 
 	fun setShowHeapUsageBar(showHeapUsageBar: Boolean) {
 		settingsData.showHeapUsageBar = showHeapUsageBar
 	}
 
-	fun isAlwaysSelectOpened(): Boolean = settingsData.alwaysSelectOpened
+	val isAlwaysSelectOpened: Boolean get() = settingsData.alwaysSelectOpened
 
 	fun setAlwaysSelectOpened(alwaysSelectOpened: Boolean) {
 		settingsData.alwaysSelectOpened = alwaysSelectOpened
 	}
 
-	fun isEnablePreviewTab(): Boolean = settingsData.enablePreviewTab
+	val isEnablePreviewTab: Boolean get() = settingsData.enablePreviewTab
 
 	fun setEnablePreviewTab(enablePreviewTab: Boolean) {
 		settingsData.enablePreviewTab = enablePreviewTab
 	}
 
-	fun isUseAlternativeFileDialog(): Boolean = settingsData.useAlternativeFileDialog
+	val isUseAlternativeFileDialog: Boolean get() = settingsData.useAlternativeFileDialog
 
 	fun setUseAlternativeFileDialog(useAlternativeFileDialog: Boolean) {
 		settingsData.useAlternativeFileDialog = useAlternativeFileDialog
 	}
 
-	fun getExcludedPackages(): String = settingsData.excludedPackages
+	val excludedPackages: String get() = settingsData.excludedPackages
 
 	fun setExcludedPackages(excludedPackages: String) {
 		settingsData.excludedPackages = excludedPackages
 	}
 
-	fun getLangLocale(): LangLocale = settingsData.langLocale
+	val langLocale: LangLocale get() = settingsData.langLocale
 
 	fun setLangLocale(langLocale: LangLocale) {
 		settingsData.langLocale = langLocale
 	}
 
-	fun isAutoStartJobs(): Boolean = settingsData.autoStartJobs
+	val isAutoStartJobs: Boolean get() = settingsData.autoStartJobs
 
 	fun setAutoStartJobs(autoStartJobs: Boolean) {
 		settingsData.autoStartJobs = autoStartJobs
 	}
 
-	fun getShortcuts(): ShortcutsWrapper = shortcutsWrapper
+	val shortcuts: ShortcutsWrapper get() = shortcutsWrapper
 
-	fun getTreeWidth(): Int = settingsData.treeWidth
+	val treeWidth: Int get() = settingsData.treeWidth
 
 	fun setTreeWidth(treeWidth: Int) {
 		settingsData.treeWidth = treeWidth
 	}
 
-	fun getUiZoom(): Float = settingsData.uiZoom
+	val uiZoom: Float get() = settingsData.uiZoom
 
 	fun setUiZoom(uiZoom: Float) {
 		settingsData.uiZoom = uiZoom
-		fontSettings.applyUiZoom(uiZoom, isApplyUiZoomToFonts())
+		fontSettings.applyUiZoom(uiZoom, isApplyUiZoomToFonts)
 	}
 
-	fun isApplyUiZoomToFonts(): Boolean = settingsData.applyUiZoomToFonts
+	val isApplyUiZoomToFonts: Boolean get() = settingsData.applyUiZoomToFonts
 
 	fun setApplyUiZoomToFonts(applyUiZoomToFonts: Boolean) {
 		settingsData.applyUiZoomToFonts = applyUiZoomToFonts
-		fontSettings.applyUiZoom(getUiZoom(), applyUiZoomToFonts)
+		fontSettings.applyUiZoom(uiZoom, applyUiZoomToFonts)
 	}
 
 	fun getFontSettings(): FontSettings = fontSettings
 
-	fun getUiFont(): Font = fontSettings.getUiFontAdapter().getEffectiveFont()
+	val uiFont: Font get() = fontSettings.getUiFontAdapter().getEffectiveFont()
 
 	fun setUiFont(font: Font) {
 		fontSettings.getUiFontAdapter().setFont(font)
 	}
 
-	fun getCodeFont(): Font = fontSettings.getCodeFontAdapter().getEffectiveFont()
+	val codeFont: Font get() = fontSettings.getCodeFontAdapter().getEffectiveFont()
 
 	fun setCodeFont(font: Font) {
 		fontSettings.getCodeFontAdapter().setFont(font)
 	}
 
-	fun getSmaliFont(): Font = fontSettings.getSmaliFontAdapter().getEffectiveFont()
+	val smaliFont: Font get() = fontSettings.getSmaliFontAdapter().getEffectiveFont()
 
 	fun setSmaliFont(font: Font) {
 		fontSettings.getSmaliFontAdapter().setFont(font)
 	}
 
-	fun getEditorTheme(): String = settingsData.editorTheme
+	val editorTheme: String get() = settingsData.editorTheme
 
 	fun setEditorTheme(editorTheme: String) {
 		settingsData.editorTheme = editorTheme
 	}
 
-	fun getLafTheme(): String = settingsData.lafTheme
+	val lafTheme: String get() = settingsData.lafTheme
 
 	fun setLafTheme(lafTheme: String) {
 		settingsData.lafTheme = lafTheme
 	}
 
-	fun isCodeAreaLineWrap(): Boolean = settingsData.codeAreaLineWrap
+	val isCodeAreaLineWrap: Boolean get() = settingsData.codeAreaLineWrap
 
 	fun setCodeAreaLineWrap(lineWrap: Boolean) {
 		settingsData.codeAreaLineWrap = lineWrap
 	}
 
-	fun getSearchResultsPerPage(): Int = settingsData.searchResultsPerPage
+	val searchResultsPerPage: Int get() = settingsData.searchResultsPerPage
 
 	fun setSearchResultsPerPage(searchResultsPerPage: Int) {
 		settingsData.searchResultsPerPage = searchResultsPerPage
 	}
 
-	fun isUseAutoSearch(): Boolean = settingsData.useAutoSearch
+	val isUseAutoSearch: Boolean get() = settingsData.useAutoSearch
 
 	fun saveUseAutoSearch(useAutoSearch: Boolean) {
 		settingsData.useAutoSearch = useAutoSearch
@@ -330,260 +330,260 @@ class JadxSettings(private val configAdapter: JadxConfigAdapter<JadxSettingsData
 		sync()
 	}
 
-	fun isKeepCommonDialogOpen(): Boolean = settingsData.keepCommonDialogOpen
-	fun getMainWindowVerticalSplitterLoc(): Int = settingsData.mainWindowVerticalSplitterLoc
+	val isKeepCommonDialogOpen: Boolean get() = settingsData.keepCommonDialogOpen
+	val mainWindowVerticalSplitterLoc: Int get() = settingsData.mainWindowVerticalSplitterLoc
 
 	fun setMainWindowVerticalSplitterLoc(location: Int) {
 		settingsData.mainWindowVerticalSplitterLoc = location
 	}
 
-	fun getDebuggerStackFrameSplitterLoc(): Int = settingsData.debuggerStackFrameSplitterLoc
+	val debuggerStackFrameSplitterLoc: Int get() = settingsData.debuggerStackFrameSplitterLoc
 
 	fun setDebuggerStackFrameSplitterLoc(location: Int) {
 		settingsData.debuggerStackFrameSplitterLoc = location
 	}
 
-	fun getDebuggerVarTreeSplitterLoc(): Int = settingsData.debuggerVarTreeSplitterLoc
+	val debuggerVarTreeSplitterLoc: Int get() = settingsData.debuggerVarTreeSplitterLoc
 
 	fun setDebuggerVarTreeSplitterLoc(location: Int) {
 		settingsData.debuggerVarTreeSplitterLoc = location
 	}
 
-	fun getAdbDialogHost(): String = settingsData.adbDialogHost
+	val adbDialogHost: String get() = settingsData.adbDialogHost
 
 	fun setAdbDialogHost(adbDialogHost: String) {
 		settingsData.adbDialogHost = adbDialogHost
 	}
 
-	fun getAdbDialogPath(): String = settingsData.adbDialogPath
+	val adbDialogPath: String get() = settingsData.adbDialogPath
 
 	fun setAdbDialogPath(adbDialogPath: String) {
 		settingsData.adbDialogPath = adbDialogPath
 	}
 
-	fun getAdbDialogPort(): String = settingsData.adbDialogPort
+	val adbDialogPort: String get() = settingsData.adbDialogPort
 
 	fun setAdbDialogPort(adbDialogPort: String) {
 		settingsData.adbDialogPort = adbDialogPort
 	}
 
-	fun getCommentsLevel(): CommentsLevel = settingsData.commentsLevel
+	val commentsLevel: CommentsLevel get() = settingsData.commentsLevel
 
 	fun setCommentsLevel(level: CommentsLevel) {
 		settingsData.commentsLevel = level
 	}
 
-	fun getTypeUpdatesLimitCount(): Int = settingsData.typeUpdatesLimitCount
+	val typeUpdatesLimitCount: Int get() = settingsData.typeUpdatesLimitCount
 
 	fun setTypeUpdatesLimitCount(typeUpdatesLimitCount: Int) {
 		settingsData.typeUpdatesLimitCount = typeUpdatesLimitCount
 	}
 
-	fun getLineNumbersMode(): LineNumbersMode = settingsData.lineNumbersMode
+	val lineNumbersMode: LineNumbersMode get() = settingsData.lineNumbersMode
 
 	fun setLineNumbersMode(lineNumbersMode: LineNumbersMode) {
 		settingsData.lineNumbersMode = lineNumbersMode
 	}
 
-	fun getCodeCacheMode(): CodeCacheMode = settingsData.codeCacheMode
+	val codeCacheMode: CodeCacheMode get() = settingsData.codeCacheMode
 
 	fun setCodeCacheMode(codeCacheMode: CodeCacheMode) {
 		settingsData.codeCacheMode = codeCacheMode
 	}
 
-	fun getUsageCacheMode(): UsageCacheMode = settingsData.usageCacheMode
+	val usageCacheMode: UsageCacheMode get() = settingsData.usageCacheMode
 
 	fun setUsageCacheMode(usageCacheMode: UsageCacheMode) {
 		settingsData.usageCacheMode = usageCacheMode
 	}
 
-	fun getCacheDir(): String? = settingsData.cacheDir
+	val cacheDir: String? get() = settingsData.cacheDir
 
 	fun setCacheDir(cacheDir: String?) {
 		settingsData.cacheDir = cacheDir
 	}
 
-	fun isJumpOnDoubleClick(): Boolean = settingsData.jumpOnDoubleClick
+	val isJumpOnDoubleClick: Boolean get() = settingsData.jumpOnDoubleClick
 
 	fun setJumpOnDoubleClick(jumpOnDoubleClick: Boolean) {
 		settingsData.jumpOnDoubleClick = jumpOnDoubleClick
 	}
 
-	fun isDockLogViewer(): Boolean = settingsData.dockLogViewer
+	val isDockLogViewer: Boolean get() = settingsData.dockLogViewer
 
 	fun saveDockLogViewer(dockLogViewer: Boolean) {
 		settingsData.dockLogViewer = dockLogViewer
 		sync()
 	}
 
-	fun isDockQuickTabs(): Boolean = settingsData.dockQuickTabs
+	val isDockQuickTabs: Boolean get() = settingsData.dockQuickTabs
 
 	fun saveDockQuickTabs(dockQuickTabs: Boolean) {
 		settingsData.dockQuickTabs = dockQuickTabs
 		sync()
 	}
-	fun getXposedCodegenLanguage(): XposedCodegenLanguage = settingsData.xposedCodegenLanguage
+	val xposedCodegenLanguage: XposedCodegenLanguage get() = settingsData.xposedCodegenLanguage
 
 	fun setXposedCodegenLanguage(language: XposedCodegenLanguage) {
 		settingsData.xposedCodegenLanguage = language
 	}
 
-	fun getJadxUpdateChannel(): JadxUpdateChannel = settingsData.jadxUpdateChannel
+	val jadxUpdateChannel: JadxUpdateChannel get() = settingsData.jadxUpdateChannel
 
 	fun setJadxUpdateChannel(channel: JadxUpdateChannel) {
 		settingsData.jadxUpdateChannel = channel
 	}
 
-	fun getTabDndGhostType(): TabDndGhostType = settingsData.tabDndGhostType
+	val tabDndGhostType: TabDndGhostType get() = settingsData.tabDndGhostType
 
 	fun setTabDndGhostType(tabDndGhostType: TabDndGhostType) {
 		settingsData.tabDndGhostType = tabDndGhostType
 	}
 
-	fun isRestoreSwitchOverString(): Boolean = settingsData.restoreSwitchOverString
+	val isRestoreSwitchOverString: Boolean get() = settingsData.restoreSwitchOverString
 
 	fun setRestoreSwitchOverString(restoreSwitchOverString: Boolean) {
 		settingsData.restoreSwitchOverString = restoreSwitchOverString
 	}
 
-	fun isRenamePrintable(): Boolean = settingsData.isRenamePrintable
+	val isRenamePrintable: Boolean get() = settingsData.isRenamePrintable
 
-	fun getUserRenamesMappingsMode(): UserRenamesMappingsMode = settingsData.userRenamesMappingsMode
+	val userRenamesMappingsMode: UserRenamesMappingsMode get() = settingsData.userRenamesMappingsMode
 
 	fun setUserRenamesMappingsMode(userRenamesMappingsMode: UserRenamesMappingsMode) {
 		settingsData.userRenamesMappingsMode = userRenamesMappingsMode
 	}
 
-	fun isInlineAnonymousClasses(): Boolean = settingsData.inlineAnonymousClasses
+	val isInlineAnonymousClasses: Boolean get() = settingsData.inlineAnonymousClasses
 
 	fun setInlineAnonymousClasses(inlineAnonymousClasses: Boolean) {
 		settingsData.inlineAnonymousClasses = inlineAnonymousClasses
 	}
 
-	fun isRespectBytecodeAccessModifiers(): Boolean = settingsData.respectBytecodeAccessModifiers
+	val isRespectBytecodeAccessModifiers: Boolean get() = settingsData.respectBytecodeAccessModifiers
 
 	fun setRespectBytecodeAccessModifiers(respectBytecodeAccessModifiers: Boolean) {
 		settingsData.respectBytecodeAccessModifiers = respectBytecodeAccessModifiers
 	}
 
-	fun isRenameCaseSensitive(): Boolean = settingsData.isRenameCaseSensitive
+	val isRenameCaseSensitive: Boolean get() = settingsData.isRenameCaseSensitive
 
-	fun getDecompilationMode(): DecompilationMode = settingsData.decompilationMode
+	val decompilationMode: DecompilationMode get() = settingsData.decompilationMode
 
 	fun setDecompilationMode(decompilationMode: DecompilationMode) {
 		settingsData.decompilationMode = decompilationMode
 	}
 
-	fun isInlineMethods(): Boolean = settingsData.inlineMethods
+	val isInlineMethods: Boolean get() = settingsData.inlineMethods
 
 	fun setInlineMethods(inlineMethods: Boolean) {
 		settingsData.inlineMethods = inlineMethods
 	}
 
-	fun isFsCaseSensitive(): Boolean = settingsData.fsCaseSensitive
+	val isFsCaseSensitive: Boolean get() = settingsData.fsCaseSensitive
 
 	fun setFsCaseSensitive(fsCaseSensitive: Boolean) {
 		settingsData.fsCaseSensitive = fsCaseSensitive
 	}
 
-	fun isExtractFinally(): Boolean = settingsData.extractFinally
+	val isExtractFinally: Boolean get() = settingsData.extractFinally
 
 	fun setExtractFinally(extractFinally: Boolean) {
 		settingsData.extractFinally = extractFinally
 	}
 
-	fun getSourceNameRepeatLimit(): Int = settingsData.sourceNameRepeatLimit
+	val sourceNameRepeatLimit: Int get() = settingsData.sourceNameRepeatLimit
 
 	fun setSourceNameRepeatLimit(sourceNameRepeatLimit: Int) {
 		settingsData.sourceNameRepeatLimit = sourceNameRepeatLimit
 	}
 
-	fun isRenameValid(): Boolean = settingsData.isRenameValid
+	val isRenameValid: Boolean get() = settingsData.isRenameValid
 
-	fun isSkipXmlPrettyPrint(): Boolean = settingsData.skipXmlPrettyPrint
+	val isSkipXmlPrettyPrint: Boolean get() = settingsData.skipXmlPrettyPrint
 
 	fun setSkipXmlPrettyPrint(skipXmlPrettyPrint: Boolean) {
 		settingsData.skipXmlPrettyPrint = skipXmlPrettyPrint
 	}
 
-	fun getUseSourceNameAsClassNameAlias(): UseSourceNameAsClassNameAlias = settingsData.getUseSourceNameAsClassNameAlias()
+	val useSourceNameAsClassNameAlias: UseSourceNameAsClassNameAlias get() = settingsData.getUseSourceNameAsClassNameAlias()
 
 	fun setUseSourceNameAsClassNameAlias(useSourceNameAsClassNameAlias: UseSourceNameAsClassNameAlias) {
 		settingsData.setUseSourceNameAsClassNameAlias(useSourceNameAsClassNameAlias)
 	}
 
-	fun isShowInconsistentCode(): Boolean = settingsData.showInconsistentCode
+	val isShowInconsistentCode: Boolean get() = settingsData.showInconsistentCode
 
 	fun setShowInconsistentCode(showInconsistentCode: Boolean) {
 		settingsData.showInconsistentCode = showInconsistentCode
 	}
 
-	fun isCfgOutput(): Boolean = settingsData.cfgOutput
+	val isCfgOutput: Boolean get() = settingsData.cfgOutput
 
 	fun setCfgOutput(cfgOutput: Boolean) {
 		settingsData.cfgOutput = cfgOutput
 	}
 
-	fun isEscapeUnicode(): Boolean = settingsData.escapeUnicode
+	val isEscapeUnicode: Boolean get() = settingsData.escapeUnicode
 
 	fun setEscapeUnicode(escapeUnicode: Boolean) {
 		settingsData.escapeUnicode = escapeUnicode
 	}
 
-	fun getUseKotlinMethodsForVarNames(): JadxArgs.UseKotlinMethodsForVarNames = settingsData.useKotlinMethodsForVarNames
+	val useKotlinMethodsForVarNames: JadxArgs.UseKotlinMethodsForVarNames get() = settingsData.useKotlinMethodsForVarNames
 
 	fun setUseKotlinMethodsForVarNames(useKotlinMethodsForVarNames: JadxArgs.UseKotlinMethodsForVarNames) {
 		settingsData.useKotlinMethodsForVarNames = useKotlinMethodsForVarNames
 	}
-	fun getDeobfuscationWhitelistStr(): String = settingsData.deobfuscationWhitelistStr
+	val deobfuscationWhitelistStr: String get() = settingsData.deobfuscationWhitelistStr
 
 	fun setDeobfuscationWhitelistStr(deobfuscationWhitelistStr: String) {
 		settingsData.deobfuscationWhitelistStr = deobfuscationWhitelistStr
 	}
 
-	fun getGeneratedRenamesMappingFile(): String? = settingsData.generatedRenamesMappingFile
+	val generatedRenamesMappingFile: String? get() = settingsData.generatedRenamesMappingFile
 
-	fun isRawCfgOutput(): Boolean = settingsData.rawCfgOutput
+	val isRawCfgOutput: Boolean get() = settingsData.rawCfgOutput
 
 	fun setRawCfgOutput(rawCfgOutput: Boolean) {
 		settingsData.rawCfgOutput = rawCfgOutput
 	}
 
-	fun isMoveInnerClasses(): Boolean = settingsData.moveInnerClasses
+	val isMoveInnerClasses: Boolean get() = settingsData.moveInnerClasses
 
 	fun setMoveInnerClasses(moveInnerClasses: Boolean) {
 		settingsData.moveInnerClasses = moveInnerClasses
 	}
 
-	fun isUseDx(): Boolean = settingsData.useDx
+	val isUseDx: Boolean get() = settingsData.useDx
 
 	fun setUseDx(useDx: Boolean) {
 		settingsData.useDx = useDx
 	}
 
-	fun isAddDebugLines(): Boolean = settingsData.addDebugLines
+	val isAddDebugLines: Boolean get() = settingsData.addDebugLines
 
-	fun isUseHeadersForDetectResourceExtensions(): Boolean = settingsData.useHeadersForDetectResourceExtensions
+	val isUseHeadersForDetectResourceExtensions: Boolean get() = settingsData.useHeadersForDetectResourceExtensions
 
 	fun setUseHeadersForDetectResourceExtensions(useHeadersForDetectResourceExtensions: Boolean) {
 		settingsData.useHeadersForDetectResourceExtensions = useHeadersForDetectResourceExtensions
 	}
 
-	fun getPluginOptions(): Map<String, String> = settingsData.pluginOptions
+	val pluginOptions: Map<String, String> get() = settingsData.pluginOptions
 
-	fun isDeobfuscationOn(): Boolean = settingsData.deobfuscationOn
+	val isDeobfuscationOn: Boolean get() = settingsData.deobfuscationOn
 
 	fun setDeobfuscationOn(deobfuscationOn: Boolean) {
 		settingsData.deobfuscationOn = deobfuscationOn
 	}
 
-	fun isReplaceConsts(): Boolean = settingsData.replaceConsts
+	val isReplaceConsts: Boolean get() = settingsData.replaceConsts
 
 	fun setReplaceConsts(replaceConsts: Boolean) {
 		settingsData.replaceConsts = replaceConsts
 	}
 
-	fun isAllowInlineKotlinLambda(): Boolean = settingsData.allowInlineKotlinLambda
+	val isAllowInlineKotlinLambda: Boolean get() = settingsData.allowInlineKotlinLambda
 
 	fun setAllowInlineKotlinLambda(allowInlineKotlinLambda: Boolean) {
 		settingsData.allowInlineKotlinLambda = allowInlineKotlinLambda
@@ -610,65 +610,65 @@ class JadxSettings(private val configAdapter: JadxConfigAdapter<JadxSettingsData
 		settingsData.userRenamesMappingsPath = userRenamesMappingsPath
 	}
 
-	fun isSkipSources(): Boolean = settingsData.skipSources
+	val isSkipSources: Boolean get() = settingsData.skipSources
 
-	fun isDebugInfo(): Boolean = settingsData.debugInfo
+	val isDebugInfo: Boolean get() = settingsData.debugInfo
 
 	fun setDebugInfo(debugInfo: Boolean) {
 		settingsData.debugInfo = debugInfo
 	}
 
-	fun isSkipResources(): Boolean = settingsData.skipResources
+	val isSkipResources: Boolean get() = settingsData.skipResources
 
 	fun setSkipResources(skipResources: Boolean) {
 		settingsData.skipResources = skipResources
 	}
 
-	fun getResourceNameSource(): ResourceNameSource = settingsData.resourceNameSource
+	val resourceNameSource: ResourceNameSource get() = settingsData.resourceNameSource
 
 	fun setResourceNameSource(resourceNameSource: ResourceNameSource) {
 		settingsData.resourceNameSource = resourceNameSource
 	}
 
-	fun getIntegerFormat(): IntegerFormat = settingsData.integerFormat
+	val integerFormat: IntegerFormat get() = settingsData.integerFormat
 
 	fun setIntegerFormat(format: IntegerFormat) {
 		settingsData.integerFormat = format
 	}
 
-	fun isFallbackMode(): Boolean = settingsData.fallbackMode
+	val isFallbackMode: Boolean get() = settingsData.fallbackMode
 
-	fun isUseImports(): Boolean = settingsData.useImports
+	val isUseImports: Boolean get() = settingsData.useImports
 
 	fun setUseImports(useImports: Boolean) {
 		settingsData.useImports = useImports
 	}
 
-	fun getDeobfuscationMinLength(): Int = settingsData.deobfuscationMinLength
+	val deobfuscationMinLength: Int get() = settingsData.deobfuscationMinLength
 
 	fun setDeobfuscationMinLength(deobfuscationMinLength: Int) {
 		settingsData.deobfuscationMinLength = deobfuscationMinLength
 	}
 
-	fun getGeneratedRenamesMappingFileMode(): GeneratedRenamesMappingFileMode = settingsData.generatedRenamesMappingFileMode
+	val generatedRenamesMappingFileMode: GeneratedRenamesMappingFileMode get() = settingsData.generatedRenamesMappingFileMode
 
 	fun setGeneratedRenamesMappingFileMode(generatedRenamesMappingFileMode: GeneratedRenamesMappingFileMode) {
 		settingsData.generatedRenamesMappingFileMode = generatedRenamesMappingFileMode
 	}
 
-	fun getDeobfuscationMaxLength(): Int = settingsData.deobfuscationMaxLength
+	val deobfuscationMaxLength: Int get() = settingsData.deobfuscationMaxLength
 
 	fun setDeobfuscationMaxLength(deobfuscationMaxLength: Int) {
 		settingsData.deobfuscationMaxLength = deobfuscationMaxLength
 	}
 
-	fun getThreadsCount(): Int = settingsData.threadsCount
+	val threadsCount: Int get() = settingsData.threadsCount
 
 	fun setThreadsCount(threadsCount: Int) {
 		settingsData.threadsCount = threadsCount
 	}
 
-	fun getSaveOption(): SaveOptionEnum = settingsData.saveOption
+	val saveOption: SaveOptionEnum get() = settingsData.saveOption
 
 	fun setSaveOption(saveOption: SaveOptionEnum) {
 		settingsData.saveOption = saveOption
@@ -678,7 +678,6 @@ class JadxSettings(private val configAdapter: JadxConfigAdapter<JadxSettingsData
 
 		private const val RECENT_PROJECTS_COUNT: Int = 30
 
-		@JvmStatic
 		fun buildConfigAdapter(): JadxConfigAdapter<JadxSettingsData> = JadxConfigAdapter(JadxSettingsData::class.java, "gui") { gsonBuilder ->
 			gsonBuilder.registerTypeHierarchyAdapter(Path::class.java, PathTypeAdapter.singleton())
 			gsonBuilder.registerTypeHierarchyAdapter(Rectangle::class.java, RectangleTypeAdapter.singleton())

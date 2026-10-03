@@ -22,10 +22,10 @@ abstract class AbstractCodeAreaLine protected constructor(
 	fun getLineIndex(): Int = lineIndex
 
 	/** 原始行文本（含缩进）。 */
-	fun getStr(): String = line
+	val str: String get() = line
 
 	/** 去掉首尾空白后的行文本。 */
-	fun getTrimmedStr(): String = line.trim()
+	val trimmedStr: String get() = line.trim()
 
 	abstract fun getLineAt(lineIndex: Int): AbstractCodeAreaLine
 
@@ -46,27 +46,27 @@ abstract class AbstractCodeAreaLine protected constructor(
 	 * - 若本行在方法内，则为外层方法声明；
 	 * - 若本行是字段声明，则为外层类声明。
 	 */
-	fun getEnclosingScopeDeclaration(): IDeclaration {
-		val decl = getDeclaration()
+	val enclosingScopeDeclaration: IDeclaration get() {
+		val decl = declaration
 		if (decl != null) {
 			return decl
 		}
 		for (i in lineIndex - 1 downTo 0) {
 			val enclosing = getLineAt(i)
-			if (enclosing.isScopeDeclarationLine()) {
-				return checkNotNull(enclosing.getDeclaration())
+			if (enclosing.isScopeDeclarationLine) {
+				return checkNotNull(enclosing.declaration)
 			}
 		}
 		throw FallbackSyncException("No enclosing declaration found for $this")
 	}
 
 	/** 是否属于“作用域声明行”（类声明或方法 / 构造器声明）。 */
-	fun isScopeDeclarationLine(): Boolean = isClassDeclaration() || isMethodOrConstructorDeclaration()
+	val isScopeDeclarationLine: Boolean get() = isClassDeclaration() || isMethodOrConstructorDeclaration()
 
 	/** 是否属于“声明行”（作用域声明或字段声明）。 */
-	fun isDeclarationLine(): Boolean = isScopeDeclarationLine() || isFieldDeclaration()
+	val isDeclarationLine: Boolean get() = isScopeDeclarationLine || isFieldDeclaration()
 
-	fun getDeclaration(): IDeclaration? {
+	val declaration: IDeclaration? get() {
 		if (isClassDeclaration()) {
 			return ClassDeclaration(this)
 		}

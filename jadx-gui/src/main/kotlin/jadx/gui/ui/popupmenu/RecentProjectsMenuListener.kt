@@ -19,8 +19,8 @@ import javax.swing.event.MenuListener
 class RecentProjectsMenuListener(private val mainWindow: MainWindow, private val menu: JMenu) : MenuListener {
 
 	override fun menuSelected(menuEvent: MenuEvent) {
-		val current: Set<Path> = HashSet(mainWindow.getProject().getFilePaths())
-		val items: List<JMenuItem> = mainWindow.getSettings().getRecentProjects()
+		val current: Set<Path> = HashSet(mainWindow.getProject().filePaths)
+		val items: List<JMenuItem> = mainWindow.getSettings().recentProjects
 			.filter { path -> !current.contains(path) }
 			.map { path ->
 				val menuItem = JMenuItem(path.toAbsolutePath().toString())

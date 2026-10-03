@@ -20,7 +20,7 @@ class SmaliWriter(private val cls: ClassNode) : SimpleCodeWriter(cls.root().getA
 	private var line = 0
 
 	/** @return 正在反汇编的类节点 */
-	fun getClassNode(): ClassNode = cls
+	val classNode: ClassNode get() = cls
 
 	/** 每次换行时同步递增行号。 */
 	override fun addLine() {

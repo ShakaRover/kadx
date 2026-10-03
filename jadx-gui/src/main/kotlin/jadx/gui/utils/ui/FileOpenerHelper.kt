@@ -31,7 +31,6 @@ class FileOpenerHelper {
 		private val LOG: Logger = LoggerFactory.getLogger(FileOpenerHelper::class.java)
 
 		/** 把资源内容解码后写入 [savePath]。 */
-		@JvmStatic
 		fun exportBinary(resource: JResource, savePath: Path) {
 			try {
 				BufferedOutputStream(FileOutputStream(savePath.toFile())).use { os ->
@@ -49,7 +48,6 @@ class FileOpenerHelper {
 		}
 
 		/** 导出资源到临时目录并用系统默认程序打开。 */
-		@JvmStatic
 		fun openFile(frame: Frame, res: JResource) {
 			if (Desktop.isDesktopSupported()) {
 				val desktop = Desktop.getDesktop()

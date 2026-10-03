@@ -52,31 +52,31 @@ class TabViewState {
 		this.view = view
 	}
 
-	fun isActive(): Boolean = active
+	val isActive: Boolean get() = active
 
 	fun setActive(active: Boolean) {
 		this.active = active
 	}
 
-	fun isPinned(): Boolean = pinned
+	val isPinned: Boolean get() = pinned
 
 	fun setPinned(pinned: Boolean) {
 		this.pinned = pinned
 	}
 
-	fun isBookmarked(): Boolean = bookmarked
+	val isBookmarked: Boolean get() = bookmarked
 
 	fun setBookmarked(bookmarked: Boolean) {
 		this.bookmarked = bookmarked
 	}
 
-	fun isHidden(): Boolean = hidden
+	val isHidden: Boolean get() = hidden
 
 	fun setHidden(hidden: Boolean) {
 		this.hidden = hidden
 	}
 
-	fun isPreviewTab(): Boolean = previewTab
+	val isPreviewTab: Boolean get() = previewTab
 
 	fun setPreviewTab(previewTab: Boolean) {
 		this.previewTab = previewTab

@@ -29,7 +29,7 @@ private val PRESETS_NSL: List<String> = NLS.str("graph_viewer.cfg.preset_names")
  */
 class ControlFlowGraphDialog private constructor(mainWindow: MainWindow, jMth: JMethod) : GraphDialog(mainWindow) {
 
-	private val mth: MethodNode = jMth.getJavaMethod().getMethodNode()
+	private val mth: MethodNode = jMth.javaMethod.getMethodNode()
 	private var graphPreset: GraphPreset? = null
 	private lateinit var presetsCB: JComboBox<GraphPreset>
 	private lateinit var passesCB: JComboBox<String>
@@ -37,7 +37,7 @@ class ControlFlowGraphDialog private constructor(mainWindow: MainWindow, jMth: J
 	private var currentPassIdx = 0
 
 	init {
-		val mthName = DotGraphUtils.methodFormatName(jMth.getJavaMethod(), false)
+		val mthName = DotGraphUtils.methodFormatName(jMth.javaMethod, false)
 		title = "${NLS.str("graph_viewer.cfg.title")}: $mthName"
 	}
 
@@ -150,7 +150,6 @@ class ControlFlowGraphDialog private constructor(mainWindow: MainWindow, jMth: J
 	companion object {
 		private const val serialVersionUID = -68749445239697710L
 
-		@JvmStatic
 		fun open(window: MainWindow, jMth: JMethod) {
 			val graphDialog = ControlFlowGraphDialog(window, jMth)
 			graphDialog.addMenuBar()

@@ -34,7 +34,7 @@ class JPackage(
 
 	fun update() {
 		removeAllChildren()
-		if (isEnabled()) {
+		if (isEnabled) {
 			for (subPkg in subPackages) {
 				subPkg.update()
 				add(subPkg)
@@ -62,9 +62,9 @@ class JPackage(
 
 	fun getClasses(): List<JClass> = classes
 
-	fun isEnabled(): Boolean = enabled
+	val isEnabled: Boolean get() = enabled
 
-	fun isSynthetic(): Boolean = synthetic
+	val isSynthetic: Boolean get() = synthetic
 
 	override fun getIcon(): Icon = Icons.PACKAGE
 
@@ -108,12 +108,10 @@ class JPackage(
 		private const val serialVersionUID = -4120718634156839804L
 
 		/** 默认（空）包的 HTML 占位字符串。 */
-		@JvmField
 		val PACKAGE_DEFAULT_HTML_STR: String =
 			UiUtils.wrapHtml(UiUtils.fadeHtml(UiUtils.escapeHtml("<empty>")))
 
 		/** 创建一个临时的合成根包，用于构建包层级。 */
-		@JvmStatic
 		fun makeTmpRoot(): JPackage = JPackage(null, true, emptyList(), ArrayList(), true)
 	}
 }

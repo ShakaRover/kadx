@@ -76,7 +76,6 @@ object NLS {
 	}
 
 	/** 按 key 取当前语言的文案；缺失时回退英文，再缺失则返回 key 本身。 */
-	@JvmStatic
 	fun str(key: String): String = try {
 		localizedMessagesMap.getString(key)
 	} catch (e: MissingResourceException) {
@@ -84,11 +83,9 @@ object NLS {
 	}
 
 	/** 按 key 取文案并做 `String.format` 参数替换。 */
-	@JvmStatic
 	fun str(key: String, vararg parameters: Any?): String = String.format(str(key), *parameters)
 
 	/** 取指定语言的文案（用于语言选择列表展示）。 */
-	@JvmStatic
 	fun str(key: String, locale: LangLocale): String {
 		val bundle = LANG_LOCALES_MAP[locale]
 		if (bundle != null) {
@@ -109,7 +106,6 @@ object NLS {
 	}
 
 	/** 切换当前语言。 */
-	@JvmStatic
 	fun setLocale(locale: LangLocale) {
 		currentLocale = if (LANG_LOCALES_MAP.containsKey(locale)) {
 			locale
@@ -119,14 +115,11 @@ object NLS {
 		localizedMessagesMap = checkNotNull(LANG_LOCALES_MAP[currentLocale])
 	}
 
-	@JvmStatic
-	fun getLangLocales(): Vector<LangLocale> = LANG_LOCALES
+	val langLocales: Vector<LangLocale> get() = LANG_LOCALES
 
-	@JvmStatic
 	fun currentLocale(): LangLocale = currentLocale
 
 	/** 系统默认语言；不受支持时回退到英文。 */
-	@JvmStatic
 	fun defaultLocale(): LangLocale {
 		if (LANG_LOCALES_MAP.containsKey(LOCAL_LOCALE)) {
 			return LOCAL_LOCALE

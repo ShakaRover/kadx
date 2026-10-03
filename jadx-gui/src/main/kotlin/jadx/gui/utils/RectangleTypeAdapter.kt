@@ -57,6 +57,5 @@ object RectangleTypeAdapter {
 		}
 	}
 
-	@JvmStatic
 	fun singleton(): TypeAdapter<Rectangle> = SINGLETON
 }

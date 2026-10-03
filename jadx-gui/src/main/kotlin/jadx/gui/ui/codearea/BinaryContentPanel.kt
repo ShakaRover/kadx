@@ -33,7 +33,7 @@ class BinaryContentPanel(panel: TabbedPane, jnode: JNode) :
 	init {
 		layout = BorderLayout()
 		border = EmptyBorder(0, 0, 0, 0)
-		hexPreviewPanel = HexPreviewPanel(getSettings())
+		hexPreviewPanel = HexPreviewPanel(settings)
 		hexPreviewPanel.getInspector().setVisible(false)
 		add(hexPreviewPanel, BorderLayout.CENTER)
 	}
@@ -43,14 +43,14 @@ class BinaryContentPanel(panel: TabbedPane, jnode: JNode) :
 	}
 
 	private fun loadHexView() {
-		if (hexPreviewPanel.isDataLoaded()) {
+		if (hexPreviewPanel.isDataLoaded) {
 			return
 		}
 		LOG.debug("Loading Hex View of {}", getNode().getName())
-		UiUtils.uiRunAndWait { hexPreviewPanel.setData(getNodeData()) }
+		UiUtils.uiRunAndWait { hexPreviewPanel.setData(nodeData) }
 	}
 
-	private fun getNodeData(): BinaryData {
+	private val nodeData: BinaryData get() {
 		val binaryNode = getNode()
 		if (binaryNode is JResource) {
 			try {
@@ -70,7 +70,7 @@ class BinaryContentPanel(panel: TabbedPane, jnode: JNode) :
 
 	override fun scrollToPos(pos: Int) {
 		UiUtils.uiThreadGuard()
-		val bgExec = getMainWindow().getBackgroundExecutor()
+		val bgExec = mainWindow.getBackgroundExecutor()
 		bgExec.startLoading(this::loadHexView) { hexPreviewPanel.scrollToOffset(pos) }
 	}
 

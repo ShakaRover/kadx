@@ -16,11 +16,11 @@ class RecentProjectItem(private val path: Path) {
 
 	fun getPath(): Path = path
 
-	fun getProjectName(): String = CommonFileUtils.removeFileExtension(path.fileName.toString())
+	val projectName: String get() = CommonFileUtils.removeFileExtension(path.fileName.toString())
 
-	fun getAbsolutePath(): String = path.toAbsolutePath().toString()
+	val absolutePath: String get() = path.toAbsolutePath().toString()
 
-	override fun toString(): String = getProjectName()
+	override fun toString(): String = projectName
 
 	override fun equals(o: Any?): Boolean {
 		if (this === o) {

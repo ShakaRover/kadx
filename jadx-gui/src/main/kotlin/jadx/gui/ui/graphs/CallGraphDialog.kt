@@ -235,9 +235,8 @@ class CallGraphDialog(mainWindow: MainWindow, private val javaMethod: JavaMethod
 		private const val serialVersionUID = -850803763322590708L
 		private const val FONT = "fontname=\"Courier\" fontsize=12"
 
-		@JvmStatic
 		fun open(window: MainWindow, method: JMethod) {
-			val javaMethod = method.getJavaMethod()
+			val javaMethod = method.javaMethod
 			val graphDialog = CallGraphDialog(window, javaMethod)
 			graphDialog.addMenuBar()
 			graphDialog.isVisible = true

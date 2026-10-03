@@ -34,10 +34,9 @@ fun interface ISearchMethod {
 		 *
 		 * 优先级：正则 > 忽略大小写 > 普通匹配（与原 Java 完全一致）。
 		 */
-		@JvmStatic
 		fun build(searchSettings: SearchSettings): ISearchMethod {
-			if (searchSettings.isUseRegex()) {
-				val pattern: Pattern = searchSettings.getPattern()
+			if (searchSettings.isUseRegex) {
+				val pattern: Pattern = searchSettings.pattern
 				return ISearchMethod { input, _, start ->
 					val matcher = pattern.matcher(input)
 					if (matcher.find(start)) {
@@ -47,7 +46,7 @@ fun interface ISearchMethod {
 					}
 				}
 			}
-			if (searchSettings.isIgnoreCase()) {
+			if (searchSettings.isIgnoreCase) {
 				return ISearchMethod(StringUtils::indexOfIgnoreCase)
 			}
 			return ISearchMethod(String::indexOf)

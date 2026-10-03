@@ -77,7 +77,7 @@ class ProjectData {
 		this.cacheDir = cacheDir
 	}
 
-	fun isEnableLiveReload(): Boolean = enableLiveReload
+	val isEnableLiveReload: Boolean get() = enableLiveReload
 
 	fun setEnableLiveReload(enableLiveReload: Boolean) {
 		this.enableLiveReload = enableLiveReload

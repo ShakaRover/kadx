@@ -26,7 +26,6 @@ class GuiConfigLocale private constructor() {
 	companion object {
 		private val LOG: Logger = LoggerFactory.getLogger(GuiConfigLocale::class.java)
 
-		@JvmStatic
 		fun load() {
 			LOG.debug("Loading locale config")
 			val configAdapter = JadxConfigAdapter(LocaleConfig::class.java, "gui")
@@ -42,7 +41,6 @@ class GuiConfigLocale private constructor() {
 			LOG.debug("Loaded locale config: {}", NLS.currentLocale())
 		}
 
-		@JvmStatic
 		fun checkConfig(settingsData: JadxSettingsData) {
 			val loadedLocale = settingsData.langLocale
 			if (NLS.currentLocale() != loadedLocale) {

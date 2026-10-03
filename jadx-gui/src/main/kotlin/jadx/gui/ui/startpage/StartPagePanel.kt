@@ -40,13 +40,11 @@ import javax.swing.border.TitledBorder
  */
 class StartPagePanel(tabbedPane: TabbedPane, node: StartPageNode) : ContentPanel(tabbedPane, node) {
 
-	private val mainWindow: MainWindow = tabbedPane.getMainWindow()
-	private val settings: JadxSettings = mainWindow.getSettings()
 	private val recentListModel: DefaultListModel<RecentProjectItem> = DefaultListModel()
 	private val recentList: RecentProjectsJList = RecentProjectsJList(recentListModel)
 
 	init {
-		val baseFont = settings.getUiFont()
+		val baseFont = settings.uiFont
 		initUi(baseFont)
 		fillRecentProjectsList()
 	}
@@ -95,7 +93,7 @@ class StartPagePanel(tabbedPane: TabbedPane, node: StartPageNode) : ContentPanel
 					val xInCell = e.x - cellBounds.x
 					val yInCell = e.y - cellBounds.y
 
-					val removeIconBounds = renderer.getRemoveIconBounds()
+					val removeIconBounds = renderer.removeIconBounds
 					if (removeIconBounds != null && removeIconBounds.contains(xInCell, yInCell)) {
 						removeRecentProject(item.getPath())
 						return
@@ -134,7 +132,7 @@ class StartPagePanel(tabbedPane: TabbedPane, node: StartPageNode) : ContentPanel
 						val xInCell = e.x - cellBounds.x
 						val yInCell = e.y - cellBounds.y
 
-						val removeIconBounds = renderer.getRemoveIconBounds()
+						val removeIconBounds = renderer.removeIconBounds
 						if (removeIconBounds != null && removeIconBounds.contains(xInCell, yInCell)) {
 							hoveredRemoveBtnIndex = currentCellIndex
 						}
@@ -179,7 +177,7 @@ class StartPagePanel(tabbedPane: TabbedPane, node: StartPageNode) : ContentPanel
 
 	private fun fillRecentProjectsList() {
 		recentListModel.clear()
-		val recentPaths: List<Path> = settings.getRecentProjects()
+		val recentPaths: List<Path> = settings.recentProjects
 		for (path in recentPaths) {
 			recentListModel.addElement(RecentProjectItem(path))
 		}
@@ -242,12 +240,12 @@ class StartPagePanel(tabbedPane: TabbedPane, node: StartPageNode) : ContentPanel
 				val xInCell = event.x - cellBounds.x
 				val yInCell = event.y - cellBounds.y
 
-				val removeIconBounds = renderer.getRemoveIconBounds()
+				val removeIconBounds = renderer.removeIconBounds
 				if (removeIconBounds != null && removeIconBounds.contains(xInCell, yInCell)) {
 					return NLS.str("start_page.list.delete_recent_project.tooltip")
 				}
 			}
-			return item.getAbsolutePath()
+			return item.absolutePath
 		}
 
 		companion object {
@@ -257,7 +255,6 @@ class StartPagePanel(tabbedPane: TabbedPane, node: StartPageNode) : ContentPanel
 
 	companion object {
 		/** 当前鼠标悬停的“移除”按钮所在行索引；-1 表示无。 */
-		@JvmField
 		var hoveredRemoveBtnIndex: Int = -1
 
 		private const val serialVersionUID: Long = 2457805175218770732L

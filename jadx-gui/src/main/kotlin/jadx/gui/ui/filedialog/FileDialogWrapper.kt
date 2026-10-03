@@ -51,7 +51,7 @@ class FileDialogWrapper(mainWindow: MainWindow, mode: FileOpenMode) {
 		dir = currentDir
 	}
 
-	fun show(): List<Path> = if (window.getSettings().isUseAlternativeFileDialog()) {
+	fun show(): List<Path> = if (window.getSettings().isUseAlternativeFileDialog) {
 		CustomFileDialog(this).showDialog()
 	} else {
 		CustomFileChooser(this).showDialog()
@@ -63,7 +63,7 @@ class FileDialogWrapper(mainWindow: MainWindow, mode: FileOpenMode) {
 				dialogTitle = NLS.str("file.open_title")
 				extList = listOf(JadxProject.PROJECT_EXTENSION)
 				selMode = JFileChooser.FILES_AND_DIRECTORIES
-				dir = window.getSettings().getLastOpenFilePath()
+				dir = window.getSettings().lastOpenFilePath
 				open = true
 			}
 
@@ -74,7 +74,7 @@ class FileDialogWrapper(mainWindow: MainWindow, mode: FileOpenMode) {
 					add("aab")
 				}
 				selMode = JFileChooser.FILES_AND_DIRECTORIES
-				dir = window.getSettings().getLastOpenFilePath()
+				dir = window.getSettings().lastOpenFilePath
 				open = true
 			}
 
@@ -82,7 +82,7 @@ class FileDialogWrapper(mainWindow: MainWindow, mode: FileOpenMode) {
 				dialogTitle = NLS.str("file.add_files_action")
 				extList = ArrayList(OPEN_FILES_EXTS).apply { add("aab") }
 				selMode = JFileChooser.FILES_AND_DIRECTORIES
-				dir = window.getSettings().getLastOpenFilePath()
+				dir = window.getSettings().lastOpenFilePath
 				open = true
 			}
 
@@ -90,7 +90,7 @@ class FileDialogWrapper(mainWindow: MainWindow, mode: FileOpenMode) {
 				dialogTitle = NLS.str("file.save_project")
 				extList = listOf(JadxProject.PROJECT_EXTENSION)
 				selMode = JFileChooser.FILES_ONLY
-				dir = window.getSettings().getLastSaveFilePath()
+				dir = window.getSettings().lastSaveFilePath
 				open = false
 			}
 
@@ -98,49 +98,49 @@ class FileDialogWrapper(mainWindow: MainWindow, mode: FileOpenMode) {
 				dialogTitle = NLS.str("file.save_all_msg")
 				extList = emptyList()
 				selMode = JFileChooser.DIRECTORIES_ONLY
-				dir = window.getSettings().getLastSaveFilePath()
+				dir = window.getSettings().lastSaveFilePath
 				open = false
 			}
 
 			FileOpenMode.CUSTOM_SAVE -> {
 				open = false
-				dir = window.getSettings().getLastSaveFilePath()
+				dir = window.getSettings().lastSaveFilePath
 			}
 
 			FileOpenMode.CUSTOM_OPEN -> {
 				open = true
-				dir = window.getSettings().getLastOpenFilePath()
+				dir = window.getSettings().lastOpenFilePath
 			}
 
 			FileOpenMode.EXPORT_NODE -> {
 				open = false
 				dialogTitle = NLS.str("file.export_node")
-				dir = window.getSettings().getLastSaveFilePath()
+				dir = window.getSettings().lastSaveFilePath
 				selMode = JFileChooser.FILES_ONLY
 			}
 
 			FileOpenMode.EXPORT_NODE_FOLDER -> {
 				open = false
 				dialogTitle = NLS.str("file.save_all_msg")
-				dir = window.getSettings().getLastSaveFilePath()
+				dir = window.getSettings().lastSaveFilePath
 				selMode = JFileChooser.DIRECTORIES_ONLY
 			}
 		}
 	}
 
-	fun getCurrentDir(): Path? = dir
+	val currentDir: Path? get() = dir
 
-	fun getMainWindow(): MainWindow = window
+	val mainWindow: MainWindow get() = window
 
-	fun isOpen(): Boolean = open
+	val isOpen: Boolean get() = open
 
-	fun getTitle(): String? = dialogTitle
+	val title: String? get() = dialogTitle
 
-	fun getFileExtList(): List<String> = extList
+	val fileExtList: List<String> get() = extList
 
-	fun getSelectionMode(): Int = selMode
+	val selectionMode: Int get() = selMode
 
-	fun getSelectedFile(): Path? = selFile
+	val selectedFile: Path? get() = selFile
 
 	companion object {
 		private val OPEN_FILES_EXTS: List<String> = listOf(

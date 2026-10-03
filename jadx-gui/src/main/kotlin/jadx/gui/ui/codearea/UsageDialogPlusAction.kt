@@ -15,7 +15,7 @@ import jadx.gui.ui.dialog.UsageDialogPlus
 class UsageDialogPlusAction(codeArea: CodeArea) : JNodeAction(ActionModel.FIND_USAGE_PLUS, codeArea) {
 
 	override fun runAction(node: JNode) {
-		UsageDialogPlus.open(getCodeArea().getMainWindow(), node)
+		UsageDialogPlus.open(getCodeArea().mainWindow, node)
 	}
 
 	companion object {

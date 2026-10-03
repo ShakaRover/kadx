@@ -217,9 +217,9 @@ class ClassCodeContentPanel(panel: TabbedPane, jClass: JClass) :
 		activateCodePanel(if (toSmali) smaliCodePanel else javaCodePanel)
 	}
 
-	fun getCurrentCodeArea(): AbstractCodeArea = (leftTabbedPane.getSelectedComponent() as CodePanel).getCodeArea()
+	val currentCodeArea: AbstractCodeArea get() = (leftTabbedPane.getSelectedComponent() as CodePanel).getCodeArea()
 
-	fun getSmaliCodeArea(): AbstractCodeArea = smaliCodePanel.getCodeArea()
+	val smaliCodeArea: AbstractCodeArea get() = smaliCodePanel.getCodeArea()
 
 	fun showSmaliPane() {
 		activateCodePanel(smaliCodePanel)

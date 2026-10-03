@@ -32,7 +32,7 @@ class DebugLineSmaliSyncer(private val from: SmaliArea) : IToJavaSyncStrategy {
 
 			if (anchor.type == Anchor.Type.SOURCE_LINE) {
 				LOG.debug(anchor.toString())
-				val toDecompToSourceMapping = to.getFunctionUniqueLineMappings()
+				val toDecompToSourceMapping = to.functionUniqueLineMappings
 				for ((decompLine, sourceLine) in toDecompToSourceMapping) {
 					if (anchor.codeMappedLineNumber == sourceLine) {
 						val decompLineIndex = decompLine - 1

@@ -21,11 +21,11 @@ class NavigationController(private val mainWindow: MainWindow) : ITabStatesListe
 	}
 
 	fun navBack() {
-		jump(jumps.getPrev())
+		jump(jumps.prev)
 	}
 
 	fun navForward() {
-		jump(jumps.getNext())
+		jump(jumps.next)
 	}
 
 	private fun jump(pos: JumpPosition?) {

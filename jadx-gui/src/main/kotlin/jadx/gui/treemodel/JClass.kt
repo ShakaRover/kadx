@@ -80,7 +80,7 @@ class JClass(
 
 	@Synchronized
 	fun reload(cache: CacheObject): ICodeInfo {
-		cache.getNodeCache().removeWholeClass(cls)
+		cache.nodeCache.removeWholeClass(cls)
 		val codeInfo = cls.reload()
 		loaded = true
 		update()
@@ -89,7 +89,7 @@ class JClass(
 
 	@Synchronized
 	fun unload(cache: CacheObject) {
-		cache.getNodeCache().removeWholeClass(cls)
+		cache.nodeCache.removeWholeClass(cls)
 		cls.unload()
 		loaded = false
 	}
@@ -120,7 +120,7 @@ class JClass(
 
 	override fun getContentPanel(tabbedPane: TabbedPane): ContentPanel = ClassCodeContentPanel(tabbedPane, this)
 
-	fun getSmali(): String = cls.getSmali()
+	val smali: String get() = cls.getSmali()
 
 	override fun getSyntaxName(): String = SyntaxConstants.SYNTAX_STYLE_JAVA
 
@@ -139,7 +139,7 @@ class JClass(
 
 	override fun getName(): String = cls.getName()
 
-	fun getFullName(): String = cls.getFullName()
+	val fullName: String get() = cls.getFullName()
 
 	override fun getTitle(): String = makeLongStringHtml()
 

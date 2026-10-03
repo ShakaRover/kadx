@@ -35,24 +35,24 @@ class ExportTask(
 
 	override fun scheduleTasks(): ITaskExecutor {
 		wrapCodeCache()
-		wrapper.getArgs().setRootDir(saveDir)
+		wrapper.args.setRootDir(saveDir)
 		val saveTasks = wrapper.getDecompiler().getSaveTaskExecutor()
 		this.timeLimit = DecompileTask.calcDecompileTimeLimit(saveTasks.getTasksCount())
 		return saveTasks
 	}
 
 	private fun wrapCodeCache() {
-		uiCodeCache = wrapper.getArgs().codeCache
-		if (mainWindow.getSettings().getCodeCacheMode() != CodeCacheMode.DISK) {
+		uiCodeCache = wrapper.args.codeCache
+		if (mainWindow.getSettings().codeCacheMode != CodeCacheMode.DISK) {
 			// 不把新反编译的代码写入缓存，避免内存占用增加
 			// TODO: 或许可以实现一个内存受限的缓存？
-			wrapper.getArgs().codeCache = FixedCodeCache(checkNotNull(uiCodeCache))
+			wrapper.args.codeCache = FixedCodeCache(checkNotNull(uiCodeCache))
 		}
 	}
 
 	override fun onFinish(taskInfo: ITaskInfo) {
 		// 恢复初始代码缓存
-		wrapper.getArgs().codeCache = checkNotNull(uiCodeCache)
+		wrapper.args.codeCache = checkNotNull(uiCodeCache)
 		if (taskInfo.getJobsSkipped() == 0L) {
 			return
 		}

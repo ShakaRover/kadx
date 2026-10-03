@@ -20,11 +20,11 @@ class ViewControlFlowGraphAction(actionModel: ActionModel, codeArea: CodeArea) :
 
 	override fun runAction(node: JNode) {
 		try {
-			ControlFlowGraphDialog.open(getCodeArea().getMainWindow(), node as JMethod)
+			ControlFlowGraphDialog.open(getCodeArea().mainWindow, node as JMethod)
 		} catch (e: Exception) {
 			LOG.error("Failed to view graph", e)
 			JOptionPane.showMessageDialog(
-				getCodeArea().getMainWindow(),
+				getCodeArea().mainWindow,
 				e.localizedMessage,
 				NLS.str("error_dialog.title"),
 				JOptionPane.ERROR_MESSAGE,

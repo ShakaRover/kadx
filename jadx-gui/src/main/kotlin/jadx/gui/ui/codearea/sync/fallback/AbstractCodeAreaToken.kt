@@ -25,10 +25,10 @@ abstract class AbstractCodeAreaToken protected constructor(
 	fun getAtPos(): Int = atPos
 
 	/** 取词元文本。 */
-	fun getStr(): String = area.getText(startPos, length)
+	val str: String get() = area.getText(startPos, length)
 
 	/** 词元后面紧跟 `(` 时，视为方法声明或调用。 */
-	fun isMethodConstructorDeclarationOrCall(): Boolean = area.getText(startPos + length, 1) == "("
+	val isMethodConstructorDeclarationOrCall: Boolean get() = area.getText(startPos + length, 1) == "("
 
 	/** 是否为方法体内的类字段引用。 */
 	abstract fun isFieldReference(): Boolean

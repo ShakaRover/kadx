@@ -66,7 +66,7 @@ class FontAdapter(defaultFont: Font) {
 		} else {
 			font = defaultFont
 		}
-		fontSetter(getFontStr())
+		fontSetter(fontStr)
 		applyFontZoom()
 	}
 
@@ -86,7 +86,7 @@ class FontAdapter(defaultFont: Font) {
 		return defaultFont
 	}
 
-	private fun getFontStr(): String {
+	private val fontStr: String get() {
 		if (font === defaultFont) {
 			return ""
 		}

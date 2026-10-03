@@ -33,7 +33,6 @@ class RegisterObserver private constructor(
 		 * @param art        Android 版本适配器
 		 * @param mthFullID  方法原始全名（用于错误提示）
 		 */
-		@JvmStatic
 		fun merge(
 			rtRegs: List<RuntimeVarInfo>,
 			smaliRegs: List<SmaliRegister>,
@@ -48,7 +47,7 @@ class RegisterObserver private constructor(
 			for (sr in smaliRegs) {
 				adapter.regList.add(SmaliRegisterMapping(sr))
 			}
-			adapter.regList.sortWith(compareBy { it.getSmaliRegister().getRuntimeRegNum() })
+			adapter.regList.sortWith(compareBy { it.getSmaliRegister().runtimeRegNum })
 			for (rt in rtRegs) {
 				val smaliRegMapping = adapter.getRegListEntry(rt.regNum)
 				val smaliReg = smaliRegMapping.getSmaliRegister()
@@ -88,7 +87,7 @@ class RegisterObserver private constructor(
 	/** 按运行时编号与代码偏移查询变量信息，不存在时返回 null。 */
 	fun getInfo(runtimeNum: Int, codeOffset: Long): RuntimeVarInfo? {
 		val list = getRegListEntry(runtimeNum)
-		for (info in list.getRuntimeVarInfoList()) {
+		for (info in list.runtimeVarInfoList) {
 			if (info.startOffset > codeOffset) {
 				break
 			}
@@ -116,7 +115,7 @@ class RegisterObserver private constructor(
 
 	private fun buildDeviceInfo(): String {
 		val debugSettings = DebugSettings.INSTANCE
-		return "Device: " + debugSettings.getDevice().getDeviceInfo() +
+		return "Device: " + debugSettings.getDevice().deviceInfo +
 			", Android: " + debugSettings.getVer() +
 			", ArtAdapter: " + art.javaClass.simpleName
 	}
@@ -138,7 +137,7 @@ class RegisterObserver private constructor(
 
 		fun getSmaliRegister(): SmaliRegister = smaliRegister
 
-		fun getRuntimeVarInfoList(): List<RuntimeVarInfo> = rtList
+		val runtimeVarInfoList: List<RuntimeVarInfo> get() = rtList
 
 		fun addRuntimeVarInfo(rt: RuntimeVarInfo) {
 			rtList.add(rt)
@@ -154,7 +153,7 @@ class RegisterObserver private constructor(
 	) {
 		fun getSmaliRegNum(): Int = smaliRegNum
 
-		fun isLoad(): Boolean = load
+		val isLoad: Boolean get() = load
 
 		fun getName(): String? = name
 

@@ -11,17 +11,17 @@ class SmaliAreaLine(area: SmaliArea, lineIndex: Int) : AbstractCodeAreaLine(area
 
 	override fun getLineAt(lineIndex: Int): AbstractCodeAreaLine = SmaliAreaLine(getArea() as SmaliArea, lineIndex)
 
-	override fun isClassDeclaration(): Boolean = getTrimmedStr().startsWith("Class: ") || getTrimmedStr().startsWith(".class ")
+	override fun isClassDeclaration(): Boolean = trimmedStr.startsWith("Class: ") || trimmedStr.startsWith(".class ")
 
-	override fun isMethodOrConstructorDeclaration(): Boolean = getTrimmedStr().startsWith(".method")
+	override fun isMethodOrConstructorDeclaration(): Boolean = trimmedStr.startsWith(".method")
 
-	override fun isFieldDeclaration(): Boolean = getTrimmedStr().startsWith(".field")
+	override fun isFieldDeclaration(): Boolean = trimmedStr.startsWith(".field")
 
 	override fun extractDeclaredClassName(): String? {
 		if (!isClassDeclaration()) {
 			return null
 		}
-		val parts = getTrimmedStr().split(Regex("\\s+"))
+		val parts = trimmedStr.split(Regex("\\s+"))
 		for (part in parts) {
 			if (part.startsWith("L") && part.endsWith(";")) {
 				val fileClassName: String
@@ -43,9 +43,9 @@ class SmaliAreaLine(area: SmaliArea, lineIndex: Int) : AbstractCodeAreaLine(area
 		if (!isMethodOrConstructorDeclaration()) {
 			return null
 		}
-		val parenIndex = getTrimmedStr().indexOf('(')
+		val parenIndex = trimmedStr.indexOf('(')
 		if (parenIndex > 0) {
-			val beforeParen = getTrimmedStr().substring(0, parenIndex).trim()
+			val beforeParen = trimmedStr.substring(0, parenIndex).trim()
 			val tokens = beforeParen.split(Regex("\\s+"))
 			return tokens[tokens.size - 1]
 		}

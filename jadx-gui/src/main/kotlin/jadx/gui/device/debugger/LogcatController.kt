@@ -46,7 +46,7 @@ constructor(
 	private var status: String = "null"
 
 	init {
-		this.timezone = adbDevice.getTimezone()
+		this.timezone = adbDevice.timezone
 		this.startLogcat()
 	}
 
@@ -84,15 +84,15 @@ constructor(
 	}
 
 	private fun getLog() {
-		if (!logcatPanel.isReady()) {
+		if (!logcatPanel.isReady) {
 			return
 		}
 		try {
 			val buf: ByteArray?
 			if (recent == null) {
-				buf = adbDevice.getBinaryLogcat()
+				buf = adbDevice.binaryLogcat
 			} else {
-				buf = adbDevice.getBinaryLogcat(checkNotNull(recent).getAfterTimestamp())
+				buf = adbDevice.getBinaryLogcat(checkNotNull(recent).afterTimestamp)
 			}
 			if (buf == null) {
 				return
@@ -138,7 +138,7 @@ constructor(
 				val info = eInfo ?: return
 				if (recent == null) {
 					recent = info
-				} else if (checkNotNull(recent).getInstant().isBefore(info.getInstant())) {
+				} else if (checkNotNull(recent).instant.isBefore(info.instant)) {
 					recent = info
 				}
 
@@ -298,7 +298,7 @@ constructor(
 
 		fun getLen(): Short = this.len
 
-		fun getHeaderLen(): Short = this.hdrSize
+		val headerLen: Short get() = this.hdrSize
 
 		fun getPid(): Int = this.pid
 
@@ -306,27 +306,27 @@ constructor(
 
 		fun getSec(): Int = this.sec
 
-		fun getNSec(): Int = this.nsec
+		val nSec: Int get() = this.nsec
 
 		fun getLid(): Int = this.lid
 
 		fun getUid(): Int = this.uid
 
-		fun getInstant(): Instant = Instant.ofEpochSecond(getSec().toLong(), getNSec().toLong())
+		val instant: Instant get() = Instant.ofEpochSecond(getSec().toLong(), nSec.toLong())
 
-		fun getTimestamp(): String {
+		val timestamp: String get() {
 			val dtFormat = DateTimeFormatter.ofPattern("MM-dd HH:mm:ss.SSS").withZone(ZoneId.of(timezone))
-			return dtFormat.format(getInstant())
+			return dtFormat.format(instant)
 		}
 
-		fun getAfterTimestamp(): String {
+		val afterTimestamp: String get() {
 			val dtFormat = DateTimeFormatter.ofPattern("MM-dd HH:mm:ss.SSS").withZone(ZoneId.of(timezone))
-			return dtFormat.format(getInstant().plusMillis(1))
+			return dtFormat.format(instant.plusMillis(1))
 		}
 
 		fun getMsgType(): Byte = this.msgType
 
-		fun getMsgTypeString(): String = when (getMsgType().toInt()) {
+		val msgTypeString: String get() = when (getMsgType().toInt()) {
 			0 -> "Unknown"
 			1 -> "Default"
 			2 -> "Verbose"

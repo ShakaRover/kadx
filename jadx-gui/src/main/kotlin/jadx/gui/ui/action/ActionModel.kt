@@ -190,11 +190,10 @@ enum class ActionModel(
 	fun getIcon(): ImageIcon? = icon
 
 	/** 返回默认快捷键。 */
-	fun getDefaultShortcut(): Shortcut = defaultShortcutValue
+	val defaultShortcut: Shortcut get() = defaultShortcutValue
 
 	companion object {
 		/** 取出属于指定分类的全部动作（保持枚举声明顺序）。 */
-		@JvmStatic
 		fun select(category: ActionCategory): List<ActionModel> = values().filter { it.category == category }
 	}
 }

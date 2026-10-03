@@ -34,7 +34,7 @@ class ShortcutsController(private val settings: JadxSettings) {
 
 	/** 从设置加载快捷键并刷新已绑定动作。 */
 	fun loadSettings() {
-		shortcuts = settings.getShortcuts()
+		shortcuts = settings.shortcuts
 		indexMouseActions()
 		boundActions.forEach { (actionModel, actions) ->
 			val shortcut = get(actionModel)
@@ -48,7 +48,7 @@ class ShortcutsController(private val settings: JadxSettings) {
 	/** 获取某动作对应的 [KeyStroke]；非键盘快捷键返回 `null`。 */
 	fun getKeyStroke(actionModel: ActionModel): KeyStroke? {
 		val shortcut = get(actionModel)
-		if (shortcut != null && shortcut.isKeyboard()) {
+		if (shortcut != null && shortcut.isKeyboard) {
 			return shortcut.toKeyStroke()
 		}
 		return null
@@ -78,7 +78,7 @@ class ShortcutsController(private val settings: JadxSettings) {
 	fun registerMouseEventListener(mw: MainWindow) {
 		Toolkit.getDefaultToolkit().addAWTEventListener(
 			{ event ->
-				if (mw.isSettingsOpen()) {
+				if (mw.isSettingsOpen) {
 					return@addAWTEventListener
 				}
 				if (event !is MouseEvent) {
@@ -103,7 +103,7 @@ class ShortcutsController(private val settings: JadxSettings) {
 		mouseActions.clear()
 		for (actionModel in ActionModel.values()) {
 			val shortcut = shortcuts.get(actionModel)
-			if (shortcut.isMouse()) {
+			if (shortcut.isMouse) {
 				val actions = boundActions[actionModel]
 				if (actions != null && actions.isNotEmpty()) {
 					mouseActions.getOrPut(checkNotNull(shortcut.getMouseButton())) { ArrayList() }.addAll(actions)
@@ -136,11 +136,10 @@ class ShortcutsController(private val settings: JadxSettings) {
 		private val LOG: Logger = LoggerFactory.getLogger(ShortcutsController::class.java)
 
 		/** 返回所有动作的默认快捷键映射。 */
-		@JvmStatic
-		fun getDefault(): Map<ActionModel, Shortcut> {
+		val default: Map<ActionModel, Shortcut> get() {
 			val shortcuts = HashMap<ActionModel, Shortcut>()
 			for (actionModel in ActionModel.values()) {
-				shortcuts[actionModel] = actionModel.getDefaultShortcut()
+				shortcuts[actionModel] = actionModel.defaultShortcut
 			}
 			return shortcuts
 		}

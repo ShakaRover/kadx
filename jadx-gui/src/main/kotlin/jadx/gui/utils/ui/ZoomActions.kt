@@ -76,7 +76,6 @@ class ZoomActions private constructor(
 
 	companion object {
 		/** 为组件注册缩放动作。 */
-		@JvmStatic
 		fun register(component: JComponent, settings: JadxSettings, update: Runnable) {
 			val actions = ZoomActions(component, settings, update)
 			actions.register()

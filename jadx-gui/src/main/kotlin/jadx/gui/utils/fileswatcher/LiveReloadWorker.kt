@@ -31,7 +31,7 @@ class LiveReloadWorker(private val mainWindow: MainWindow) {
 	private var started = false
 	private var scope: CoroutineScope? = null
 
-	fun isStarted(): Boolean = started
+	val isStarted: Boolean get() = started
 
 	/** 根据开关状态启动/停止监视。 */
 	@Synchronized
@@ -51,7 +51,7 @@ class LiveReloadWorker(private val mainWindow: MainWindow) {
 	@Synchronized
 	private fun start() {
 		try {
-			val watcher = FilesWatcher(mainWindow.getProject().getFilePaths())
+			val watcher = FilesWatcher(mainWindow.getProject().filePaths)
 			val newScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 			newScope.launch {
 				watcher.watchEvents()

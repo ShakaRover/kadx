@@ -17,9 +17,9 @@ class ExceptionData internal constructor(
 	private val ioException: IOException?,
 ) {
 
-	fun getException(): Throwable = exc
+	val exception: Throwable get() = exc
 
-	fun getIOExc(): IOException? = ioException
+	val iOExc: IOException? get() = ioException
 
-	fun getGithubProject(): String = githubProjectValue
+	val githubProject: String get() = githubProjectValue
 }

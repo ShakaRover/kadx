@@ -99,7 +99,7 @@ class TabsController(private val mainWindow: MainWindow) {
 			// 已经选中
 			return
 		}
-		val newTab = if (mainWindow.getSettings().isEnablePreviewTab() && fromTree) {
+		val newTab = if (mainWindow.getSettings().isEnablePreviewTab && fromTree) {
 			previewTab(node)
 		} else {
 			openTab(node)
@@ -132,7 +132,7 @@ class TabsController(private val mainWindow: MainWindow) {
 			val origTopCls = cls.getOriginalTopParentClass()
 			val codeParent = cls.getTopParentClass()
 			if (codeParent != origTopCls) {
-				val jumpCls = checkNotNull(mainWindow.getCacheObject().getNodeCache().makeFrom(codeParent))
+				val jumpCls = checkNotNull(mainWindow.getCacheObject().nodeCache.makeFrom(codeParent))
 				loadCodeWithUIAction(jumpCls, Runnable { jumpToInnerClass(node, codeParent, jumpCls, fromTree) })
 				return
 			}
@@ -180,7 +180,7 @@ class TabsController(private val mainWindow: MainWindow) {
 	 * 优先使用 [codeJump] 方法。
 	 */
 	fun codeJump(pos: JumpPosition, fromTree: Boolean) {
-		val currentPosition = mainWindow.getTabbedPane().getCurrentPosition()
+		val currentPosition = mainWindow.getTabbedPane().currentPosition
 		val current = selectedTab
 		if (current == null || current.node !== pos.getNode()) {
 			selectTab(pos.getNode(), fromTree)
@@ -212,7 +212,7 @@ class TabsController(private val mainWindow: MainWindow) {
 			return
 		}
 		if (!considerPins || !blueprint.isPinned) {
-			if (!blueprint.isReferenced()) {
+			if (!blueprint.isReferenced) {
 				closeTabForce(blueprint)
 			} else {
 				closeTabSoft(blueprint)
@@ -293,7 +293,7 @@ class TabsController(private val mainWindow: MainWindow) {
 	}
 
 	private fun removeTabIfNotReferenced(blueprint: TabBlueprint) {
-		if (blueprint.isHidden && !blueprint.isReferenced()) {
+		if (blueprint.isHidden && !blueprint.isReferenced) {
 			tabsMap.remove(blueprint.node)
 		}
 	}
@@ -309,7 +309,7 @@ class TabsController(private val mainWindow: MainWindow) {
 		selectedTab = null
 	}
 
-	fun isForceClose(): Boolean = forceClose
+	val isForceClose: Boolean get() = forceClose
 
 	fun closeAllTabs(considerPins: Boolean) {
 		tabsMap.values.toList().forEach { t -> closeTab(t.node, considerPins) }
@@ -325,23 +325,23 @@ class TabsController(private val mainWindow: MainWindow) {
 
 	fun getSelectedTab(): TabBlueprint? = selectedTab
 
-	fun getTabs(): List<TabBlueprint> = tabsMap.values.toList()
+	val tabs: List<TabBlueprint> get() = tabsMap.values.toList()
 
-	fun getOpenTabs(): List<TabBlueprint> = tabsMap.values.toList()
+	val openTabs: List<TabBlueprint> get() = tabsMap.values.toList()
 
-	fun getPinnedTabs(): List<TabBlueprint> = tabsMap.values.filter { it.isPinned }
+	val pinnedTabs: List<TabBlueprint> get() = tabsMap.values.filter { it.isPinned }
 
-	fun getBookmarkedTabs(): List<TabBlueprint> = tabsMap.values.filter { it.isBookmarked }
+	val bookmarkedTabs: List<TabBlueprint> get() = tabsMap.values.filter { it.isBookmarked }
 
 	fun getPreviewTab(): TabBlueprint? = tabsMap.values.firstOrNull { it.isPreviewTab }
 
 	fun restoreEditorViewState(viewState: EditorViewState) {
 		val node = viewState.getNode()
-		val blueprint = openTab(node, viewState.isHidden(), viewState.isPreviewTab())
-		setTabPinnedInternal(blueprint, viewState.isPinned())
-		setTabBookmarkedInternal(blueprint, viewState.isBookmarked())
+		val blueprint = openTab(node, viewState.isHidden, viewState.isPreviewTab)
+		setTabPinnedInternal(blueprint, viewState.isPinned)
+		setTabBookmarkedInternal(blueprint, viewState.isBookmarked)
 		listeners.forEach { l -> l.onTabRestore(blueprint, viewState) }
-		if (viewState.isActive()) {
+		if (viewState.isActive) {
 			selectTab(node)
 		}
 	}
@@ -356,7 +356,7 @@ class TabsController(private val mainWindow: MainWindow) {
 		listeners.forEach { it.onTabsRestoreDone() }
 	}
 
-	fun getEditorViewStates(): List<EditorViewState> {
+	val editorViewStates: List<EditorViewState> get() {
 		val reorderedTabs = ArrayList(tabsMap.values)
 		listeners.forEach { l -> l.onTabsReorder(reorderedTabs) }
 		val states = ArrayList<EditorViewState>()

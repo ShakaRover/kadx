@@ -11,7 +11,7 @@ import jadx.gui.ui.codearea.CodeArea
 class GoToDeclarationAction(codeArea: CodeArea) : JNodeAction(ActionModel.GOTO_DECLARATION, codeArea) {
 
 	override fun runAction(node: JNode) {
-		getCodeArea().getContentPanel().getTabsController().codeJump(node)
+		getCodeArea().getContentPanel().tabsController.codeJump(node)
 	}
 
 	companion object {

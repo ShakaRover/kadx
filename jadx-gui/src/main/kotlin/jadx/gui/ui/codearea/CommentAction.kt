@@ -90,7 +90,7 @@ open class CommentAction :
 		}
 		val comment = actionComment
 		if (comment == null) {
-			UiUtils.showMessageBox(getCodeArea().getMainWindow(), NLS.str("msg.cant_add_comment"))
+			UiUtils.showMessageBox(getCodeArea().mainWindow, NLS.str("msg.cant_add_comment"))
 			return
 		}
 		CommentDialog.show(getCodeArea(), comment, updateComment)
@@ -98,8 +98,8 @@ open class CommentAction :
 
 	protected fun searchForExistComment(blankComment: ICodeComment): ICodeComment? {
 		try {
-			val project = getCodeArea().getProject()
-			val codeData: JadxCodeData? = project.getCodeData()
+			val project = getCodeArea().project
+			val codeData: JadxCodeData? = project.codeData
 			if (codeData == null || codeData.getComments().isEmpty()) {
 				return null
 			}
@@ -126,7 +126,7 @@ open class CommentAction :
 			return null
 		}
 		try {
-			val wrapper = getCodeArea().getJadxWrapper()
+			val wrapper = getCodeArea().jadxWrapper
 			val codeInfo: ICodeInfo = getCodeArea().getCodeInfo()
 			val metadata = codeInfo.getCodeMetadata()
 			val lineStartPos = getCodeArea().getLineStartFor(pos)

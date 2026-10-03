@@ -182,7 +182,7 @@ class BackgroundExecutor(
 		try {
 			val task = internalTask.getBgTask()
 			val taskExecutor = task.scheduleTasks()
-			taskExecutor.setThreadsCount(settings.getThreadsCount())
+			taskExecutor.setThreadsCount(settings.threadsCount)
 			val tasksCount = taskExecutor.getTasksCount()
 			internalTask.setTaskExecutor(taskExecutor)
 			internalTask.setJobsCount(tasksCount.toLong())
@@ -235,7 +235,7 @@ class BackgroundExecutor(
 	private fun cancelTask(internalTask: InternalTask) {
 		try {
 			val task = internalTask.getBgTask()
-			if (!internalTask.isRunning()) {
+			if (!internalTask.isRunning) {
 				// 任务已完成或尚未开始
 				task.cancel()
 				internalTask.getJob()?.cancel()
@@ -292,7 +292,7 @@ class BackgroundExecutor(
 			} else if (waitUntilTime != 0L && waitUntilTime < System.currentTimeMillis()) {
 				LOG.warn("Task '{}' execution timeout, force cancel", task.getTitle())
 				TaskStatus.CANCEL_BY_TIMEOUT
-			} else if (checkMemoryUsage && !UiUtils.isFreeMemoryAvailable()) {
+			} else if (checkMemoryUsage && !UiUtils.isFreeMemoryAvailable) {
 				LOG.warn("High memory usage: {}", UiUtils.memoryInfo())
 				if (checkNotNull(internalTask.getTaskExecutor()).getThreadsCount() == 1) {
 					LOG.warn("Task '{}' memory limit reached, force cancel", task.getTitle())
@@ -302,7 +302,7 @@ class BackgroundExecutor(
 					checkNotNull(internalTask.getTaskExecutor()).setThreadsCount(1)
 					System.gc()
 					UiUtils.sleep(1000) // 等待 GC
-					if (!UiUtils.isFreeMemoryAvailable()) {
+					if (!UiUtils.isFreeMemoryAvailable) {
 						LOG.error("Task '{}' memory limit reached (after GC), force cancel", task.getTitle())
 						TaskStatus.CANCEL_BY_MEMORY
 					} else {

@@ -65,7 +65,6 @@ class JadxMenu(name: String, private val shortcutsController: ShortcutsControlle
 
 	companion object {
 		/** 用于填充动作快捷键组件属性的占位组件。 */
-		@JvmField
 		val JADX_MENU_COMPONENT: JComponent = object : JComponent() {
 			override fun toString(): String = "JADX_MENU_COMPONENT"
 		}

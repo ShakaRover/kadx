@@ -141,7 +141,6 @@ class TextStandardActions(private val textComponent: JTextComponent) {
 
 	companion object {
 		/** 给 [textComponent] 挂载标准文本操作（构造即完成注册）。 */
-		@JvmStatic
 		fun attach(textComponent: JTextComponent) {
 			TextStandardActions(textComponent)
 		}

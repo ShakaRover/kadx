@@ -83,8 +83,8 @@ abstract class AbstractCodeArea(panel: ContentPanel, jnode: JNode) : RSyntaxText
 		applyEditableProperties(jnode)
 		loadSettings()
 
-		val settings = panel.getMainWindow().getSettings()
-		setLineWrap(settings.isCodeAreaLineWrap())
+		val settings = panel.mainWindow.getSettings()
+		setLineWrap(settings.isCodeAreaLineWrap)
 
 		ZoomActions.register(this, settings) { loadSettings() }
 
@@ -137,7 +137,7 @@ abstract class AbstractCodeArea(panel: ContentPanel, jnode: JNode) : RSyntaxText
 	}
 
 	private fun appendWrapLineMenu(popupMenu: JPopupMenu) {
-		val settings = getContentPanel().getMainWindow().getSettings()
+		val settings = getContentPanel().mainWindow.getSettings()
 		popupMenu.addSeparator()
 		val wrapItem = JCheckBoxMenuItem(NLS.str("popup.line_wrap"), getLineWrap())
 		wrapItem.setAction(object : AbstractAction(NLS.str("popup.line_wrap")) {
@@ -145,13 +145,13 @@ abstract class AbstractCodeArea(panel: ContentPanel, jnode: JNode) : RSyntaxText
 				val wrap = !getLineWrap()
 				settings.setCodeAreaLineWrap(wrap)
 				settings.sync()
-				getContentPanel().getTabbedPane().getTabs().forEach { v ->
+				getContentPanel().getTabbedPane().tabs.forEach { v ->
 					if (v is AbstractCodeContentPanel) {
 						val codeArea = v.getCodeArea()
 						if (codeArea != null) {
 							setCodeAreaLineWrap(codeArea, wrap)
 							if (v is ClassCodeContentPanel) {
-								setCodeAreaLineWrap(v.getSmaliCodeArea(), wrap)
+								setCodeAreaLineWrap(v.smaliCodeArea, wrap)
 							}
 						}
 					}
@@ -207,7 +207,7 @@ abstract class AbstractCodeArea(panel: ContentPanel, jnode: JNode) : RSyntaxText
 		addKeyListener(object : KeyAdapter() {
 			override fun keyPressed(e: KeyEvent) {
 				if (e.getKeyCode() == KeyEvent.VK_C && UiUtils.isCtrlDown(e)) {
-					UiUtils.copyToClipboard(getSelectedTokenOrWord())
+					UiUtils.copyToClipboard(selectedTokenOrWord)
 				}
 			}
 		})
@@ -217,13 +217,13 @@ abstract class AbstractCodeArea(panel: ContentPanel, jnode: JNode) : RSyntaxText
 	 * 若用户选中了某个单词（例如鼠标拖选）则返回它，否则返回光标下的 token。
 	 * 当 token 是字符串或注释时，这样可以只控制/复制其中单词而不是整段内容。
 	 */
-	fun getSelectedTokenOrWord(): String? {
+	val selectedTokenOrWord: String? get() {
 		val rc = getSelectedText()
 		if (rc == null) {
-			return getWordUnderCaret()
+			return wordUnderCaret
 		}
 		if (StringUtils.isEmpty(rc)) {
-			return getWordUnderCaret()
+			return wordUnderCaret
 		}
 		return rc
 	}
@@ -262,7 +262,7 @@ abstract class AbstractCodeArea(panel: ContentPanel, jnode: JNode) : RSyntaxText
 		return lastText
 	}
 
-	fun getWordUnderCaret(): String? = getWordByPosition(getCaretPosition())
+	val wordUnderCaret: String? get() = getWordByPosition(getCaretPosition())
 
 	fun getWordByPosition(offset: Int): String? {
 		val token = getWordTokenAtOffset(offset) ?: return null
@@ -312,11 +312,11 @@ abstract class AbstractCodeArea(panel: ContentPanel, jnode: JNode) : RSyntaxText
 	abstract fun getCodeInfo(): ICodeInfo
 
 	fun load() {
-		if (isLoaded()) {
+		if (isLoaded) {
 			return
 		}
 		val loadTask = getLoadTask()
-		getContentPanel().getMainWindow().getBackgroundExecutor().execute(loadTask)
+		getContentPanel().mainWindow.getBackgroundExecutor().execute(loadTask)
 	}
 
 	/**
@@ -333,7 +333,7 @@ abstract class AbstractCodeArea(panel: ContentPanel, jnode: JNode) : RSyntaxText
 		loaded.set(false)
 	}
 
-	fun isLoaded(): Boolean = loaded.get()
+	val isLoaded: Boolean get() = loaded.get()
 
 	/**
 	 * 在此方法中实现从缓存重新加载节点并设置新显示内容的逻辑。
@@ -341,7 +341,7 @@ abstract class AbstractCodeArea(panel: ContentPanel, jnode: JNode) : RSyntaxText
 	abstract fun refresh()
 
 	open fun loadSettings() {
-		loadCommonSettings(getContentPanel().getMainWindow(), this)
+		loadCommonSettings(getContentPanel().mainWindow, this)
 	}
 
 	fun scrollToPos(pos: Int) {
@@ -386,7 +386,7 @@ abstract class AbstractCodeArea(panel: ContentPanel, jnode: JNode) : RSyntaxText
 		}
 	}
 
-	fun getCurrentPosition(): JumpPosition? {
+	val currentPosition: JumpPosition? get() {
 		val pos = getCaretPosition()
 		if (pos == 0) {
 			return null
@@ -417,7 +417,7 @@ abstract class AbstractCodeArea(panel: ContentPanel, jnode: JNode) : RSyntaxText
 		return if (n is JClass) n else null
 	}
 
-	fun isDisposed(): Boolean = node == null
+	val isDisposed: Boolean get() = node == null
 
 	open fun dispose() {
 		// 清理内部引用
@@ -493,7 +493,6 @@ abstract class AbstractCodeArea(panel: ContentPanel, jnode: JNode) : RSyntaxText
 		}
 
 		/** 判断 token 是否是“单词”（非空白、非分隔符/运算符/函数）。 */
-		@JvmStatic
 		fun isWordToken(token: Token?): Boolean {
 			if (token == null) {
 				return false
@@ -517,7 +516,6 @@ abstract class AbstractCodeArea(panel: ContentPanel, jnode: JNode) : RSyntaxText
 		}
 
 		/** 创建一个使用 jadx 通用设置的只读代码区（用于日志、搜索结果等）。 */
-		@JvmStatic
 		fun getDefaultArea(mainWindow: MainWindow): RSyntaxTextArea {
 			val area = RSyntaxTextArea()
 			area.setEditable(false)
@@ -528,14 +526,13 @@ abstract class AbstractCodeArea(panel: ContentPanel, jnode: JNode) : RSyntaxText
 		}
 
 		/** 把 jadx 的编辑器主题、字体、行号字体应用到指定代码区。 */
-		@JvmStatic
 		fun loadCommonSettings(mainWindow: MainWindow, area: RSyntaxTextArea) {
 			val settings = mainWindow.getSettings()
 			mainWindow.getEditorThemeManager().apply(area)
-			area.setFont(settings.getCodeFont())
+			area.setFont(settings.codeFont)
 			val gutter: Gutter? = RSyntaxUtilities.getGutter(area)
 			if (gutter != null) {
-				gutter.setLineNumberFont(settings.getCodeFont())
+				gutter.setLineNumberFont(settings.codeFont)
 			}
 		}
 	}

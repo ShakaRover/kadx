@@ -22,25 +22,25 @@ class JumpManagerTest {
 
 	@Test
 	fun testEmptyHistory() {
-		assertThat(jm.getPrev()).isNull()
-		assertThat(jm.getNext()).isNull()
+		assertThat(jm.prev).isNull()
+		assertThat(jm.next).isNull()
 	}
 
 	@Test
 	fun testEmptyHistory2() {
-		assertThat(jm.getPrev()).isNull()
-		assertThat(jm.getNext()).isNull()
-		assertThat(jm.getPrev()).isNull()
-		assertThat(jm.getNext()).isNull()
-		assertThat(jm.getPrev()).isNull()
+		assertThat(jm.prev).isNull()
+		assertThat(jm.next).isNull()
+		assertThat(jm.prev).isNull()
+		assertThat(jm.next).isNull()
+		assertThat(jm.prev).isNull()
 	}
 
 	@Test
 	fun testOneElement() {
 		jm.addPosition(makeJumpPos())
 
-		assertThat(jm.getPrev()).isNull()
-		assertThat(jm.getNext()).isNull()
+		assertThat(jm.prev).isNull()
+		assertThat(jm.next).isNull()
 	}
 
 	@Test
@@ -50,10 +50,10 @@ class JumpManagerTest {
 		val pos2 = makeJumpPos()
 		jm.addPosition(pos2)
 
-		assertThat(jm.getPrev()).isSameAs(pos1)
-		assertThat(jm.getPrev()).isNull()
-		assertThat(jm.getNext()).isSameAs(pos2)
-		assertThat(jm.getNext()).isNull()
+		assertThat(jm.prev).isSameAs(pos1)
+		assertThat(jm.prev).isNull()
+		assertThat(jm.next).isSameAs(pos2)
+		assertThat(jm.next).isNull()
 	}
 
 	@Test
@@ -64,15 +64,15 @@ class JumpManagerTest {
 		val pos2 = makeJumpPos()
 		jm.addPosition(pos2)
 		// 1 - 2@
-		assertThat(jm.getPrev()).isSameAs(pos1)
+		assertThat(jm.prev).isSameAs(pos1)
 		// 1@ - 2
 		val pos3 = makeJumpPos()
 		jm.addPosition(pos3)
 		// 1 - 3@
-		assertThat(jm.getNext()).isNull()
-		assertThat(jm.getPrev()).isSameAs(pos1)
+		assertThat(jm.next).isNull()
+		assertThat(jm.prev).isSameAs(pos1)
 		// 1@ - 3
-		assertThat(jm.getNext()).isSameAs(pos3)
+		assertThat(jm.next).isSameAs(pos3)
 	}
 
 	@Test
@@ -89,25 +89,25 @@ class JumpManagerTest {
 		val pos4 = makeJumpPos()
 		jm.addPosition(pos4)
 		// 1 - 2 - 3 - 4@
-		assertThat(jm.getPrev()).isSameAs(pos3)
+		assertThat(jm.prev).isSameAs(pos3)
 		// 1 - 2 - 3@ - 4
-		assertThat(jm.getPrev()).isSameAs(pos2)
+		assertThat(jm.prev).isSameAs(pos2)
 		// 1 - 2@ - 3 - 4
 		val pos5 = makeJumpPos()
 		jm.addPosition(pos5)
 		// 1 - 2 - 5@
-		assertThat(jm.getNext()).isNull()
-		assertThat(jm.getNext()).isNull()
-		assertThat(jm.getPrev()).isSameAs(pos2)
+		assertThat(jm.next).isNull()
+		assertThat(jm.next).isNull()
+		assertThat(jm.prev).isSameAs(pos2)
 		// 1 - 2@ - 5
-		assertThat(jm.getPrev()).isSameAs(pos1)
+		assertThat(jm.prev).isSameAs(pos1)
 		// 1@ - 2 - 5
-		assertThat(jm.getPrev()).isNull()
-		assertThat(jm.getNext()).isSameAs(pos2)
+		assertThat(jm.prev).isNull()
+		assertThat(jm.next).isSameAs(pos2)
 		// 1 - 2@ - 5
-		assertThat(jm.getNext()).isSameAs(pos5)
+		assertThat(jm.next).isSameAs(pos5)
 		// 1 - 2 - 5@
-		assertThat(jm.getNext()).isNull()
+		assertThat(jm.next).isNull()
 	}
 
 	@Test
@@ -116,8 +116,8 @@ class JumpManagerTest {
 		jm.addPosition(pos)
 		jm.addPosition(pos)
 
-		assertThat(jm.getPrev()).isNull()
-		assertThat(jm.getNext()).isNull()
+		assertThat(jm.prev).isNull()
+		assertThat(jm.next).isNull()
 	}
 
 	private fun makeJumpPos(): JumpPosition = JumpPosition(TextNode(""), 0)

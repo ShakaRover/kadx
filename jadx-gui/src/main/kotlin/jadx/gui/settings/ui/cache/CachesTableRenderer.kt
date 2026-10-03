@@ -32,7 +32,7 @@ class CachesTableRenderer : TableCellRenderer {
 		}
 		label.toolTipText = obj.getCacheEntry().getCache()
 
-		if (obj.isSelected()) {
+		if (obj.isSelected) {
 			label.background = table.selectionBackground
 			label.foreground = table.selectionForeground
 		} else {

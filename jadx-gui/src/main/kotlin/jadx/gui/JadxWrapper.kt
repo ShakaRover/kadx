@@ -67,7 +67,7 @@ class JadxWrapper(private val mainWindow: MainWindow) {
 		try {
 			synchronized(DECOMPILER_UPDATE_SYNC) {
 				val project = getProject()
-				val jadxArgs = getSettings().toJadxArgs()
+				val jadxArgs = settings.toJadxArgs()
 				jadxArgs.pluginLoader = JadxExternalPluginsLoader()
 				jadxArgs.filesGetter = JadxFilesGetter.INSTANCE
 				project.fillJadxArgs(jadxArgs)
@@ -94,8 +94,8 @@ class JadxWrapper(private val mainWindow: MainWindow) {
 	 * TODO: 后续可考虑移入 core 包。
 	 */
 	fun unloadClasses() {
-		getCurrentDecompiler()?.let { decompiler ->
-			for (cls in checkNotNull(decompiler.getRoot()).getClasses()) {
+		currentDecompiler?.let { decompiler ->
+			for (cls in checkNotNull(decompiler.getRoot()).classes) {
 				val clsState: ProcessState = cls.state
 				cls.unload()
 				cls.state = if (clsState == PROCESS_COMPLETE) GENERATED_AND_UNLOADED else NOT_LOADED
@@ -129,7 +129,7 @@ class JadxWrapper(private val mainWindow: MainWindow) {
 	 * 以便插件在启用缓存的情况下反编译。因此注册一个最后的 “prepare” pass 来初始化缓存。
 	 */
 	private fun registerCodeCache(jadxDecompiler: JadxDecompiler) {
-		val codeCacheMode = getSettings().getCodeCacheMode()
+		val codeCacheMode = settings.codeCacheMode
 		if (codeCacheMode == CodeCacheMode.MEMORY) {
 			jadxDecompiler.getArgs().codeCache = InMemoryCodeCache()
 			return
@@ -138,7 +138,7 @@ class JadxWrapper(private val mainWindow: MainWindow) {
 			override fun getInfo(): JadxPassInfo = SimpleJadxPassInfo("CacheInit")
 
 			override fun init(root: RootNode) {
-				when (getSettings().getCodeCacheMode()) {
+				when (settings.codeCacheMode) {
 					CodeCacheMode.DISK_WITH_CACHE ->
 						root.getArgs().codeCache = CodeStringCache(buildBufferedDiskCache(root))
 
@@ -158,7 +158,7 @@ class JadxWrapper(private val mainWindow: MainWindow) {
 
 	/** 按设置初始化 usage 分析结果缓存。 */
 	private fun initUsageCache(jadxArgs: JadxArgs) {
-		when (getSettings().getUsageCacheMode()) {
+		when (settings.usageCacheMode) {
 			UsageCacheMode.NONE -> jadxArgs.usageInfoCache = EmptyUsageInfoCache()
 
 			UsageCacheMode.MEMORY -> jadxArgs.usageInfoCache = InMemoryUsageInfoCache()
@@ -180,10 +180,10 @@ class JadxWrapper(private val mainWindow: MainWindow) {
 	}
 
 	/** 获取完整的类列表。 */
-	fun getClasses(): List<JavaClass> = getDecompiler().getClasses()
+	val classes: List<JavaClass> get() = getDecompiler().getClasses()
 
 	/** 获取未被排除包设置过滤掉的类。 */
-	fun getIncludedClasses(): List<JavaClass> {
+	val includedClasses: List<JavaClass> get() {
 		val classList = getDecompiler().getClasses()
 		val excludedPackages = getExcludedPackages()
 		if (excludedPackages.isEmpty()) {
@@ -193,7 +193,7 @@ class JadxWrapper(private val mainWindow: MainWindow) {
 	}
 
 	/** 获取未被排除包设置过滤掉的类（含内部类）。 */
-	fun getIncludedClassesWithInners(): List<JavaClass> {
+	val includedClassesWithInners: List<JavaClass> get() {
 		val classes = getDecompiler().getClassesWithInners()
 		val excludedPackages = getExcludedPackages()
 		if (excludedPackages.isEmpty()) {
@@ -217,7 +217,7 @@ class JadxWrapper(private val mainWindow: MainWindow) {
 
 	// TODO: 后续移到 CLI，并在 JadxDecompiler 中过滤类
 	fun getExcludedPackages(): List<String> {
-		val excludedPackages = getSettings().getExcludedPackages().trim()
+		val excludedPackages = settings.excludedPackages.trim()
 		if (excludedPackages.isEmpty()) {
 			return Collections.emptyList()
 		}
@@ -225,24 +225,24 @@ class JadxWrapper(private val mainWindow: MainWindow) {
 	}
 
 	fun setExcludedPackages(packagesToExclude: List<String>) {
-		getSettings().setExcludedPackages(packagesToExclude.joinToString(" ").trim())
-		getSettings().sync()
+		settings.setExcludedPackages(packagesToExclude.joinToString(" ").trim())
+		settings.sync()
 	}
 
 	fun addExcludedPackage(packageToExclude: String) {
-		val newExclusion = getSettings().getExcludedPackages() + ' ' + packageToExclude
-		getSettings().setExcludedPackages(newExclusion.trim())
-		getSettings().sync()
+		val newExclusion = settings.excludedPackages + ' ' + packageToExclude
+		settings.setExcludedPackages(newExclusion.trim())
+		settings.sync()
 	}
 
 	fun removeExcludedPackage(packageToRemoveFromExclusion: String) {
 		val list = ArrayList(getExcludedPackages())
 		list.remove(packageToRemoveFromExclusion)
-		getSettings().setExcludedPackages(list.joinToString(" "))
-		getSettings().sync()
+		settings.setExcludedPackages(list.joinToString(" "))
+		settings.sync()
 	}
 
-	fun getCurrentDecompiler(): JadxDecompiler? {
+	val currentDecompiler: JadxDecompiler? get() {
 		synchronized(DECOMPILER_UPDATE_SYNC) {
 			return decompiler
 		}
@@ -261,7 +261,7 @@ class JadxWrapper(private val mainWindow: MainWindow) {
 	}
 
 	// TODO: 禁止使用本方法
-	fun getRootNode(): RootNode = checkNotNull(getDecompiler().getRoot())
+	val rootNode: RootNode get() = checkNotNull(getDecompiler().getRoot())
 
 	fun reloadCodeData() {
 		getDecompiler().reloadCodeData()
@@ -276,17 +276,17 @@ class JadxWrapper(private val mainWindow: MainWindow) {
 
 	fun getEnclosingNode(codeInfo: ICodeInfo, pos: Int): JavaNode? = getDecompiler().getEnclosingNode(codeInfo, pos)
 
-	fun getPackages(): List<JavaPackage> = getDecompiler().getPackages()
+	val packages: List<JavaPackage> get() = getDecompiler().getPackages()
 
-	fun getResources(): List<ResourceFile> = getDecompiler().getResources()
+	val resources: List<ResourceFile> get() = getDecompiler().getResources()
 
-	fun getArgs(): JadxArgs = getDecompiler().getArgs()
+	val args: JadxArgs get() = getDecompiler().getArgs()
 
 	fun getProject(): JadxProject = mainWindow.getProject()
 
-	fun getSettings(): JadxSettings = mainWindow.getSettings()
+	val settings: JadxSettings get() = mainWindow.getSettings()
 
-	fun getCache(): CacheObject = mainWindow.getCacheObject()
+	val cache: CacheObject get() = mainWindow.getCacheObject()
 
 	/**
 	 * 按外部类别名全名搜索（仅支持外层类）。
@@ -316,7 +316,6 @@ class JadxWrapper(private val mainWindow: MainWindow) {
 		 * 初始化 GUI 插件上下文，并向核心插件管理器注册“新增插件”监听器，
 		 * 为每个插件构建 GUI 上下文与文件访问器。
 		 */
-		@JvmStatic
 		fun initGuiPluginsContext(decompiler: JadxDecompiler, mainWindow: MainWindow): CommonGuiPluginsContext {
 			val guiPluginsContext = CommonGuiPluginsContext(mainWindow)
 			decompiler.getPluginManager().registerAddPluginListener(

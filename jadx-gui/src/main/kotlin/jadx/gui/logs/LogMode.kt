@@ -19,9 +19,9 @@ enum class LogMode {
 	;
 
 	/** 返回当前模式的本地化显示名。 */
-	fun getLocalizedName(): String = NLS_STRINGS[ordinal]
+	val localizedName: String get() = NLS_STRINGS[ordinal]
 
-	override fun toString(): String = getLocalizedName()
+	override fun toString(): String = localizedName
 
 	companion object {
 		/** `log_viewer.modes` 按 `|` 拆出的模式名，顺序必须与枚举常量一致。 */

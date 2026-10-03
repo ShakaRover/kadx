@@ -94,9 +94,9 @@ class JadxSettingsWindow(
 	private lateinit var wrapGroupPanel: JPanel
 
 	init {
-		startSettings = settings.getSettingsJsonString()
+		startSettings = settings.settingsJsonString
 		startSettingsHash = calcSettingsHash()
-		prevLang = settings.getLangLocale()
+		prevLang = settings.langLocale
 
 		initUI()
 
@@ -242,20 +242,20 @@ class JadxSettingsWindow(
 
 	private fun makeDeobfuscationGroup(): SettingsGroup {
 		val deobfOn = JCheckBox()
-		deobfOn.isSelected = settings.isDeobfuscationOn()
+		deobfOn.isSelected = settings.isDeobfuscationOn
 		deobfOn.addItemListener { e ->
 			settings.setDeobfuscationOn(e.stateChange == ItemEvent.SELECTED)
 			needReload()
 		}
 
-		val minLenModel = SpinnerNumberModel(settings.getDeobfuscationMinLength(), 0, Int.MAX_VALUE, 1)
+		val minLenModel = SpinnerNumberModel(settings.deobfuscationMinLength, 0, Int.MAX_VALUE, 1)
 		val minLenSpinner = JSpinner(minLenModel)
 		minLenSpinner.addChangeListener {
 			settings.setDeobfuscationMinLength(minLenSpinner.value as Int)
 			needReload()
 		}
 
-		val maxLenModel = SpinnerNumberModel(settings.getDeobfuscationMaxLength(), 0, Int.MAX_VALUE, 1)
+		val maxLenModel = SpinnerNumberModel(settings.deobfuscationMaxLength, 0, Int.MAX_VALUE, 1)
 		val maxLenSpinner = JSpinner(maxLenModel)
 		maxLenSpinner.addChangeListener {
 			settings.setDeobfuscationMaxLength(maxLenSpinner.value as Int)
@@ -263,24 +263,24 @@ class JadxSettingsWindow(
 		}
 
 		val resNamesSource = JComboBox(ResourceNameSource.values())
-		resNamesSource.selectedItem = settings.getResourceNameSource()
+		resNamesSource.selectedItem = settings.resourceNameSource
 		resNamesSource.addActionListener {
 			settings.setResourceNameSource(resNamesSource.selectedItem as ResourceNameSource)
 			needReload()
 		}
 
 		val useHeaders = JCheckBox()
-		useHeaders.isSelected = settings.isUseHeadersForDetectResourceExtensions()
+		useHeaders.isSelected = settings.isUseHeadersForDetectResourceExtensions
 		useHeaders.addItemListener { e ->
 			settings.setUseHeadersForDetectResourceExtensions(e.stateChange == ItemEvent.SELECTED)
 			needReload()
 		}
 
 		val generatedRenamesMappingFileModeCB = JComboBox(GeneratedRenamesMappingFileMode.values())
-		generatedRenamesMappingFileModeCB.selectedItem = settings.getGeneratedRenamesMappingFileMode()
+		generatedRenamesMappingFileModeCB.selectedItem = settings.generatedRenamesMappingFileMode
 		generatedRenamesMappingFileModeCB.addActionListener {
 			val newValue = generatedRenamesMappingFileModeCB.selectedItem as GeneratedRenamesMappingFileMode
-			if (newValue != settings.getGeneratedRenamesMappingFileMode()) {
+			if (newValue != settings.generatedRenamesMappingFileMode) {
 				settings.setGeneratedRenamesMappingFileMode(newValue)
 				needReload()
 			}
@@ -288,7 +288,7 @@ class JadxSettingsWindow(
 
 		val editWhitelistedEntities = JButton(NLS.str("preferences.excludedPackages.button"))
 		editWhitelistedEntities.addActionListener {
-			val prevWhitelistedEntities = settings.getDeobfuscationWhitelistStr()
+			val prevWhitelistedEntities = settings.deobfuscationWhitelistStr
 			val result = JOptionPane.showInputDialog(
 				this,
 				NLS.str("preferences.deobfuscation_whitelist.editDialog"),
@@ -319,34 +319,34 @@ class JadxSettingsWindow(
 
 		val connectedComponents: Collection<JComponent> = listOf(minLenSpinner, maxLenSpinner)
 		deobfOn.addItemListener { e -> enableComponentList(connectedComponents, e.stateChange == ItemEvent.SELECTED) }
-		enableComponentList(connectedComponents, settings.isDeobfuscationOn())
+		enableComponentList(connectedComponents, settings.isDeobfuscationOn)
 		return deobfGroup
 	}
 
 	private fun makeRenameGroup(): SettingsGroup {
 		val renameCaseSensitive = JCheckBox()
-		renameCaseSensitive.isSelected = settings.isRenameCaseSensitive()
+		renameCaseSensitive.isSelected = settings.isRenameCaseSensitive
 		renameCaseSensitive.addItemListener { e ->
 			settings.updateRenameFlag(JadxArgs.RenameEnum.CASE, e.stateChange == ItemEvent.SELECTED)
 			needReload()
 		}
 
 		val renameValid = JCheckBox()
-		renameValid.isSelected = settings.isRenameValid()
+		renameValid.isSelected = settings.isRenameValid
 		renameValid.addItemListener { e ->
 			settings.updateRenameFlag(JadxArgs.RenameEnum.VALID, e.stateChange == ItemEvent.SELECTED)
 			needReload()
 		}
 
 		val renamePrintable = JCheckBox()
-		renamePrintable.isSelected = settings.isRenamePrintable()
+		renamePrintable.isSelected = settings.isRenamePrintable
 		renamePrintable.addItemListener { e ->
 			settings.updateRenameFlag(JadxArgs.RenameEnum.PRINTABLE, e.stateChange == ItemEvent.SELECTED)
 			needReload()
 		}
 
 		val useSourceNameAsClassNameAlias = JComboBox(UseSourceNameAsClassNameAlias.values())
-		useSourceNameAsClassNameAlias.selectedItem = settings.getUseSourceNameAsClassNameAlias()
+		useSourceNameAsClassNameAlias.selectedItem = settings.useSourceNameAsClassNameAlias
 		useSourceNameAsClassNameAlias.addActionListener {
 			settings.setUseSourceNameAsClassNameAlias(
 				useSourceNameAsClassNameAlias.selectedItem as UseSourceNameAsClassNameAlias,
@@ -354,7 +354,7 @@ class JadxSettingsWindow(
 			needReload()
 		}
 
-		val repeatLimit = JSpinner(SpinnerNumberModel(settings.getSourceNameRepeatLimit(), 1, Int.MAX_VALUE, 1))
+		val repeatLimit = JSpinner(SpinnerNumberModel(settings.sourceNameRepeatLimit, 1, Int.MAX_VALUE, 1))
 		repeatLimit.addChangeListener {
 			settings.setSourceNameRepeatLimit(repeatLimit.value as Int)
 			needReload()
@@ -375,7 +375,7 @@ class JadxSettingsWindow(
 
 	private fun makeProjectGroup(): SettingsGroup {
 		val dropdown = JComboBox(SaveOptionEnum.values())
-		dropdown.selectedItem = settings.getSaveOption()
+		dropdown.selectedItem = settings.saveOption
 		dropdown.addActionListener {
 			settings.setSaveOption(dropdown.selectedItem as SaveOptionEnum)
 			needReload()
@@ -388,9 +388,9 @@ class JadxSettingsWindow(
 	}
 
 	private fun makeAppearanceGroup(): SettingsGroup {
-		val languageCbx = JComboBox(NLS.getLangLocales())
-		for (locale in NLS.getLangLocales()) {
-			if (locale == settings.getLangLocale()) {
+		val languageCbx = JComboBox(NLS.langLocales)
+		for (locale in NLS.langLocales) {
+			if (locale == settings.langLocale) {
 				languageCbx.selectedItem = locale
 				break
 			}
@@ -398,8 +398,8 @@ class JadxSettingsWindow(
 		languageCbx.addActionListener { settings.setLangLocale(languageCbx.selectedItem as LangLocale) }
 
 		val editorThemeManager = mainWindow.getEditorThemeManager()
-		val themesCbx = JComboBox(editorThemeManager.getThemeIdNameArray())
-		themesCbx.selectedItem = editorThemeManager.getCurrentThemeIdName()
+		val themesCbx = JComboBox(editorThemeManager.themeIdNameArray)
+		themesCbx.selectedItem = editorThemeManager.currentThemeIdName
 		themesCbx.addActionListener {
 			val selected = themesCbx.selectedItem as ThemeIdAndName?
 			if (selected != null) {
@@ -408,14 +408,14 @@ class JadxSettingsWindow(
 			}
 		}
 
-		val lafCbx = JComboBox(LafManager.getThemes())
-		lafCbx.selectedItem = settings.getLafTheme()
+		val lafCbx = JComboBox(LafManager.themes)
+		lafCbx.selectedItem = settings.lafTheme
 		lafCbx.addActionListener {
 			settings.setLafTheme(lafCbx.selectedItem as String)
 			mainWindow.loadSettings()
 		}
 
-		val uiZoomSpinner = JSpinner(SpinnerNumberModel(settings.getUiZoom().toDouble(), 0.1, 10.0, 0.25))
+		val uiZoomSpinner = JSpinner(SpinnerNumberModel(settings.uiZoom.toDouble(), 0.1, 10.0, 0.25))
 		uiZoomSpinner.addChangeListener {
 			val zoomValue = (uiZoomSpinner.value as Double).toFloat()
 			settings.setUiZoom(zoomValue)
@@ -423,7 +423,7 @@ class JadxSettingsWindow(
 		}
 
 		val applyUiZoomToFontsChB = JCheckBox()
-		applyUiZoomToFontsChB.isSelected = settings.isApplyUiZoomToFonts()
+		applyUiZoomToFontsChB.isSelected = settings.isApplyUiZoomToFonts
 		applyUiZoomToFontsChB.addItemListener { e ->
 			settings.setApplyUiZoomToFonts(e.stateChange == ItemEvent.SELECTED)
 			mainWindow.loadSettings()
@@ -443,7 +443,7 @@ class JadxSettingsWindow(
 		group.addRow(NLS.str("preferences.theme"), themesCbx)
 
 		val tabDndGhostTypeCbx = JComboBox(TabDndGhostType.values())
-		tabDndGhostTypeCbx.selectedItem = settings.getTabDndGhostType()
+		tabDndGhostTypeCbx.selectedItem = settings.tabDndGhostType
 		tabDndGhostTypeCbx.addActionListener {
 			settings.setTabDndGhostType(tabDndGhostTypeCbx.selectedItem as TabDndGhostType)
 			mainWindow.loadSettings()
@@ -478,35 +478,35 @@ class JadxSettingsWindow(
 
 	private fun makeDecompilationGroup(): SettingsGroup {
 		val useDx = JCheckBox()
-		useDx.isSelected = settings.isUseDx()
+		useDx.isSelected = settings.isUseDx
 		useDx.addItemListener { e ->
 			settings.setUseDx(e.stateChange == ItemEvent.SELECTED)
 			needReload()
 		}
 
 		val decompilationModeComboBox = JComboBox(DecompilationMode.values())
-		decompilationModeComboBox.selectedItem = settings.getDecompilationMode()
+		decompilationModeComboBox.selectedItem = settings.decompilationMode
 		decompilationModeComboBox.addActionListener {
 			settings.setDecompilationMode(decompilationModeComboBox.selectedItem as DecompilationMode)
 			needReload()
 		}
 
 		val showInconsistentCode = JCheckBox()
-		showInconsistentCode.isSelected = settings.isShowInconsistentCode()
+		showInconsistentCode.isSelected = settings.isShowInconsistentCode
 		showInconsistentCode.addItemListener { e ->
 			settings.setShowInconsistentCode(e.stateChange == ItemEvent.SELECTED)
 			needReload()
 		}
 
 		val resourceDecode = JCheckBox()
-		resourceDecode.isSelected = settings.isSkipResources()
+		resourceDecode.isSelected = settings.isSkipResources
 		resourceDecode.addItemListener { e ->
 			settings.setSkipResources(e.stateChange == ItemEvent.SELECTED)
 			needReload()
 		}
 
 		// fix for #1331
-		val threadsCountValue = settings.getThreadsCount()
+		val threadsCountValue = settings.threadsCount
 		val threadsCountMax = Math.max(2, Math.max(threadsCountValue, Runtime.getRuntime().availableProcessors() * 2))
 		val spinnerModel = SpinnerNumberModel(threadsCountValue, 1, threadsCountMax, 1)
 		val threadsCount = JSpinner(spinnerModel)
@@ -517,11 +517,11 @@ class JadxSettingsWindow(
 
 		val editExcludedPackages = JButton(NLS.str("preferences.excludedPackages.button"))
 		editExcludedPackages.addActionListener {
-			val oldExcludedPackages = settings.getExcludedPackages()
+			val oldExcludedPackages = settings.excludedPackages
 			val result = JOptionPane.showInputDialog(
 				this,
 				NLS.str("preferences.excludedPackages.editDialog"),
-				settings.getExcludedPackages(),
+				settings.excludedPackages,
 			)
 			if (result != null) {
 				settings.setExcludedPackages(result)
@@ -532,116 +532,116 @@ class JadxSettingsWindow(
 		}
 
 		val autoStartJobs = JCheckBox()
-		autoStartJobs.isSelected = settings.isAutoStartJobs()
+		autoStartJobs.isSelected = settings.isAutoStartJobs
 		autoStartJobs.addItemListener { e -> settings.setAutoStartJobs(e.stateChange == ItemEvent.SELECTED) }
 
 		val escapeUnicode = JCheckBox()
-		escapeUnicode.isSelected = settings.isEscapeUnicode()
+		escapeUnicode.isSelected = settings.isEscapeUnicode
 		escapeUnicode.addItemListener { e ->
 			settings.setEscapeUnicode(e.stateChange == ItemEvent.SELECTED)
 			needReload()
 		}
 
 		val replaceConsts = JCheckBox()
-		replaceConsts.isSelected = settings.isReplaceConsts()
+		replaceConsts.isSelected = settings.isReplaceConsts
 		replaceConsts.addItemListener { e ->
 			settings.setReplaceConsts(e.stateChange == ItemEvent.SELECTED)
 			needReload()
 		}
 
 		val respectBytecodeAccessModifiers = JCheckBox()
-		respectBytecodeAccessModifiers.isSelected = settings.isRespectBytecodeAccessModifiers()
+		respectBytecodeAccessModifiers.isSelected = settings.isRespectBytecodeAccessModifiers
 		respectBytecodeAccessModifiers.addItemListener { e ->
 			settings.setRespectBytecodeAccessModifiers(e.stateChange == ItemEvent.SELECTED)
 			needReload()
 		}
 
 		val useImports = JCheckBox()
-		useImports.isSelected = settings.isUseImports()
+		useImports.isSelected = settings.isUseImports
 		useImports.addItemListener { e ->
 			settings.setUseImports(e.stateChange == ItemEvent.SELECTED)
 			needReload()
 		}
 
 		val useDebugInfo = JCheckBox()
-		useDebugInfo.isSelected = settings.isDebugInfo()
+		useDebugInfo.isSelected = settings.isDebugInfo
 		useDebugInfo.addItemListener { e ->
 			settings.setDebugInfo(e.stateChange == ItemEvent.SELECTED)
 			needReload()
 		}
 
 		val inlineAnonymous = JCheckBox()
-		inlineAnonymous.isSelected = settings.isInlineAnonymousClasses()
+		inlineAnonymous.isSelected = settings.isInlineAnonymousClasses
 		inlineAnonymous.addItemListener { e ->
 			settings.setInlineAnonymousClasses(e.stateChange == ItemEvent.SELECTED)
 			needReload()
 		}
 
 		val inlineMethods = JCheckBox()
-		inlineMethods.isSelected = settings.isInlineMethods()
+		inlineMethods.isSelected = settings.isInlineMethods
 		inlineMethods.addItemListener { e ->
 			settings.setInlineMethods(e.stateChange == ItemEvent.SELECTED)
 			needReload()
 		}
 
 		val inlineKotlinLambdas = JCheckBox()
-		inlineKotlinLambdas.isSelected = settings.isAllowInlineKotlinLambda()
+		inlineKotlinLambdas.isSelected = settings.isAllowInlineKotlinLambda
 		inlineKotlinLambdas.addItemListener { e ->
 			settings.setAllowInlineKotlinLambda(e.stateChange == ItemEvent.SELECTED)
 			needReload()
 		}
 
 		val moveInnerClasses = JCheckBox()
-		moveInnerClasses.isSelected = settings.isMoveInnerClasses()
+		moveInnerClasses.isSelected = settings.isMoveInnerClasses
 		moveInnerClasses.addItemListener { e ->
 			settings.setMoveInnerClasses(e.stateChange == ItemEvent.SELECTED)
 			needReload()
 		}
 
 		val extractFinally = JCheckBox()
-		extractFinally.isSelected = settings.isExtractFinally()
+		extractFinally.isSelected = settings.isExtractFinally
 		extractFinally.addItemListener { e ->
 			settings.setExtractFinally(e.stateChange == ItemEvent.SELECTED)
 			needReload()
 		}
 
 		val restoreSwitchOverString = JCheckBox()
-		restoreSwitchOverString.isSelected = settings.isRestoreSwitchOverString()
+		restoreSwitchOverString.isSelected = settings.isRestoreSwitchOverString
 		restoreSwitchOverString.addItemListener { e ->
 			settings.setRestoreSwitchOverString(e.stateChange == ItemEvent.SELECTED)
 			needReload()
 		}
 
 		val fsCaseSensitive = JCheckBox()
-		fsCaseSensitive.isSelected = settings.isFsCaseSensitive()
+		fsCaseSensitive.isSelected = settings.isFsCaseSensitive
 		fsCaseSensitive.addItemListener { e ->
 			settings.setFsCaseSensitive(e.stateChange == ItemEvent.SELECTED)
 			needReload()
 		}
 
 		val kotlinRenameVars = JComboBox(UseKotlinMethodsForVarNames.values())
-		kotlinRenameVars.selectedItem = settings.getUseKotlinMethodsForVarNames()
+		kotlinRenameVars.selectedItem = settings.useKotlinMethodsForVarNames
 		kotlinRenameVars.addActionListener {
 			settings.setUseKotlinMethodsForVarNames(kotlinRenameVars.selectedItem as UseKotlinMethodsForVarNames)
 			needReload()
 		}
 
 		val commentsLevel = JComboBox(CommentsLevel.values())
-		commentsLevel.selectedItem = settings.getCommentsLevel()
+		commentsLevel.selectedItem = settings.commentsLevel
 		commentsLevel.addActionListener {
 			settings.setCommentsLevel(commentsLevel.selectedItem as CommentsLevel)
 			needReload()
 		}
 
 		val integerFormat = JComboBox(IntegerFormat.values())
-		integerFormat.selectedItem = settings.getIntegerFormat()
+		integerFormat.selectedItem = settings.integerFormat
 		integerFormat.addActionListener {
 			settings.setIntegerFormat(integerFormat.selectedItem as IntegerFormat)
 			needReload()
 		}
 
 		val typeUpdatesLimitCount = JSpinner(
-			SpinnerNumberModel(settings.getTypeUpdatesLimitCount(), 1, Short.MAX_VALUE.toInt(), 1),
+			SpinnerNumberModel(settings.typeUpdatesLimitCount, 1, Short.MAX_VALUE.toInt(), 1),
 		)
 		typeUpdatesLimitCount.addChangeListener {
 			val newValue = typeUpdatesLimitCount.value as Int
@@ -686,54 +686,54 @@ class JadxSettingsWindow(
 
 	private fun makeOtherGroup(): SettingsGroup {
 		val lineNumbersMode = JComboBox(LineNumbersMode.values())
-		lineNumbersMode.selectedItem = settings.getLineNumbersMode()
+		lineNumbersMode.selectedItem = settings.lineNumbersMode
 		lineNumbersMode.addActionListener {
 			settings.setLineNumbersMode(lineNumbersMode.selectedItem as LineNumbersMode)
 			mainWindow.loadSettings()
 		}
 
 		val jumpOnDoubleClick = JCheckBox()
-		jumpOnDoubleClick.isSelected = settings.isJumpOnDoubleClick()
+		jumpOnDoubleClick.isSelected = settings.isJumpOnDoubleClick
 		jumpOnDoubleClick.addItemListener { e -> settings.setJumpOnDoubleClick(e.stateChange == ItemEvent.SELECTED) }
 
-		val resultsPerPage = JSpinner(SpinnerNumberModel(settings.getSearchResultsPerPage(), 0, Int.MAX_VALUE, 1))
+		val resultsPerPage = JSpinner(SpinnerNumberModel(settings.searchResultsPerPage, 0, Int.MAX_VALUE, 1))
 		resultsPerPage.addChangeListener { settings.setSearchResultsPerPage(resultsPerPage.value as Int) }
 
 		val useAltFileDialog = JCheckBox()
-		useAltFileDialog.isSelected = settings.isUseAlternativeFileDialog()
+		useAltFileDialog.isSelected = settings.isUseAlternativeFileDialog
 		useAltFileDialog.addItemListener { e -> settings.setUseAlternativeFileDialog(e.stateChange == ItemEvent.SELECTED) }
 
 		val update = JCheckBox()
-		update.isSelected = settings.isCheckForUpdates()
+		update.isSelected = settings.isCheckForUpdates
 		update.addItemListener { e -> settings.setCheckForUpdates(e.stateChange == ItemEvent.SELECTED) }
 
 		val disableTooltipOnHover = JCheckBox()
-		disableTooltipOnHover.isSelected = settings.isDisableTooltipOnHover()
+		disableTooltipOnHover.isSelected = settings.isDisableTooltipOnHover
 		disableTooltipOnHover.addItemListener { e -> settings.setDisableTooltipOnHover(e.stateChange == ItemEvent.SELECTED) }
 
 		val cfg = JCheckBox()
-		cfg.isSelected = settings.isCfgOutput()
+		cfg.isSelected = settings.isCfgOutput
 		cfg.addItemListener { e ->
 			settings.setCfgOutput(e.stateChange == ItemEvent.SELECTED)
 			needReload()
 		}
 
 		val rawCfg = JCheckBox()
-		rawCfg.isSelected = settings.isRawCfgOutput()
+		rawCfg.isSelected = settings.isRawCfgOutput
 		rawCfg.addItemListener { e ->
 			settings.setRawCfgOutput(e.stateChange == ItemEvent.SELECTED)
 			needReload()
 		}
 
 		val xposedCodegenLanguage = JComboBox(XposedCodegenLanguage.values())
-		xposedCodegenLanguage.selectedItem = settings.getXposedCodegenLanguage()
+		xposedCodegenLanguage.selectedItem = settings.xposedCodegenLanguage
 		xposedCodegenLanguage.addActionListener {
 			settings.setXposedCodegenLanguage(xposedCodegenLanguage.selectedItem as XposedCodegenLanguage)
 			mainWindow.loadSettings()
 		}
 
 		val updateChannel = JComboBox(JadxUpdateChannel.values())
-		updateChannel.selectedItem = settings.getJadxUpdateChannel()
+		updateChannel.selectedItem = settings.jadxUpdateChannel
 		updateChannel.addActionListener {
 			settings.setJadxUpdateChannel(updateChannel.selectedItem as JadxUpdateChannel)
 			mainWindow.loadSettings()
@@ -768,11 +768,11 @@ class JadxSettingsWindow(
 				mainWindow.getShortcutsController().loadSettings()
 				mainWindow.reopen()
 			}
-			if (settings.getLangLocale() != prevLang) {
+			if (settings.langLocale != prevLang) {
 				JOptionPane.showMessageDialog(
 					this,
-					NLS.str("msg.language_changed", settings.getLangLocale()),
-					NLS.str("msg.language_changed_title", settings.getLangLocale()),
+					NLS.str("msg.language_changed", settings.langLocale),
+					NLS.str("msg.language_changed_title", settings.langLocale),
 					JOptionPane.INFORMATION_MESSAGE,
 				)
 			}
@@ -820,7 +820,7 @@ class JadxSettingsWindow(
 	private fun shouldReload(): Boolean = needReloadFlag || startSettingsHash != calcSettingsHash()
 
 	private fun calcSettingsHash(): String {
-		val decompiler = mainWindow.getWrapper().getCurrentDecompiler()
+		val decompiler = mainWindow.getWrapper().currentDecompiler
 		return settings.toJadxArgs().makeCodeArgsHash(decompiler)
 	}
 

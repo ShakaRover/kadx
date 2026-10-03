@@ -16,7 +16,7 @@ class CommentSearchAction(codeArea: CodeArea) : CodeAreaAction(ActionModel.CODE_
 	}
 
 	private fun startSearch() {
-		SearchDialog.searchInActiveTab(checkNotNull(codeArea).getMainWindow(), SearchDialog.SearchPreset.COMMENT)
+		SearchDialog.searchInActiveTab(checkNotNull(codeArea).mainWindow, SearchDialog.SearchPreset.COMMENT)
 	}
 
 	companion object {

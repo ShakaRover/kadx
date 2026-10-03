@@ -16,7 +16,7 @@ import javax.swing.ImageIcon
  */
 class JSources(jRoot: JRoot, private val wrapper: JadxWrapper) : JNode() {
 
-	private val flatPackages: Boolean = jRoot.isFlatPackages()
+	private val flatPackages: Boolean = jRoot.isFlatPackages
 
 	init {
 		update()
@@ -24,7 +24,7 @@ class JSources(jRoot: JRoot, private val wrapper: JadxWrapper) : JNode() {
 
 	fun update() {
 		removeAllChildren()
-		val packageHelper: PackageHelper = wrapper.getCache().getPackageHelper()
+		val packageHelper: PackageHelper = wrapper.cache.getPackageHelper()
 		val roots = packageHelper.getRoots(flatPackages)
 		for (rootPkg in roots) {
 			rootPkg.update()

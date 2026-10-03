@@ -91,7 +91,7 @@ class TabDndController(tabbedPane: TabbedPane, settings: JadxSettings) {
 	 * @param glassPt 光标在 TabbedPane 坐标系中的位置。
 	 */
 	fun scrollIfNeeded(glassPt: Point) {
-		val r = getTabAreaBounds()
+		val r = tabAreaBounds
 		val isHorizontal = isHorizontalTabPlacement(pane.getTabPlacement())
 
 		// 尽量不同时计算两个方向，优先向前。
@@ -241,7 +241,7 @@ class TabDndController(tabbedPane: TabbedPane, settings: JadxSettings) {
 		if (drawGhost) {
 			val c = pane.getTabComponentAt(dragTabIndex) ?: return
 			val d = c.getPreferredSize()
-			when (tabDndGhostPane.getGhostType()) {
+			when (tabDndGhostPane.ghostType) {
 				TabDndGhostType.IMAGE -> {
 					val env = GraphicsEnvironment.getLocalGraphicsEnvironment()
 					val device: GraphicsDevice = env.getDefaultScreenDevice()
@@ -267,7 +267,7 @@ class TabDndController(tabbedPane: TabbedPane, settings: JadxSettings) {
 		tabDndGhostPane.setVisible(true)
 	}
 
-	fun getTabAreaBounds(): Rectangle {
+	val tabAreaBounds: Rectangle get() {
 		val tabbedRect = pane.getBounds()
 		val selectedComponent = pane.getSelectedComponent()
 		val compRect = if (selectedComponent != null) selectedComponent.getBounds() else Rectangle()
@@ -290,7 +290,7 @@ class TabDndController(tabbedPane: TabbedPane, settings: JadxSettings) {
 	fun onPaintGlassPane(g: Graphics2D) {
 		val isScrollLayout = pane.getTabLayoutPolicy() == JTabbedPane.SCROLL_TAB_LAYOUT
 		if (isScrollLayout && paintScrollTriggerAreas) {
-			g.setPaint(tabDndGhostPane.getColor())
+			g.setPaint(tabDndGhostPane.color)
 			g.fill(rectBackward)
 			g.fill(rectForward)
 		}
@@ -321,7 +321,7 @@ class TabDndController(tabbedPane: TabbedPane, settings: JadxSettings) {
 		isDragging = dragging
 	}
 
-	fun getDndGhostPane(): TabDndGhostPane? = tabDndGhostPane
+	val dndGhostPane: TabDndGhostPane? get() = tabDndGhostPane
 
 	companion object {
 		private const val DROP_TARGET_MARK_SIZE = 4
@@ -330,7 +330,6 @@ class TabDndController(tabbedPane: TabbedPane, settings: JadxSettings) {
 		private const val ACTION_SCROLL_FORWARD = "scrollTabsForwardAction"
 		private const val ACTION_SCROLL_BACKWARD = "scrollTabsBackwardAction"
 
-		@JvmStatic
 		fun isHorizontalTabPlacement(tabPlacement: Int): Boolean = tabPlacement == JTabbedPane.TOP || tabPlacement == JTabbedPane.BOTTOM
 	}
 }

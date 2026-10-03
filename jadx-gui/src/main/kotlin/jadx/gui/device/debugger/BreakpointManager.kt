@@ -48,7 +48,6 @@ object BreakpointManager {
 	private var listeners: MutableMap<String, Map.Entry<ClassNode, Listener>> = HashMap()
 
 	/** 退出前保存并清空内存状态。 */
-	@JvmStatic
 	fun saveAndExit() {
 		sync()
 		bpm = HashMap()
@@ -57,7 +56,6 @@ object BreakpointManager {
 	}
 
 	/** 从 [baseDir] 目录加载 `breakpoints.json`。 */
-	@JvmStatic
 	fun init(baseDir: Path?) {
 		val saveDir = baseDir ?: Paths.get(".")
 		val path = saveDir.resolve("breakpoints.json") // TODO: 移到项目文件或与项目文件同目录
@@ -79,26 +77,23 @@ object BreakpointManager {
 	 *
 	 * @param listener 断点下发失败时回调
 	 */
-	@JvmStatic
 	fun addListener(topCls: JClass, listener: Listener) {
 		listeners[DbgUtils.getRawFullName(topCls)] =
 			SimpleEntry(topCls.getCls().getClassNode(), listener)
 	}
 
-	@JvmStatic
 	fun removeListener(topCls: JClass) {
 		listeners.remove(DbgUtils.getRawFullName(topCls))
 	}
 
 	/** @return 指定类中所有断点对应的 smali 行位置 */
-	@JvmStatic
 	fun getPositions(topCls: JClass): List<Int> {
 		val bps = bpm[DbgUtils.getRawFullName(topCls)]
 		if (bps != null && bps.isNotEmpty()) {
 			val smali: Smali = DbgUtils.getSmali(topCls.getCls().getClassNode())
 			val posList = ArrayList<Int>(bps.size)
 			for (bp in bps) {
-				val pos = smali.getInsnPosByCodeOffset(bp.getFullMthRawID(), bp.codeOffset)
+				val pos = smali.getInsnPosByCodeOffset(bp.fullMthRawID, bp.codeOffset)
 				if (pos > -1) {
 					posList.add(pos)
 				}
@@ -109,14 +104,13 @@ object BreakpointManager {
 	}
 
 	/** 在指定 smali 行设置断点，必要时同步到调试器。 */
-	@JvmStatic
 	fun set(topCls: JClass, line: Int): Boolean {
 		val lineInfo = DbgUtils.getCodeOffsetInfoByLine(topCls, line)
 		if (lineInfo != null) {
 			val name = DbgUtils.getRawFullName(topCls)
 			val list = bpm.computeIfAbsent(name) { ArrayList() }
 			val bkp = list.firstOrNull {
-				it.codeOffset == lineInfo.value.toLong() && it.getFullMthRawID() == lineInfo.key
+				it.codeOffset == lineInfo.value.toLong() && it.fullMthRawID == lineInfo.key
 			}
 			var ok = true
 			if (bkp == null) {
@@ -136,7 +130,6 @@ object BreakpointManager {
 	}
 
 	/** 移除指定 smali 行的断点，必要时同步到调试器。 */
-	@JvmStatic
 	fun remove(topCls: JClass, line: Int): Boolean {
 		val lineInfo = DbgUtils.getCodeOffsetInfoByLine(topCls, line)
 		if (lineInfo != null) {
@@ -145,7 +138,7 @@ object BreakpointManager {
 				val it = bps.iterator()
 				while (it.hasNext()) {
 					val bp = it.next()
-					if (bp.codeOffset == lineInfo.value.toLong() && bp.getFullMthRawID() == lineInfo.key) {
+					if (bp.codeOffset == lineInfo.value.toLong() && bp.fullMthRawID == lineInfo.key) {
 						it.remove()
 						val dc = debugController
 						if (dc != null) {
@@ -189,7 +182,7 @@ object BreakpointManager {
 			this.codeOffset = codeOffset
 		}
 
-		internal fun getFullMthRawID(): String = "$cls.$mth"
+		internal val fullMthRawID: String get() = "$cls.$mth"
 
 		override fun hashCode(): Int = Objects.hash(codeOffset, cls, mth)
 
@@ -205,7 +198,7 @@ object BreakpointManager {
 	}
 
 	/** @return 所有已保存的断点 */
-	internal fun getAllBreakpoints(): List<FileBreakpoint> {
+	internal val allBreakpoints: List<FileBreakpoint> get() {
 		val bpList = ArrayList<FileBreakpoint>()
 		for (entry in bpm.entries) {
 			bpList.addAll(entry.value)
@@ -217,7 +210,7 @@ object BreakpointManager {
 	internal fun failBreakpoint(bp: FileBreakpoint) {
 		val entry = listeners[bp.cls]
 		if (entry != null) {
-			var pos = DbgUtils.getSmali(entry.key).getInsnPosByCodeOffset(bp.getFullMthRawID(), bp.codeOffset)
+			var pos = DbgUtils.getSmali(entry.key).getInsnPosByCodeOffset(bp.fullMthRawID, bp.codeOffset)
 			pos = maxOf(0, pos)
 			entry.value.breakpointDisabled(pos)
 		}

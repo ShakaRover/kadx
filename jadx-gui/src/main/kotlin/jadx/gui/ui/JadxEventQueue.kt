@@ -28,7 +28,6 @@ class JadxEventQueue private constructor() : EventQueue() {
 		private val IS_X_TOOLKIT: Boolean = JadxSystemInfo.IS_LINUX &&
 			"sun.awt.X11.XToolkit" == Toolkit.getDefaultToolkit().javaClass.name
 
-		@JvmStatic
 		fun register() {
 			if (IS_X_TOOLKIT) {
 				Toolkit.getDefaultToolkit().systemEventQueue.push(JadxEventQueue())

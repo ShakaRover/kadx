@@ -51,7 +51,7 @@ class JClassPopupMenu(private val mainWindow: MainWindow, jClass: JClass) : JPop
 
 			val fileDialog = FileDialogWrapper(mainWindow, FileOpenMode.EXPORT_NODE)
 			fileDialog.setFileExtList(listOf(exportType.extension))
-			val currentDir: Path? = fileDialog.getCurrentDir()
+			val currentDir: Path? = fileDialog.currentDir
 			if (currentDir != null) {
 				fileDialog.setSelectedFile(currentDir.resolve(fileName))
 			}
@@ -82,7 +82,6 @@ class JClassPopupMenu(private val mainWindow: MainWindow, jClass: JClass) : JPop
 		private val LOG = LoggerFactory.getLogger(JClassPopupMenu::class.java)
 
 		/** 保存类代码到指定路径（供包导出复用）。 */
-		@JvmStatic
 		fun saveJClass(jClass: JClass, savePath: Path, exportType: JClassExportType) {
 			SaveCode.save(getCode(jClass, exportType), savePath.toFile())
 		}
@@ -90,7 +89,7 @@ class JClassPopupMenu(private val mainWindow: MainWindow, jClass: JClass) : JPop
 		private fun getCode(jClass: JClass, exportType: JClassExportType): String = when (exportType) {
 			JClassExportType.Code -> jClass.getCodeInfo().getCodeStr()
 
-			JClassExportType.Smali -> jClass.getSmali()
+			JClassExportType.Smali -> jClass.smali
 
 			JClassExportType.Simple -> {
 				val jClassSimple: JNode = JCodeMode(jClass, DecompilationMode.SIMPLE)

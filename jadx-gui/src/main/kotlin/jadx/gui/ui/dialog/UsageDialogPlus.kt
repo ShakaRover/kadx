@@ -112,7 +112,7 @@ class UsageDialogPlus private constructor(
 		usageTree.putClientProperty("JTree.lineStyle", "Horizontal")
 		usageTree.setRowHeight(22)
 		usageTree.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5))
-		usageTree.setFont(mainWindow.getSettings().getCodeFont())
+		usageTree.setFont(mainWindow.getSettings().codeFont)
 
 		// 使用自定义渲染器代替自定义 UI
 		usageTree.setCellRenderer(PathHighlightTreeCellRenderer())
@@ -338,8 +338,8 @@ class UsageDialogPlus private constructor(
 		return count
 	}
 	private fun prepareUsageData(node: JNode) {
-		if (mainWindow.getSettings().isReplaceConsts() && node is JField) {
-			val fld: FieldNode = node.getJavaField().getFieldNode()
+		if (mainWindow.getSettings().isReplaceConsts && node is JField) {
+			val fld: FieldNode = node.javaField.getFieldNode()
 			val constField = CollectConstValues.getFieldConstValue(fld) != null
 			if (constField && !fld.accessFlags.isPrivate()) {
 				// 执行完整反编译，为全量代码扫描做准备
@@ -370,7 +370,7 @@ class UsageDialogPlus private constructor(
 	private fun buildUsageQuery(node: JNode): Map<JavaNode, List<JavaNode>> {
 		val map = HashMap<JavaNode, List<JavaNode>>()
 		if (node is JMethod) {
-			val javaMethod: JavaMethod = node.getJavaMethod()
+			val javaMethod: JavaMethod = node.javaMethod
 			for (mth in getMethodWithOverrides(javaMethod)) {
 				map[mth] = mth.getUseIn()
 			}
@@ -387,12 +387,12 @@ class UsageDialogPlus private constructor(
 			}
 			return map
 		}
-		if (node is JField && mainWindow.getSettings().isReplaceConsts()) {
-			val fld: FieldNode = node.getJavaField().getFieldNode()
+		if (node is JField && mainWindow.getSettings().isReplaceConsts) {
+			val fld: FieldNode = node.javaField.getFieldNode()
 			val constField = CollectConstValues.getFieldConstValue(fld) != null
 			if (constField && !fld.accessFlags.isPrivate()) {
 				// 搜索全部类以收集被替换常量的引用
-				map[checkNotNull(fld.javaNode)] = mainWindow.getWrapper().getIncludedClasses()
+				map[checkNotNull(fld.javaNode)] = mainWindow.getWrapper().includedClasses
 				return map
 			}
 		}
@@ -422,7 +422,7 @@ class UsageDialogPlus private constructor(
 			if (line.startsWith("import ")) {
 				continue
 			}
-			val nodeCache: JNodeCache = getNodeCache()
+			val nodeCache: JNodeCache = nodeCache
 			val enclosingNode = wrapper.getEnclosingNode(codeInfo, pos)
 			val rootJCls: JClass = checkNotNull(nodeCache.makeFrom(topUseClass))
 			val usageJNode: JNode = if (enclosingNode == null) rootJCls else checkNotNull(nodeCache.makeFrom(enclosingNode))
@@ -437,7 +437,7 @@ class UsageDialogPlus private constructor(
 			try {
 				// 尝试获取 CodeNode 引用的实际节点
 				val javaNode: JavaNode? = codeNode.getJavaNode()
-				val nodeCache: JNodeCache = getNodeCache()
+				val nodeCache: JNodeCache = nodeCache
 				var node: JNode? = nodeCache.makeFrom(javaNode)
 
 				// 若无法直接获取，则回退到 jParent
@@ -537,7 +537,7 @@ class UsageDialogPlus private constructor(
 		rootPane.defaultButton = openBtn
 
 		val cbKeepOpen = JCheckBox(NLS.str("search_dialog.keep_open"))
-		cbKeepOpen.isSelected = mainWindow.getSettings().isKeepCommonDialogOpen()
+		cbKeepOpen.isSelected = mainWindow.getSettings().isKeepCommonDialogOpen
 		cbKeepOpen.addActionListener { mainWindow.getSettings().saveKeepCommonDialogOpen(cbKeepOpen.isSelected) }
 		cbKeepOpen.setAlignmentY(Component.CENTER_ALIGNMENT)
 
@@ -556,7 +556,7 @@ class UsageDialogPlus private constructor(
 
 	override fun openSelectedItem() {
 		// 获取当前选中节点
-		val node = getPlusSelectedNode()
+		val node = plusSelectedNode
 		if (node == null) {
 			return
 		}
@@ -571,7 +571,7 @@ class UsageDialogPlus private constructor(
 		// 树加载已单独处理
 	}
 
-	private fun getPlusSelectedNode(): JNode? {
+	private val plusSelectedNode: JNode? get() {
 		try {
 			val node = usageTree.getLastSelectedPathComponent() as? DefaultMutableTreeNode ?: return null
 
@@ -592,7 +592,6 @@ class UsageDialogPlus private constructor(
 		private const val serialVersionUID = -5105405789969134107L
 
 		/** 打开增强版用法对话框。 */
-		@JvmStatic
 		fun open(mainWindow: MainWindow, node: JNode) {
 			val usageDialog = UsageDialogPlus(mainWindow, node)
 			mainWindow.addLoadListener(object : ILoadListener {

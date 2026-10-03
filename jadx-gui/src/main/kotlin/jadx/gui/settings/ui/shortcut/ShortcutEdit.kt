@@ -63,14 +63,14 @@ class ShortcutEdit(
 	}
 
 	private fun saveShortcut() {
-		settings.getShortcuts().put(actionModel, checkNotNull(shortcut))
+		settings.shortcuts.put(actionModel, checkNotNull(shortcut))
 		settingsWindow.needReload()
 	}
 
 	private fun verifyShortcut(shortcut: Shortcut): Boolean {
 		var otherAction: ActionModel? = null
 		for (a in ActionModel.values()) {
-			if (actionModel != a && shortcut == settings.getShortcuts().get(a)) {
+			if (actionModel != a && shortcut == settings.shortcuts.get(a)) {
 				otherAction = a
 				break
 			}
@@ -99,13 +99,13 @@ class ShortcutEdit(
 		init {
 			KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(object : KeyEventDispatcher {
 				override fun dispatchKeyEvent(ev: KeyEvent): Boolean {
-					if (!isListening()) {
+					if (!isListening) {
 						return false
 					}
 
 					if (ev.id == KeyEvent.KEY_PRESSED) {
 						val pressedShortcut = Shortcut.keyboard(ev.keyCode, ev.modifiersEx)
-						if (pressedShortcut.isValidKeyboard()) {
+						if (pressedShortcut.isValidKeyboard) {
 							tempShortcut = pressedShortcut
 							refresh(pressedShortcut)
 						} else {
@@ -141,7 +141,7 @@ class ShortcutEdit(
 			Toolkit.getDefaultToolkit().addAWTEventListener(
 				object : AWTEventListener {
 					override fun eventDispatched(event: AWTEvent) {
-						if (!isListening()) {
+						if (!isListening) {
 							return
 						}
 
@@ -185,7 +185,7 @@ class ShortcutEdit(
 		}
 
 		private fun refresh(displayedShortcut: Shortcut?) {
-			if (displayedShortcut == null || displayedShortcut.isNone()) {
+			if (displayedShortcut == null || displayedShortcut.isNone) {
 				text = "None"
 				foreground = UIManager.getColor("TextArea.inactiveForeground")
 				return
@@ -199,7 +199,7 @@ class ShortcutEdit(
 			rootPane.requestFocus()
 		}
 
-		private fun isListening(): Boolean = isFocusOwner
+		private val isListening: Boolean get() = isFocusOwner
 	}
 
 	companion object {

@@ -15,8 +15,8 @@ open class CodeAreaAction : JadxGuiAction {
 	 * 使用 `@JvmField` 暴露给 Java 子类直接读写（原 Java 为 `protected` 字段）；
 	 * `@Transient` 保持原 `transient` 语义，避免随 Swing Action 序列化。
 	 */
-	@JvmField
 	@Transient
+	@JvmField
 	protected var codeArea: CodeArea? = null
 
 	constructor(actionModel: ActionModel, codeArea: CodeArea) : super(actionModel) {

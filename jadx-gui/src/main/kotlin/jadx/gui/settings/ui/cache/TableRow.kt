@@ -32,7 +32,7 @@ class TableRow(private val cacheEntry: CacheEntry) {
 		this.usage = usage
 	}
 
-	fun isSelected(): Boolean = selected
+	val isSelected: Boolean get() = selected
 
 	fun setSelected(selected: Boolean) {
 		this.selected = selected

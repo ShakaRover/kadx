@@ -20,7 +20,6 @@ object FontUtils {
 	private val LOG: Logger = LoggerFactory.getLogger(FontUtils::class.java)
 
 	/** 解析 `家族/样式/字号` 描述串（例如 `JetBrains Mono/bold italic/13`）为 [Font]。 */
-	@JvmStatic
 	fun loadByStr(fontDesc: String): Font {
 		val parts = fontDesc.split("/")
 		if (parts.size != 3) {
@@ -38,7 +37,6 @@ object FontUtils {
 	}
 
 	/** 把 [Font] 序列化为 `家族/样式/字号` 描述串；null 返回空串。 */
-	@JvmStatic
 	fun convertToStr(font: Font?): String {
 		if (font == null) {
 			return ""
@@ -52,7 +50,6 @@ object FontUtils {
 	}
 
 	/** 把 [Font] 的样式位掩码转换为可读字符串（plain/bold/italic）。 */
-	@JvmStatic
 	fun convertFontStyleToString(style: Int): String {
 		if (style == 0) {
 			return "plain"
@@ -80,7 +77,6 @@ object FontUtils {
 	}
 
 	/** 从 `resources/fonts/<name>.ttf` 加载内置字体；失败返回 null。 */
-	@JvmStatic
 	fun openFontTTF(name: String): Font? {
 		val fontPath = "/fonts/$name.ttf"
 		return try {
@@ -94,7 +90,6 @@ object FontUtils {
 	}
 
 	/** 判断 [font] 是否能显示 [str] 中的全部码点。 */
-	@JvmStatic
 	fun canStringBeDisplayed(str: String?, font: Font): Boolean {
 		if (str == null || str.isEmpty()) {
 			return true
@@ -117,10 +112,8 @@ object FontUtils {
 	 * 切换字体时应使用 `font.deriveFont()` 或本方法，而不是 `new Font(...)`，
 	 * 否则会丢失 FlatLaf 的 CJK 字体支持。
 	 */
-	@JvmStatic
 	fun getCompositeFont(family: String, style: Int, size: Int): Font = com.formdev.flatlaf.util.FontUtils.getCompositeFont(family, style, size)
 
 	/** 把任意字体转换为对应的复合字体。 */
-	@JvmStatic
 	fun toCompositeFont(font: Font): Font = getCompositeFont(font.family, font.style, font.size)
 }

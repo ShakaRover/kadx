@@ -22,7 +22,7 @@ class EditorSyncManager(
 
 	/** 把树的选中项同步到当前选中的内容面板对应节点。 */
 	fun sync() {
-		val selectedContentPanel = tabbedPane.getSelectedContentPanel()
+		val selectedContentPanel = tabbedPane.selectedContentPanel
 		if (selectedContentPanel != null) {
 			mainWindow.selectNodeInTree(selectedContentPanel.getNode())
 		}
@@ -30,9 +30,9 @@ class EditorSyncManager(
 
 	override fun onTabSelect(blueprint: TabBlueprint) {
 		mainWindow.updateHexViewMenuEnabled()
-		if (mainWindow.getSettings().isAlwaysSelectOpened()) {
+		if (mainWindow.getSettings().isAlwaysSelectOpened) {
 			// 确认该蓝图确实打开了标签页（有些节点不会打开内容面板）
-			val selectedContentPanel = tabbedPane.getSelectedContentPanel()
+			val selectedContentPanel = tabbedPane.selectedContentPanel
 			if (selectedContentPanel != null && selectedContentPanel.getNode() == blueprint.node) {
 				sync()
 			}

@@ -93,7 +93,6 @@ class ConvertNumberAction(codeArea: CodeArea) : CommentAction(ActionModel.CONVER
 		 * 尝试从输入字符串解析数字，返回该数字的不同进制表示列表。
 		 * 例如输入十六进制会转换为十进制与二进制。
 		 */
-		@JvmStatic
 		fun getConversionsFromWord(word: String?): List<String> {
 			if (word == null || word.isEmpty() || word == "0" || word == "0L") {
 				return emptyList()

@@ -63,13 +63,12 @@ class MethodDeclaration private constructor(
 
 	companion object {
 		/** 从 Java 声明行创建方法声明。 */
-		@JvmStatic
 		fun create(line: JavaCodeAreaLine): MethodDeclaration {
 			val methodName = line.extractDeclaredMethodName()
 				?: throw FallbackSyncException("no method name found in java declaration")
 
 			// 取返回类型字符串
-			val trimmed = line.getTrimmedStr()
+			val trimmed = line.trimmedStr
 			val methodNameStartPos = trimmed.indexOf(methodName)
 			// -2 跳到返回类型最后一个字符，+1 到返回类型第一个字符
 			var returnTypeStartPos = trimmed.lastIndexOf(' ', methodNameStartPos - 2) + 1
@@ -94,13 +93,12 @@ class MethodDeclaration private constructor(
 		}
 
 		/** 从 Smali 声明行创建方法声明。 */
-		@JvmStatic
 		fun create(line: SmaliAreaLine): MethodDeclaration {
 			val methodName = line.extractDeclaredMethodName()
 				?: throw FallbackSyncException("no method name found in smali declaration")
 
 			// 取返回类型字符串
-			val trimmed = line.getTrimmedStr()
+			val trimmed = line.trimmedStr
 			var returnStr = trimmed.substring(trimmed.indexOf(')') + 1)
 			returnStr = if (returnStr.endsWith(";")) returnStr.substring(0, returnStr.length - 1) else returnStr
 
@@ -144,11 +142,11 @@ class MethodDeclaration private constructor(
 		private val smaliName: String,
 		private val javaName: String,
 	) {
-		private fun isNonPrimitive(): Boolean = smaliName.startsWith("L")
+		private val isNonPrimitive: Boolean get() = smaliName.startsWith("L")
 
 		override fun equals(other: Any?): Boolean {
 			if (other is Type) {
-				if (other.isNonPrimitive() || this.isNonPrimitive()) {
+				if (other.isNonPrimitive || this.isNonPrimitive) {
 					// 可能有一方缺少包名前缀
 					return other.javaName.endsWith(this.javaName) || this.javaName.endsWith(other.javaName)
 				}
@@ -162,10 +160,8 @@ class MethodDeclaration private constructor(
 		override fun toString(): String = "@" + smaliName + "-OR-" + javaName + "@"
 
 		companion object {
-			@JvmStatic
 			fun fromJavaName(name: String): Type = Type(Utils.javaNameToSmaliName(name), name)
 
-			@JvmStatic
 			fun fromSmaliName(name: String): Type = Type(name, Utils.smaliNameToJavaName(name))
 		}
 	}

@@ -20,7 +20,7 @@ open class SmaliSyncer(private val from: SmaliArea) : CodeAreaSyncer {
 	override fun syncTo(to: CodeArea): Boolean = debugLineSyncer.syncTo(to) || insnOffsetSyncer.syncTo(to)
 
 	override fun syncTo(to: SmaliArea): Boolean {
-		if (from.isShowingDalvikBytecode() == to.isShowingDalvikBytecode()) {
+		if (from.isShowingDalvikBytecode == to.isShowingDalvikBytecode) {
 			// smali -> smali：只有内容模式相同时才滚动到当前行
 			to.scrollToPos(from.getLineStartOffsetOfCurrentLine())
 		}

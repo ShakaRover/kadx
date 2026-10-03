@@ -13,8 +13,8 @@ class SmaliAreaToken(area: SmaliArea, at: Int) : AbstractCodeAreaToken(area, at)
 		val line = getLine()
 		val startsWithField = line.isFieldDeclaration()
 		if (startsWithField) {
-			val tokenStr = getStr()
-			val trimmedLine = line.getTrimmedStr()
+			val tokenStr = str
+			val trimmedLine = line.trimmedStr
 			val lineTokenStartPos = trimmedLine.indexOf(tokenStr)
 			val lineTokenAfterPos = lineTokenStartPos + length
 			for (i in lineTokenAfterPos until trimmedLine.length) {

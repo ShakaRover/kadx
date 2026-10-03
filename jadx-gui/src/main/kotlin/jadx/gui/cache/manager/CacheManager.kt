@@ -65,7 +65,7 @@ class CacheManager(private val settings: JadxSettings) {
 	}
 
 	/** 按最近使用时间倒序返回全部缓存记录。 */
-	fun getCachesList(): List<CacheEntry> {
+	val cachesList: List<CacheEntry> get() {
 		val list = ArrayList(cacheMap.values)
 		Collections.sort(list)
 		return list
@@ -94,7 +94,7 @@ class CacheManager(private val settings: JadxSettings) {
 
 	/** 把缓存目录转换为显示/持久化用的字符串；配置为 `.` 时只返回目录名。 */
 	fun buildCacheDirStr(dir: Path): String {
-		if (settings.getCacheDir() == ".") {
+		if (settings.cacheDir == ".") {
 			return dir.fileName.toString()
 		}
 		return pathToString(dir)
@@ -102,7 +102,7 @@ class CacheManager(private val settings: JadxSettings) {
 
 	/** 根据设置构建新项目的缓存目录。 */
 	private fun buildCacheDir(project: JadxProject): Path {
-		val cacheDirValue = settings.getCacheDir()
+		val cacheDirValue = settings.cacheDir
 		if (cacheDirValue == ".") {
 			return buildLocalCacheDir(project)
 		}
@@ -119,7 +119,7 @@ class CacheManager(private val settings: JadxSettings) {
 		if (projectPath != null) {
 			return projectPath.resolveSibling(projectPath.fileName.toString() + ".cache")
 		}
-		val files = project.getFilePaths()
+		val files = project.filePaths
 		if (files.isEmpty()) {
 			throw JadxRuntimeException("Failed to build local cache dir")
 		}
@@ -232,7 +232,7 @@ class CacheManager(private val settings: JadxSettings) {
 		try {
 			val map = HashMap<String, CacheEntry>()
 			var t = System.currentTimeMillis()
-			for (project in settings.getRecentProjects()) {
+			for (project in settings.recentProjects) {
 				try {
 					val data = JadxProject.loadProjectData(project)
 					val cacheDir = data.getCacheDir()
@@ -270,7 +270,6 @@ class CacheManager(private val settings: JadxSettings) {
 		private val CACHES_TYPE: Type = object : TypeToken<List<CacheEntry>>() {}.type
 
 		/** 把路径规范化为绝对路径字符串，失败时抛出运行时异常。 */
-		@JvmStatic
 		fun pathToString(path: Path): String {
 			try {
 				return path.toAbsolutePath().normalize().toString()

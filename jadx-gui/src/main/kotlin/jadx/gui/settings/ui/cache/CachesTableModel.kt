@@ -32,7 +32,7 @@ class CachesTableModel : AbstractTableModel() {
 
 	fun changeSelection(idx: Int) {
 		val row = rows[idx]
-		row.setSelected(!row.isSelected())
+		row.setSelected(!row.isSelected)
 	}
 
 	companion object {

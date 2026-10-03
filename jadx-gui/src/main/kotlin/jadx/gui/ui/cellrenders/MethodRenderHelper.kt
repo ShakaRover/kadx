@@ -31,7 +31,6 @@ object MethodRenderHelper {
 	 * 注意：这里刻意保留原 Java 的“顺序覆盖”写法——后面的判断会覆盖前面的结果，
 	 * 因此 `synchronized` 的图标优先级最高，`abstract` 最低，语义与原来完全一致。
 	 */
-	@JvmStatic
 	fun getIcon(mth: JavaMethod): Icon {
 		val accessFlags = mth.getAccessFlags()
 		var icon: Icon = Icons.METHOD
@@ -68,7 +67,6 @@ object MethodRenderHelper {
 	 * 生成方法基础展示文本，例如 `foo(int, String)`；构造器使用类名。
 	 * 类初始化块（`<clinit>`）特殊显示为 `{...}`。
 	 */
-	@JvmStatic
 	fun makeBaseString(mth: JavaMethod): String {
 		if (mth.isClassInit()) {
 			return "{...}"

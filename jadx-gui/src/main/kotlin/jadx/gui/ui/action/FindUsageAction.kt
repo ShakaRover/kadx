@@ -12,7 +12,7 @@ import jadx.gui.ui.dialog.UsageDialog
 class FindUsageAction(codeArea: CodeArea) : JNodeAction(ActionModel.FIND_USAGE, codeArea) {
 
 	override fun runAction(node: JNode) {
-		UsageDialog.open(getCodeArea().getMainWindow(), node)
+		UsageDialog.open(getCodeArea().mainWindow, node)
 	}
 
 	companion object {

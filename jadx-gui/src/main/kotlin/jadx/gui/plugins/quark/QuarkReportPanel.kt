@@ -51,7 +51,7 @@ class QuarkReportPanel(
 	private val data: QuarkReportData,
 ) : ContentPanel(panel, node) {
 
-	private val nodeCache: JNodeCache = panel.getMainWindow().getCacheObject().getNodeCache()
+	private val nodeCache: JNodeCache = panel.getMainWindow().getCacheObject().nodeCache
 
 	private lateinit var header: JEditorPane
 	private lateinit var tree: JTree
@@ -110,7 +110,7 @@ class QuarkReportPanel(
 				if (SwingUtilities.isLeftMouseButton(event)) {
 					val node = getNodeUnderMouse(jTree, event)
 					if (node is MethodTreeNode) {
-						getTabsController().codeJump(node.getJMethod())
+						tabsController.codeJump(node.jMethod)
 					}
 				}
 			}
@@ -148,7 +148,7 @@ class QuarkReportPanel(
 	}
 
 	override fun loadSettings() {
-		val settingsFont = getMainWindow().getSettings().getCodeFont()
+		val settingsFont = mainWindow.getSettings().codeFont
 		val newFont = settingsFont.deriveFont(settingsFont.getSize2D() + 1.0f)
 		font = newFont
 		boldFont = newFont.deriveFont(Font.BOLD)
@@ -161,7 +161,7 @@ class QuarkReportPanel(
 			val parts = removeQuotes(descr).split(" ", limit = 3)
 			val cls = Utils.cleanObjectName(parts[0].replace('$', '.'))
 			val mth = parts[1] + parts[2].replace(" ", "")
-			val mainWindow: MainWindow = getMainWindow()
+			val mainWindow: MainWindow = mainWindow
 			val wrapper: JadxWrapper = mainWindow.getWrapper()
 			val javaClass: JavaClass? = wrapper.searchJavaClassByRawName(cls)
 			if (javaClass == null) {
@@ -284,7 +284,7 @@ class QuarkReportPanel(
 
 		private val jnode: JMethod = nodeCache.makeFrom(mth) as JMethod
 
-		fun getJMethod(): JMethod = jnode
+		val jMethod: JMethod get() = jnode
 
 		override fun render(): Component {
 			val label = NodeLabel(mth.toString())

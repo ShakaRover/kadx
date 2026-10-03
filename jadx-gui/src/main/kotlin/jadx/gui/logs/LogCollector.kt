@@ -71,11 +71,9 @@ class LogCollector : AppenderBase<ILoggingEvent>() {
 
 		private val INSTANCE: LogCollector = LogCollector()
 
-		@JvmStatic
-		fun getInstance(): LogCollector = INSTANCE
+		val instance: LogCollector get() = INSTANCE
 
 		/** 创建排版器并把单例挂到 root logger 上（应用启动时调用一次）。 */
-		@JvmStatic
 		fun register() {
 			val rootLogger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) as Logger
 			val loggerContext: LoggerContext = rootLogger.getLoggerContext()

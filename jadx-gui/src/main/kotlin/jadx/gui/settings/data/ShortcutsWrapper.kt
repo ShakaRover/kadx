@@ -21,7 +21,7 @@ class ShortcutsWrapper {
 	}
 
 	/** 获取动作的快捷键；未自定义时返回动作默认值。 */
-	fun get(actionModel: ActionModel): Shortcut = shortcuts.getOrDefault(actionModel, actionModel.getDefaultShortcut())
+	fun get(actionModel: ActionModel): Shortcut = shortcuts.getOrDefault(actionModel, actionModel.defaultShortcut)
 
 	/** 写入（覆盖）某动作的快捷键。 */
 	fun put(actionModel: ActionModel, shortcut: Shortcut) {

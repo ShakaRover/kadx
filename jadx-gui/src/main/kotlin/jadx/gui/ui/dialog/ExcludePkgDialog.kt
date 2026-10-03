@@ -97,7 +97,7 @@ class ExcludePkgDialog(private val mainWindow: MainWindow) : JDialog(mainWindow)
 		setModalityType(ModalityType.MODELESS)
 
 		btnOk.addActionListener {
-			mainWindow.getWrapper().setExcludedPackages(getExcludes())
+			mainWindow.getWrapper().setExcludedPackages(excludes)
 			mainWindow.reopen()
 			dispose()
 		}
@@ -115,7 +115,7 @@ class ExcludePkgDialog(private val mainWindow: MainWindow) : JDialog(mainWindow)
 		}
 	}
 	private fun initPackageList() {
-		val pkgs = mainWindow.getWrapper().getPackages()
+		val pkgs = mainWindow.getWrapper().packages
 			.map { obj -> obj.getFullName() }
 		getPackageTree(pkgs).forEach { pkg -> treeRoot.add(pkg) }
 		initCheckbox()
@@ -181,14 +181,14 @@ class ExcludePkgDialog(private val mainWindow: MainWindow) : JDialog(mainWindow)
 		return parent
 	}
 
-	private fun getExcludes(): List<String> {
+	private val excludes: List<String> get() {
 		val excludes = ArrayList<String>()
 		walkTree(true) { p -> excludes.add(p.fullName) }
 		return excludes
 	}
 
 	private fun initCheckbox() {
-		val tmp = mainWindow.getSettings().getCodeFont()
+		val tmp = mainWindow.getSettings().codeFont
 		val font = tmp.deriveFont(tmp.getSize() + 1.0f)
 		val excluded = HashSet(mainWindow.getWrapper().getExcludedPackages())
 		walkTree(false) { p -> p.initCheckbox(excluded.contains(p.fullName), font) }
@@ -199,7 +199,7 @@ class ExcludePkgDialog(private val mainWindow: MainWindow) : JDialog(mainWindow)
 		var i = 0
 		while (i < queue.size) {
 			val node = queue[i]
-			if (findSelected && node.isSelected()) {
+			if (findSelected && node.isSelected) {
 				consumer(node)
 			} else {
 				if (!findSelected) {
@@ -222,7 +222,7 @@ class ExcludePkgDialog(private val mainWindow: MainWindow) : JDialog(mainWindow)
 			var selected = select
 			if (!selected) {
 				if (getParent() is PkgNode) {
-					selected = (getParent() as PkgNode).isSelected()
+					selected = (getParent() as PkgNode).isSelected
 				}
 			}
 			checkbox = JCheckBox(name, selected)
@@ -240,7 +240,7 @@ class ExcludePkgDialog(private val mainWindow: MainWindow) : JDialog(mainWindow)
 			if (getParent() is PkgNode) {
 				val p = getParent() as PkgNode
 				if (select) {
-					val allSelected = p.isChildrenAllSelected()
+					val allSelected = p.isChildrenAllSelected
 					if (allSelected) {
 						p.checkbox.isSelected = true
 						p.toggleParents(true)
@@ -259,13 +259,13 @@ class ExcludePkgDialog(private val mainWindow: MainWindow) : JDialog(mainWindow)
 			}
 		}
 
-		fun isSelected(): Boolean = checkbox.isSelected
+		val isSelected: Boolean get() = checkbox.isSelected
 
-		fun getDisplayName(): String = name
+		val displayName: String get() = name
 
-		fun isChildrenAllSelected(): Boolean {
+		val isChildrenAllSelected: Boolean get() {
 			for (i in 0 until getChildCount()) {
-				if (!(getChildAt(i) as PkgNode).isSelected()) {
+				if (!(getChildAt(i) as PkgNode).isSelected) {
 					return false
 				}
 			}

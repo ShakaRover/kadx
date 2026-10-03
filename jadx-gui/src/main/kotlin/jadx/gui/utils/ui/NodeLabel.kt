@@ -38,7 +38,6 @@ class NodeLabel : JLabel {
 
 	companion object {
 		/** 创建展示节点长名称（含图标）的标签。 */
-		@JvmStatic
 		fun longName(node: JNode): NodeLabel {
 			val label = NodeLabel(node.makeLongStringHtml(), node.disableHtml())
 			label.setIcon(node.getIcon())
@@ -47,11 +46,9 @@ class NodeLabel : JLabel {
 		}
 
 		/** 创建禁用 HTML 渲染的纯文本标签。 */
-		@JvmStatic
 		fun noHtml(label: String): NodeLabel = NodeLabel(label, true)
 
 		/** 通过客户端属性禁用/启用 HTML 渲染。 */
-		@JvmStatic
 		fun disableHtml(label: JLabel, disable: Boolean) {
 			label.putClientProperty("html.disable", disable)
 		}

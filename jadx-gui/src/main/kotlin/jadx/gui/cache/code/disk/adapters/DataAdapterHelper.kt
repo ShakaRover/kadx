@@ -20,7 +20,6 @@ open class DataAdapterHelper {
 	companion object {
 
 		/** 写入可空 UTF 字符串：先写 1 字节标记（0=null，1=有值）。 */
-		@JvmStatic
 		@Throws(IOException::class)
 		fun writeNullableUTF(out: DataOutput, str: String?) {
 			if (str == null) {
@@ -32,7 +31,6 @@ open class DataAdapterHelper {
 		}
 
 		/** 读取可空 UTF 字符串（与 [writeNullableUTF] 对应）。 */
-		@JvmStatic
 		@Throws(IOException::class)
 		fun readNullableUTF(input: DataInput): String? {
 			if (input.readByte().toInt() == 0) {
@@ -46,7 +44,6 @@ open class DataAdapterHelper {
 		 *
 		 * **编码规则**：每次取低 7 位，若还有更高位则置最高位为 1 表示“后续还有字节”。
 		 */
-		@JvmStatic
 		@Throws(IOException::class)
 		fun writeUVInt(out: DataOutput, value: Int) {
 			if (value < 0) {
@@ -71,7 +68,6 @@ open class DataAdapterHelper {
 		 *
 		 * **解码规则**：逐字节取出低 7 位并左移累加，直到某个字节最高位为 0 为止。
 		 */
-		@JvmStatic
 		@Throws(IOException::class)
 		fun readUVInt(input: DataInput): Int {
 			var result = 0

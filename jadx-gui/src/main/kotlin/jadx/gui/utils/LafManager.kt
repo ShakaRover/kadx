@@ -26,7 +26,6 @@ object LafManager {
 	private val LOG: Logger = LoggerFactory.getLogger(LafManager::class.java)
 
 	/** 默认主题名（FlatLaf Light）。 */
-	@JvmField
 	val INITIAL_THEME_NAME: String = FlatLightLaf.NAME
 
 	/** 主题名 -> LookAndFeel 类名；使用 LinkedHashMap 保证下拉框顺序稳定。 */
@@ -35,7 +34,6 @@ object LafManager {
 	/**
 	 * 按设置初始化主题；若设置里的主题已失效则回退到默认主题并同步设置。
 	 */
-	@JvmStatic
 	fun init(settings: JadxSettings) {
 		var preferredThemeClass = getThemeClass(settings)
 
@@ -54,14 +52,12 @@ object LafManager {
 	}
 
 	/** 按当前设置切换主题，返回是否成功。 */
-	@JvmStatic
 	fun updateLaf(settings: JadxSettings): Boolean = setupLaf(getThemeClass(settings))
 
 	/** 返回所有可选主题名。 */
-	@JvmStatic
-	fun getThemes(): Array<String> = THEMES_MAP.keys.toTypedArray()
+	val themes: Array<String> get() = THEMES_MAP.keys.toTypedArray()
 
-	private fun getThemeClass(settings: JadxSettings): String? = THEMES_MAP[settings.getLafTheme()]
+	private fun getThemeClass(settings: JadxSettings): String? = THEMES_MAP[settings.lafTheme]
 
 	private fun setupLaf(themeClass: String?): Boolean {
 		if (!themeClass.isNullOrEmpty()) {

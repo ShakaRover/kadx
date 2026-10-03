@@ -64,8 +64,8 @@ class UsageDialog private constructor(
 	}
 
 	private fun prepareUsageData() {
-		if (mainWindow.getSettings().isReplaceConsts() && node is JField) {
-			val fld: FieldNode = node.getJavaField().getFieldNode()
+		if (mainWindow.getSettings().isReplaceConsts && node is JField) {
+			val fld: FieldNode = node.javaField.getFieldNode()
 			val constField = CollectConstValues.getFieldConstValue(fld) != null
 			if (constField && !fld.accessFlags.isPrivate()) {
 				// 执行完整反编译，为全量代码扫描做准备
@@ -87,7 +87,7 @@ class UsageDialog private constructor(
 	private fun buildUsageQuery(): Map<JavaNode, List<JavaNode>> {
 		val map = HashMap<JavaNode, List<JavaNode>>()
 		if (node is JMethod) {
-			val javaMethod: JavaMethod = node.getJavaMethod()
+			val javaMethod: JavaMethod = node.javaMethod
 			for (mth in getMethodWithOverrides(javaMethod)) {
 				map[mth] = mth.getUseIn()
 			}
@@ -104,12 +104,12 @@ class UsageDialog private constructor(
 			}
 			return map
 		}
-		if (node is JField && mainWindow.getSettings().isReplaceConsts()) {
-			val fld: FieldNode = node.getJavaField().getFieldNode()
+		if (node is JField && mainWindow.getSettings().isReplaceConsts) {
+			val fld: FieldNode = node.javaField.getFieldNode()
 			val constField = CollectConstValues.getFieldConstValue(fld) != null
 			if (constField && !fld.accessFlags.isPrivate()) {
 				// 搜索全部类以收集被替换常量的引用
-				map[checkNotNull(fld.javaNode)] = mainWindow.getWrapper().getIncludedClasses()
+				map[checkNotNull(fld.javaNode)] = mainWindow.getWrapper().includedClasses
 				return map
 			}
 		}
@@ -139,7 +139,7 @@ class UsageDialog private constructor(
 			if (line.startsWith("import ")) {
 				continue
 			}
-			val nodeCache: JNodeCache = getNodeCache()
+			val nodeCache: JNodeCache = nodeCache
 			val enclosingNode = wrapper.getEnclosingNode(codeInfo, pos)
 			val rootJCls: JClass = checkNotNull(nodeCache.makeFrom(topUseClass))
 			val usageJNode: JNode = if (enclosingNode == null) rootJCls else checkNotNull(nodeCache.makeFrom(enclosingNode))
@@ -164,7 +164,7 @@ class UsageDialog private constructor(
 
 	private fun initUI() {
 		val settings: JadxSettings = mainWindow.getSettings()
-		val font: Font = settings.getCodeFont()
+		val font: Font = settings.codeFont
 		val lbl = JLabel(NLS.str("usage_dialog.label"))
 		lbl.setFont(font)
 		val nodeLabel = NodeLabel.longName(node)
@@ -204,7 +204,6 @@ class UsageDialog private constructor(
 		private const val serialVersionUID = -5105405789969134105L
 
 		/** 打开某个节点的用法对话框。 */
-		@JvmStatic
 		fun open(mainWindow: MainWindow, node: JNode) {
 			val usageDialog = UsageDialog(mainWindow, node)
 			mainWindow.addLoadListener(object : ILoadListener {

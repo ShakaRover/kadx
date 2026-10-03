@@ -39,7 +39,7 @@ class CommentDialog(
 	private val codeArea: CodeArea,
 	private val comment: ICodeComment,
 	private val updateComment: Boolean,
-) : CommonDialog(codeArea.getMainWindow()) {
+) : CommonDialog(codeArea.mainWindow) {
 
 	private lateinit var commentArea: JTextArea
 	private lateinit var styleCombo: JComboBox<CommentStyle>
@@ -79,7 +79,7 @@ class CommentDialog(
 		commentArea = JTextArea()
 		TextStandardActions.attach(commentArea)
 		commentArea.setEditable(true)
-		commentArea.setFont(mainWindow.getSettings().getCodeFont())
+		commentArea.setFont(mainWindow.getSettings().codeFont)
 		commentArea.setAlignmentX(Component.LEFT_ALIGNMENT)
 
 		commentArea.addKeyListener(object : KeyAdapter() {
@@ -184,7 +184,6 @@ class CommentDialog(
 		private val LOG: Logger = LoggerFactory.getLogger(CommentDialog::class.java)
 
 		/** 打开注释对话框。 */
-		@JvmStatic
 		fun show(codeArea: CodeArea, comment: ICodeComment, updateComment: Boolean) {
 			val dialog = CommentDialog(codeArea, comment, updateComment)
 			dialog.isVisible = true
@@ -194,11 +193,10 @@ class CommentDialog(
 		 * 统一修改注释数据的入口：拷贝一份注释列表交给 [updater] 修改，
 		 * 排序后写回工程，并触发代码数据重载与后台刷新。
 		 */
-		@JvmStatic
 		fun updateCommentsData(codeArea: CodeArea, updater: (MutableList<ICodeComment>) -> Unit) {
 			try {
-				val project: JadxProject = codeArea.getProject()
-				var codeData = project.getCodeData()
+				val project: JadxProject = codeArea.project
+				var codeData = project.codeData
 				if (codeData == null) {
 					codeData = JadxCodeData()
 				}
@@ -207,7 +205,7 @@ class CommentDialog(
 				Collections.sort(list)
 				codeData.setComments(list)
 				project.setCodeData(codeData)
-				codeArea.getMainWindow().getWrapper().reloadCodeData()
+				codeArea.mainWindow.getWrapper().reloadCodeData()
 			} catch (e: Exception) {
 				LOG.error("Comment action failed", e)
 			}

@@ -41,7 +41,7 @@ class UIWatchDog private constructor() {
 		}
 	}
 
-	private fun isEnabled(): Boolean = job?.isActive == true
+	private val isEnabled: Boolean get() = job?.isActive == true
 
 	private suspend fun start(uiThread: Thread) {
 		LOG.debug("UI watchdog started")
@@ -58,7 +58,7 @@ class UIWatchDog private constructor() {
 						reportTime = UI_MAX_DELAY_MS.toLong()
 					} else {
 						tm.end()
-						val time = tm.getTime()
+						val time = tm.time
 						if (time > reportTime) {
 							e.setStackTrace(uiThread.getStackTrace())
 							LOG.warn("UI events thread stuck for {}ms", time, e)
@@ -91,7 +91,7 @@ class UIWatchDog private constructor() {
 			end = System.currentTimeMillis()
 		}
 
-		fun getTime(): Long = end - start
+		val time: Long get() = end - start
 	}
 
 	companion object {
@@ -103,14 +103,12 @@ class UIWatchDog private constructor() {
 		private val INSTANCE = UIWatchDog()
 
 		/** 启动监视（若尚未启用），返回当前启用状态。 */
-		@JvmStatic
 		fun onStart(): Boolean {
 			UiUtils.uiRunAndWait(Runnable { toggle() })
-			return INSTANCE.isEnabled()
+			return INSTANCE.isEnabled
 		}
 
 		/** 切换监视开关；必须在 UI 线程调用。 */
-		@JvmStatic
 		@Synchronized
 		fun toggle() {
 			if (SwingUtilities.isEventDispatchThread()) {

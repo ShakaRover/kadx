@@ -21,7 +21,7 @@ abstract class JEditableNode : JNode() {
 
 	override fun isEditable(): Boolean = true
 
-	fun isChanged(): Boolean = changed
+	val isChanged: Boolean get() = changed
 
 	fun setChanged(changed: Boolean) {
 		if (this.changed != changed) {

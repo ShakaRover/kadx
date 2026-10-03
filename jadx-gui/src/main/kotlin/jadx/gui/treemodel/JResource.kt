@@ -134,18 +134,15 @@ open class JResource : JLoadableNode {
 	companion object {
 		private const val serialVersionUID = -201018424302612434L
 
-		@JvmField
 		val RESOURCES_COMPARATOR: Comparator<JResource> =
 			Comparator
 				.comparingInt<JResource> { res -> res.type.ordinal }
 				.thenComparing({ res -> res.getName() }, String.CASE_INSENSITIVE_ORDER)
 
-		@JvmStatic
 		fun mergeMiddleDirs(root: JResource) {
 			mergeChildren(root.subNodes)
 		}
 
-		@JvmStatic
 		fun mergeMiddleDirs(roots: MutableList<JResource>) {
 			mergeChildren(roots)
 		}
@@ -218,7 +215,6 @@ open class JResource : JLoadableNode {
 			"sql", SyntaxConstants.SYNTAX_STYLE_SQL,
 		)
 
-		@JvmStatic
 		fun isSupportedForView(type: ResourceType): Boolean = when (type) {
 			ResourceType.SOUNDS,
 			ResourceType.VIDEOS,
@@ -229,7 +225,6 @@ open class JResource : JLoadableNode {
 			else -> true
 		}
 
-		@JvmStatic
 		fun isOpenInExternalTool(type: ResourceType): Boolean = when (type) {
 			ResourceType.SOUNDS,
 			ResourceType.VIDEOS,

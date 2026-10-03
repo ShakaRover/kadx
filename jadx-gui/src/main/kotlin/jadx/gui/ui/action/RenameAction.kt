@@ -20,7 +20,7 @@ class RenameAction(codeArea: CodeArea) : JNodeAction(ActionModel.CODE_RENAME, co
 	}
 
 	override fun runAction(node: JNode) {
-		RenameDialog.rename(getCodeArea().getMainWindow(), node as JRenameNode)
+		RenameDialog.rename(getCodeArea().mainWindow, node as JRenameNode)
 	}
 
 	companion object {

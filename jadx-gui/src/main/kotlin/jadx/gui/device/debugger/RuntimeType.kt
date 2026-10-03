@@ -31,7 +31,7 @@ enum class RuntimeType(private val jdwpTag: Int, private val desc: String) {
 	;
 
 	/** @return JDWP 协议中的 Tag 值 */
-	fun getTag(): Int = jdwpTag
+	val tag: Int get() = jdwpTag
 
 	/** @return 展示用的类型描述 */
 	fun getDesc(): String = desc
@@ -42,7 +42,6 @@ enum class RuntimeType(private val jdwpTag: Int, private val desc: String) {
 		 *
 		 * @throws SmaliDebuggerException 当遇到未知 Tag 时抛出
 		 */
-		@JvmStatic
 		@Throws(SmaliDebuggerException::class)
 		fun fromJdwpTag(tag: Int): RuntimeType = when (tag) {
 			JDWP.Tag.ARRAY -> ARRAY

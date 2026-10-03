@@ -106,7 +106,7 @@ class TabbedPane(
 
 			override fun dispatchKeyEvent(e: KeyEvent): Boolean {
 				val cur = System.currentTimeMillis()
-				if (!FocusManager.isActive()) {
+				if (!FocusManager.isActive) {
 					return false // 标签不在焦点时不处理
 				}
 				val code = e.getKeyCode()
@@ -148,7 +148,7 @@ class TabbedPane(
 			private var canClose = true
 
 			override fun dispatchKeyEvent(e: KeyEvent): Boolean {
-				if (!FocusManager.isActive()) {
+				if (!FocusManager.isActive) {
 					return false // 标签不在焦点时不处理
 				}
 				if (e.getKeyCode() != closeKey) {
@@ -171,7 +171,7 @@ class TabbedPane(
 
 	private fun enableSwitchingTabs() {
 		addChangeListener {
-			val tab = getSelectedContentPanel()
+			val tab = selectedContentPanel
 			if (tab == null) { // 全部关闭
 				curTab = null
 				lastTab = null
@@ -213,7 +213,7 @@ class TabbedPane(
 
 	fun getMainWindow(): MainWindow = mainWindow
 
-	fun getTabsController(): TabsController = controller
+	val tabsController: TabsController get() = controller
 
 	private fun showCode(jumpPos: JumpPosition): ContentPanel? {
 		UiUtils.uiThreadGuard()
@@ -243,7 +243,7 @@ class TabbedPane(
 		}
 		val codePane = panel as ClassCodeContentPanel
 		codePane.showSmaliPane()
-		val smaliArea = codePane.getSmaliCodeArea() as SmaliArea
+		val smaliArea = codePane.smaliCodeArea as SmaliArea
 		if (debugMode) {
 			smaliArea.scrollToDebugPos(pos)
 		}
@@ -251,12 +251,12 @@ class TabbedPane(
 		smaliArea.requestFocus()
 	}
 
-	fun getCurrentPosition(): JumpPosition? {
-		val selectedCodePanel = getSelectedContentPanel()
+	val currentPosition: JumpPosition? get() {
+		val selectedCodePanel = selectedContentPanel
 		if (selectedCodePanel is AbstractCodeContentPanel) {
 			val codeArea = selectedCodePanel.getCodeArea()
 			if (codeArea != null) {
-				return codeArea.getCurrentPosition()
+				return codeArea.currentPosition
 			}
 		}
 		return null
@@ -277,7 +277,7 @@ class TabbedPane(
 		controller.closeTab(contentPanel.getNode(), considerPins)
 	}
 
-	fun getTabs(): List<ContentPanel> {
+	val tabs: List<ContentPanel> get() {
 		val list = ArrayList<ContentPanel>(getTabCount())
 		for (i in 0 until getTabCount()) {
 			list.add(getComponentAt(i) as ContentPanel)
@@ -349,7 +349,7 @@ class TabbedPane(
 		fireStateChanged()
 	}
 
-	fun getSelectedContentPanel(): ContentPanel? = getSelectedComponent() as ContentPanel?
+	val selectedContentPanel: ContentPanel? get() = getSelectedComponent() as ContentPanel?
 
 	private fun makeTabComponent(contentPanel: ContentPanel): Component = TabComponent(this, contentPanel)
 
@@ -358,7 +358,7 @@ class TabbedPane(
 	}
 
 	fun closeAllTabs(considerPins: Boolean) {
-		for (panel in getTabs()) {
+		for (panel in tabs) {
 			closeCodePanel(panel, considerPins)
 		}
 	}
@@ -378,7 +378,7 @@ class TabbedPane(
 		FocusManager.reset()
 	}
 
-	fun getFocusedComp(): Component? = FocusManager.getFocusedComp()
+	val focusedComp: Component? get() = FocusManager.getFocusedComp()
 
 	fun getDnd(): TabDndController? = dnd
 
@@ -428,7 +428,7 @@ class TabbedPane(
 	override fun onTabClose(blueprint: TabBlueprint) {
 		val contentPanelToClose = getTabByNode(blueprint.node) ?: return
 
-		val currentContentPanel = getSelectedContentPanel()
+		val currentContentPanel = selectedContentPanel
 		if (currentContentPanel === contentPanelToClose) {
 			val last = lastTab
 			if (last != null && last.getNode() != null) {
@@ -489,7 +489,7 @@ class TabbedPane(
 
 	override fun onTabsReorder(blueprints: MutableList<TabBlueprint>) {
 		val newBlueprints = ArrayList<TabBlueprint>(blueprints.size)
-		for (contentPanel in getTabs()) {
+		for (contentPanel in tabs) {
 			val blueprint = controller.getTabByNode(contentPanel.getNode())
 			if (blueprint != null) {
 				newBlueprints.add(blueprint)
@@ -513,7 +513,7 @@ class TabbedPane(
 
 	private fun setTabPosition(contentPanel: ContentPanel, position: Int) {
 		val tabComponent = getTabComponentByNode(contentPanel.getNode()) ?: return
-		val restoreSelection = contentPanel === getSelectedContentPanel()
+		val restoreSelection = contentPanel === selectedContentPanel
 		remove(contentPanel)
 		add(contentPanel, position)
 		setTabComponentAt(position, tabComponent)
@@ -525,7 +525,7 @@ class TabbedPane(
 	private object FocusManager : FocusListener {
 		private var focusedComp: Component? = null
 
-		fun isActive(): Boolean = focusedComp != null
+		val isActive: Boolean get() = focusedComp != null
 
 		fun reset() {
 			focusedComp = null
@@ -544,7 +544,7 @@ class TabbedPane(
 		fun listen(pane: ContentPanel) {
 			if (pane is ClassCodeContentPanel) {
 				pane.getCodeArea().addFocusListener(this)
-				pane.getSmaliCodeArea().addFocusListener(this)
+				pane.smaliCodeArea.addFocusListener(this)
 				return
 			}
 			if (pane is AbstractCodeContentPanel) {
@@ -552,7 +552,7 @@ class TabbedPane(
 				return
 			}
 			if (pane is HtmlPanel) {
-				pane.getHtmlArea().addFocusListener(this)
+				pane.htmlArea.addFocusListener(this)
 				return
 			}
 			if (pane is ImagePanel) {
@@ -568,7 +568,7 @@ class TabbedPane(
 
 		fun focusOnCodePanel(pane: ContentPanel) {
 			if (pane is ClassCodeContentPanel) {
-				SwingUtilities.invokeLater { pane.getCurrentCodeArea().requestFocus() }
+				SwingUtilities.invokeLater { pane.currentCodeArea.requestFocus() }
 				return
 			}
 			if (pane is AbstractCodeContentPanel) {
@@ -576,7 +576,7 @@ class TabbedPane(
 				return
 			}
 			if (pane is HtmlPanel) {
-				SwingUtilities.invokeLater { pane.getHtmlArea().requestFocusInWindow() }
+				SwingUtilities.invokeLater { pane.htmlArea.requestFocusInWindow() }
 				return
 			}
 			if (pane is ImagePanel) {

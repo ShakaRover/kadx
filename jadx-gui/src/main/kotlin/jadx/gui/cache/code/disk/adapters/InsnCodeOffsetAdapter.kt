@@ -14,7 +14,6 @@ import java.io.IOException
 class InsnCodeOffsetAdapter : DataAdapter<InsnCodeOffset> {
 
 	companion object {
-		@JvmField
 		val INSTANCE = InsnCodeOffsetAdapter()
 	}
 

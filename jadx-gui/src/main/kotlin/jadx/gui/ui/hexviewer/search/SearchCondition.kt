@@ -60,7 +60,7 @@ class SearchCondition {
 	}
 
 	/** 当前条件下是否「什么都没输入」，用于跳过空搜索。 */
-	fun isEmpty(): Boolean = when (searchMode) {
+	val isEmpty: Boolean get() = when (searchMode) {
 		SearchMode.TEXT -> searchText.isEmpty()
 
 		SearchMode.BINARY -> binaryData?.isEmpty() ?: true

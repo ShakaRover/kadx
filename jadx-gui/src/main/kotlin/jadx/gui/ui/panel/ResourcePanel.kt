@@ -57,7 +57,7 @@ class ResourcePanel(panel: TabbedPane, resource: JResource) : AbstractCodeConten
 					SwingUtilities.invokeLater { selected.loadData() }
 				}
 			}
-			getMainWindow().updateHexViewMenuEnabled()
+			mainWindow.updateHexViewMenuEnabled()
 		}
 		resourceTabs.addChangeListener(changeListener)
 		add(resourceTabs, BorderLayout.CENTER)

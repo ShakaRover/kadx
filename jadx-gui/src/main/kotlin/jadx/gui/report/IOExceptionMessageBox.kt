@@ -19,9 +19,8 @@ import java.util.ArrayList
  */
 object IOExceptionMessageBox {
 
-	@JvmStatic
 	fun show(mainWindow: MainWindow, excData: ExceptionData) {
-		val ioExc: IOException = excData.getIOExc() ?: return
+		val ioExc: IOException = excData.iOExc ?: return
 		val message: String = when {
 			ioExc is FileNotFoundException || ioExc is NoSuchFileException ->
 				String.format(NLS.str("io_error_dialog.file_not_found"), ioExc.message)

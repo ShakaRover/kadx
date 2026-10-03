@@ -73,9 +73,9 @@ class ADBDialog(private val mainWindow: MainWindow) :
 
 	init {
 		initUI()
-		pathTextField.setText(mainWindow.getSettings().getAdbDialogPath())
-		hostTextField.setText(mainWindow.getSettings().getAdbDialogHost())
-		portTextField.setText(mainWindow.getSettings().getAdbDialogPort())
+		pathTextField.setText(mainWindow.getSettings().adbDialogPath)
+		hostTextField.setText(mainWindow.getSettings().adbDialogHost)
+		portTextField.setText(mainWindow.getSettings().adbDialogPort)
 
 		if (pathTextField.getText().isEmpty()) {
 			detectADBPath()
@@ -119,7 +119,7 @@ class ADBDialog(private val mainWindow: MainWindow) :
 		procTreeModel = DefaultTreeModel(procTreeRoot)
 		procTree.setModel(procTreeModel)
 		procTree.setRowHeight(-1)
-		procTree.setFont(mainWindow.getSettings().getCodeFont())
+		procTree.setFont(mainWindow.getSettings().codeFont)
 
 		procTree.addMouseListener(object : MouseAdapter() {
 			override fun mouseClicked(e: MouseEvent) {
@@ -292,7 +292,7 @@ class ADBDialog(private val mainWindow: MainWindow) :
 				}
 			}
 			val device = ADBDevice(info)
-			device.getAndroidReleaseVersion()
+			device.androidReleaseVersion
 			nodes.add(DeviceNode(device))
 			listenJDWP(device)
 		}
@@ -316,7 +316,7 @@ class ADBDialog(private val mainWindow: MainWindow) :
 			return
 		}
 		val debuggerPanel = mainWindow.getDebuggerPanel()
-		if (debuggerPanel != null && debuggerPanel.getDbgController().isDebugging()) {
+		if (debuggerPanel != null && debuggerPanel.dbgController.isDebugging()) {
 			if (JOptionPane.showConfirmDialog(
 					mainWindow,
 					NLS.str("adb_dialog.restart_while_debugging_msg"),
@@ -324,7 +324,7 @@ class ADBDialog(private val mainWindow: MainWindow) :
 					JOptionPane.OK_CANCEL_OPTION,
 				) != JOptionPane.CANCEL_OPTION
 			) {
-				val ctrl: IDebugController = debuggerPanel.getDbgController()
+				val ctrl: IDebugController = debuggerPanel.dbgController
 				if (launchForDebugging(mainWindow, ctrl.getProcessName(), true)) {
 					dispose()
 				}
@@ -335,7 +335,7 @@ class ADBDialog(private val mainWindow: MainWindow) :
 		if (!setupArgs(deviceNode.device, pid, node.getUserObject() as String)) {
 			return
 		}
-		if (DebugSettings.INSTANCE.isBeingDebugged()) {
+		if (DebugSettings.INSTANCE.isBeingDebugged) {
 			if (JOptionPane.showConfirmDialog(
 					mainWindow,
 					NLS.str("adb_dialog.being_debugged_msg"),
@@ -392,9 +392,9 @@ class ADBDialog(private val mainWindow: MainWindow) :
 	override fun dispose() {
 		clear()
 		val settings: JadxSettings = mainWindow.getSettings()
-		var changed = settings.getAdbDialogPath() != pathTextField.getText()
-		changed = changed or (settings.getAdbDialogHost() != hostTextField.getText())
-		changed = changed or (settings.getAdbDialogPort() != portTextField.getText())
+		var changed = settings.adbDialogPath != pathTextField.getText()
+		changed = changed or (settings.adbDialogHost != hostTextField.getText())
+		changed = changed or (settings.adbDialogPort != portTextField.getText())
 		if (changed) {
 			settings.setAdbDialogPath(pathTextField.getText())
 			settings.setAdbDialogHost(hostTextField.getText())
@@ -420,7 +420,7 @@ class ADBDialog(private val mainWindow: MainWindow) :
 			 * 稍等片刻，让远端的新进程完全初始化，
 			 * 否则可能拿不到真实进程名而是 <pre-initialized> 状态。
 			 */
-			procs = device.getProcessList()
+			procs = device.processList
 		} catch (e: Exception) {
 			LOG.error("Failed to get device process list", e)
 			procs = Collections.emptyList()
@@ -452,7 +452,7 @@ class ADBDialog(private val mainWindow: MainWindow) :
 				val pnode = DefaultMutableTreeNode(procStr)
 				node.tNode.add(pnode)
 				if (debugSettings.getExpectPkg().isNotEmpty() && procStr.endsWith(debugSettings.getExpectPkg())) {
-					if (debugSettings.isAutoAttachPkg() && debugSettings.getDevice() == node.device) {
+					if (debugSettings.isAutoAttachPkg && debugSettings.getDevice() == node.device) {
 						debugSettings.set(node.device, debugSettings.getVer(), getPid(procStr), procStr)
 						if (attachProcess(mainWindow)) {
 							dispose()
@@ -480,7 +480,7 @@ class ADBDialog(private val mainWindow: MainWindow) :
 		if (scrollToProcNode(appData.getAppPackage())) {
 			return
 		}
-		val processName = appData.getProcessName()
+		val processName = appData.processName
 		val lastNode = lastSelectedDeviceNode
 		val device = if (lastNode == null) deviceNodes[0].device else lastNode.device
 		try {
@@ -517,7 +517,7 @@ class ADBDialog(private val mainWindow: MainWindow) :
 	}
 
 	private fun setupArgs(device: ADBDevice, pid: String, name: String): Boolean {
-		var ver = device.getAndroidReleaseVersion()
+		var ver = device.androidReleaseVersion
 		if (StringUtils.isEmpty(ver)) {
 			if (JOptionPane.showConfirmDialog(
 					mainWindow,
@@ -558,13 +558,13 @@ class ADBDialog(private val mainWindow: MainWindow) :
 		}
 
 		fun refresh() {
-			val info = device.getDeviceInfo()
+			val info = device.deviceInfo
 			var text = info.getModel()
 			if (text != null) {
 				if (text != info.getSerial()) {
 					text += " [serial: ${info.getSerial()}]"
 				}
-				text += " [state: ${if (info.isOnline()) "online" else "offline"}]"
+				text += " [state: ${if (info.isOnline) "online" else "offline"}]"
 				tNode.setUserObject(text)
 			}
 		}
@@ -586,7 +586,7 @@ class ADBDialog(private val mainWindow: MainWindow) :
 			try {
 				return mainWindow.getDebuggerPanel().showDebugger(
 					debugSettings.getName(),
-					debugSettings.getDevice().getDeviceInfo().getAdbHost(),
+					debugSettings.getDevice().deviceInfo.getAdbHost(),
 					debugSettings.getForwardTcpPort(),
 					debugSettings.getVer(),
 					debugSettings.getDevice(),
@@ -598,7 +598,6 @@ class ADBDialog(private val mainWindow: MainWindow) :
 			}
 		}
 
-		@JvmStatic
 		fun launchForDebugging(mainWindow: MainWindow, fullAppPath: String, autoAttach: Boolean): Boolean {
 			val debugSettings = DebugSettings.INSTANCE
 			debugSettings.setAutoAttachPkg(autoAttach)

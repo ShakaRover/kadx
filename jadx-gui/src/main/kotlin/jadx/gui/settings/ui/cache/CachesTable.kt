@@ -53,14 +53,14 @@ class CachesTable(private val mainWindow: MainWindow) : JTable() {
 	}
 
 	fun updateData() {
-		val rows = mainWindow.getCacheManager().getCachesList().map { TableRow(it) }
+		val rows = mainWindow.getCacheManager().cachesList.map { TableRow(it) }
 		updateRows(rows)
 	}
 
 	fun reloadData() {
 		val prevUsageMap = cacheDataModel.getRows().associate { it.getProject() to it.getUsage() }
 
-		val rows = mainWindow.getCacheManager().getCachesList().map { entry ->
+		val rows = mainWindow.getCacheManager().cachesList.map { entry ->
 			val row = TableRow(entry)
 			row.setUsage(Utils.getOrElse(prevUsageMap[row.getProject()], "-"))
 			row
@@ -129,7 +129,7 @@ class CachesTable(private val mainWindow: MainWindow) : JTable() {
 	}
 
 	fun deleteSelected() {
-		delete(cacheDataModel.getRows().filter { it.isSelected() })
+		delete(cacheDataModel.getRows().filter { it.isSelected })
 	}
 
 	fun deleteAll() {
@@ -156,7 +156,7 @@ class CachesTable(private val mainWindow: MainWindow) : JTable() {
 
 	private fun searchCurrentProject(rows: List<TableRow>): Boolean {
 		val project = mainWindow.getProject()
-		if (project.getFilePaths().isNotEmpty()) {
+		if (project.filePaths.isNotEmpty()) {
 			val cacheStr = CacheManager.pathToString(project.getCacheDir())
 			for (row in rows) {
 				if (row.getCacheEntry().getCache() == cacheStr) {

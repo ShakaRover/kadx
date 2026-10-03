@@ -14,7 +14,7 @@ import java.awt.dnd.DropTargetListener
 class TabDndTargetListener(private val dnd: TabDndController) : DropTargetListener {
 
 	override fun dragEnter(e: DropTargetDragEvent) {
-		val pane = dnd.getDndGhostPane()
+		val pane = dnd.dndGhostPane
 		if (pane == null || e.getDropTargetContext().getComponent() !== pane) {
 			return
 		}
@@ -28,7 +28,7 @@ class TabDndTargetListener(private val dnd: TabDndController) : DropTargetListen
 	}
 
 	override fun dragExit(e: DropTargetEvent) {
-		val pane = dnd.getDndGhostPane()
+		val pane = dnd.dndGhostPane
 		if (pane == null || e.getDropTargetContext().getComponent() !== pane) {
 			return
 		}
@@ -41,7 +41,7 @@ class TabDndTargetListener(private val dnd: TabDndController) : DropTargetListen
 	}
 
 	override fun dragOver(e: DropTargetDragEvent) {
-		val pane = dnd.getDndGhostPane()
+		val pane = dnd.dndGhostPane
 		if (pane == null || e.getDropTargetContext().getComponent() !== pane) {
 			return
 		}
@@ -53,7 +53,7 @@ class TabDndTargetListener(private val dnd: TabDndController) : DropTargetListen
 	}
 
 	override fun drop(e: DropTargetDropEvent) {
-		val pane = dnd.getDndGhostPane()
+		val pane = dnd.dndGhostPane
 		if (pane == null || e.getDropTargetContext().getComponent() !== pane) {
 			return
 		}

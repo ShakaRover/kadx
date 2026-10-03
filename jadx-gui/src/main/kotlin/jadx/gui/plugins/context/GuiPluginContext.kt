@@ -66,21 +66,21 @@ class GuiPluginContext(
 	) {
 		// 插件 API 使用 Java 函数类型，内部实现改用 Kotlin 函数类型，这里做一次适配
 		val enabledCheck: ((ICodeNodeRef) -> Boolean)? = enabled?.let { f -> { node -> f.apply(node) } }
-		commonContext.getCodePopupActionList().add(CodePopupAction(name, enabledCheck, keyBinding) { node -> action.accept(node) })
+		commonContext.codePopupActionList.add(CodePopupAction(name, enabledCheck, keyBinding) { node -> action.accept(node) })
 	}
 
 	override fun addTreePopupMenuEntry(name: String, addPredicate: Predicate<ITreeNode>, action: Consumer<ITreeNode>) {
-		commonContext.getTreePopupMenuEntries().add(TreePopupMenuEntry(name, { node -> addPredicate.test(node) }) { node -> action.accept(node) })
+		commonContext.treePopupMenuEntries.add(TreePopupMenuEntry(name, { node -> addPredicate.test(node) }) { node -> action.accept(node) })
 	}
 
 	/** 注册一个输入分类器。 */
 	fun registerTreeInputCategory(inputCategory: ITreeInputCategory) {
-		commonContext.getTreeInputCategories().add(inputCategory)
+		commonContext.treeInputCategories.add(inputCategory)
 	}
 
 	/** 注册一个标签页状态持久化适配器。 */
 	fun registerTabStatePersistAdapter(tabStatePersist: ITabStatePersist) {
-		commonContext.getTabStatePersistAdapters().add(tabStatePersist)
+		commonContext.tabStatePersistAdapters.add(tabStatePersist)
 	}
 
 	override fun registerGlobalKeyBinding(id: String, keyBinding: String, action: Runnable): Boolean {
@@ -106,11 +106,11 @@ class GuiPluginContext(
 	}
 
 	/** 插件自定义设置页；未设置时为 `null`。 */
-	fun getCustomSettingsGroup(): ISettingsGroup? = customSettings
+	val customSettingsGroup: ISettingsGroup? get() = customSettings
 
 	/** 当前选中的代码区；当前标签不是代码区时返回 `null`。 */
-	private fun getCodeArea(): CodeArea? {
-		val contentPane: Container? = commonContext.getMainWindow().getTabbedPane().getSelectedContentPanel()
+	private val codeArea: CodeArea? get() {
+		val contentPane: Container? = commonContext.getMainWindow().getTabbedPane().selectedContentPanel
 		if (contentPane is AbstractCodeContentPanel) {
 			val codeArea: AbstractCodeArea? = contentPane.getCodeArea()
 			if (codeArea is CodeArea) {
@@ -128,9 +128,9 @@ class GuiPluginContext(
 	}
 
 	override fun getNodeUnderCaret(): ICodeNodeRef? {
-		val codeArea = getCodeArea()
+		val codeArea = codeArea
 		if (codeArea != null) {
-			val nodeUnderCaret = codeArea.getNodeUnderCaret()
+			val nodeUnderCaret = codeArea.nodeUnderCaret
 			if (nodeUnderCaret != null) {
 				return nodeUnderCaret.getCodeNodeRef()
 			}
@@ -139,9 +139,9 @@ class GuiPluginContext(
 	}
 
 	override fun getNodeUnderMouse(): ICodeNodeRef? {
-		val codeArea = getCodeArea()
+		val codeArea = codeArea
 		if (codeArea != null) {
-			val nodeUnderMouse = codeArea.getNodeUnderMouse()
+			val nodeUnderMouse = codeArea.nodeUnderMouse
 			if (nodeUnderMouse != null) {
 				return nodeUnderMouse.getCodeNodeRef()
 			}
@@ -150,9 +150,9 @@ class GuiPluginContext(
 	}
 
 	override fun getEnclosingNodeUnderCaret(): ICodeNodeRef? {
-		val codeArea = getCodeArea()
+		val codeArea = codeArea
 		if (codeArea != null) {
-			val nodeUnderCaret = codeArea.getEnclosingNodeUnderCaret()
+			val nodeUnderCaret = codeArea.enclosingNodeUnderCaret
 			if (nodeUnderCaret != null) {
 				return nodeUnderCaret.getCodeNodeRef()
 			}
@@ -161,9 +161,9 @@ class GuiPluginContext(
 	}
 
 	override fun getEnclosingNodeUnderMouse(): ICodeNodeRef? {
-		val codeArea = getCodeArea()
+		val codeArea = codeArea
 		if (codeArea != null) {
-			val nodeUnderMouse = codeArea.getEnclosingNodeUnderMouse()
+			val nodeUnderMouse = codeArea.enclosingNodeUnderMouse
 			if (nodeUnderMouse != null) {
 				return nodeUnderMouse.getCodeNodeRef()
 			}
@@ -180,12 +180,12 @@ class GuiPluginContext(
 		UsageDialog.open(commonContext.getMainWindow(), getJNodeFromRef(ref))
 	}
 
-	private fun getJNodeFromRef(ref: ICodeNodeRef): JNode = checkNotNull(commonContext.getMainWindow().getCacheObject().getNodeCache().makeFrom(ref))
+	private fun getJNodeFromRef(ref: ICodeNodeRef): JNode = checkNotNull(commonContext.getMainWindow().getCacheObject().nodeCache.makeFrom(ref))
 
 	override fun reloadActiveTab() {
 		UiUtils.uiRun(
 			Runnable {
-				val codeArea = getCodeArea()
+				val codeArea = codeArea
 				codeArea?.refreshClass()
 			},
 		)
@@ -194,7 +194,7 @@ class GuiPluginContext(
 	override fun reloadAllTabs() {
 		UiUtils.uiRun(
 			Runnable {
-				for (contentPane in commonContext.getMainWindow().getTabbedPane().getTabs()) {
+				for (contentPane in commonContext.getMainWindow().getTabbedPane().tabs) {
 					if (contentPane is AbstractCodeContentPanel) {
 						val codeArea = contentPane.getCodeArea()
 						if (codeArea is CodeArea) {

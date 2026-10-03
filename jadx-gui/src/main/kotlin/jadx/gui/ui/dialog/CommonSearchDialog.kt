@@ -71,7 +71,7 @@ abstract class CommonSearchDialog(
 
 	protected val tabsController: TabsController = mainWindow.getTabsController()
 	protected val cache: CacheObject = mainWindow.getCacheObject()
-	protected val codeFont: Font = mainWindow.getSettings().getCodeFont()
+	protected val codeFont: Font = mainWindow.getSettings().codeFont
 
 	protected lateinit var resultsModel: ResultsModel
 	protected lateinit var resultsTable: ResultsTable
@@ -130,7 +130,7 @@ abstract class CommonSearchDialog(
 	}
 
 	protected open fun openSelectedItem() {
-		val node = getSelectedNode() ?: return
+		val node = selectedNode ?: return
 		openItem(node)
 	}
 
@@ -141,12 +141,12 @@ abstract class CommonSearchDialog(
 		} else {
 			tabsController.codeJump(node)
 		}
-		if (!mainWindow.getSettings().isKeepCommonDialogOpen()) {
+		if (!mainWindow.getSettings().isKeepCommonDialogOpen) {
 			dispose()
 		}
 	}
 
-	private fun getSelectedNode(): JNode? {
+	private val selectedNode: JNode? get() {
 		try {
 			val selectedId = resultsTable.getSelectedRow()
 			if (selectedId == -1 || selectedId >= resultsTable.getRowCount()) {
@@ -200,7 +200,7 @@ abstract class CommonSearchDialog(
 		copyBtn.addActionListener { copyAllSearchResults() }
 
 		val cbKeepOpen = JCheckBox(NLS.str("search_dialog.keep_open"))
-		cbKeepOpen.isSelected = mainWindow.getSettings().isKeepCommonDialogOpen()
+		cbKeepOpen.isSelected = mainWindow.getSettings().isKeepCommonDialogOpen
 		cbKeepOpen.addActionListener { mainWindow.getSettings().saveKeepCommonDialogOpen(cbKeepOpen.isSelected) }
 		cbKeepOpen.setAlignmentY(Component.CENTER_ALIGNMENT)
 
@@ -258,7 +258,7 @@ abstract class CommonSearchDialog(
 			"copy",
 			object : AbstractAction() {
 				override fun actionPerformed(e: ActionEvent) {
-					val selectedNode = getSelectedNode()
+					val selectedNode = selectedNode
 					if (selectedNode != null) {
 						UiUtils.copyToClipboard(selectedNode.makeLongString())
 					}
@@ -277,10 +277,10 @@ abstract class CommonSearchDialog(
 		)
 
 		resultsInfoLabel = JLabel("")
-		resultsInfoLabel.setFont(mainWindow.getSettings().getUiFont())
+		resultsInfoLabel.setFont(mainWindow.getSettings().uiFont)
 
 		progressInfoLabel = JLabel("")
-		progressInfoLabel.setFont(mainWindow.getSettings().getUiFont())
+		progressInfoLabel.setFont(mainWindow.getSettings().uiFont)
 		progressInfoLabel.addMouseListener(object : MouseAdapter() {
 			override fun mouseClicked(e: MouseEvent) {
 				mainWindow.showLogViewer(LogOptions.allWithLevel(ch.qos.logback.classic.Level.INFO))
@@ -332,7 +332,7 @@ abstract class CommonSearchDialog(
 		progressPane.setVisible(false)
 	}
 
-	protected fun getNodeCache(): JNodeCache = mainWindow.getCacheObject().getNodeCache()
+	protected val nodeCache: JNodeCache get() = mainWindow.getCacheObject().nodeCache
 
 	protected class ResultsTable(
 		resultsModel: ResultsModel,
@@ -341,13 +341,13 @@ abstract class CommonSearchDialog(
 		private val model: ResultsModel = resultsModel
 
 		init {
-			setRowHeight(renderer.getMaxRowHeight())
+			setRowHeight(renderer.maxRowHeight)
 		}
 
 		fun initColumnWidth() {
 			val columnCount = getColumnCount()
 			val width = getParent().getWidth()
-			val colWidth = if (model.isAddDescColumn()) width / 2 else width
+			val colWidth = if (model.isAddDescColumn) width / 2 else width
 			columnModel.getColumn(0).setPreferredWidth(colWidth)
 			for (col in 1 until columnCount) {
 				columnModel.getColumn(col).setPreferredWidth(width)
@@ -364,7 +364,7 @@ abstract class CommonSearchDialog(
 			val start = System.currentTimeMillis()
 			val width = getParent().getWidth()
 			val firstColumn = columnModel.getColumn(0)
-			if (model.isAddDescColumn()) {
+			if (model.isAddDescColumn) {
 				if (firstColumn.getWidth().toDouble() > width * 0.8) {
 					// 第一列过大时会遮住第二列，缩小它
 					firstColumn.setPreferredWidth(width / 2)
@@ -419,7 +419,7 @@ abstract class CommonSearchDialog(
 			Collections.sort(rows)
 		}
 
-		fun isAddDescColumn(): Boolean = addDescColumn
+		val isAddDescColumn: Boolean get() = addDescColumn
 
 		override fun getRowCount(): Int = rows.size
 
@@ -511,7 +511,7 @@ abstract class CommonSearchDialog(
 			return codeArea
 		}
 
-		fun getMaxRowHeight(): Int {
+		val maxRowHeight: Int get() {
 			label.setText("Text")
 			codeArea.setText("Text")
 			return maxOf(getCompHeight(label), getCompHeight(codeArea))

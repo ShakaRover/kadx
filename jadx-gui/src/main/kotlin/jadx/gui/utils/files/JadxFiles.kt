@@ -17,19 +17,15 @@ class JadxFiles {
 		private val CONFIG_DIR: Path = JadxCommonFiles.getConfigDir()
 
 		/** GUI 配置文件。 */
-		@JvmField
 		val GUI_CONF: Path = CONFIG_DIR.resolve("gui.json")
 
 		/** 缓存列表文件。 */
-		@JvmField
 		val CACHES_LIST: Path = CONFIG_DIR.resolve("caches.json")
 
 		/** 缓存根目录。 */
-		@JvmField
 		val CACHE_DIR: Path = JadxCommonFiles.getCacheDir()
 
 		/** 项目缓存目录。 */
-		@JvmField
 		val PROJECTS_CACHE_DIR: Path = CACHE_DIR.resolve("projects")
 	}
 }

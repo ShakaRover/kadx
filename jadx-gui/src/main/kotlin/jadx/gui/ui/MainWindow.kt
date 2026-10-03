@@ -310,23 +310,23 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 	fun init() {
 		pack()
 		setLocationAndPosition()
-		treeSplitPane.setDividerLocation(settings.getTreeWidth())
-		heapUsageBar.setVisible(settings.isShowHeapUsageBar())
+		treeSplitPane.setDividerLocation(settings.treeWidth)
+		heapUsageBar.setVisible(settings.isShowHeapUsageBar)
 		setVisible(true)
 		processCommandLineArgs()
 	}
 
 	private fun processCommandLineArgs() {
-		if (settings.getFiles().isEmpty()) {
+		if (settings.files.isEmpty()) {
 			tabsController.selectTab(StartPageNode())
 		} else {
-			open(FileUtils.fileNamesToPaths(settings.getFiles()), Runnable { handleSelectClassOption() })
+			open(FileUtils.fileNamesToPaths(settings.files), Runnable { handleSelectClassOption() })
 		}
 	}
 
 	/** 处理 `--select-class` 命令行参数：按别名或原始类名跳转到指定类。 */
 	private fun handleSelectClassOption() {
-		val cmdSelectClass = settings.getCmdSelectClass()
+		val cmdSelectClass = settings.cmdSelectClass
 		if (cmdSelectClass != null) {
 			var javaNode: JavaNode? = wrapper.searchJavaClassByFullAlias(cmdSelectClass)
 			if (javaNode == null) {
@@ -341,22 +341,22 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 				)
 				return
 			}
-			tabsController.codeJump(checkNotNull(cacheObject.getNodeCache().makeFrom(javaNode)))
+			tabsController.codeJump(checkNotNull(cacheObject.nodeCache.makeFrom(javaNode)))
 		}
 	}
 
 	/** 启动时在后台检查更新，回调在 EDT 上更新标题栏右侧的更新链接。 */
 	private fun checkForUpdate() {
-		if (!settings.isCheckForUpdates()) {
+		if (!settings.isCheckForUpdates) {
 			return
 		}
 		JadxUpdate().check(
-			settings.getJadxUpdateChannel(),
+			settings.jadxUpdateChannel,
 			object : IUpdateCallback {
 				override fun onUpdate(r: Release) {
 					SwingUtilities.invokeLater(
 						Runnable {
-							when (settings.getJadxUpdateChannel()) {
+							when (settings.jadxUpdateChannel) {
 								JadxUpdateChannel.STABLE -> updateLink.setUrl(JadxUpdate.JADX_RELEASES_URL)
 								JadxUpdateChannel.UNSTABLE -> updateLink.setUrl(JadxUpdate.JADX_ARTIFACTS_URL)
 							}
@@ -385,7 +385,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 		val fileDialog = FileDialogWrapper(this, mode)
 		val openPaths = fileDialog.show()
 		if (openPaths.isNotEmpty()) {
-			settings.setLastOpenFilePath(checkNotNull(fileDialog.getCurrentDir()))
+			settings.setLastOpenFilePath(checkNotNull(fileDialog.currentDir))
 			open(openPaths)
 		}
 	}
@@ -399,7 +399,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 	}
 
 	fun addFiles(addPaths: List<Path>) {
-		project.setFilePaths(ListUtils.distinctMergeSortedLists(addPaths, project.getFilePaths()))
+		project.setFilePaths(ListUtils.distinctMergeSortedLists(addPaths, project.filePaths))
 		reopen()
 	}
 
@@ -418,7 +418,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 
 	private fun saveProject() {
 		saveOpenTabs()
-		if (!project.isSaveFileSelected()) {
+		if (!project.isSaveFileSelected) {
 			saveProjectAs()
 		} else {
 			project.save()
@@ -428,16 +428,16 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 
 	private fun saveProjectAs() {
 		val fileDialog = FileDialogWrapper(this, FileOpenMode.SAVE_PROJECT)
-		if (project.getFilePaths().size == 1) {
+		if (project.filePaths.size == 1) {
 			// 只加载了一个文件时，建议把工程文件保存在该文件旁边
-			val projectPath = getProjectPathForFile(project.getFilePaths()[0])
+			val projectPath = getProjectPathForFile(project.filePaths[0])
 			fileDialog.setSelectedFile(projectPath)
 		}
 		val saveFiles = fileDialog.show()
 		if (saveFiles.isEmpty()) {
 			return
 		}
-		settings.setLastSaveProjectPath(checkNotNull(fileDialog.getCurrentDir()))
+		settings.setLastSaveProjectPath(checkNotNull(fileDialog.currentDir))
 		var savePath = saveFiles[0]
 		if (!savePath.getFileName().toString().lowercase(Locale.ROOT).endsWith(JadxProject.PROJECT_EXTENSION)) {
 			savePath = savePath.resolveSibling(savePath.getFileName().toString() + "." + JadxProject.PROJECT_EXTENSION)
@@ -471,7 +471,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 
 		// 原 Java 直接修改内部列表，这里保持同一语义（列表实例为 ArrayList）
 		@Suppress("UNCHECKED_CAST")
-		val inputs = project.getFilePaths() as MutableList<Path>
+		val inputs = project.filePaths as MutableList<Path>
 		inputs.remove(file)
 		refreshTree(inputs)
 	}
@@ -486,7 +486,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 		val success = FileUtils.renameFile(file, targetPath)
 		if (success) {
 			@Suppress("UNCHECKED_CAST")
-			val inputs = project.getFilePaths() as MutableList<Path>
+			val inputs = project.filePaths as MutableList<Path>
 			inputs.remove(file)
 			inputs.add(targetPath)
 
@@ -578,7 +578,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 
 	private fun loadFiles(onFinish: Runnable) {
 		project.verifyFiles()
-		if (project.getFilePaths().isEmpty()) {
+		if (project.filePaths.isEmpty()) {
 			tabsController.selectTab(StartPageNode())
 			onFinish.run()
 			return
@@ -630,16 +630,16 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 			},
 		)
 		wrapper.close()
-		LogCollector.getInstance().reset()
+		LogCollector.instance.reset()
 		resetCache()
 		notifyLoadListeners(false)
 	}
 
 	private fun checkLoadedStatus() {
-		if (wrapper.getClasses().isNotEmpty()) {
+		if (wrapper.classes.isNotEmpty()) {
 			return
 		}
-		val errors = issuesPanel.getErrorsCount()
+		val errors = issuesPanel.errorsCount
 		if (errors > 0) {
 			val result = JOptionPane.showConfirmDialog(
 				this,
@@ -659,8 +659,8 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 
 	private fun onOpen(onFinish: Runnable) {
 		initTree()
-		updateLiveReload(project.isEnableLiveReload())
-		BreakpointManager.init(project.getFilePaths()[0].toAbsolutePath().getParent())
+		updateLiveReload(project.isEnableLiveReload)
+		BreakpointManager.init(project.filePaths[0].toAbsolutePath().getParent())
 		val openTabs = project.getOpenTabs(this)
 		backgroundExecutor.startLoading(
 			Runnable { preLoadOpenTabs(openTabs) },
@@ -675,16 +675,16 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 			},
 		)
 		// 在加载任务之后排队恢复树状态
-		treeExpansionService.load(project.getTreeExpansions())
+		treeExpansionService.load(project.treeExpansions)
 	}
 
 	private fun prepareInitialView() {
 		UiUtils.uiThreadGuard()
 		// 只有一个类时直接打开
-		wrapper.getCurrentDecompiler()?.let { decompiler ->
+		wrapper.currentDecompiler?.let { decompiler ->
 			val classes = decompiler.getClasses()
 			if (classes.size == 1) {
-				val singleCls = checkNotNull(cacheObject.getNodeCache().makeFrom(classes[0]))
+				val singleCls = checkNotNull(cacheObject.nodeCache.makeFrom(classes[0]))
 				tabsController.codeJump(singleCls, true)
 				selectNodeInTree(singleCls)
 			}
@@ -703,7 +703,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 	}
 
 	fun updateLiveReload(state: Boolean) {
-		if (liveReloadWorker.isStarted() == state) {
+		if (liveReloadWorker.isStarted == state) {
 			return
 		}
 		project.setEnableLiveReload(state)
@@ -724,18 +724,18 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 	}
 
 	private fun ensureProjectIsSaved(): Boolean {
-		if (project.isSaved() || project.isInitial()) {
+		if (project.isSaved || project.isInitial) {
 			return true
 		}
-		if (project.getFilePaths().isEmpty()) {
+		if (project.filePaths.isEmpty()) {
 			// 忽略空白工程的保存
 			return true
 		}
 		// 检查是否已保存过“如何处理未保存工程”的设置
-		if (settings.getSaveOption() == SaveOptionEnum.NEVER) {
+		if (settings.saveOption == SaveOptionEnum.NEVER) {
 			return true
 		}
-		if (settings.getSaveOption() == SaveOptionEnum.ALWAYS) {
+		if (settings.saveOption == SaveOptionEnum.ALWAYS) {
 			saveProject()
 			return true
 		}
@@ -783,9 +783,9 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 
 	fun update() {
 		UiUtils.uiThreadGuard()
-		newProjectAction.setEnabled(!project.isInitial())
-		saveProjectAction.setEnabled(loaded && !project.isSaved())
-		deobfToggleBtn.setSelected(settings.isDeobfuscationOn())
+		newProjectAction.setEnabled(!project.isInitial)
+		saveProjectAction.setEnabled(loaded && !project.isSaved)
+		deobfToggleBtn.setSelected(settings.isDeobfuscationOn)
 		renameMappings.onUpdate(loaded)
 
 		val projectPath = project.getProjectPath()
@@ -795,7 +795,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 			" [" + projectPath.toAbsolutePath().getParent() + ']'
 		}
 		setTitle(
-			(if (project.isSaved()) "" else "*") +
+			(if (project.isSaved) "" else "*") +
 				project.getName() + pathString + " - " + DEFAULT_TITLE,
 		)
 	}
@@ -806,7 +806,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 
 	@Synchronized
 	fun runInitialBackgroundJobs() {
-		if (settings.isAutoStartJobs()) {
+		if (settings.isAutoStartJobs) {
 			Timer().schedule(
 				object : TimerTask() {
 					override fun run() {
@@ -819,7 +819,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 	}
 
 	fun requestFullDecompilation() {
-		if (cacheObject.isFullDecompilationFinished()) {
+		if (cacheObject.isFullDecompilationFinished) {
 			return
 		}
 		backgroundExecutor.execute(DecompileTask(this))
@@ -830,7 +830,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 			NLS.str("preferences.cache.task.delete"),
 			Runnable {
 				try {
-					wrapper.getCurrentDecompiler()?.let { jadx ->
+					wrapper.currentDecompiler?.let { jadx ->
 						try {
 							jadx.getArgs().codeCache.close()
 						} catch (e: Exception) {
@@ -856,17 +856,17 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 		val dialog = ExportProjectDialog(
 			this,
 			{ props ->
-				val args = wrapper.getArgs()
-				if (props.isAsGradleMode()) {
-					args.exportGradleType = props.getExportGradleType()
+				val args = wrapper.args
+				if (props.isAsGradleMode) {
+					args.exportGradleType = props.exportGradleType
 					args.isSkipSources = false
 					args.isSkipResources = false
 				} else {
 					args.exportGradleType = null
-					args.isSkipSources = props.isSkipSources()
-					args.isSkipResources = props.isSkipResources()
+					args.isSkipSources = props.isSkipSources
+					args.isSkipResources = props.isSkipResources
 				}
-				backgroundExecutor.execute(ExportTask(this, wrapper, File(checkNotNull(props.getExportPath()))))
+				backgroundExecutor.execute(ExportTask(this, wrapper, File(checkNotNull(props.exportPath))))
 			},
 		)
 		dialog.setVisible(true)
@@ -929,7 +929,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 	}
 
 	private fun toggleDeobfuscation() {
-		val deobfOn = !settings.isDeobfuscationOn()
+		val deobfOn = !settings.isDeobfuscationOn
 		settings.setDeobfuscationOn(deobfOn)
 		settings.sync()
 
@@ -971,7 +971,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 		val node = getJNodeUnderMouse(e) ?: return
 		var menu = node.onTreePopupMenu(this)
 		val pluginsContext = wrapper.getGuiPluginsContext()
-		for (entry in pluginsContext.getTreePopupMenuEntries()) {
+		for (entry in pluginsContext.treePopupMenuEntries) {
 			val menuItem = entry.buildEntry(node)
 			if (menuItem != null) {
 				if (menu == null) {
@@ -1014,13 +1014,13 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 	}
 
 	fun textSearch() {
-		val panel = tabbedPane.getSelectedContentPanel()
+		val panel = tabbedPane.selectedContentPanel
 		if (panel is AbstractCodeContentPanel) {
 			val codeArea = panel.getCodeArea()
 			if (codeArea != null) {
 				var preferText = codeArea.getSelectedText()
 				if (StringUtils.isEmpty(preferText)) {
-					preferText = codeArea.getWordUnderCaret()
+					preferText = codeArea.wordUnderCaret
 				}
 				if (!StringUtils.isEmpty(preferText)) {
 					SearchDialog.searchText(this, checkNotNull(preferText))
@@ -1032,10 +1032,10 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 	}
 
 	private fun sendActionsToHexViewer(action: ActionModel) {
-		val hexPreviewPanel = getCurrentHexViewTab()
+		val hexPreviewPanel = currentHexViewTab
 		if (hexPreviewPanel != null) {
 			val inspector = hexPreviewPanel.getInspector()
-			val hexEditor = hexPreviewPanel.getEditor()
+			val hexEditor = hexPreviewPanel.editor
 			when (action) {
 				ActionModel.HEX_VIEWER_SHOW_INSPECTOR -> hexPreviewPanel.getInspector().isVisible = !inspector.isVisible
 
@@ -1057,8 +1057,8 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 		}
 	}
 
-	fun getCurrentHexViewTab(): HexPreviewPanel? {
-		val panel = tabbedPane.getSelectedContentPanel()
+	val currentHexViewTab: HexPreviewPanel? get() {
+		val panel = tabbedPane.selectedContentPanel
 		if (panel is AbstractCodeContentPanel) {
 			val childrenComponent = panel.getChildrenComponent()
 			if (childrenComponent is HexPreviewPanel) {
@@ -1069,14 +1069,14 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 	}
 
 	fun updateHexViewMenuEnabled() {
-		hexViewerMenu.setEnabled(getCurrentHexViewTab() != null)
+		hexViewerMenu.setEnabled(currentHexViewTab != null)
 	}
 
 	fun goToMainActivity() {
 		val parser = AndroidManifestParser(
-			AndroidManifestParser.getAndroidManifest(wrapper.getResources()),
+			AndroidManifestParser.getAndroidManifest(wrapper.resources),
 			EnumSet.of(AppAttribute.MAIN_ACTIVITY),
-			wrapper.getArgs().security,
+			wrapper.args.security,
 		)
 		if (!parser.isManifestFound()) {
 			JOptionPane.showMessageDialog(
@@ -1096,7 +1096,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 			if (mainActivityClass == null) {
 				throw JadxRuntimeException("Failed to find main activity class: " + results.mainActivity)
 			}
-			tabsController.codeJump(checkNotNull(cacheObject.getNodeCache().makeFrom(mainActivityClass)))
+			tabsController.codeJump(checkNotNull(cacheObject.nodeCache.makeFrom(mainActivityClass)))
 		} catch (e: Exception) {
 			LOG.error("Main activity not found", e)
 			JOptionPane.showMessageDialog(
@@ -1110,9 +1110,9 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 
 	fun goToApplication() {
 		val parser = AndroidManifestParser(
-			AndroidManifestParser.getAndroidManifest(wrapper.getResources()),
+			AndroidManifestParser.getAndroidManifest(wrapper.resources),
 			EnumSet.of(AppAttribute.APPLICATION),
-			wrapper.getArgs().security,
+			wrapper.args.security,
 		)
 		if (!parser.isManifestFound()) {
 			JOptionPane.showMessageDialog(
@@ -1132,7 +1132,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 			if (applicationClass == null) {
 				throw JadxRuntimeException("Failed to find application class: " + results.application)
 			}
-			tabsController.codeJump(checkNotNull(cacheObject.getNodeCache().makeFrom(applicationClass)))
+			tabsController.codeJump(checkNotNull(cacheObject.nodeCache.makeFrom(applicationClass)))
 		} catch (e: Exception) {
 			LOG.error("Application not found", e)
 			JOptionPane.showMessageDialog(
@@ -1145,7 +1145,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 	}
 
 	fun goToAndroidManifest() {
-		val androidManifest = AndroidManifestParser.getAndroidManifest(wrapper.getResources())
+		val androidManifest = AndroidManifestParser.getAndroidManifest(wrapper.resources)
 		if (androidManifest == null) {
 			JOptionPane.showMessageDialog(
 				this,
@@ -1171,11 +1171,11 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 		val reloadAction = JadxGuiAction(ActionModel.RELOAD, Runnable { UiUtils.uiRun(Runnable { reopen() }) })
 		val liveReloadAction = JadxGuiAction(
 			ActionModel.LIVE_RELOAD,
-			Runnable { updateLiveReload(!project.isEnableLiveReload()) },
+			Runnable { updateLiveReload(!project.isEnableLiveReload) },
 		)
 
 		liveReloadMenuItem = JCheckBoxMenuItem(liveReloadAction)
-		liveReloadMenuItem.setState(project.isEnableLiveReload())
+		liveReloadMenuItem.setState(project.isEnableLiveReload)
 
 		val exportAction = JadxGuiAction(ActionModel.EXPORT, Runnable { exportProject() })
 
@@ -1188,35 +1188,35 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 		val prefsAction = JadxGuiAction(ActionModel.PREFS, Runnable { openSettings() })
 		val exitAction = JadxGuiAction(ActionModel.EXIT, Runnable { closeWindow() })
 
-		isFlattenPackage = settings.isFlattenPackage()
+		isFlattenPackage = settings.isFlattenPackage
 		flatPkgMenuItem = JCheckBoxMenuItem(NLS.str("menu.flatten"), Icons.FLAT_PKG)
 		flatPkgMenuItem.setState(isFlattenPackage)
 
 		val enablePreviewTabAction = JadxGuiAction(
 			ActionModel.PREVIEW_TAB,
-			Runnable { settings.setEnablePreviewTab(!settings.isEnablePreviewTab()) },
+			Runnable { settings.setEnablePreviewTab(!settings.isEnablePreviewTab) },
 		)
-		enablePreviewTabAction.setSelected(settings.isEnablePreviewTab())
+		enablePreviewTabAction.setSelected(settings.isEnablePreviewTab)
 
 		val heapUsageBarMenuItem = JCheckBoxMenuItem(NLS.str("menu.heapUsageBar"))
-		heapUsageBarMenuItem.setState(settings.isShowHeapUsageBar())
+		heapUsageBarMenuItem.setState(settings.isShowHeapUsageBar)
 		heapUsageBarMenuItem.addActionListener {
-			settings.setShowHeapUsageBar(!settings.isShowHeapUsageBar())
-			heapUsageBar.setVisible(settings.isShowHeapUsageBar())
+			settings.setShowHeapUsageBar(!settings.isShowHeapUsageBar)
+			heapUsageBar.setVisible(settings.isShowHeapUsageBar)
 		}
 
 		val alwaysSelectOpened = JCheckBoxMenuItem(NLS.str("menu.alwaysSelectOpened"))
-		alwaysSelectOpened.setState(settings.isAlwaysSelectOpened())
+		alwaysSelectOpened.setState(settings.isAlwaysSelectOpened)
 		alwaysSelectOpened.addActionListener {
-			settings.setAlwaysSelectOpened(!settings.isAlwaysSelectOpened())
-			if (settings.isAlwaysSelectOpened()) {
+			settings.setAlwaysSelectOpened(!settings.isAlwaysSelectOpened)
+			if (settings.isAlwaysSelectOpened) {
 				editorSyncManager.sync()
 			}
 		}
 
 		val dockLog = JCheckBoxMenuItem(NLS.str("menu.dock_log"))
-		dockLog.setState(settings.isDockLogViewer())
-		dockLog.addActionListener { settings.saveDockLogViewer(!settings.isDockLogViewer()) }
+		dockLog.setState(settings.isDockLogViewer)
+		dockLog.addActionListener { settings.saveDockLogViewer(!settings.isDockLogViewer) }
 
 		val quickTabsAction = ActionHandler(
 			Runnable {
@@ -1227,8 +1227,8 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 		)
 		quickTabsAction.setNameAndDesc(NLS.str("menu.dock_quick_tabs"))
 		quickTabsAction.setIcon(Icons.QUICK_TABS)
-		quickTabsAction.setSelected(settings.isDockQuickTabs())
-		setQuickTabsVisibility(settings.isDockQuickTabs())
+		quickTabsAction.setSelected(settings.isDockQuickTabs)
+		setQuickTabsVisibility(settings.isDockQuickTabs)
 
 		val syncAction = JadxGuiAction(ActionModel.SYNC, Runnable { editorSyncManager.sync() })
 		val textSearchAction = JadxGuiAction(ActionModel.TEXT_SEARCH, Runnable { textSearch() })
@@ -1251,11 +1251,11 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 		val deobfAction = JadxGuiAction(ActionModel.DEOBF, Runnable { toggleDeobfuscation() })
 
 		deobfToggleBtn = JToggleButton(deobfAction)
-		deobfToggleBtn.setSelected(settings.isDeobfuscationOn())
+		deobfToggleBtn.setSelected(settings.isDeobfuscationOn)
 		deobfToggleBtn.setText("")
 
 		deobfMenuItem = JCheckBoxMenuItem(deobfAction)
-		deobfMenuItem.setState(settings.isDeobfuscationOn())
+		deobfMenuItem.setState(settings.isDeobfuscationOn)
 
 		val showLogAction = JadxGuiAction(ActionModel.SHOW_LOG, Runnable { showLogViewer(LogOptions.current()) })
 		val aboutAction = JadxGuiAction(ActionModel.ABOUT, Runnable { AboutDialog().setVisible(true) })
@@ -1497,7 +1497,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 					setToolTipText(null)
 				}
 				if (value is JPackage) {
-					isEnabled = value.isEnabled()
+					isEnabled = value.isEnabled
 				}
 				return c
 			}
@@ -1623,7 +1623,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 		settingsWindow.setVisible(true)
 	}
 
-	fun isSettingsOpen(): Boolean = settingsOpen
+	val isSettingsOpen: Boolean get() = settingsOpen
 
 	fun loadSettings() {
 		// 排队更新，避免打断当前 UI 任务
@@ -1633,7 +1633,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 	private fun updateUiSettings() {
 		var needUpdateUI = false
 		val defaultUiFont = UIManager.getFont("defaultFont")
-		val uiFont = settings.getUiFont()
+		val uiFont = settings.uiFont
 		if (uiFont != defaultUiFont) {
 			UIManager.put("defaultFont", uiFont)
 			setFont(uiFont)
@@ -1642,12 +1642,12 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 		if (LafManager.updateLaf(settings)) {
 			needUpdateUI = true
 		}
-		editorThemeManager.setTheme(settings.getEditorTheme())
+		editorThemeManager.setTheme(settings.editorTheme)
 
-		if (UIScale.setZoomFactor(settings.getUiZoom())) {
+		if (UIScale.setZoomFactor(settings.uiZoom)) {
 			needUpdateUI = true
 		}
-		tree.setFont(settings.getCodeFont())
+		tree.setFont(settings.codeFont)
 		tree.setRowHeight(-1)
 
 		tabbedPane.loadSettings()
@@ -1695,7 +1695,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 	}
 
 	private fun saveOpenTabs() {
-		project.saveOpenTabs(tabsController.getEditorViewStates())
+		project.saveOpenTabs(tabsController.editorViewStates)
 	}
 
 	private fun restoreOpenTabs(openTabs: List<EditorViewState>) {
@@ -1712,7 +1712,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 	private fun preLoadOpenTabs(openTabs: List<EditorViewState>) {
 		UiUtils.notUiThreadGuard()
 		for (tabState in openTabs) {
-			if (tabState.isHidden()) {
+			if (tabState.isHidden) {
 				continue
 			}
 			val node = tabState.getNode()
@@ -1728,8 +1728,8 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 		settings.setMainWindowVerticalSplitterLoc(bottomSplitPane.getDividerLocation())
 		val panel = debuggerPanel
 		if (panel != null) {
-			settings.setDebuggerStackFrameSplitterLoc(panel.getLeftSplitterLocation())
-			settings.setDebuggerVarTreeSplitterLoc(panel.getRightSplitterLocation())
+			settings.setDebuggerStackFrameSplitterLoc(panel.leftSplitterLocation)
+			settings.setDebuggerVarTreeSplitterLoc(panel.rightSplitterLocation)
 		}
 	}
 
@@ -1797,7 +1797,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 			debuggerPanel = panel
 			panel.loadSettings()
 			bottomSplitPane.setBottomComponent(panel)
-			var loc = settings.getMainWindowVerticalSplitterLoc()
+			var loc = settings.mainWindowVerticalSplitterLoc
 			if (loc == 0) {
 				loc = 300
 			}
@@ -1808,7 +1808,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 	fun showLogViewer(logOptions: LogOptions) {
 		UiUtils.uiRun(
 			Runnable {
-				if (settings.isDockLogViewer()) {
+				if (settings.isDockLogViewer) {
 					showDockedLog(logOptions)
 				} else {
 					LogViewerDialog.open(this, logOptions)
@@ -1895,7 +1895,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 
 	/** 检查是否存在当前字体无法显示的类/方法/字段名，并提示用户。 */
 	private fun checkIfCodeHasNonPrintableChars() {
-		if (settings.isRenamePrintable() || settings.isDeobfuscationOn()) {
+		if (settings.isRenamePrintable || settings.isDeobfuscationOn) {
 			return
 		}
 
@@ -1905,8 +1905,8 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 
 		val nonDisplayString = StringBuilder()
 
-		val classes = wrapper.getRootNode().getClasses(true)
-		val font = settings.getCodeFont()
+		val classes = wrapper.rootNode.getClasses(true)
+		val font = settings.codeFont
 		var hasNonDisplayable = false
 
 		for (cls in classes) {

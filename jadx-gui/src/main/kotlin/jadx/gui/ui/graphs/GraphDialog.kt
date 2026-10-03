@@ -146,7 +146,6 @@ abstract class GraphDialog(
 		private val MIN_WINDOW_SIZE = Dimension(800, 500)
 
 		/** 构造一个只读的错误文本区（用于把错误展示在图形区域内）。 */
-		@JvmStatic
 		fun graphError(errorMessage: String): JTextArea {
 			val errorText = JTextArea()
 			errorText.setText(errorMessage)
@@ -157,7 +156,6 @@ abstract class GraphDialog(
 		}
 
 		/** 把异常堆栈写入只读文本区，附带默认错误提示。 */
-		@JvmStatic
 		fun graphError(error: Exception): JTextArea {
 			val errorText = JTextArea()
 			val stringWriter = StringWriter()

@@ -42,7 +42,7 @@ class TabBlueprint(node: JNode) {
 	 * 是否仍被引用（当前仅书签算引用）。
 	 * 未被引用的隐藏标签页会被真正关闭。
 	 */
-	fun isReferenced(): Boolean = isBookmarked
+	val isReferenced: Boolean get() = isBookmarked
 
 	override fun equals(other: Any?): Boolean {
 		if (this === other) {

@@ -24,7 +24,6 @@ object FallbackSyncer {
 	private val LOG: Logger = LoggerFactory.getLogger(FallbackSyncer::class.java)
 
 	/** 执行回退同步；成功返回 true。 */
-	@JvmStatic
 	fun sync(fromArea: AbstractCodeArea, toArea: AbstractCodeArea): Boolean {
 		LOG.debug("FALLBACK SYNC START")
 		try {
@@ -40,7 +39,7 @@ object FallbackSyncer {
 
 			// 提取光标下的词元（字符串字面量或标识符）
 			val areaToken = getToken(fromArea, caretPos)
-			val token = areaToken.getStr()
+			val token = areaToken.str
 			LOG.debug("Token at caret: '{}'", token)
 			if (token.isEmpty()) {
 				return false
@@ -69,11 +68,11 @@ object FallbackSyncer {
 		val tokenLine = sourceToken.getLine()
 
 		// 定位方法/类声明行作为上下文
-		val fromDeclaration = tokenLine.getEnclosingScopeDeclaration()
+		val fromDeclaration = tokenLine.enclosingScopeDeclaration
 		val fromDeclaringLine = fromDeclaration.getLine()
 
 		val from = fromDeclaringLine.getArea()
-		val declarationLineStr = fromDeclaringLine.getStr()
+		val declarationLineStr = fromDeclaringLine.str
 		LOG.debug("Found declaration line: {}", declarationLineStr)
 		val nameToFind = fromDeclaration.getIdentifyingName()
 		if (nameToFind.isNullOrEmpty()) {
@@ -93,10 +92,10 @@ object FallbackSyncer {
 			return false
 		}
 		val targetDeclarationLineIndex = targetDeclLine.getLineIndex()
-		LOG.debug("Target declaration line {}", targetDeclLine.getStr())
-		if (tokenLine.isScopeDeclarationLine()) {
+		LOG.debug("Target declaration line {}", targetDeclLine.str)
+		if (tokenLine.isScopeDeclarationLine) {
 			CodeSyncHighlighter.defaultHighlighter().highlightAndScrollToLine(to, targetDeclarationLineIndex)
-			LOG.info("{} - Highlighted target declaration line", LOG.getName(), targetDeclLine.getStr())
+			LOG.info("{} - Highlighted target declaration line", LOG.getName(), targetDeclLine.str)
 			return true
 		}
 
@@ -111,7 +110,7 @@ object FallbackSyncer {
 		}
 		val sourceMethodBody = extractMethodBody(from, fromMatcher.start())
 
-		val tokenStr = sourceToken.getStr()
+		val tokenStr = sourceToken.str
 		val caretPos = sourceToken.getAtPos()
 		val caretOffsetInMethod = caretPos - fromMatcher.start()
 		var nthOccurrence = 0
@@ -157,10 +156,10 @@ object FallbackSyncer {
 			LOG.debug("Match found at offset: {}", matcher.start())
 			val targetDeclarationLineIndex = to.getLineOfOffset(matcher.start())
 			val toDeclCandidate = getLine(to, targetDeclarationLineIndex)
-			if (!toDeclCandidate.isScopeDeclarationLine()) {
+			if (!toDeclCandidate.isScopeDeclarationLine) {
 				continue
 			}
-			val targetDecl = toDeclCandidate.getDeclaration()
+			val targetDecl = toDeclCandidate.declaration
 			if (sourceDecl == targetDecl) {
 				return toDeclCandidate
 			}
@@ -177,11 +176,11 @@ object FallbackSyncer {
 
 	/** 判断该词元是否允许参与回退匹配。 */
 	private fun allowSync(areaToken: AbstractCodeAreaToken): Boolean {
-		val isOnDeclarationLine = areaToken.getLine().isDeclarationLine()
+		val isOnDeclarationLine = areaToken.getLine().isDeclarationLine
 		return isOnDeclarationLine ||
 			areaToken.isClassField() ||
 			areaToken.isFieldReference() ||
-			areaToken.isMethodConstructorDeclarationOrCall()
+			areaToken.isMethodConstructorDeclarationOrCall
 	}
 
 	private fun generateClassRegex(name: String): String = "\\b(class|interface|enum)\\s+" + Pattern.quote(name) + "\\b" + // java

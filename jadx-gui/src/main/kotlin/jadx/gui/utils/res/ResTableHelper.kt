@@ -88,7 +88,6 @@ class ResTableHelper private constructor(private val resTableRes: JResource) {
 		 *
 		 * @return 根节点列表
 		 */
-		@JvmStatic
 		fun buildTree(resTableRes: JResource, resTable: ResContainer): MutableList<JResource> {
 			val resTableHelper = ResTableHelper(resTableRes)
 			resTableHelper.process(resTable)

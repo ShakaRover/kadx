@@ -18,7 +18,6 @@ object IOUtils {
 	 *
 	 * 说明：Jadx 升级到 Java 11+ 后本方法可删除（JDK 自带 `readNBytes`）。
 	 */
-	@JvmStatic
 	@Throws(IOException::class)
 	fun readNBytes(inputStream: InputStream, len: Int): ByteArray? {
 		val payload = ByteArray(len)
@@ -36,7 +35,6 @@ object IOUtils {
 	}
 
 	/** 把 [buf] 全部读满，返回实际读取的字节数。 */
-	@JvmStatic
 	@Throws(IOException::class)
 	fun read(inputStream: InputStream, buf: ByteArray): Int = read(inputStream, buf, 0, buf.size)
 
@@ -45,7 +43,6 @@ object IOUtils {
 	 *
 	 * @return 实际读取的字节数（可能小于 [len]，表示提前到达 EOF）
 	 */
-	@JvmStatic
 	@Throws(IOException::class)
 	fun read(inputStream: InputStream, buf: ByteArray, off: Int, len: Int): Int {
 		var remainingBytes = len

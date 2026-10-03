@@ -29,7 +29,7 @@ abstract class JNodeAction : CodeAreaAction {
 	override fun actionPerformed(e: ActionEvent) {
 		if (JadxGuiAction.isSource(e)) {
 			// 由快捷键/菜单触发：实时取光标下节点
-			val nodeUnderCaret = codeArea?.getNodeUnderCaret()
+			val nodeUnderCaret = codeArea?.nodeUnderCaret
 			node = nodeUnderCaret
 			if (isActionEnabled(nodeUnderCaret)) {
 				runAction(checkNotNull(nodeUnderCaret))

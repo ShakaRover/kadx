@@ -20,7 +20,6 @@ object FontChooserHack {
 
 	private val LOG: Logger = LoggerFactory.getLogger(FontChooserHack::class.java)
 
-	@JvmStatic
 	fun setOnlyMonospace(fontChooser: FontChooser) {
 		try {
 			val familyPane = getPrivateField(fontChooser, "familyPane") as FamilyPane
@@ -32,7 +31,6 @@ object FontChooserHack {
 		}
 	}
 
-	@JvmStatic
 	fun hidePreview(fontChooser: FontChooser) {
 		try {
 			val previewPanel = getPrivateField(fontChooser, "previewPanel") as JPanel

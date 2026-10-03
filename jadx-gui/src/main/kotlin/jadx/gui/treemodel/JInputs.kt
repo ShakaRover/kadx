@@ -21,12 +21,12 @@ class JInputs(mainWindow: MainWindow) : JNode() {
 
 	init {
 		val project: JadxProject = mainWindow.getProject()
-		val inputs = project.getFilePaths()
+		val inputs = project.filePaths
 		val files = FileUtils.expandDirs(inputs)
 		val inputsHelper = TreeInputsHelper(mainWindow)
 		inputsHelper.processInputs(files)
 		add(JInputFiles(inputsHelper.getSimpleFiles()))
-		inputsHelper.getCustomNodes().forEach { add(it) }
+		inputsHelper.customNodes.forEach { add(it) }
 	}
 
 	override fun getJParent(): JClass? = null

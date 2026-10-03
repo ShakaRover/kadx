@@ -63,17 +63,17 @@ class JadxProject private constructor(
 
 	/** 把项目中的输入文件、映射与插件选项填充进 [jadxArgs]。 */
 	fun fillJadxArgs(jadxArgs: JadxArgs) {
-		jadxArgs.inputFiles = FileUtils.toFiles(getFilePaths()).toMutableList()
+		jadxArgs.inputFiles = FileUtils.toFiles(filePaths).toMutableList()
 		if (jadxArgs.userRenamesMappingsPath == null) {
-			jadxArgs.userRenamesMappingsPath = getMappingsPath()
+			jadxArgs.userRenamesMappingsPath = mappingsPath
 		}
-		jadxArgs.codeData = getCodeData()
+		jadxArgs.codeData = codeData
 		@Suppress("UNCHECKED_CAST")
 		(jadxArgs.pluginOptions as MutableMap<String, String>).putAll(data.getPluginOptions())
 	}
 
 	/** 项目工作目录（项目文件所在目录，或首个输入文件所在目录）。 */
-	fun getWorkingDir(): Path? {
+	val workingDir: Path? get() {
 		val path = projectPath
 		if (path != null) {
 			return path.toAbsolutePath().parent
@@ -93,10 +93,10 @@ class JadxProject private constructor(
 		this.name = CommonFileUtils.removeFileExtension(projectPath.fileName.toString())
 	}
 
-	fun getFilePaths(): List<Path> = data.getFiles()
+	val filePaths: List<Path> get() = data.getFiles()
 
 	fun setFilePaths(files: List<Path>) {
-		if (files == getFilePaths()) {
+		if (files == filePaths) {
 			return
 		}
 		if (files.isEmpty()) {
@@ -115,7 +115,7 @@ class JadxProject private constructor(
 
 	/** 重新校验输入文件是否存在，移除不存在的文件。 */
 	fun verifyFiles() {
-		setFilePaths(verifyInputFiles(getFilePaths()))
+		setFilePaths(verifyInputFiles(filePaths))
 	}
 
 	fun getInputsHash(): String = inputsHash
@@ -128,9 +128,9 @@ class JadxProject private constructor(
 		changed()
 	}
 
-	fun getTreeExpansions(): List<String> = data.getTreeExpansionsV2()
+	val treeExpansions: List<String> get() = data.getTreeExpansionsV2()
 
-	fun getCodeData(): JadxCodeData = data.getCodeData()
+	val codeData: JadxCodeData get() = data.getCodeData()
 
 	fun setCodeData(codeData: JadxCodeData) {
 		data.setCodeData(codeData)
@@ -147,11 +147,11 @@ class JadxProject private constructor(
 
 	/** 从项目数据恢复打开的标签页。 */
 	fun getOpenTabs(mw: MainWindow): List<EditorViewState> {
-		tabStateViewAdapter.setCustomAdapters(mw.getWrapper().getGuiPluginsContext().getTabStatePersistAdapters())
+		tabStateViewAdapter.setCustomAdapters(mw.getWrapper().getGuiPluginsContext().tabStatePersistAdapters)
 		return data.getOpenTabs().mapNotNull { tabStateViewAdapter.load(mw, it) }
 	}
 
-	fun getMappingsPath(): Path? = data.getMappingsPath()
+	val mappingsPath: Path? get() = data.getMappingsPath()
 
 	fun setMappingsPath(mappingsPath: Path?) {
 		data.setMappingsPath(mappingsPath)
@@ -191,16 +191,16 @@ class JadxProject private constructor(
 		return newCacheDir
 	}
 
-	fun isEnableLiveReload(): Boolean = data.isEnableLiveReload()
+	val isEnableLiveReload: Boolean get() = data.isEnableLiveReload
 
 	fun setEnableLiveReload(newValue: Boolean) {
-		if (newValue != data.isEnableLiveReload()) {
+		if (newValue != data.isEnableLiveReload) {
 			data.setEnableLiveReload(newValue)
 			changed()
 		}
 	}
 
-	fun getSearchHistory(): MutableList<String> = data.getSearchHistory()
+	val searchHistory: MutableList<String> get() = data.getSearchHistory()
 
 	fun addToSearchHistory(str: String?) {
 		if (str.isNullOrEmpty()) {
@@ -223,16 +223,16 @@ class JadxProject private constructor(
 		data.setSearchResourcesFilter(searchResourcesFilter)
 	}
 
-	fun getSearchResourcesFilter(): String = data.getSearchResourcesFilter()
+	val searchResourcesFilter: String get() = data.getSearchResourcesFilter()
 
 	fun setSearchResourcesSizeLimit(searchResourcesSizeLimit: Int) {
 		data.setSearchResourcesSizeLimit(searchResourcesSizeLimit)
 	}
 
-	fun getSearchResourcesSizeLimit(): Int = data.getSearchResourcesSizeLimit()
+	val searchResourcesSizeLimit: Int get() = data.getSearchResourcesSizeLimit()
 	private fun changed() {
 		val settings: JadxSettings? = mainWindow.getSettings()
-		if (settings != null && settings.getSaveOption() == SaveOptionEnum.ALWAYS) {
+		if (settings != null && settings.saveOption == SaveOptionEnum.ALWAYS) {
 			save()
 		} else {
 			saved = false
@@ -243,11 +243,11 @@ class JadxProject private constructor(
 
 	fun getName(): String = name
 
-	fun isSaveFileSelected(): Boolean = projectPath != null
+	val isSaveFileSelected: Boolean get() = projectPath != null
 
-	fun isSaved(): Boolean = saved
+	val isSaved: Boolean get() = saved
 
-	fun isInitial(): Boolean = initial
+	val isInitial: Boolean get() = initial
 
 	fun saveAs(path: Path) {
 		mainWindow.getCacheManager().projectPathUpdate(this, path)
@@ -334,17 +334,15 @@ class JadxProject private constructor(
 			return StringUtils.abbreviate(joiner.toString(), 100)
 		}
 
-		@JvmStatic
 		fun load(mainWindow: MainWindow, path: Path): JadxProject {
 			val projectData = loadProjectData(path)
 			val project = JadxProject(mainWindow, projectData)
 			project.saved = true
 			project.setProjectPath(path)
-			project.setFilePaths(project.getFilePaths())
+			project.setFilePaths(project.filePaths)
 			return project
 		}
 
-		@JvmStatic
 		fun loadProjectData(path: Path): ProjectData {
 			val basePath = checkNotNull(path.toAbsolutePath().parent) { "Can't resolve project base path: $path" }
 			try {

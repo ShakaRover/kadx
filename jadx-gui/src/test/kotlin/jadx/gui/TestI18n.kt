@@ -30,7 +30,7 @@ class TestI18n {
 
 	@Test
 	fun verifyLocales() {
-		for (lang in NLS.getLangLocales()) {
+		for (lang in NLS.langLocales) {
 			val locale = lang.get()
 			println(
 				"Language: " + locale.language + " - " + locale.displayLanguage +

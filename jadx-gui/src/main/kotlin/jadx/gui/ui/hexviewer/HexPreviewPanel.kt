@@ -63,7 +63,7 @@ class HexPreviewPanel(settings: JadxSettings) : JPanel() {
 	private var popupMenuPositionZone: BasicCodeAreaZone = BasicCodeAreaZone.UNKNOWN
 
 	init {
-		hexCodeArea.setCodeFont(settings.getSmaliFont())
+		hexCodeArea.setCodeFont(settings.smaliFont)
 		hexCodeArea.setEditMode(EditMode.READ_ONLY)
 		hexCodeArea.setCharset(StandardCharsets.UTF_8)
 		hexCodeArea.setComponentPopupMenu(object : JPopupMenu() {
@@ -84,12 +84,12 @@ class HexPreviewPanel(settings: JadxSettings) : JPanel() {
 		inspector = HexInspectorPanel()
 		searchBar = HexSearchBar(hexCodeArea)
 		header = HexEditorHeader(hexCodeArea)
-		header.setFont(settings.getUiFont())
+		header.setFont(settings.uiFont)
 
 		val painter: CodeAreaPainter = hexCodeArea.getPainter()
 		defaultColors = hexCodeArea.getColorsProfile() as SectionCodeAreaColorProfile
 
-		hexCodeArea.setColorsProfile(getColorsProfile())
+		hexCodeArea.setColorsProfile(colorsProfile)
 
 		val codeAreaAssessor = BinEdCodeAreaAssessor(
 			(painter as ColorAssessorPainterCapable).getColorAssessor(),
@@ -117,7 +117,7 @@ class HexPreviewPanel(settings: JadxSettings) : JPanel() {
 		enableUpdate()
 	}
 
-	fun getColorsProfile(): SectionCodeAreaColorProfile {
+	val colorsProfile: SectionCodeAreaColorProfile get() {
 		val isDarkTheme = UiUtils.isDarkTheme(
 			checkNotNull(defaultColors.getColor(CodeAreaBasicColors.TEXT_BACKGROUND)),
 		)
@@ -130,7 +130,7 @@ class HexPreviewPanel(settings: JadxSettings) : JPanel() {
 		return defaultColors
 	}
 
-	fun isDataLoaded(): Boolean = !hexCodeArea.getContentData().isEmpty()
+	val isDataLoaded: Boolean get() = !hexCodeArea.getContentData().isEmpty()
 
 	fun setData(data: ByteArray?) {
 		if (data != null) {
@@ -217,7 +217,7 @@ class HexPreviewPanel(settings: JadxSettings) : JPanel() {
 	}
 
 	private fun updatePopupActionStates() {
-		val selectionExists = isSelection()
+		val selectionExists = isSelection
 		val isEditable = !isEditable()
 
 		cutAction.setEnabled(isEditable && selectionExists)
@@ -229,7 +229,7 @@ class HexPreviewPanel(settings: JadxSettings) : JPanel() {
 		selectAllAction.setEnabled(hexCodeArea.getDataSize() > 0)
 	}
 
-	fun getEditor(): SectCodeArea = hexCodeArea
+	val editor: SectCodeArea get() = hexCodeArea
 
 	fun getHeader(): HexEditorHeader = header
 
@@ -265,7 +265,7 @@ class HexPreviewPanel(settings: JadxSettings) : JPanel() {
 		hexCodeArea.selectAll()
 	}
 
-	fun isSelection(): Boolean = hexCodeArea.hasSelection()
+	val isSelection: Boolean get() = hexCodeArea.hasSelection()
 
 	fun isEditable(): Boolean = hexCodeArea.isEditable()
 
@@ -284,7 +284,6 @@ class HexPreviewPanel(settings: JadxSettings) : JPanel() {
 		private const val serialVersionUID = 3261685857479120073L
 		private const val CACHE_SIZE = 250
 
-		@JvmStatic
 		fun getSelectionData(core: SectCodeArea): String? {
 			val selection: SelectionRange = core.getSelection()
 			if (!selection.isEmpty()) {

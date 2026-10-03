@@ -24,7 +24,7 @@ class InsnOffsetJavaSyncer(private val from: CodeArea) :
 	IToSmaliSyncStrategy {
 
 	override fun syncTo(to: SmaliArea): Boolean {
-		if (!to.isShowingDalvikBytecode()) {
+		if (!to.isShowingDalvikBytecode) {
 			return false
 		}
 
@@ -78,7 +78,7 @@ class InsnOffsetJavaSyncer(private val from: CodeArea) :
 		val mthID = getMthRawFullID(mthDefPos)
 		// 在目标区域搜索同名方法
 		val toMthRange = findMethodRange(mthID, to) ?: return false
-		val toMetadata = to.getCodeMetadata() ?: return false
+		val toMetadata = to.codeMetadata ?: return false
 
 		// 搜索第一个指令偏移
 		val firstInsnOffset = (fromInsnOffsetRange.start.value as InsnCodeOffset).getOffset()
@@ -129,7 +129,7 @@ class InsnOffsetJavaSyncer(private val from: CodeArea) :
 
 	/** 在 [area] 中查找与 [mthFullRawID] 匹配的方法声明及其结束位置。 */
 	private fun findMethodRange(mthFullRawID: String, area: CodeArea): CodeMetadataRange? {
-		val codeMetadata = area.getCodeMetadata() ?: return null
+		val codeMetadata = area.codeMetadata ?: return null
 		val toMthDecl: Map.Entry<Int, ICodeAnnotation>? =
 			codeMetadata.searchDown<Map.Entry<Int, ICodeAnnotation>?>(0) { offset, ann ->
 				if (ann.getAnnType() != ICodeAnnotation.AnnType.DECLARATION) {
@@ -163,7 +163,7 @@ class InsnOffsetJavaSyncer(private val from: CodeArea) :
 
 	/** 查找包含 [startPos] 的方法声明范围（向上找方法声明，向下找 END）。 */
 	private fun findEnclosingMethodRange(startPos: Int): CodeMetadataRange? {
-		val codeMetadata = from.getCodeMetadata() ?: return null
+		val codeMetadata = from.codeMetadata ?: return null
 		val mthDef: Map.Entry<Int, ICodeAnnotation>? =
 			codeMetadata.searchUp<Map.Entry<Int, ICodeAnnotation>?>(startPos) { offset, ann ->
 				if (ann.getAnnType() != ICodeAnnotation.AnnType.DECLARATION) {
@@ -222,7 +222,7 @@ class InsnOffsetJavaSyncer(private val from: CodeArea) :
 
 	/** 向上查找偏移小于等于 [limit] 之前最近的一个指令偏移注解。 */
 	private fun findInsnOffsetBeforePos(startPos: Int, limit: Int): Map.Entry<Int, ICodeAnnotation>? {
-		val codeMetadata = from.getCodeMetadata() ?: return null
+		val codeMetadata = from.codeMetadata ?: return null
 		return codeMetadata.searchUp<Map.Entry<Int, ICodeAnnotation>?>(startPos) { offset, ann ->
 			if (offset <= limit) {
 				return@searchUp null
@@ -236,7 +236,7 @@ class InsnOffsetJavaSyncer(private val from: CodeArea) :
 
 	/** 向下查找偏移大于等于 [limit] 之前最近的一个指令偏移注解。 */
 	private fun findInsnOffsetAfterPos(startPos: Int, limit: Int): Map.Entry<Int, ICodeAnnotation>? {
-		val codeMetadata = from.getCodeMetadata() ?: return null
+		val codeMetadata = from.codeMetadata ?: return null
 		return codeMetadata.searchDown<Map.Entry<Int, ICodeAnnotation>?>(startPos) { offset, ann ->
 			if (offset >= limit) {
 				return@searchDown null
@@ -252,7 +252,7 @@ class InsnOffsetJavaSyncer(private val from: CodeArea) :
 	 * 假设 [mthDefPos] 处有一个 `NodeDeclareRef{MethodNode}` 注解，返回方法的原始全名。
 	 */
 	private fun getMthRawFullID(mthDefPos: Int): String {
-		val ann = from.getCodeMetadata()?.getAt(mthDefPos)
+		val ann = from.codeMetadata?.getAt(mthDefPos)
 		val ref = ann as NodeDeclareRef
 		val mth = ref.getNode() as MethodNode
 		return mth.getMethodInfo().rawFullId

@@ -31,8 +31,8 @@ class UndisplayedStringsPanel(panel: TabbedPane, node: UndisplayedStringsNode) :
 		layout = BorderLayout()
 		textPane = AbstractCodeArea.getDefaultArea(panel.getMainWindow())
 
-		val settings: JadxSettings = getSettings()
-		val selectedFont: Font = settings.getCodeFont()
+		val settings: JadxSettings = settings
+		val selectedFont: Font = settings.codeFont
 
 		val fontChooser = FontChooser()
 		fontChooser.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5))
@@ -42,7 +42,7 @@ class UndisplayedStringsPanel(panel: TabbedPane, node: UndisplayedStringsNode) :
 		fontChooser.addChangeListener { event ->
 			val model = event.getSource() as FontSelectionModel
 			settings.setCodeFont(model.getSelectedFont())
-			getMainWindow().loadSettings()
+			mainWindow.loadSettings()
 		}
 
 		codeScrollPane = RTextScrollPane(textPane)
@@ -55,9 +55,9 @@ class UndisplayedStringsPanel(panel: TabbedPane, node: UndisplayedStringsNode) :
 	}
 
 	private fun applySettings() {
-		codeScrollPane.setLineNumbersEnabled(getSettings().getLineNumbersMode() != LineNumbersMode.DISABLE)
-		codeScrollPane.getGutter().setLineNumberFont(getSettings().getCodeFont())
-		textPane.setFont(getSettings().getCodeFont())
+		codeScrollPane.setLineNumbersEnabled(settings.lineNumbersMode != LineNumbersMode.DISABLE)
+		codeScrollPane.getGutter().setLineNumberFont(settings.codeFont)
+		textPane.setFont(settings.codeFont)
 	}
 
 	/** 展示文本内容；[data] 允许为 `null`（此时等价于清空）。 */

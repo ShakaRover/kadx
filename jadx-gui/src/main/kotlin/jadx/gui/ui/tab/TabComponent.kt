@@ -60,18 +60,18 @@ class TabComponent(
 	}
 
 	fun loadSettings() {
-		label.setFont(getLabelFont())
+		label.setFont(labelFont)
 		val dnd = tabbedPane.getDnd()
 		if (dnd != null) {
 			dnd.loadSettings()
 		}
 	}
 
-	private fun getLabelFont(): Font {
-		val font = tabsController.getMainWindow().getSettings().getCodeFont()
+	private val labelFont: Font get() {
+		val font = tabsController.getMainWindow().getSettings().codeFont
 		var style = font.getStyle()
 		style = style or Font.BOLD
-		if (getBlueprint().isPreviewTab) {
+		if (blueprint.isPreviewTab) {
 			style = style xor Font.ITALIC // 翻转斜体位以区分预览标签
 		}
 		return font.deriveFont(style)
@@ -151,7 +151,7 @@ class TabComponent(
 	}
 
 	private fun updateCloseOrPinButton() {
-		if (getBlueprint().isPinned) {
+		if (blueprint.isPinned) {
 			if (closeBtn.isShowing) {
 				remove(closeBtn)
 			}
@@ -170,14 +170,14 @@ class TabComponent(
 
 	private fun updateBookmarkIcon() {
 		icon.clear()
-		if (getBlueprint().isBookmarked) {
+		if (blueprint.isBookmarked) {
 			icon.add(Icons.BOOKMARK_OVERLAY_DARK)
 		}
 		label.repaint()
 	}
 
 	private fun togglePin() {
-		val pinned = !getBlueprint().isPinned
+		val pinned = !blueprint.isPinned
 		tabsController.setTabPinned(getNode(), pinned)
 
 		if (pinned) {
@@ -186,12 +186,12 @@ class TabComponent(
 	}
 
 	private fun toggleBookmark() {
-		val bookmarked = !getBlueprint().isBookmarked
+		val bookmarked = !blueprint.isBookmarked
 		tabsController.setTabBookmarked(getNode(), bookmarked)
 	}
 
 	private fun updateFont() {
-		label.setFont(getLabelFont())
+		label.setFont(labelFont)
 	}
 
 	private fun addListenerForDnd() {
@@ -219,7 +219,7 @@ class TabComponent(
 			}
 		}
 		if (node is JEditableNode) {
-			if (node.isChanged()) {
+			if (node.isChanged) {
 				return "*$tabTitle"
 			}
 		}
@@ -237,8 +237,8 @@ class TabComponent(
 			menu.addSeparator()
 		}
 
-		if (getBlueprint().supportsQuickTabs()) {
-			val pinTitle = if (getBlueprint().isPinned) NLS.str("tabs.unpin") else NLS.str("tabs.pin")
+		if (blueprint.supportsQuickTabs()) {
+			val pinTitle = if (blueprint.isPinned) NLS.str("tabs.unpin") else NLS.str("tabs.pin")
 			val pinTab = JMenuItem(pinTitle)
 			pinTab.addActionListener { togglePin() }
 			menu.add(pinTab)
@@ -247,7 +247,7 @@ class TabComponent(
 			unpinAll.addActionListener { tabsController.unpinAllTabs() }
 			menu.add(unpinAll)
 
-			val bookmarkTitle = if (getBlueprint().isBookmarked) NLS.str("tabs.unbookmark") else NLS.str("tabs.bookmark")
+			val bookmarkTitle = if (blueprint.isBookmarked) NLS.str("tabs.unbookmark") else NLS.str("tabs.bookmark")
 			val bookmarkTab = JMenuItem(bookmarkTitle)
 			bookmarkTab.addActionListener { toggleBookmark() }
 			menu.add(bookmarkTab)
@@ -269,12 +269,12 @@ class TabComponent(
 
 		val closeTab = JMenuItem(NLS.str("tabs.close"))
 		closeTab.addActionListener { tabsController.closeTab(getNode(), true) }
-		if (getBlueprint().isPinned) {
+		if (blueprint.isPinned) {
 			closeTab.setEnabled(false)
 		}
 		menu.add(closeTab)
 
-		val tabs = tabsController.getOpenTabs()
+		val tabs = tabsController.openTabs
 		if (tabs.size > 1) {
 			val closeOther = JMenuItem(NLS.str("tabs.closeOthers"))
 			closeOther.addActionListener {
@@ -292,7 +292,7 @@ class TabComponent(
 			menu.add(closeAll)
 
 			// 这里不用 TabsController，因为标签位置是 TabbedPane 特有的
-			val contentPanels = tabbedPane.getTabs()
+			val contentPanels = tabbedPane.tabs
 			val currentIndex = contentPanels.indexOf(contentPanel)
 			if (currentIndex > 0) { // 仅当左侧还有标签时才添加（index > 0）
 				val closeAllLeft = JMenuItem(NLS.str("tabs.closeAllLeft"))
@@ -343,14 +343,14 @@ class TabComponent(
 		val node = contentPanel.getNode()
 		val jClass = node.getRootClass()
 		if (jClass != null) {
-			return jClass.getFullName()
+			return jClass.fullName
 		}
 		return node.getName()
 	}
 
 	fun getContentPanel(): ContentPanel = contentPanel
 
-	fun getBlueprint(): TabBlueprint {
+	val blueprint: TabBlueprint get() {
 		val node = contentPanel.getNode()
 		return tabsController.getTabByNode(node)
 			?: throw JadxRuntimeException("TabComponent does not have a corresponding TabBlueprint, node: $node")

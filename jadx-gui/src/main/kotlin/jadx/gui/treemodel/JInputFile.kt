@@ -40,7 +40,6 @@ class JInputFile(private val filePath: Path) : JNode() {
 
 	companion object {
 		/** 构建输入文件节点的右键菜单（[JInputSmaliFile] 也复用）。 */
-		@JvmStatic
 		fun buildInputFilePopupMenu(mainWindow: MainWindow, filePath: Path): JPopupMenu {
 			val menu = JPopupMenu()
 			menu.add(SimpleMenuItem(NLS.str("popup.add_files"), Runnable { mainWindow.addFiles() }))

@@ -63,7 +63,7 @@ class JResourcePopupMenu(private val mainWindow: MainWindow, resource: JResource
 		if (extension != null) {
 			fileDialog.setFileExtList(listOf(extension))
 		}
-		val currentDir: Path? = fileDialog.getCurrentDir()
+		val currentDir: Path? = fileDialog.currentDir
 		if (currentDir != null) {
 			fileDialog.setSelectedFile(currentDir.resolve(resource.getName()))
 		}

@@ -24,7 +24,7 @@ import java.util.NavigableMap
 class InsnOffsetSmaliSyncer(private val from: SmaliArea) : IToJavaSyncStrategy {
 
 	override fun syncTo(to: CodeArea): Boolean {
-		if (!from.isShowingDalvikBytecode()) {
+		if (!from.isShowingDalvikBytecode) {
 			// 该策略仅在调试模型生成 smali 时可用（此时才有按行的代码偏移）。
 			return false
 		}
@@ -38,7 +38,7 @@ class InsnOffsetSmaliSyncer(private val from: SmaliArea) : IToJavaSyncStrategy {
 			lineInfo.value,
 			from.getCaretLineNumber(),
 		)
-		val toMetadata = to.getCodeMetadata() ?: return false
+		val toMetadata = to.codeMetadata ?: return false
 
 		@Suppress("UNCHECKED_CAST")
 		val codeAreaAnnotationMap = toMetadata.getAsMap() as NavigableMap<Int, ICodeAnnotation>

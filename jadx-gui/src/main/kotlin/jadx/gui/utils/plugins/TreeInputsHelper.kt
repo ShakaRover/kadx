@@ -19,7 +19,7 @@ import java.nio.file.Path
 class TreeInputsHelper(mainWindow: MainWindow) {
 
 	private val categoryData: List<CategoryData> = mainWindow.getWrapper().getGuiPluginsContext()
-		.getTreeInputCategories()
+		.treeInputCategories
 		.map { CategoryData(it) }
 
 	private var simpleFiles: MutableList<Path> = ArrayList()
@@ -44,7 +44,7 @@ class TreeInputsHelper(mainWindow: MainWindow) {
 	}
 
 	/** 各分类器生成的节点（忽略构建失败的分类器）。 */
-	fun getCustomNodes(): List<JNode> = categoryData.mapNotNull { it.buildInputNode() }
+	val customNodes: List<JNode> get() = categoryData.mapNotNull { it.buildInputNode() }
 
 	/** 未被任何分类器认领的普通文件。 */
 	fun getSimpleFiles(): List<Path> = simpleFiles

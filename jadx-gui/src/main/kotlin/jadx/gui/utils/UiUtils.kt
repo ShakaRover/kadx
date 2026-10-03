@@ -66,7 +66,6 @@ object UiUtils {
 	private val LOG: Logger = LoggerFactory.getLogger(UiUtils::class.java)
 
 	/** 是否开启 GUI 调试断言（线程守卫等）。 */
-	@JvmField
 	val JADX_GUI_DEBUG: Boolean = JadxCommonEnv.getBool("JADX_GUI_DEBUG", false)
 
 	/**
@@ -75,11 +74,9 @@ object UiUtils {
 	 * 低于该值应用可能耗尽堆，导致 GC “发疯”（所有核 100% 且界面无响应）。
 	 * 因为最大堆在 JVM 启动后固定，所以这里可以一次性计算并缓存。
 	 */
-	@JvmField
 	val MIN_FREE_MEMORY: Long = calculateMinFreeMemory()
 
 	/** 什么都不做、且 `toString()` 有意义的 [Runnable]。 */
-	@JvmField
 	val EMPTY_RUNNABLE: Runnable = object : Runnable {
 		override fun run() {
 			// 空实现
@@ -92,7 +89,6 @@ object UiUtils {
 	private val BACKGROUND_THREAD: ExecutorService = Executors.newSingleThreadExecutor(Utils.simpleThreadFactory("utils-bg"))
 
 	/** 加载 SVG 图标（找不到时抛异常）。 */
-	@JvmStatic
 	fun openSvgIcon(name: String): ImageIcon {
 		val iconPath = "icons/$name.svg"
 		val icon = com.formdev.flatlaf.extras.FlatSVGIcon(iconPath)
@@ -108,7 +104,6 @@ object UiUtils {
 	}
 
 	/** 加载 16x16 PNG 图标（找不到时抛异常）。 */
-	@JvmStatic
 	fun openIcon(name: String): ImageIcon {
 		val iconPath = "/icons-16/$name.png"
 		val resource: URL = UiUtils::class.java.getResource(iconPath)
@@ -117,7 +112,6 @@ object UiUtils {
 	}
 
 	/** 加载任意图片资源（找不到时抛异常）。 */
-	@JvmStatic
 	fun openImage(path: String): Image {
 		val resource: URL = UiUtils::class.java.getResource(path)
 			?: throw JadxRuntimeException("Image not found: $path")
@@ -125,7 +119,6 @@ object UiUtils {
 	}
 
 	/** 把 [Runnable] 绑定到快捷键。 */
-	@JvmStatic
 	fun addKeyBinding(comp: JComponent, key: KeyStroke, id: String, action: Runnable) {
 		addKeyBinding(
 			comp,
@@ -140,37 +133,30 @@ object UiUtils {
 	}
 
 	/** 把 [Action] 绑定到快捷键。 */
-	@JvmStatic
 	fun addKeyBinding(comp: JComponent, key: KeyStroke, id: String, action: Action) {
 		comp.getInputMap().put(key, id)
 		comp.getActionMap().put(id, action)
 	}
 
 	/** 移除快捷键绑定。 */
-	@JvmStatic
 	fun removeKeyBinding(comp: JComponent, key: KeyStroke, id: String) {
 		comp.getInputMap().remove(key)
 		comp.getActionMap().remove(id)
 	}
 
 	/** `名称 类型` 形式的纯文本描述。 */
-	@JvmStatic
 	fun typeFormat(name: String, type: ArgType): String = name + " " + typeStr(type)
 
 	/** `名称 类型` 形式的 HTML 描述（名称正常显示，类型灰显）。 */
-	@JvmStatic
 	fun typeFormatHtml(name: String, type: ArgType): String = wrapHtml(escapeHtml(name) + ' ' + fadeHtml(escapeHtml(typeStr(type))))
 
 	/** 用灰色 `<span>` 包裹文本。 */
-	@JvmStatic
 	fun fadeHtml(htmlStr: String): String = "<span style='color:#888888;'>$htmlStr</span>" // TODO: 从主题取色
 
 	/** 用 `<html><body><nobr>` 包裹文本（禁止换行）。 */
-	@JvmStatic
 	fun wrapHtml(htmlStr: String): String = "<html><body><nobr>$htmlStr</nobr></body></html>"
 
 	/** 转义 HTML 中的尖括号。 */
-	@JvmStatic
 	fun escapeHtml(str: String): String = str.replace("<", "&lt;").replace(">", "&gt;")
 
 	/** 路径被截断时使用的省略号。 */
@@ -179,7 +165,6 @@ object UiUtils {
 	/**
 	 * 限制字符串长度：优先保留文件名的末尾部分，仍超长则截断尾部。
 	 */
-	@JvmStatic
 	fun limitStringLength(str: String, maxLength: Int): String {
 		var s = str
 		if (s.length <= maxLength) {
@@ -206,7 +191,6 @@ object UiUtils {
 	}
 
 	/** 把 [ArgType] 渲染成简短可读的类型字符串（用于树节点/提示）。 */
-	@JvmStatic
 	fun typeStr(type: ArgType?): String {
 		if (type == null) {
 			return "null"
@@ -251,7 +235,6 @@ object UiUtils {
 	}
 
 	/** 根据访问标志与 static/final 标记组合出带角标的图标。 */
-	@JvmStatic
 	fun makeIcon(af: AccessInfo, pub: Icon, pri: Icon, pro: Icon, def: Icon): OverlayIcon {
 		val icon: Icon = if (af.isPublic()) {
 			pub
@@ -280,8 +263,7 @@ object UiUtils {
 	}
 
 	/** 当前空闲内存（含未分配部分）是否高于 [MIN_FREE_MEMORY]。 */
-	@JvmStatic
-	fun isFreeMemoryAvailable(): Boolean {
+	val isFreeMemoryAvailable: Boolean get() {
 		val runtime = Runtime.getRuntime()
 		val maxMemory = runtime.maxMemory()
 		val totalFree = runtime.freeMemory() + (maxMemory - runtime.totalMemory())
@@ -289,7 +271,6 @@ object UiUtils {
 	}
 
 	/** 生成堆内存使用情况的可读描述。 */
-	@JvmStatic
 	fun memoryInfo(): String {
 		val runtime = Runtime.getRuntime()
 		val maxMemory = runtime.maxMemory()
@@ -306,7 +287,6 @@ object UiUtils {
 	private fun format(mem: Long): String = (mem / (1024L * 1024L).toDouble()).toLong().toString() + "MB"
 
 	/** 把文本写入系统剪贴板（使用自定义 owner，不持有引用）。 */
-	@JvmStatic
 	fun setClipboardString(text: String) {
 		try {
 			val clipboard = Toolkit.getDefaultToolkit().getSystemClipboard()
@@ -319,7 +299,6 @@ object UiUtils {
 	}
 
 	/** 设置窗口图标列表。 */
-	@JvmStatic
 	fun setWindowIcons(window: Window) {
 		val icons: MutableList<Image> = ArrayList()
 		icons.add(openImage("/logos/jadx-logo-16px.png"))
@@ -330,28 +309,24 @@ object UiUtils {
 	}
 
 	/** Ctrl（macOS 上为 Command）修饰键的掩码。 */
-	@JvmField
 	@field:MagicConstant(flagsFromClass = InputEvent::class)
-	val CTRL_BNT_KEY: Int = getCtrlButton()
+	val CTRL_BNT_KEY: Int = ctrlButton()
 
 	@Suppress("DEPRECATION")
-	private fun getCtrlButton(): Int = if (JadxSystemInfo.IS_MAC) {
+	private val ctrlButton: Int get() = if (JadxSystemInfo.IS_MAC) {
 		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()
 	} else {
 		InputEvent.CTRL_DOWN_MASK
 	}
 
 	/** 获取平台的 Ctrl 修饰键掩码。 */
-	@JvmStatic
 	@MagicConstant(flagsFromClass = InputEvent::class)
 	fun ctrlButton(): Int = CTRL_BNT_KEY
 
 	/** 判断按键事件是否仅按下了 Ctrl。 */
-	@JvmStatic
 	fun isCtrlDown(keyEvent: KeyEvent): Boolean = keyEvent.getModifiersEx() == CTRL_BNT_KEY
 
 	/** 给窗口注册 Esc 快捷键：按下即释放窗口。 */
-	@JvmStatic
 	fun <T> addEscapeShortCutToDispose(window: T) where T : Window, T : RootPaneContainer {
 		val stroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0)
 		window.getRootPane().registerKeyboardAction({ window.dispose() }, stroke, JComponent.WHEN_IN_FOCUSED_WINDOW)
@@ -363,7 +338,6 @@ object UiUtils {
 	 * @return 出错时返回 -1
 	 */
 	@Suppress("DEPRECATION")
-	@JvmStatic
 	fun getOffsetAtMousePosition(codeArea: AbstractCodeArea): Int = try {
 		val mousePos = getMousePosition(codeArea)
 		codeArea.viewToModel(mousePos)
@@ -373,7 +347,6 @@ object UiUtils {
 	}
 
 	/** 取相对于 [comp] 的鼠标坐标。 */
-	@JvmStatic
 	fun getMousePosition(comp: Component): Point {
 		val pos = MouseInfo.getPointerInfo().getLocation()
 		SwingUtilities.convertPointFromScreen(pos, comp)
@@ -381,7 +354,6 @@ object UiUtils {
 	}
 
 	/** 取鼠标事件下方的树节点（不在行内则返回 null）。 */
-	@JvmStatic
 	fun getTreeNodeUnderMouse(tree: JTree, mouseEvent: MouseEvent): TreeNode? {
 		val path: TreePath = tree.getClosestPathForLocation(mouseEvent.getX(), mouseEvent.getY()) ?: return null
 		// 只允许「最近」节点位于该项所在行的右侧
@@ -404,24 +376,20 @@ object UiUtils {
 		return null
 	}
 
-	@JvmStatic
 	fun showMessageBox(parent: Component?, msg: String) {
 		JOptionPane.showMessageDialog(parent, msg)
 	}
 
-	@JvmStatic
 	fun errorMessage(parent: Component?, message: String) {
 		errorMessage(parent, NLS.str("message.errorTitle"), message)
 	}
 
-	@JvmStatic
 	fun errorMessage(parent: Component?, title: String, message: String) {
 		LOG.error(message)
 		JOptionPane.showMessageDialog(parent, message, title, JOptionPane.ERROR_MESSAGE)
 	}
 
 	/** 把文本复制到剪贴板（将 [StringSelection] 同时作为 owner）。 */
-	@JvmStatic
 	fun copyToClipboard(text: String?) {
 		if (StringUtils.isEmpty(text)) {
 			return
@@ -440,7 +408,6 @@ object UiUtils {
 	 * Clipboard 的 owner 字段可能持有 CodeArea 引用，会阻止整个 jadx 对象树被 GC，
 	 * 造成内存泄漏。这里通过设置一个空 selection 来主动放弃所有权。
 	 */
-	@JvmStatic
 	fun resetClipboardOwner() {
 		try {
 			val clipboard: Clipboard? = Toolkit.getDefaultToolkit().getSystemSelection()
@@ -454,10 +421,8 @@ object UiUtils {
 	}
 
 	/** 计算任务进度百分比（0..100）。 */
-	@JvmStatic
 	fun calcProgress(taskProgress: ITaskProgress): Int = calcProgress(taskProgress.progress().toLong(), taskProgress.total().toLong())
 
-	@JvmStatic
 	fun calcProgress(done: Long, total: Long): Int {
 		if (done > total) {
 			LOG.debug("Task progress has invalid values: done={}, total={}", done, total)
@@ -466,7 +431,6 @@ object UiUtils {
 		return Math.round(done * 100 / total.toFloat())
 	}
 
-	@JvmStatic
 	fun sleep(ms: Int) {
 		try {
 			Thread.sleep(ms.toLong())
@@ -476,13 +440,11 @@ object UiUtils {
 	}
 
 	/** 在 UI 线程异步执行（保持原 `SwingUtilities.invokeLater` 语义）。 */
-	@JvmStatic
 	fun uiRun(runnable: Runnable) {
 		SwingUtilities.invokeLater(runnable)
 	}
 
 	/** 在 UI 线程同步执行；已在 UI 线程则直接执行。 */
-	@JvmStatic
 	fun uiRunAndWait(runnable: Runnable) {
 		if (SwingUtilities.isEventDispatchThread()) {
 			runnable.run()
@@ -501,13 +463,11 @@ object UiUtils {
 	 * 在后台线程执行任务。
 	 * 使用单线程，保证所有任务按顺序执行。
 	 */
-	@JvmStatic
 	fun bgRun(runnable: Runnable) {
 		BACKGROUND_THREAD.execute(runnable)
 	}
 
 	/** 调试模式下断言当前处于 UI 线程。 */
-	@JvmStatic
 	fun uiThreadGuard() {
 		if (JADX_GUI_DEBUG && !SwingUtilities.isEventDispatchThread()) {
 			LOG.warn("Expect UI thread, got: {}", Thread.currentThread(), JadxRuntimeException())
@@ -515,7 +475,6 @@ object UiUtils {
 	}
 
 	/** 调试模式下断言当前不处于 UI 线程。 */
-	@JvmStatic
 	fun notUiThreadGuard() {
 		if (JADX_GUI_DEBUG && SwingUtilities.isEventDispatchThread()) {
 			LOG.warn("Expect background thread, got: {}", Thread.currentThread(), JadxRuntimeException())
@@ -524,7 +483,6 @@ object UiUtils {
 
 	/** 调试用的周期定时器（仅在 DEBUG 日志开启时生效）。 */
 	@TestOnly
-	@JvmStatic
 	fun debugTimer(periodInSeconds: Int, action: Runnable) {
 		if (!LOG.isDebugEnabled) {
 			return
@@ -543,13 +501,11 @@ object UiUtils {
 
 	/** 打印当前调用栈（仅测试/调试用）。 */
 	@TestOnly
-	@JvmStatic
 	fun printStackTrace(label: String) {
 		LOG.debug("StackTrace: {}", label, Exception(label))
 	}
 
 	/** 按感知亮度（0..1）判断背景是否为深色。 */
-	@JvmStatic
 	fun isDarkTheme(background: Color): Boolean {
 		val brightness = (
 			background.red * 0.299 +
@@ -564,7 +520,6 @@ object UiUtils {
 	 *
 	 * factor > 1.0 变亮，< 1.0 变暗，= 1.0 不变；亮度上限封顶为 1.0。
 	 */
-	@JvmStatic
 	fun adjustBrightness(color: Color, factor: Float): Color {
 		val hsb = Color.RGBtoHSB(color.red, color.green, color.blue, null)
 		hsb[2] = Math.min(1.0f, hsb[2] * factor) // 调整亮度
@@ -572,7 +527,6 @@ object UiUtils {
 	}
 
 	/** 把输入框标记/取消标记为错误状态。 */
-	@JvmStatic
 	fun highlightAsErrorField(field: JTextField, isError: Boolean) {
 		if (isError) {
 			field.putClientProperty("JComponent.outline", "error")
@@ -583,6 +537,5 @@ object UiUtils {
 	}
 
 	/** 浮点数近似相等判断。 */
-	@JvmStatic
 	fun nearlyEqual(a: Float, b: Float): Boolean = Math.abs(a - b) < 1E-6f
 }

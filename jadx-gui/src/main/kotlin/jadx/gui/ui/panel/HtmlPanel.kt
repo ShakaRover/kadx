@@ -36,8 +36,8 @@ class HtmlPanel(panel: TabbedPane, jnode: JNode) : ContentPanel(panel, jnode) {
 	}
 
 	override fun loadSettings() {
-		val settings: JadxSettings = getMainWindow().getSettings()
-		textArea.setFont(settings.getUiFont())
+		val settings: JadxSettings = mainWindow.getSettings()
+		textArea.setFont(settings.uiFont)
 	}
 
 	/** 用 [jnode] 的 HTML 代码刷新内容，并把光标移到开头。 */
@@ -47,7 +47,7 @@ class HtmlPanel(panel: TabbedPane, jnode: JNode) : ContentPanel(panel, jnode) {
 	}
 
 	/** 暴露内部 HTML 组件，供 `TabbedPane` 注册焦点监听。 */
-	fun getHtmlArea(): JEditorPane = textArea
+	val htmlArea: JEditorPane get() = textArea
 
 	/** 开启抗锯齿的 HTML 编辑器面板。 */
 	private class JHtmlPane : JEditorPane() {

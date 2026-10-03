@@ -20,16 +20,16 @@ class SuspendInfo {
 	private val updater = InfoSetter()
 
 	/** @return 当前挂起线程 ID */
-	fun getThreadID(): Long = updater.thread
+	val threadID: Long get() = updater.thread
 
 	/** @return 当前挂起位置所在类的 ID */
-	fun getClassID(): Long = updater.clazz
+	val classID: Long get() = updater.clazz
 
 	/** @return 当前挂起位置所在方法的 ID */
-	fun getMethodID(): Long = updater.method
+	val methodID: Long get() = updater.method
 
 	/** @return 当前挂起位置的代码偏移 */
-	fun getOffset(): Long = updater.offset
+	val offset: Long get() = updater.offset
 
 	/**
 	 * 开始新一轮挂起信息的收集，并返回可链式赋值的更新器。
@@ -51,10 +51,10 @@ class SuspendInfo {
 	/**
 	 * @return 自上次 [update] 以来是否有任何字段发生变化
 	 */
-	internal fun isAnythingChanged(): Boolean = updater.changed
+	internal val isAnythingChanged: Boolean get() = updater.changed
 
 	/** @return 远端 JVM 是否已终止 */
-	fun isTerminated(): Boolean = terminated
+	val isTerminated: Boolean get() = terminated
 
 	/** 标记远端 JVM 已终止。 */
 	internal fun setTerminated() {

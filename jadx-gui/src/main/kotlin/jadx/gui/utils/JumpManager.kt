@@ -54,7 +54,7 @@ class JumpManager {
 		return null
 	}
 
-	fun getPrev(): JumpPosition? {
+	val prev: JumpPosition? get() {
 		if (currentPos == 0) {
 			return null
 		}
@@ -62,7 +62,7 @@ class JumpManager {
 		return list[currentPos]
 	}
 
-	fun getNext(): JumpPosition? {
+	val next: JumpPosition? get() {
 		val size = list.size
 		if (size == 0) {
 			currentPos = 0

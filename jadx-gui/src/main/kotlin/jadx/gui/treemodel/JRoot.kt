@@ -35,7 +35,7 @@ class JRoot(mainWindow: MainWindow) : JNode() {
 		add(JInputs(mainWindow))
 		add(JSources(this, wrapper))
 
-		val resources = wrapper.getResources()
+		val resources = wrapper.resources
 		if (resources.isNotEmpty()) {
 			add(getHierarchyResources(resources))
 		}
@@ -99,7 +99,7 @@ class JRoot(mainWindow: MainWindow) : JNode() {
 			?: throw JadxRuntimeException("Incorrect static path in tree: $list")
 	}
 
-	fun isFlatPackages(): Boolean = flatPackages
+	val isFlatPackages: Boolean get() = flatPackages
 
 	fun setFlatPackages(flatPackages: Boolean) {
 		if (this.flatPackages != flatPackages) {
@@ -130,7 +130,7 @@ class JRoot(mainWindow: MainWindow) : JNode() {
 		if (project.getProjectPath() != null) {
 			return project.getName()
 		}
-		val paths = project.getFilePaths()
+		val paths = project.filePaths
 		val count = paths.size
 		if (count == 0) {
 			return "File not open"
@@ -146,7 +146,7 @@ class JRoot(mainWindow: MainWindow) : JNode() {
 	}
 
 	override fun getTooltip(): String? {
-		val paths = wrapper.getProject().getFilePaths()
+		val paths = wrapper.getProject().filePaths
 		val count = paths.size
 		if (count < 2) {
 			return null
@@ -167,7 +167,6 @@ class JRoot(mainWindow: MainWindow) : JNode() {
 		private val ROOT_ICON: ImageIcon = UiUtils.openSvgIcon("nodes/rootPackageFolder")
 		private val SPLIT_PATH_PATTERN: Pattern = Pattern.compile("[/\\\\]+")
 
-		@JvmStatic
 		fun getSubNodeByName(rf: JResource, name: String): JResource? {
 			for (sub in rf.getSubNodes()) {
 				if (sub.getName() == name) {

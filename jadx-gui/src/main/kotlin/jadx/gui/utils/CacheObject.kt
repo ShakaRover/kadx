@@ -56,13 +56,13 @@ class CacheObject(wrapper: JadxWrapper) {
 		this.maxPkgLength = maxPkgLength
 	}
 
-	fun getNodeCache(): JNodeCache = jNodeCache
+	val nodeCache: JNodeCache get() = jNodeCache
 
 	fun getLastSearchOptions(): MutableMap<SearchDialog.SearchPreset, MutableSet<SearchDialog.SearchOptions>> = lastSearchOptions
 
 	fun getPackageHelper(): PackageHelper = packageHelper
 
-	fun isFullDecompilationFinished(): Boolean = fullDecompilationFinished
+	val isFullDecompilationFinished: Boolean get() = fullDecompilationFinished
 
 	fun setFullDecompilationFinished(fullDecompilationFinished: Boolean) {
 		this.fullDecompilationFinished = fullDecompilationFinished

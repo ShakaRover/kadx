@@ -48,7 +48,7 @@ class CodeStringCache(backCache: ICodeCache) : DelegateCodeCache(backCache) {
 			changes
 				.debounce(CACHE_CHECK_DELAY_MS.milliseconds)
 				.collect {
-					if (!UiUtils.isFreeMemoryAvailable()) {
+					if (!UiUtils.isFreeMemoryAvailable) {
 						LOG.warn("Free memory is low! Reset code strings cache. Cache size {}", codeCache.size)
 						codeCache.clear()
 						System.gc()

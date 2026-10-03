@@ -27,7 +27,7 @@ class ADBDevice(private var info: ADBDeviceInfo) {
 	private var jdwpListenerSock: Socket? = null
 
 	/** @return 设备元信息 */
-	fun getDeviceInfo(): ADBDeviceInfo = info
+	val deviceInfo: ADBDeviceInfo get() = info
 
 	/** 用新信息更新设备；序列号不匹配时返回 false。 */
 	fun updateDeviceInfo(info: ADBDeviceInfo): Boolean {
@@ -42,7 +42,7 @@ class ADBDevice(private var info: ADBDeviceInfo) {
 	}
 
 	/** @return 设备序列号 */
-	fun getSerial(): String = info.getSerial()
+	val serial: String get() = info.getSerial()
 
 	/** 移除本机端口转发。 */
 	@Throws(IOException::class)
@@ -76,10 +76,8 @@ class ADBDevice(private var info: ADBDeviceInfo) {
 	/** 端口转发结果。 */
 	class ForwardResult(state: Int, desc: ByteArray?) {
 		/** 0 表示成功，1 表示本机 tcp 绑定失败，2 表示远端失败。 */
-		@JvmField
 		var state: Int = state
 
-		@JvmField
 		var desc: String = if (desc != null) String(desc, ADB.ADB_CHARSET) else ""
 	}
 
@@ -108,8 +106,8 @@ class ADBDevice(private var info: ADBDeviceInfo) {
 	}
 
 	/** @return 设备的二进制 logcat 输出 */
-	@Throws(IOException::class)
-	fun getBinaryLogcat(): ByteArray? {
+	@get:Throws(IOException::class)
+	val binaryLogcat: ByteArray? get() {
 		ADB.connect(info.getAdbHost(), info.getAdbPort()).use { socket ->
 			val cmd = "logcat -dB"
 			return ADB.execShellCommandRaw(info.getSerial(), cmd, socket.getOutputStream(), socket.getInputStream())
@@ -141,8 +139,8 @@ class ADBDevice(private var info: ADBDeviceInfo) {
 	}
 
 	/** @return 设备时区 */
-	@Throws(IOException::class)
-	fun getTimezone(): String {
+	@get:Throws(IOException::class)
+	val timezone: String get() {
 		ADB.connect(info.getAdbHost(), info.getAdbPort()).use { socket ->
 			val cmd = "getprop persist.sys.timezone"
 			val tz = ADB.execShellCommandRaw(info.getSerial(), cmd, socket.getOutputStream(), socket.getInputStream())
@@ -152,7 +150,7 @@ class ADBDevice(private var info: ADBDeviceInfo) {
 	}
 
 	/** @return 设备 Android 版本号 */
-	fun getAndroidReleaseVersion(): String {
+	val androidReleaseVersion: String get() {
 		val cached = androidReleaseVer
 		if (!StringUtils.isEmpty(cached)) {
 			return checkNotNull(cached)
@@ -200,8 +198,8 @@ class ADBDevice(private var info: ADBDeviceInfo) {
 	fun getProcessByPkg(pkg: String): List<ADB.Process> = getProcessList("ps | grep $pkg")
 
 	/** @return 设备上全部进程 */
-	@Throws(IOException::class)
-	fun getProcessList(): List<ADB.Process> = getProcessList("ps")
+	@get:Throws(IOException::class)
+	val processList: List<ADB.Process> get() = getProcessList("ps")
 
 	@Throws(IOException::class)
 	private fun getProcessList(cmd: String): List<ADB.Process> {
@@ -297,7 +295,7 @@ class ADBDevice(private var info: ADBDeviceInfo) {
 
 	override fun equals(other: Any?): Boolean {
 		if (other is ADBDevice) {
-			val otherSerial = other.getDeviceInfo().getSerial()
+			val otherSerial = other.deviceInfo.getSerial()
 			return otherSerial == info.getSerial()
 		}
 		return false

@@ -34,7 +34,6 @@ object DesktopEntryUtils {
 	private val XDG_DESKTOP_MENU_COMMAND_PATH: Path? = findExecutablePath("xdg-desktop-menu")
 	private val XDG_ICON_RESOURCE_COMMAND_PATH: Path? = findExecutablePath("xdg-icon-resource")
 
-	@JvmStatic
 	fun createDesktopEntry(): Boolean {
 		if (XDG_DESKTOP_MENU_COMMAND_PATH == null) {
 			LOG.error("xdg-desktop-menu was not found in \$PATH")
@@ -161,7 +160,6 @@ object DesktopEntryUtils {
 	}
 
 	/** 获取 jadx 启动脚本路径（由 `jadx.launchScript.path` 系统属性提供）。 */
-	@JvmStatic
 	fun getLaunchScriptPath(): String? {
 		val launchScriptPath = System.getProperty("jadx.launchScript.path")
 		if (launchScriptPath == null || launchScriptPath.isEmpty()) {

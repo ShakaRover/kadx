@@ -69,8 +69,8 @@ class CodePanel(private val codeArea: AbstractCodeArea) : JPanel() {
 
 	@Synchronized
 	private fun initLineNumbers() {
-		codeScrollPane.getGutter().setLineNumberFont(getSettings().getCodeFont())
-		val mode = getLineNumbersMode()
+		codeScrollPane.getGutter().setLineNumberFont(settings.codeFont)
+		val mode = lineNumbersMode
 		if (mode == LineNumbersMode.DISABLE) {
 			codeScrollPane.setLineNumbersEnabled(false)
 			return
@@ -90,8 +90,8 @@ class CodePanel(private val codeArea: AbstractCodeArea) : JPanel() {
 		codeScrollPane.getGutter().setLineNumberFormatter(linesFormatter)
 	}
 
-	private fun getLineNumbersMode(): LineNumbersMode {
-		var mode = getSettings().getLineNumbersMode()
+	private val lineNumbersMode: LineNumbersMode get() {
+		var mode = settings.lineNumbersMode
 		val canShowDebugLines = canShowDebugLines()
 		if (mode == LineNumbersMode.AUTO) {
 			mode = if (canShowDebugLines) LineNumbersMode.DEBUG else LineNumbersMode.NORMAL
@@ -151,7 +151,7 @@ class CodePanel(private val codeArea: AbstractCodeArea) : JPanel() {
 		}
 		val globalSearchAction: AbstractAction = object : AbstractAction(NLS.str("popup.search_global", "")) {
 			override fun actionPerformed(e: ActionEvent) {
-				val mainWindow: MainWindow = codeArea.getContentPanel().getMainWindow()
+				val mainWindow: MainWindow = codeArea.getContentPanel().mainWindow
 				SearchDialog.searchText(mainWindow, codeArea.getSelectedText())
 			}
 		}
@@ -198,7 +198,7 @@ class CodePanel(private val codeArea: AbstractCodeArea) : JPanel() {
 		}
 	}
 
-	private fun getSettings(): JadxSettings = codeArea.getContentPanel().getTabbedPane().getMainWindow().getSettings()
+	private val settings: JadxSettings get() = codeArea.getContentPanel().getTabbedPane().getMainWindow().getSettings()
 
 	fun dispose() {
 		codeArea.dispose()

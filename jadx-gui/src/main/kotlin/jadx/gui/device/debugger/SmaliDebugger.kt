@@ -128,7 +128,6 @@ class SmaliDebugger private constructor(
 		/**
 		 * 连接远端进程。连接成功后远端会挂起，调用方需在设置完断点后调用 `resume()`。
 		 */
-		@JvmStatic
 		@Throws(SmaliDebuggerException::class)
 		fun attach(host: String, port: Int, suspendListener: SuspendListener): SmaliDebugger {
 			try {
@@ -260,24 +259,24 @@ class SmaliDebugger private constructor(
 			.updateClass(clazz)
 			.updateMethod(mth)
 			.updateOffset(offset)
-		if (suspendInfo.isAnythingChanged()) {
+		if (suspendInfo.isAnythingChanged) {
 			SUSPEND_LISTENER_QUEUE.execute { suspendListener.onSuspendEvent(suspendInfo) }
 		}
 	}
 
 	@Throws(SmaliDebuggerException::class)
 	fun stepInto() {
-		sendStepRequest(suspendInfo.getThreadID(), JDWP.StepDepth.INTO)
+		sendStepRequest(suspendInfo.threadID, JDWP.StepDepth.INTO)
 	}
 
 	@Throws(SmaliDebuggerException::class)
 	fun stepOver() {
-		sendStepRequest(suspendInfo.getThreadID(), JDWP.StepDepth.OVER)
+		sendStepRequest(suspendInfo.threadID, JDWP.StepDepth.OVER)
 	}
 
 	@Throws(SmaliDebuggerException::class)
 	fun stepOut() {
-		sendStepRequest(suspendInfo.getThreadID(), JDWP.StepDepth.OUT)
+		sendStepRequest(suspendInfo.threadID, JDWP.StepDepth.OUT)
 	}
 
 	@Throws(SmaliDebuggerException::class)
@@ -326,7 +325,7 @@ class SmaliDebugger private constructor(
 		val slots = slotsPool.get()
 		val slot = slots[0]
 		slot.slot = regNum
-		slot.sigbyte = type.getTag().toByte()
+		slot.sigbyte = type.tag.toByte()
 		val res = sendCommandSync(jdwp.stackFrame().cmdGetValues().encode(threadID, frameID, slots))
 		tryThrowError(res)
 		slotsPool.put(slots)
@@ -373,8 +372,8 @@ class SmaliDebugger private constructor(
 	@Throws(SmaliDebuggerException::class)
 	fun getFramesSync(threadID: Long): List<Frame> = getAllFrames(threadID)
 
-	@Throws(SmaliDebuggerException::class)
-	fun getAllThreadsSync(): List<Long> = getAllThreads()
+	@get:Throws(SmaliDebuggerException::class)
+	val allThreadsSync: List<Long> get() = allThreads
 
 	@Throws(SmaliDebuggerException::class)
 	fun getThreadNameSync(threadID: Long): String? = sendThreadNameReq(threadID)
@@ -574,7 +573,7 @@ class SmaliDebugger private constructor(
 			valToSet = newID
 			typeToSet = RuntimeType.OBJECT
 		}
-		val setters = buildRegValueSetter(typeToSet.getTag(), runtimeRegNum)
+		val setters = buildRegValueSetter(typeToSet.tag, runtimeRegNum)
 		JDWP.encodeAny(setters[0].slotValue.idOrValue, valToSet)
 		val res = sendCommandSync(jdwp.stackFrame().cmdSetValues().encode(threadID, frameID, setters))
 		tryThrowError(res)
@@ -1131,8 +1130,8 @@ class SmaliDebugger private constructor(
 		return frames
 	}
 
-	@Throws(SmaliDebuggerException::class)
-	private fun getAllThreads(): List<Long> {
+	@get:Throws(SmaliDebuggerException::class)
+	private val allThreads: List<Long> get() {
 		val res = sendCommandSync(jdwp.virtualMachine().cmdAllThreads().encode())
 		tryThrowError(res)
 		val data: AllThreadsReplyData =
@@ -1218,7 +1217,7 @@ class SmaliDebugger private constructor(
 		private val fieldID: Long,
 		private val modBits: Int,
 	) : RuntimeValue(null, null) {
-		fun getFieldType(): String = fldType
+		val fieldType: String get() = fldType
 
 		fun getName(): String = name
 
@@ -1229,7 +1228,7 @@ class SmaliDebugger private constructor(
 			return this
 		}
 
-		fun isBelongToThis(): Boolean = !AccessFlags.hasFlag(modBits, AccessFlags.STATIC) &&
+		val isBelongToThis: Boolean get() = !AccessFlags.hasFlag(modBits, AccessFlags.STATIC) &&
 			!AccessFlags.hasFlag(modBits, AccessFlags.SYNTHETIC)
 	}
 
@@ -1240,7 +1239,7 @@ class SmaliDebugger private constructor(
 		internal var offset: Long = 0
 		internal var reqID: Int = 0
 
-		fun getCodeOffset(): Long = offset
+		val codeOffset: Long get() = offset
 	}
 
 	fun makeBreakpoint(cid: Long, mid: Long, offset: Long): RuntimeBreakpoint {
@@ -1259,7 +1258,7 @@ class SmaliDebugger private constructor(
 		protected var rawVal: ByteBuffer?,
 		protected var valueType: RuntimeType?,
 	) {
-		fun getType(): RuntimeType = checkNotNull(valueType)
+		val type: RuntimeType get() = checkNotNull(valueType)
 
 		fun setType(type: RuntimeType) {
 			this.valueType = type
@@ -1274,7 +1273,7 @@ class SmaliDebugger private constructor(
 		type: RuntimeType,
 		rawVal: ByteBuffer,
 	) : RuntimeValue(rawVal, type) {
-		fun getRegNum(): Int = num
+		val regNum: Int get() = num
 	}
 
 	/** 远端调试变量表中的一个变量。 */
@@ -1320,13 +1319,13 @@ class SmaliDebugger private constructor(
 		private val mthID: Long,
 		private val index: Long,
 	) {
-		fun getID(): Long = id
+		val iD: Long get() = id
 
-		fun getClassID(): Long = clsID
+		val classID: Long get() = clsID
 
-		fun getMethodID(): Long = mthID
+		val methodID: Long get() = mthID
 
-		fun getCodeIndex(): Long = index
+		val codeIndex: Long get() = index
 	}
 
 	fun interface ClassPrepareListener {

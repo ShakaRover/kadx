@@ -65,19 +65,19 @@ class ExportProjectDialog(
 		val pathLbl = JLabel(NLS.str("export_dialog.save_path"))
 		val pathField = JTextField()
 		pathField.document.addDocumentListener(DocumentUpdateListener { setExportProjectPath(pathField) })
-		pathField.text = mainWindow.getSettings().getLastSaveFilePath().toString()
+		pathField.text = mainWindow.getSettings().lastSaveFilePath.toString()
 		TextStandardActions.attach(pathField)
 
 		val browseButton = makeEditorBrowseButton(pathField)
 
 		val resourceDecode = JCheckBox(NLS.str("preferences.skipResourcesDecode"))
-		resourceDecode.isSelected = mainWindow.getSettings().isSkipResources()
+		resourceDecode.isSelected = mainWindow.getSettings().isSkipResources
 		resourceDecode.addItemListener { e ->
 			exportProjectProperties.setSkipResources(e.stateChange == ItemEvent.SELECTED)
 		}
 
 		val skipSources = JCheckBox(NLS.str("preferences.skipSourcesDecode"))
-		skipSources.isSelected = mainWindow.getSettings().isSkipSources()
+		skipSources.isSelected = mainWindow.getSettings().isSkipSources
 		skipSources.addItemListener { e ->
 			exportProjectProperties.setSkipSources(e.stateChange == ItemEvent.SELECTED)
 		}
@@ -85,7 +85,7 @@ class ExportProjectDialog(
 		val exportTypeLbl = JLabel(NLS.str("export_dialog.export_gradle_type"))
 		val exportTypeComboBox = JComboBox(ExportGradleType.values())
 		exportTypeLbl.labelFor = exportTypeComboBox
-		val initialExportType = getExportGradleType()
+		val initialExportType = exportGradleType
 		exportProjectProperties.setExportGradleType(initialExportType)
 		exportTypeComboBox.selectedItem = initialExportType
 		exportTypeComboBox.addItemListener { e ->
@@ -136,9 +136,9 @@ class ExportProjectDialog(
 		return mainPanel
 	}
 
-	private fun getExportGradleType(): ExportGradleType = try {
+	private val exportGradleType: ExportGradleType get() = try {
 		val wrapper: JadxWrapper = mainWindow.getWrapper()
-		ExportGradle.detectExportType(wrapper.getRootNode(), wrapper.getResources())
+		ExportGradle.detectExportType(wrapper.rootNode, wrapper.resources)
 	} catch (e: Exception) {
 		LOG.warn("Failed to detect export type", e)
 		ExportGradleType.AUTO
@@ -172,7 +172,7 @@ class ExportProjectDialog(
 		val button = JButton(NLS.str("export_dialog.browse"))
 		button.addActionListener {
 			val fileDialog = FileDialogWrapper(mainWindow, FileOpenMode.EXPORT)
-			fileDialog.getCurrentDir()?.let { mainWindow.getSettings().setLastSaveFilePath(it) }
+			fileDialog.currentDir?.let { mainWindow.getSettings().setLastSaveFilePath(it) }
 			val saveDirs: List<Path> = fileDialog.show()
 			if (saveDirs.isEmpty()) {
 				return@addActionListener
@@ -184,7 +184,7 @@ class ExportProjectDialog(
 	}
 
 	private fun exportProject() {
-		val exportPathStr = exportProjectProperties.getExportPath()
+		val exportPathStr = exportProjectProperties.exportPath
 		if (!validateAndMakeDir(exportPathStr)) {
 			JOptionPane.showMessageDialog(
 				this,

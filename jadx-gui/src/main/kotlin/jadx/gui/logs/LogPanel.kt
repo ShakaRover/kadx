@@ -50,7 +50,7 @@ class LogPanel(
 	fun applyLogOptions(logOptions: LogOptions) {
 		var opts = logOptions
 		if (opts.mode == LogMode.CURRENT_SCRIPT) {
-			val scriptName = getCurrentScriptName()
+			val scriptName = currentScriptName
 			if (scriptName != null) {
 				opts = LogOptions.forScript(scriptName)
 			}
@@ -92,11 +92,11 @@ class LogPanel(
 
 		val clearBtn = JButton(NLS.str("log_viewer.clear"))
 		clearBtn.addActionListener {
-			LogCollector.getInstance().reset()
+			LogCollector.instance.reset()
 			textPane.setText("")
 		}
 
-		val dockBtn = JButton(if (settings.isDockLogViewer()) NLS.str("log_viewer.undock") else NLS.str("log_viewer.dock"))
+		val dockBtn = JButton(if (settings.isDockLogViewer) NLS.str("log_viewer.undock") else NLS.str("log_viewer.dock"))
 		dockBtn.addActionListener { dockAction.run() }
 
 		val hideBtn = JButton(NLS.str("log_viewer.hide"))
@@ -135,14 +135,14 @@ class LogPanel(
 	}
 
 	private fun registerLogListener(logOptions: LogOptions) {
-		val logCollector = LogCollector.getInstance()
+		val logCollector = LogCollector.instance
 		logCollector.removeListenerByClass(LogAppender::class.java)
 		textPane.setText("")
 		logCollector.registerListener(LogAppender(logOptions, textPane))
 	}
 
 	/** 若当前标签是脚本节点，返回其名称；否则返回 null。 */
-	private fun getCurrentScriptName(): String? {
+	private val currentScriptName: String? get() {
 		val selectedTab: TabBlueprint? = mainWindow.getTabsController().getSelectedTab()
 		if (selectedTab != null) {
 			val node = selectedTab.node
@@ -158,7 +158,7 @@ class LogPanel(
 	private fun registerActiveTabListener() {
 		removeActiveTabListener()
 		val listener = ChangeListener {
-			val scriptName = getCurrentScriptName()
+			val scriptName = currentScriptName
 			if (scriptName != null) {
 				applyLogOptions(LogOptions.forScript(scriptName))
 			}
@@ -178,7 +178,7 @@ class LogPanel(
 
 	/** 面板销毁：注销日志监听器与标签监听器。 */
 	fun dispose() {
-		LogCollector.getInstance().removeListenerByClass(LogAppender::class.java)
+		LogCollector.instance.removeListenerByClass(LogAppender::class.java)
 		removeActiveTabListener()
 	}
 

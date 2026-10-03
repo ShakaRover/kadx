@@ -13,10 +13,10 @@ class JavaCodeAreaLine(area: CodeArea, lineIndex: Int) : AbstractCodeAreaLine(ar
 
 	override fun getLineAt(lineIndex: Int): AbstractCodeAreaLine = JavaCodeAreaLine(getArea() as CodeArea, lineIndex)
 
-	override fun isClassDeclaration(): Boolean = Regex(".*\\b(class|interface|enum)\\b.*\\{").matches(getTrimmedStr())
+	override fun isClassDeclaration(): Boolean = Regex(".*\\b(class|interface|enum)\\b.*\\{").matches(trimmedStr)
 
 	override fun isMethodOrConstructorDeclaration(): Boolean {
-		val l = getTrimmedStr()
+		val l = trimmedStr
 		// 跳过控制流语句（避免把 if / for 等误判为方法）
 		// 注意：这里依赖 jadx 代码生成格式，且假设 jadx 不会把两条语句输出在同一行
 		if (l.startsWith("if ") ||
@@ -45,11 +45,11 @@ class JavaCodeAreaLine(area: CodeArea, lineIndex: Int) : AbstractCodeAreaLine(ar
 
 	override fun isFieldDeclaration(): Boolean {
 		try {
-			val enclosingDeclaration = getEnclosingScopeDeclaration()
+			val enclosingDeclaration = enclosingScopeDeclaration
 			if (enclosingDeclaration !is ClassDeclaration) {
 				return false
 			}
-			val line = getTrimmedStr()
+			val line = trimmedStr
 			// 也可能包含匿名类或 lambda 的字段
 			return line.endsWith(";") || line.contains(" = ")
 		} catch (ex: Exception) {
@@ -62,7 +62,7 @@ class JavaCodeAreaLine(area: CodeArea, lineIndex: Int) : AbstractCodeAreaLine(ar
 		if (!isClassDeclaration()) {
 			return null
 		}
-		val tokens = getTrimmedStr().split(Regex("\\s+"))
+		val tokens = trimmedStr.split(Regex("\\s+"))
 		for (i in tokens.indices) {
 			if (tokens[i] == "class" || tokens[i] == "interface" || tokens[i] == "enum") {
 				if (i + 1 < tokens.size) {
@@ -77,8 +77,8 @@ class JavaCodeAreaLine(area: CodeArea, lineIndex: Int) : AbstractCodeAreaLine(ar
 		if (!isMethodOrConstructorDeclaration()) {
 			return null
 		}
-		val paren = getTrimmedStr().indexOf('(')
-		val before = getTrimmedStr().substring(0, paren).trim()
+		val paren = trimmedStr.indexOf('(')
+		val before = trimmedStr.substring(0, paren).trim()
 		val parts = before.split(Regex("\\s+"))
 		return parts[parts.size - 1] // 最后一个词元就是方法名
 	}

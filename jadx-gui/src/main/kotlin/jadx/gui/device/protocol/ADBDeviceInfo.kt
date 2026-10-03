@@ -68,7 +68,7 @@ class ADBDeviceInfo internal constructor(info: String, host: String, port: Int) 
 	}
 
 	/** @return 设备是否处于在线（`device`）状态 */
-	fun isOnline(): Boolean = state == "device"
+	val isOnline: Boolean get() = state == "device"
 
 	/** @return adb server 主机 */
 	fun getAdbHost(): String = adbHost

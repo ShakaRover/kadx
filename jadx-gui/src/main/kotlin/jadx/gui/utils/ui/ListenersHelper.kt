@@ -56,7 +56,6 @@ class ListenersHelper<C, L> private constructor(
 
 	companion object {
 		/** 构造一个用于 [JTextComponent] 光标监听的管理器。 */
-		@JvmStatic
 		fun buildForCaretListener(): ListenersHelper<JTextComponent, CaretListener> = ListenersHelper(JTextComponent::addCaretListener, JTextComponent::removeCaretListener)
 	}
 }

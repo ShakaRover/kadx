@@ -103,22 +103,22 @@ class QuickTabsTree(private val mainWindow: MainWindow) :
 			return false
 		}
 		if (pressedNode is QuickTabsChildNode) {
-			mainWindow.getTabsController().selectTab(pressedNode.getJNode())
+			mainWindow.getTabsController().selectTab(pressedNode.jNode)
 			return true
 		}
 		return false
 	}
 
 	private fun fillOpenParentNode() {
-		mainWindow.getTabsController().getOpenTabs().forEach { onTabOpen(it) }
+		mainWindow.getTabsController().openTabs.forEach { onTabOpen(it) }
 	}
 
 	private fun fillPinParentNode() {
-		mainWindow.getTabsController().getPinnedTabs().forEach { onTabPinChange(it) }
+		mainWindow.getTabsController().pinnedTabs.forEach { onTabPinChange(it) }
 	}
 
 	private fun fillBookmarkParentNode() {
-		mainWindow.getTabsController().getBookmarkedTabs().forEach { onTabBookmarkChange(it) }
+		mainWindow.getTabsController().bookmarkedTabs.forEach { onTabBookmarkChange(it) }
 	}
 
 	private fun clearParentNode(parentNode: QuickTabsParentNode) {
@@ -151,13 +151,13 @@ class QuickTabsTree(private val mainWindow: MainWindow) :
 	override fun valueChanged(event: TreeSelectionEvent) {
 		val selectedNode = getLastSelectedPathComponent() as? DefaultMutableTreeNode ?: return
 		if (selectedNode is QuickTabsChildNode) {
-			val jNode = selectedNode.getJNode()
+			val jNode = selectedNode.jNode
 			mainWindow.getTabsController().selectTab(jNode)
 		}
 	}
 
 	fun loadSettings() {
-		setFont(mainWindow.getSettings().getCodeFont())
+		setFont(mainWindow.getSettings().codeFont)
 	}
 
 	fun dispose() {

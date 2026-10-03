@@ -72,13 +72,13 @@ class SearchSettings(private val searchString: String) {
 	/** 判断一段文本是否命中当前搜索条件。 */
 	fun isMatch(searchArea: String): Boolean = getSearchMethod().find(searchArea, searchString, 0) != -1
 
-	fun isUseRegex(): Boolean = useRegex
+	val isUseRegex: Boolean get() = useRegex
 
 	fun setUseRegex(useRegex: Boolean) {
 		this.useRegex = useRegex
 	}
 
-	fun isIgnoreCase(): Boolean = ignoreCase
+	val isIgnoreCase: Boolean get() = ignoreCase
 
 	fun setIgnoreCase(ignoreCase: Boolean) {
 		this.ignoreCase = ignoreCase
@@ -99,7 +99,7 @@ class SearchSettings(private val searchString: String) {
 	fun getSearchString(): String = searchString
 
 	/** 正则模式；[prepare] 在 `useRegex` 为 true 时保证已编译。 */
-	fun getPattern(): Pattern = checkNotNull(regexPattern)
+	val pattern: Pattern get() = checkNotNull(regexPattern)
 
 	fun getActiveCls(): JClass? = activeCls
 

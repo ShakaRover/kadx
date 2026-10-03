@@ -50,7 +50,7 @@ class CodePopupAction(
 
 		override fun runAction(node: JNode) {
 			val r = Runnable { data.action(checkNotNull(node.getCodeNodeRef())) }
-			getCodeArea().getMainWindow().getBackgroundExecutor().execute(data.name, r)
+			getCodeArea().mainWindow.getBackgroundExecutor().execute(data.name, r)
 		}
 	}
 }

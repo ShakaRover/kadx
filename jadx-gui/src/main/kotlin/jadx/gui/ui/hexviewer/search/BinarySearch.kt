@@ -104,7 +104,7 @@ class BinarySearch(private var binarySearchPanel: HexSearchBar) {
 				}
 
 				val condition = this@BinarySearch.currentSearchParameters.getCondition()
-				val updatedSearchCondition = binarySearchPanel.getSearchParameters().getCondition()
+				val updatedSearchCondition = binarySearchPanel.searchParameters.getCondition()
 
 				when (updatedSearchCondition.getSearchMode()) {
 					SearchCondition.SearchMode.TEXT -> {
@@ -158,11 +158,11 @@ class BinarySearch(private var binarySearchPanel: HexSearchBar) {
 	fun getSearchStatusListener(): BinarySearchService.SearchStatusListener = searchStatusListener
 
 	private fun invokeSearch(searchOperation: SearchOperation) {
-		invokeSearch(searchOperation, binarySearchPanel.getSearchParameters(), 0)
+		invokeSearch(searchOperation, binarySearchPanel.searchParameters, 0)
 	}
 
 	private fun invokeSearch(searchOperation: SearchOperation, delay: Int) {
-		invokeSearch(searchOperation, binarySearchPanel.getSearchParameters(), delay)
+		invokeSearch(searchOperation, binarySearchPanel.searchParameters, delay)
 	}
 
 	private fun invokeSearch(searchOperation: SearchOperation, searchParameters: SearchParameters) {
@@ -190,7 +190,7 @@ class BinarySearch(private var binarySearchPanel: HexSearchBar) {
 		searchStatusListener.clearStatus()
 	}
 
-	fun getPanel(): HexSearchBar = binarySearchPanel
+	val panel: HexSearchBar get() = binarySearchPanel
 
 	fun dataChanged() {
 		binarySearchService?.clearMatches()

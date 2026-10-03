@@ -50,7 +50,7 @@ class SimpleCodePanel(mainWindow: MainWindow) : JPanel() {
 
 		// The title label
 		titleLabel = JLabel(NLS.str("usage_dialog_plus.code_view"))
-		titleLabel.setFont(settings.getCodeFont())
+		titleLabel.setFont(settings.codeFont)
 		titleLabel.setBorder(BorderFactory.createEmptyBorder(5, 5, 10, 5))
 
 		// The code area
@@ -68,9 +68,9 @@ class SimpleCodePanel(mainWindow: MainWindow) : JPanel() {
 	}
 
 	private fun applySettings(settings: JadxSettings) {
-		codeScrollPane.setLineNumbersEnabled(settings.getLineNumbersMode() != LineNumbersMode.DISABLE)
-		codeScrollPane.getGutter().setLineNumberFont(settings.getCodeFont())
-		codeArea.setFont(settings.getCodeFont())
+		codeScrollPane.setLineNumbersEnabled(settings.lineNumbersMode != LineNumbersMode.DISABLE)
+		codeScrollPane.getGutter().setLineNumberFont(settings.codeFont)
+		codeArea.setFont(settings.codeFont)
 	}
 
 	/** 展示 [node] 的代码，并高亮 [codeLine] 所在行；[node] 为 `null` 时显示占位提示。 */

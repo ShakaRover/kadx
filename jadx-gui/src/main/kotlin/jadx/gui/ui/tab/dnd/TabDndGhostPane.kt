@@ -64,7 +64,7 @@ class TabDndGhostPane(dnd: TabDndController, settings: JadxSettings) : JComponen
 		val ins = UIManager.getInsets("TabbedPane.tabInsets")
 		insets = ins ?: Insets(0, 0, 0, 0)
 
-		tabDndGhostType = settings.getTabDndGhostType()
+		tabDndGhostType = settings.tabDndGhostType
 	}
 
 	fun setTargetRect(x: Int, y: Int, width: Int, height: Int) {
@@ -84,13 +84,13 @@ class TabDndGhostPane(dnd: TabDndController, settings: JadxSettings) : JComponen
 		this.tabDndGhostType = tabDndGhostType
 	}
 
-	fun getGhostType(): TabDndGhostType = tabDndGhostType
+	val ghostType: TabDndGhostType get() = tabDndGhostType
 
 	fun setColor(color: Color) {
 		ghostColor = color
 	}
 
-	fun getColor(): Color = ghostColor
+	val color: Color get() = ghostColor
 
 	fun setPoint(pt: Point) {
 		location.setLocation(pt)

@@ -41,7 +41,7 @@ class QuarkDialog(@Transient private val mainWindow: MainWindow) : JDialog() {
 	init {
 		if (files.isEmpty()) {
 			UiUtils.errorMessage(mainWindow, "Quark is unable to analyze loaded files")
-			LOG.error("Quark: The files cannot be analyzed: {}", mainWindow.getProject().getFilePaths())
+			LOG.error("Quark: The files cannot be analyzed: {}", mainWindow.getProject().filePaths)
 		} else {
 			initUI()
 		}
@@ -49,7 +49,7 @@ class QuarkDialog(@Transient private val mainWindow: MainWindow) : JDialog() {
 
 	private fun filterOpenFiles(mainWindow: MainWindow): List<Path> {
 		val matcher: PathMatcher = FileSystems.getDefault().getPathMatcher("glob:**.{apk,dex}")
-		return mainWindow.getProject().getFilePaths().filter { matcher.matches(it) }
+		return mainWindow.getProject().filePaths.filter { matcher.matches(it) }
 	}
 
 	private fun initUI() {

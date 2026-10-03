@@ -24,7 +24,7 @@ import javax.swing.text.Segment
 class JadxTokenMaker(private val codeArea: CodeArea) : JavaTokenMaker() {
 
 	override fun getTokenList(text: Segment, initialTokenType: Int, startOffset: Int): Token? {
-		if (codeArea.isDisposed()) {
+		if (codeArea.isDisposed) {
 			return TokenImpl()
 		}
 		try {

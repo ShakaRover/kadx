@@ -18,31 +18,31 @@ class ExportProjectProperties {
 	private var gradleType: ExportGradleType? = null
 	private var path: String? = null
 
-	fun isSkipSources(): Boolean = skipSources
+	val isSkipSources: Boolean get() = skipSources
 
 	fun setSkipSources(skipSources: Boolean) {
 		this.skipSources = skipSources
 	}
 
-	fun isSkipResources(): Boolean = skipResources
+	val isSkipResources: Boolean get() = skipResources
 
 	fun setSkipResources(skipResources: Boolean) {
 		this.skipResources = skipResources
 	}
 
-	fun isAsGradleMode(): Boolean = asGradleMode
+	val isAsGradleMode: Boolean get() = asGradleMode
 
 	fun setAsGradleMode(asGradleMode: Boolean) {
 		this.asGradleMode = asGradleMode
 	}
 
-	fun getExportGradleType(): ExportGradleType? = gradleType
+	val exportGradleType: ExportGradleType? get() = gradleType
 
 	fun setExportGradleType(exportGradleType: ExportGradleType?) {
 		this.gradleType = exportGradleType
 	}
 
-	fun getExportPath(): String? = path
+	val exportPath: String? get() = path
 
 	fun setExportPath(exportPath: String) {
 		this.path = exportPath

@@ -60,7 +60,7 @@ class JPackagePopupMenu(private val mainWindow: MainWindow, pkg: JPackage) : JPo
 
 	private fun makeExcludeItem(pkg: JPackage): JMenuItem {
 		val excludeItem = JCheckBoxMenuItem(NLS.str("popup.exclude"))
-		excludeItem.setSelected(!pkg.isEnabled())
+		excludeItem.setSelected(!pkg.isEnabled)
 		excludeItem.addItemListener {
 			val wrapper: JadxWrapper = mainWindow.getWrapper()
 			val fullName = checkNotNull(pkg.getPkg()).getFullName()

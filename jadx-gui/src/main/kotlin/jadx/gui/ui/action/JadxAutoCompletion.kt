@@ -27,7 +27,7 @@ class JadxAutoCompletion(provider: CompletionProvider) :
 	}
 
 	override fun setShortcut(shortcut: Shortcut?) {
-		if (shortcut != null && shortcut.isKeyboard()) {
+		if (shortcut != null && shortcut.isKeyboard) {
 			setTriggerKey(shortcut.toKeyStroke())
 		} else {
 			setTriggerKey(KeyStroke.getKeyStroke(KeyEvent.VK_UNDEFINED, 0))
@@ -35,7 +35,6 @@ class JadxAutoCompletion(provider: CompletionProvider) :
 	}
 
 	companion object {
-		@JvmField
 		val COMMAND = "JadxAutoCompletion.Command"
 	}
 }

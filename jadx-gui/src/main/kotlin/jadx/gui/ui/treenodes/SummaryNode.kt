@@ -59,14 +59,14 @@ class SummaryNode(mainWindow: MainWindow) : JNode() {
 		builder.append("<h2>Input</h2>")
 		builder.append("<h3>Files</h3>")
 		builder.append("<ul>")
-		for (inputFile in wrapper.getArgs().inputFiles) {
+		for (inputFile in wrapper.args.inputFiles) {
 			builder.append("<li>")
 			builder.escape(inputFile.getCanonicalFile().getAbsolutePath())
 			builder.append("</li>")
 		}
 		builder.append("</ul>")
 
-		val classes = wrapper.getRootNode().getClasses(true)
+		val classes = wrapper.rootNode.getClasses(true)
 		val codeSources = classes
 			.map { it.getInputFileName() ?: "" }
 			.distinct()
@@ -101,7 +101,7 @@ class SummaryNode(mainWindow: MainWindow) : JNode() {
 	}
 
 	private fun addNativeLibsInfo(builder: StringEscapeUtils.Builder) {
-		val nativeLibs = wrapper.getResources()
+		val nativeLibs = wrapper.resources
 			.map { it.getOriginalName() }
 			.filter { f -> f.endsWith(".so") }
 			.sorted()
@@ -148,7 +148,7 @@ class SummaryNode(mainWindow: MainWindow) : JNode() {
 
 	private fun writeDecompilationSummary(builder: StringEscapeUtils.Builder) {
 		builder.append("<h2>Decompilation</h2>")
-		val classes = wrapper.getRootNode().classesWithoutInner
+		val classes = wrapper.rootNode.classesWithoutInner
 		val classesCount = classes.size
 		val notLoadedClasses = classes.count { c -> c.state === ProcessState.NOT_LOADED }
 		val loadedClasses = classes.count { c -> c.state === ProcessState.LOADED }
@@ -162,7 +162,7 @@ class SummaryNode(mainWindow: MainWindow) : JNode() {
 		builder.append("<li>Code generated: " + valueAndPercent(generatedClasses, classesCount) + "</li>")
 		builder.append("</ul>")
 
-		val counter: ErrorsCounter = wrapper.getRootNode().errorsCounter
+		val counter: ErrorsCounter = wrapper.rootNode.errorsCounter
 		val problemNodes = HashSet<IAttributeNode>()
 		problemNodes.addAll(counter.errorNodes)
 		problemNodes.addAll(counter.warnNodes)

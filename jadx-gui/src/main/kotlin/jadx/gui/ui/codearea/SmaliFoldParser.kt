@@ -96,7 +96,6 @@ class SmaliFoldParser private constructor() : FoldParser {
 		private val STARTMETHOD_LINE_PATTERN = Pattern.compile("^\\.method\\b", Pattern.MULTILINE)
 
 		/** 把 Smali 折叠解析器注册到 RSyntaxTextArea 的全局折叠解析器表。 */
-		@JvmStatic
 		fun register() {
 			FoldParserManager.get().addFoldParserMapping(AbstractCodeArea.SYNTAX_STYLE_SMALI, SmaliFoldParser())
 		}

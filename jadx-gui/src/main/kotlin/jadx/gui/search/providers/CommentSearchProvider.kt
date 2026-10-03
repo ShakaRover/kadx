@@ -49,7 +49,7 @@ class CommentSearchProvider(
 
 	override fun next(cancelable: Cancelable): JNode? {
 		while (!cancelable.isCanceled()) {
-			val comments = project.getCodeData().getComments()
+			val comments = project.codeData.getComments()
 			if (progress >= comments.size) {
 				return null
 			}
@@ -88,7 +88,7 @@ class CommentSearchProvider(
 	private fun getRefNode(comment: ICodeComment): JNode? {
 		val nodeRef = comment.getNodeRef()
 		val javaClass = wrapper.searchJavaClassByOrigClassName(nodeRef.getDeclaringClass()) ?: return null
-		val nodeCache = cacheObject.getNodeCache()
+		val nodeCache = cacheObject.nodeCache
 		when (nodeRef.getType()) {
 			IJavaNodeRef.RefType.CLASS -> return nodeCache.makeFrom(javaClass)
 
@@ -125,21 +125,21 @@ class CommentSearchProvider(
 			this.offset = codeRef.getIndex()
 		}
 
-		override fun getPos(): Int = getCachedPos().getPos()
+		override fun getPos(): Int = cachedPos.getPos()
 
-		@Synchronized
-		private fun getCachedPos(): JumpPosition {
+		@get:Synchronized
+		private val cachedPos: JumpPosition get() {
 			var cached = pos
 			if (cached == null) {
-				cached = getJumpPos()
+				cached = jumpPos
 				pos = cached
 			}
 			return cached
 		}
 
 		/** 延迟反编译以定位注释所在位置（仅在需要时触发）。 */
-		private fun getJumpPos(): JumpPosition {
-			val javaMethod = (node as JMethod).getJavaMethod()
+		private val jumpPos: JumpPosition get() {
+			val javaMethod = (node as JMethod).javaMethod
 			val codeInfo: ICodeInfo = javaMethod.getTopParentClass().getCodeInfo()
 			val methodDefPos = javaMethod.getDefPos()
 			val jump = codeInfo.getCodeMetadata().searchDown<JumpPosition?>(methodDefPos) { p, ann ->
@@ -200,7 +200,7 @@ class CommentSearchProvider(
 	}
 	override fun progress(): Int = progress
 
-	override fun total(): Int = project.getCodeData().getComments().size
+	override fun total(): Int = project.codeData.getComments().size
 
 	companion object {
 		private val LOG: Logger = LoggerFactory.getLogger(CommentSearchProvider::class.java)

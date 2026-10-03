@@ -15,7 +15,6 @@ object HexUtils {
 	 *
 	 * 规则：去掉空格后长度必须为偶数，且能被 [java.lang.Long.parseLong] 按 16 进制解析。
 	 */
-	@JvmStatic
 	fun isValidHexString(hexString: String): Boolean {
 		val cleanS = hexString.replace(" ", "")
 		val len = cleanS.length
@@ -38,7 +37,6 @@ object HexUtils {
 	 *
 	 * @throws IllegalArgumentException 长度为奇数或含有非十六进制字符时抛出
 	 */
-	@JvmStatic
 	fun hexStringToByteArray(hexString: String?): ByteArray {
 		if (hexString == null || hexString.isEmpty()) {
 			return ByteArray(0)

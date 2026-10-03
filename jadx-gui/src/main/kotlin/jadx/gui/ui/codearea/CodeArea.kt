@@ -68,10 +68,10 @@ class CodeArea internal constructor(panel: ContentPanel, jnode: JNode) :
 	private var cachedUniqueLineMappings: Map<Int, Int>? = null
 
 	init {
-		shortcutsController = getMainWindow().getShortcutsController()
+		shortcutsController = mainWindow.getShortcutsController()
 
 		setSyntaxEditingStyle(jnode.getSyntaxName())
-		val isJavaCode = isCodeNode()
+		val isJavaCode = isCodeNode
 		if (isJavaCode) {
 			(getDocument() as RSyntaxDocument).setSyntaxStyle(JadxTokenMaker(this))
 		}
@@ -107,18 +107,18 @@ class CodeArea internal constructor(panel: ContentPanel, jnode: JNode) :
 		}
 	}
 
-	fun isCodeNode(): Boolean {
+	val isCodeNode: Boolean get() {
 		val n = node
 		return n is JClass || n is JCodeMode
 	}
 
-	private fun jumpOnDoubleClick(e: MouseEvent): Boolean = e.getClickCount() == 2 && getMainWindow().getSettings().isJumpOnDoubleClick()
+	private fun jumpOnDoubleClick(e: MouseEvent): Boolean = e.getClickCount() == 2 && mainWindow.getSettings().isJumpOnDoubleClick
 
 	private fun navToDecl(point: Point) {
 		val offs = viewToModel2D(point)
 		val n = getJNodeAtOffset(adjustOffsetForWordToken(offs))
 		if (n != null) {
-			getContentPanel().getTabsController().codeJump(n)
+			getContentPanel().tabsController.codeJump(n)
 		}
 	}
 
@@ -172,7 +172,7 @@ class CodeArea internal constructor(panel: ContentPanel, jnode: JNode) :
 	}
 
 	private fun appendCodeMenuItems(popupMenu: JPopupMenu) {
-		val shortcutsController = getMainWindow().getShortcutsController()
+		val shortcutsController = mainWindow.getShortcutsController()
 		val popup = JNodePopupBuilder(this, popupMenu, shortcutsController)
 		popup.addSeparator()
 		popup.add(FindUsageAction(this))
@@ -193,7 +193,7 @@ class CodeArea internal constructor(panel: ContentPanel, jnode: JNode) :
 		popup.addSeparator()
 		popup.add(ConvertNumberAction(this))
 
-		getMainWindow().getWrapper().getGuiPluginsContext().appendPopupMenus(this, popup)
+		mainWindow.getWrapper().getGuiPluginsContext().appendPopupMenus(this, popup)
 
 		// 鼠标右键点击时移动光标
 		popupMenu.addPopupMenuListener(object : DefaultPopupMenuListener {
@@ -210,7 +210,7 @@ class CodeArea internal constructor(panel: ContentPanel, jnode: JNode) :
 	}
 
 	private fun addMenuForJsonFile() {
-		val shortcutsController = getMainWindow().getShortcutsController()
+		val shortcutsController = mainWindow.getShortcutsController()
 		val popup = JNodePopupBuilder(this, getPopupMenu(), shortcutsController)
 		popup.addSeparator()
 		popup.add(JsonPrettifyAction(this))
@@ -224,7 +224,7 @@ class CodeArea internal constructor(panel: ContentPanel, jnode: JNode) :
 	fun adjustOffsetForWordToken(offset: Int): Int {
 		val token: Token = getWordTokenAtOffset(offset) ?: return -1
 		val type = token.getType()
-		if (isCodeNode()) {
+		if (isCodeNode) {
 			if (type == TokenTypes.IDENTIFIER || type == TokenTypes.FUNCTION) {
 				return token.getOffset()
 			}
@@ -258,16 +258,16 @@ class CodeArea internal constructor(panel: ContentPanel, jnode: JNode) :
 	}
 
 	private fun convertJavaNode(javaNode: JavaNode): JNode? {
-		val nodeCache: JNodeCache = getMainWindow().getCacheObject().getNodeCache()
+		val nodeCache: JNodeCache = mainWindow.getCacheObject().nodeCache
 		return nodeCache.makeFrom(javaNode)
 	}
 
-	fun getNodeUnderCaret(): JNode? {
+	val nodeUnderCaret: JNode? get() {
 		val caretPos = getCaretPosition()
 		return getJNodeAtOffset(adjustOffsetForWordToken(caretPos))
 	}
 
-	fun getEnclosingNodeUnderCaret(): JNode? {
+	val enclosingNodeUnderCaret: JNode? get() {
 		val caretPos = getCaretPosition()
 		var start = adjustOffsetForWordToken(caretPos)
 		if (start == -1) {
@@ -276,12 +276,12 @@ class CodeArea internal constructor(panel: ContentPanel, jnode: JNode) :
 		return getEnclosingJNodeAtOffset(start)
 	}
 
-	fun getNodeUnderMouse(): JNode? {
+	val nodeUnderMouse: JNode? get() {
 		val pos = UiUtils.getMousePosition(this)
 		return getJNodeAtOffset(adjustOffsetForWordToken(viewToModel2D(pos)))
 	}
 
-	fun getEnclosingNodeUnderMouse(): JNode? {
+	val enclosingNodeUnderMouse: JNode? get() {
 		val pos = UiUtils.getMousePosition(this)
 		return getEnclosingJNodeAtOffset(adjustOffsetForWordToken(viewToModel2D(pos)))
 	}
@@ -308,7 +308,7 @@ class CodeArea internal constructor(panel: ContentPanel, jnode: JNode) :
 			return null
 		}
 		try {
-			return getJadxWrapper().getDecompiler().getJavaNodeAtPosition(getCodeInfo(), offset)
+			return jadxWrapper.getDecompiler().getJavaNodeAtPosition(getCodeInfo(), offset)
 		} catch (e: Exception) {
 			LOG.error("Can't get java node by offset: {}", offset, e)
 		}
@@ -320,7 +320,7 @@ class CodeArea internal constructor(panel: ContentPanel, jnode: JNode) :
 			return null
 		}
 		try {
-			return getJadxWrapper().getDecompiler().getClosestJavaNode(getCodeInfo(), offset)
+			return jadxWrapper.getDecompiler().getClosestJavaNode(getCodeInfo(), offset)
 		} catch (e: Exception) {
 			LOG.error("Can't get java node by offset: {}", offset, e)
 			return null
@@ -332,7 +332,7 @@ class CodeArea internal constructor(panel: ContentPanel, jnode: JNode) :
 			return null
 		}
 		try {
-			return getJadxWrapper().getDecompiler().getEnclosingNode(getCodeInfo(), offset)
+			return jadxWrapper.getDecompiler().getEnclosingNode(getCodeInfo(), offset)
 		} catch (e: Exception) {
 			LOG.error("Can't get java node by offset: {}", offset, e)
 			return null
@@ -348,11 +348,11 @@ class CodeArea internal constructor(panel: ContentPanel, jnode: JNode) :
 			val ann = codeInfo.getCodeMetadata().getAt(pos) ?: return null
 			return when (ann.getAnnType()) {
 				AnnType.CLASS ->
-					getJadxWrapper().getDecompiler().getJavaNodeByCodeAnnotation(codeInfo, ann) as? JavaClass
+					jadxWrapper.getDecompiler().getJavaNodeByCodeAnnotation(codeInfo, ann) as? JavaClass
 
 				AnnType.METHOD -> {
 					// 使用构造调用处的类
-					val node = getJadxWrapper().getDecompiler().getJavaNodeByCodeAnnotation(codeInfo, ann)
+					val node = jadxWrapper.getDecompiler().getJavaNodeByCodeAnnotation(codeInfo, ann)
 					node?.getDeclaringClass()
 				}
 
@@ -380,14 +380,14 @@ class CodeArea internal constructor(panel: ContentPanel, jnode: JNode) :
 					cls.getCodeInfo()
 				} else {
 					// 不好：会在 UI 线程阻塞进行可能很耗时的反编译
-					cls.reload(getMainWindow().getCacheObject())
+					cls.reload(mainWindow.getCacheObject())
 				}
 
 				val codeContentPanel = getContentPanel() as ClassCodeContentPanel
 				codeContentPanel.getTabbedPane().refresh(cls)
 				codeContentPanel.getJavaCodePanel().refresh(caretFix)
 			} catch (e: Exception) {
-				LOG.error("Failed to reload class: {}", cls.getFullName(), e)
+				LOG.error("Failed to reload class: {}", cls.fullName, e)
 			}
 		}
 	}
@@ -397,19 +397,19 @@ class CodeArea internal constructor(panel: ContentPanel, jnode: JNode) :
 	 */
 	fun backgroundRefreshClass() {
 		UiUtils.uiThreadGuard()
-		getMainWindow().getBackgroundExecutor().execute("Refreshing...") {
-			checkNotNull(getNode().getRootClass()).reload(getMainWindow().getCacheObject())
+		mainWindow.getBackgroundExecutor().execute("Refreshing...") {
+			checkNotNull(getNode().getRootClass()).reload(mainWindow.getCacheObject())
 			UiUtils.uiRunAndWait {
 				refreshClass(true)
 			}
 		}
 	}
 
-	fun getMainWindow(): MainWindow = getContentPanel().getMainWindow()
+	val mainWindow: MainWindow get() = getContentPanel().mainWindow
 
-	fun getJadxWrapper(): JadxWrapper = getMainWindow().getWrapper()
+	val jadxWrapper: JadxWrapper get() = mainWindow.getWrapper()
 
-	fun getProject(): JadxProject = getMainWindow().getProject()
+	val project: JadxProject get() = mainWindow.getProject()
 
 	override fun dispose() {
 		shortcutsController.unbindActionsForComponent(this)
@@ -422,7 +422,7 @@ class CodeArea internal constructor(panel: ContentPanel, jnode: JNode) :
 
 	override fun sync(codeAreaSyncer: CodeAreaSyncer): Boolean = codeAreaSyncer.syncTo(this)
 
-	fun getCodeMetadata(): ICodeMetadata? {
+	val codeMetadata: ICodeMetadata? get() {
 		val codeInfo = getCodeInfo()
 		if (!codeInfo.hasMetadata()) {
 			LOG.warn("No code info metadata for {}", codeInfo)
@@ -435,7 +435,7 @@ class CodeArea internal constructor(panel: ContentPanel, jnode: JNode) :
 	 * 返回“反编译输出行号 -> dex 调试行号”的映射。
 	 * 这里用的是从 1 开始的行号，不是 CodeArea 的行索引。
 	 */
-	fun getLineMappings(): Map<Int, Int> {
+	val lineMappings: Map<Int, Int> get() {
 		val codeInfo = getCodeInfo()
 		if (!codeInfo.hasMetadata()) {
 			LOG.debug("No code info metadata for {}", codeInfo)
@@ -453,7 +453,7 @@ class CodeArea internal constructor(panel: ContentPanel, jnode: JNode) :
 	 * 与 [getLineMappings] 相同，但仅在每个 dex 调试行号只出现一次时可用。
 	 * 若某个值出现多次，说明多个方法可能共享调试行号，此时不能用于代码同步。
 	 */
-	fun getFunctionUniqueLineMappings(): Map<Int, Int> {
+	val functionUniqueLineMappings: Map<Int, Int> get() {
 		var mappings = cachedUniqueLineMappings
 		if (mappings == null) {
 			mappings = calcUniqueLineMappings()
@@ -463,7 +463,7 @@ class CodeArea internal constructor(panel: ContentPanel, jnode: JNode) :
 	}
 
 	private fun calcUniqueLineMappings(): Map<Int, Int> {
-		val lineMappings = getLineMappings()
+		val lineMappings = lineMappings
 		val isAnyRepeated = lineMappings.values
 			.groupingBy { it }
 			.eachCount()

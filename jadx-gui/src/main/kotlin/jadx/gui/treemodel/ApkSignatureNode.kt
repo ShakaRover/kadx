@@ -80,12 +80,11 @@ class ApkSignatureNode(private val openFile: File) : JNode() {
 		/**
 		 * 从已加载资源中找出 APK 文件并构造签名节点；无 AndroidManifest.xml 时返回 `null`。
 		 */
-		@JvmStatic
 		fun getApkSignature(wrapper: JadxWrapper): ApkSignatureNode? {
 			// 只有存在 AndroidManifest.xml 时才显示 ApkSignature 节点；
 			// 没有 manifest 时 Google 的 ApkVerifier 会拒绝工作。
 			var apkFile: File? = null
-			for (resFile in wrapper.getResources()) {
+			for (resFile in wrapper.resources) {
 				if (resFile.getType() == ResourceType.MANIFEST) {
 					val zipEntry: IZipEntry? = resFile.getZipEntry()
 					if (zipEntry != null) {

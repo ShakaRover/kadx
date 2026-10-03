@@ -38,7 +38,6 @@ class ArtAdapter {
 		 *
 		 * @param androidReleaseVer Android 主版本号（如 8、9、10）
 		 */
-		@JvmStatic
 		fun getAdapter(androidReleaseVer: Int): IArtAdapter = if (androidReleaseVer <= 8) AndroidOreoAndBelow() else AndroidPieAndAbove()
 	}
 

@@ -27,16 +27,15 @@ enum class CodeCacheMode(
 	;
 
 	/** 本地化的模式名称（用于下拉框显示）。 */
-	fun getLocalizedName(): String = label
+	val localizedName: String get() = label
 
 	/** 本地化的模式说明（用于提示文本）。 */
 	fun getDesc(): String = desc
 
-	override fun toString(): String = getLocalizedName()
+	override fun toString(): String = localizedName
 
 	companion object {
 		/** 拼接所有模式的“名称 - 说明”文本，用作设置项的 tooltip。 */
-		@JvmStatic
-		fun buildToolTip(): String = values().joinToString("\n") { v -> v.getLocalizedName() + " - " + v.getDesc() }
+		fun buildToolTip(): String = values().joinToString("\n") { v -> v.localizedName + " - " + v.getDesc() }
 	}
 }

@@ -25,7 +25,6 @@ import javax.swing.event.ChangeListener
 object UiFlowUtils {
 
 	/** 文本框内容变化（去重）。 */
-	@JvmStatic
 	fun textFieldChanges(textField: JTextField): Flow<String> = callbackFlow {
 		val listener = DocumentUpdateListener { trySend(textField.getText()) }
 		textField.getDocument().addDocumentListener(listener)
@@ -33,7 +32,6 @@ object UiFlowUtils {
 	}.distinctUntilChanged()
 
 	/** 文本框回车确认（去重）。 */
-	@JvmStatic
 	fun textFieldEnterPress(textField: JTextField): Flow<String> = callbackFlow {
 		val listener = enterKeyListener { textField.getText() }
 		textField.addKeyListener(listener)
@@ -41,7 +39,6 @@ object UiFlowUtils {
 	}.distinctUntilChanged()
 
 	/** 微调框数值变化（去重）。 */
-	@JvmStatic
 	fun spinnerChanges(spinner: JSpinner): Flow<String> = callbackFlow {
 		val listener = ChangeListener { trySend(spinner.getValue().toString()) }
 		spinner.addChangeListener(listener)
@@ -49,7 +46,6 @@ object UiFlowUtils {
 	}.distinctUntilChanged()
 
 	/** 微调框回车确认（去重）。 */
-	@JvmStatic
 	fun spinnerEnterPress(spinner: JSpinner): Flow<String> = callbackFlow {
 		val listener = enterKeyListener { spinner.getValue().toString() }
 		spinner.addKeyListener(listener)

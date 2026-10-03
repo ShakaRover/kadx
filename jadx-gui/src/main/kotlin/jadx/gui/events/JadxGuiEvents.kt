@@ -16,7 +16,6 @@ class JadxGuiEvents {
 
 	companion object {
 		/** 类树结构需要刷新（如重命名后）时发出。 */
-		@JvmField
 		val TREE_UPDATE: JadxEventType<TreeUpdate> = JadxEventType.create("TREE_UPDATE")
 	}
 }

@@ -46,7 +46,7 @@ class PackageHelper(private val wrapper: JadxWrapper, private val nodeCache: JNo
 		val added = HashSet<String>()
 		while (pkgInfo != null) {
 			val jPkg = pkgInfoMap[pkgInfo]
-			if (jPkg != null && !jPkg.isSynthetic()) {
+			if (jPkg != null && !jPkg.isSynthetic) {
 				val javaPkg = jPkg.getPkg()
 				if (javaPkg != null && !javaPkg.isDefault()) {
 					val renamePkg = JRenamePackage(javaPkg, javaPkg.getRawFullName(), javaPkg.getFullName(), javaPkg.getName())
@@ -62,7 +62,7 @@ class PackageHelper(private val wrapper: JadxWrapper, private val nodeCache: JNo
 
 	private fun prepareFlatPackages(): List<JPackage> {
 		val list = ArrayList<JPackage>()
-		for (javaPkg in wrapper.getPackages()) {
+		for (javaPkg in wrapper.packages) {
 			if (javaPkg.isLeaf() || javaPkg.getClasses().isNotEmpty()) {
 				val pkg = buildJPackage(javaPkg, false)
 				pkg.setName(javaPkg.getFullName())
@@ -76,7 +76,7 @@ class PackageHelper(private val wrapper: JadxWrapper, private val nodeCache: JNo
 
 	private fun prepareHierarchyPackages(): List<JPackage> {
 		val root = JPackage.makeTmpRoot()
-		val packages = wrapper.getPackages()
+		val packages = wrapper.packages
 		val jPackages = ArrayList<JPackage>(packages.size)
 		// 为已存在的包创建节点
 		for (javaPkg in packages) {

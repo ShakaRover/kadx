@@ -104,9 +104,9 @@ class DebugSettings private constructor() {
 		val tcpPort = " tcp:$forwardTcpPort"
 		try {
 			val dev = checkNotNull(device)
-			val list = ADB.listForward(dev.getDeviceInfo().getAdbHost(), dev.getDeviceInfo().getAdbPort())
+			val list = ADB.listForward(dev.deviceInfo.getAdbHost(), dev.deviceInfo.getAdbPort())
 			for (s in list) {
-				if (s.startsWith(dev.getSerial()) && s.endsWith(jdwpPid) && !s.contains(tcpPort)) {
+				if (s.startsWith(dev.serial) && s.endsWith(jdwpPid) && !s.contains(tcpPort)) {
 					val fields = s.split(Regex("\\s+"))
 					for (field in fields) {
 						if (field.startsWith("tcp:")) {
@@ -125,14 +125,14 @@ class DebugSettings private constructor() {
 	}
 
 	/** @return 当前 `jdwp:pid` 是否已被其它端口转发（即正在被调试） */
-	fun isBeingDebugged(): Boolean {
+	val isBeingDebugged: Boolean get() {
 		val jdwpPid = " jdwp:$pid"
 		val tcpPort = " tcp:$forwardTcpPort"
 		try {
 			val dev = checkNotNull(device)
-			val list = ADB.listForward(dev.getDeviceInfo().getAdbHost(), dev.getDeviceInfo().getAdbPort())
+			val list = ADB.listForward(dev.deviceInfo.getAdbHost(), dev.deviceInfo.getAdbPort())
 			for (s in list) {
-				if (s.startsWith(dev.getSerial()) && s.endsWith(jdwpPid)) {
+				if (s.startsWith(dev.serial) && s.endsWith(jdwpPid)) {
 					return !s.contains(tcpPort)
 				}
 			}
@@ -158,7 +158,7 @@ class DebugSettings private constructor() {
 		this.expectPkg = expectPkg
 	}
 
-	fun isAutoAttachPkg(): Boolean = autoAttachPkg
+	val isAutoAttachPkg: Boolean get() = autoAttachPkg
 
 	fun setAutoAttachPkg(autoAttachPkg: Boolean) {
 		this.autoAttachPkg = autoAttachPkg
@@ -169,7 +169,6 @@ class DebugSettings private constructor() {
 
 		private const val FORWARD_TCP_PORT = 33233
 
-		@JvmField
 		val INSTANCE: DebugSettings = DebugSettings()
 	}
 }

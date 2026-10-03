@@ -55,13 +55,13 @@ class CommonGuiPluginsContext(private val mainWindow: MainWindow) {
 
 	fun getMainWindow(): MainWindow = mainWindow
 
-	fun getCodePopupActionList(): MutableList<CodePopupAction> = codePopupActions
+	val codePopupActionList: MutableList<CodePopupAction> get() = codePopupActions
 
-	fun getTreePopupMenuEntries(): MutableList<TreePopupMenuEntry> = treePopupMenus
+	val treePopupMenuEntries: MutableList<TreePopupMenuEntry> get() = treePopupMenus
 
-	fun getTreeInputCategories(): MutableList<ITreeInputCategory> = treeInputs
+	val treeInputCategories: MutableList<ITreeInputCategory> get() = treeInputs
 
-	fun getTabStatePersistAdapters(): MutableList<ITabStatePersist> = tabStateAdapters
+	val tabStatePersistAdapters: MutableList<ITabStatePersist> get() = tabStateAdapters
 
 	/** 向「插件」菜单添加一项，点击后在后台执行 [action]。 */
 	fun addMenuAction(name: String, action: Runnable) {

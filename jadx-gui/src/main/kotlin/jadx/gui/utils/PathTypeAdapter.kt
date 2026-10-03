@@ -40,6 +40,5 @@ object PathTypeAdapter {
 		}
 	}
 
-	@JvmStatic
 	fun singleton(): TypeAdapter<Path> = SINGLETON
 }

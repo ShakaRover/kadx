@@ -17,15 +17,15 @@ import java.nio.file.Paths
 internal class CustomFileDialog(private val data: FileDialogWrapper) {
 
 	fun showDialog(): List<Path> {
-		val fileDialog = FileDialog(data.getMainWindow(), data.getTitle())
-		fileDialog.mode = if (data.isOpen()) FileDialog.LOAD else FileDialog.SAVE
+		val fileDialog = FileDialog(data.mainWindow, data.title)
+		fileDialog.mode = if (data.isOpen) FileDialog.LOAD else FileDialog.SAVE
 		fileDialog.isMultipleMode = true
-		val fileExtList = data.getFileExtList()
+		val fileExtList = data.fileExtList
 		if (Utils.notEmpty(fileExtList)) {
 			fileDialog.setFilenameFilter { _, name -> ListUtils.anyMatch(fileExtList) { name.endsWith(it) } }
 		}
-		data.getSelectedFile()?.let { fileDialog.file = it.toAbsolutePath().toString() }
-		data.getCurrentDir()?.let { fileDialog.directory = it.toAbsolutePath().toString() }
+		data.selectedFile?.let { fileDialog.file = it.toAbsolutePath().toString() }
+		data.currentDir?.let { fileDialog.directory = it.toAbsolutePath().toString() }
 		fileDialog.isVisible = true
 		val selectedFiles = fileDialog.files
 		if (!Utils.isEmpty(selectedFiles)) {

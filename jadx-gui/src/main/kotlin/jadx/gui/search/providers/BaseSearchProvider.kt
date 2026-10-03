@@ -29,7 +29,7 @@ abstract class BaseSearchProvider(
 	classes: List<JavaClass>,
 ) : ISearchProvider {
 
-	private val nodeCache: JNodeCache = mw.getCacheObject().getNodeCache()
+	private val nodeCache: JNodeCache = mw.getCacheObject().nodeCache
 	private val decompiler: JadxDecompiler = mw.getWrapper().getDecompiler()
 
 	protected val searchMth: ISearchMethod = searchSettings.getSearchMethod()

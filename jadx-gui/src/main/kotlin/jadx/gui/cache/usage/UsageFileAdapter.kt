@@ -49,7 +49,6 @@ internal class UsageFileAdapter : DataAdapterHelper() {
 		private val JADX_USAGE_HEADER = "jadx.usage".toByteArray(StandardCharsets.US_ASCII)
 
 		/** 从磁盘加载 usage 数据；文件不存在 / 版本不符 / 输入变化时返回 `null`。 */
-		@JvmStatic
 		@Synchronized
 		fun load(root: RootNode, usageFile: Path, inputs: List<File>): RawUsageData? {
 			if (!Files.isRegularFile(usageFile)) {
@@ -95,7 +94,6 @@ internal class UsageFileAdapter : DataAdapterHelper() {
 		}
 
 		/** 把 usage 数据保存到磁盘。 */
-		@JvmStatic
 		@Synchronized
 		fun save(data: IUsageInfoData, usageFile: Path, inputs: List<File>) {
 			val start = System.currentTimeMillis()

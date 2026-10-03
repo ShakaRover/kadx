@@ -34,18 +34,18 @@ import javax.swing.text.JTextComponent
  *
  * **为什么保留 Swing 线程模型**：所有逻辑仍在 EDT 上执行，与原来一致。
  */
-internal class CustomFileChooser(private val data: FileDialogWrapper) : JFileChooser(data.getCurrentDir()?.toFile() ?: CommonFileUtils.CWD) {
+internal class CustomFileChooser(private val data: FileDialogWrapper) : JFileChooser(data.currentDir?.toFile() ?: CommonFileUtils.CWD) {
 
 	init {
 		putClientProperty("FileChooser.useShellFolder", java.lang.Boolean.FALSE)
 	}
 
 	fun showDialog(): List<Path> {
-		toolTipText = data.getTitle()
-		fileSelectionMode = data.getSelectionMode()
-		isMultiSelectionEnabled = data.isOpen()
+		toolTipText = data.title
+		fileSelectionMode = data.selectionMode
+		isMultiSelectionEnabled = data.isOpen
 		isAcceptAllFileFilterUsed = true
-		val fileExtList = data.getFileExtList()
+		val fileExtList = data.fileExtList
 		if (Utils.notEmpty(fileExtList)) {
 			val validFileExtList = fileExtList
 				.filter { StringUtils.notBlank(it) }
@@ -54,12 +54,12 @@ internal class CustomFileChooser(private val data: FileDialogWrapper) : JFileCho
 				fileFilter = FileNameMultiExtensionFilter(description, *validFileExtList.toTypedArray())
 			}
 		}
-		data.getSelectedFile()?.let { selectedFile = it.toFile() }
-		if (data.isOpen()) {
+		data.selectedFile?.let { selectedFile = it.toFile() }
+		if (data.isOpen) {
 			installFileListPasteAction(this)
 		}
-		val mainWindow = data.getMainWindow()
-		val ret = if (data.isOpen()) showOpenDialog(mainWindow) else showSaveDialog(mainWindow)
+		val mainWindow = data.mainWindow
+		val ret = if (data.isOpen) showOpenDialog(mainWindow) else showSaveDialog(mainWindow)
 		if (ret != JFileChooser.APPROVE_OPTION) {
 			return emptyList()
 		}
@@ -78,12 +78,12 @@ internal class CustomFileChooser(private val data: FileDialogWrapper) : JFileCho
 	@Throws(HeadlessException::class)
 	override fun createDialog(parent: Component): JDialog {
 		val dialog = super.createDialog(parent)
-		dialog.title = data.getTitle()
+		dialog.title = data.title
 		dialog.setLocationRelativeTo(null)
-		data.getMainWindow().getSettings().loadWindowPos(dialog)
+		data.mainWindow.getSettings().loadWindowPos(dialog)
 		dialog.addWindowListener(object : WindowAdapter() {
 			override fun windowClosed(e: WindowEvent) {
-				data.getMainWindow().getSettings().saveWindowPos(dialog)
+				data.mainWindow.getSettings().saveWindowPos(dialog)
 				super.windowClosed(e)
 			}
 		})
@@ -91,11 +91,11 @@ internal class CustomFileChooser(private val data: FileDialogWrapper) : JFileCho
 	}
 
 	override fun approveSelection() {
-		if (data.getSelectionMode() == JFileChooser.FILES_AND_DIRECTORIES) {
+		if (data.selectionMode == JFileChooser.FILES_AND_DIRECTORIES) {
 			val currentFile = selectedFile
 			if (currentFile != null && currentFile.isDirectory) {
 				val option = JOptionPane.showConfirmDialog(
-					data.getMainWindow(),
+					data.mainWindow,
 					NLS.str("file_dialog.load_dir_confirm") + "\n " + currentFile,
 					NLS.str("file_dialog.load_dir_title"),
 					JOptionPane.YES_NO_OPTION,

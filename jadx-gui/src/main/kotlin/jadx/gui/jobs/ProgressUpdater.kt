@@ -65,7 +65,7 @@ class ProgressUpdater(
 	/** 单个刷新周期：更新进度、执行取消检查。 */
 	private suspend fun tick() {
 		val task = currentTask.get() ?: return
-		if (!task.isRunning()) {
+		if (!task.isRunning) {
 			return
 		}
 		// 取消检查（含内存检测/GC）可能阻塞，放到 IO 线程执行，避免冻结 EDT

@@ -48,11 +48,11 @@ class DecompileTask(private val mainWindow: MainWindow) : CancelableBackgroundTa
 
 	/** 构建反编译 job 列表；已完成全量反编译或批次构建失败时返回空列表。 */
 	fun scheduleJobs(): List<Runnable> {
-		if (mainWindow.getCacheObject().isFullDecompilationFinished()) {
+		if (mainWindow.getCacheObject().isFullDecompilationFinished) {
 			return emptyList()
 		}
 
-		val classes = wrapper.getIncludedClasses()
+		val classes = wrapper.includedClasses
 		expectedCompleteCount = classes.size
 		complete.set(0)
 
@@ -68,7 +68,7 @@ class DecompileTask(private val mainWindow: MainWindow) : CancelableBackgroundTa
 
 	/** 为每个批次生成一个 job：逐类反编译（缓存已有则跳过），并累加完成计数。 */
 	private fun getJobs(batches: List<List<JavaClass>>): List<Runnable> {
-		val codeCache: ICodeCache = wrapper.getArgs().codeCache
+		val codeCache: ICodeCache = wrapper.args.codeCache
 		val jobs = ArrayList<Runnable>(batches.size)
 		for (batch in batches) {
 			jobs.add {
@@ -160,7 +160,6 @@ class DecompileTask(private val mainWindow: MainWindow) : CancelableBackgroundTa
 		private val CLS_LIMIT: Int = JadxCommonEnv.getInt("JADX_CLS_PROCESS_LIMIT", 50)
 
 		/** 根据类数量估算反编译任务的时间上限（毫秒）。 */
-		@JvmStatic
 		fun calcDecompileTimeLimit(classCount: Int): Int = classCount * CLS_LIMIT + 5000
 	}
 }

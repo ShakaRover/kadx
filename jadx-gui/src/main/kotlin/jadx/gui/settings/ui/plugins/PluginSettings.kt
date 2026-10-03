@@ -105,7 +105,7 @@ class PluginSettings(private val mainWindow: MainWindow, private val settings: J
 	private fun addPluginGroup(context: PluginContext): ISettingsGroup? {
 		val guiContext: JadxGuiContext? = context.getGuiContext()
 		if (guiContext is GuiPluginContext) {
-			val customSettingsGroup = guiContext.getCustomSettingsGroup()
+			val customSettingsGroup = guiContext.customSettingsGroup
 			if (customSettingsGroup != null) {
 				return customSettingsGroup
 			}
@@ -135,7 +135,7 @@ class PluginSettings(private val mainWindow: MainWindow, private val settings: J
 				curValue = project.getPluginOption(optName)
 			} else {
 				@Suppress("UNCHECKED_CAST")
-				val optionsMap = settings.getPluginOptions() as MutableMap<String, String>
+				val optionsMap = settings.pluginOptions as MutableMap<String, String>
 				updateFunc = { value -> optionsMap[optName] = value }
 				curValue = optionsMap[optName]
 			}

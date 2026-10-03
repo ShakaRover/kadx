@@ -31,7 +31,7 @@ class DiskCodeCacheTest : IntegrationTest() {
 	fun test() {
 		disableCompilation()
 		getArgs().codeCache = NoOpCodeCache.INSTANCE
-		val clsNode = getSelfClassNode()
+		val clsNode = selfClassNode
 		val codeInfo = clsNode.getCode()
 
 		val cache = DiskCodeCache(clsNode.root, tempDir)
@@ -53,7 +53,7 @@ class DiskCodeCacheTest : IntegrationTest() {
 	}
 
 	/** 用当前测试类自身的 `.class` 文件构造 [ClassNode]，绕开对 `.java` 源文件的依赖。 */
-	private fun getSelfClassNode(): ClassNode {
+	private val selfClassNode: ClassNode get() {
 		val clsUrl = checkNotNull(javaClass.getResource("DiskCodeCacheTest.class")) {
 			"Test class file not found: ${javaClass.name}"
 		}

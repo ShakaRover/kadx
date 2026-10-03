@@ -33,13 +33,13 @@ class JMethod(
 
 	override fun getJavaNode(): JavaNode = mth
 
-	fun getJavaMethod(): JavaMethod = mth
+	val javaMethod: JavaMethod get() = mth
 
 	override fun getCodeNodeRef(): ICodeNodeRef = mth.getMethodNode()
 
 	override fun getJParent(): JClass = jParent
 
-	fun getReturnType(): ArgType = mth.getReturnType()
+	val returnType: ArgType get() = mth.getReturnType()
 
 	override fun getRootClass(): JClass = jParent.getRootClass()
 
@@ -100,23 +100,23 @@ class JMethod(
 		mainWindow.reloadTreePreservingState()
 	}
 
-	override fun makeString(): String = UiUtils.typeFormat(makeBaseString(), getReturnType())
+	override fun makeString(): String = UiUtils.typeFormat(makeBaseString(), returnType)
 
-	override fun makeStringHtml(): String = UiUtils.typeFormatHtml(makeBaseString(), getReturnType())
+	override fun makeStringHtml(): String = UiUtils.typeFormatHtml(makeBaseString(), returnType)
 
 	override fun makeLongString(): String {
 		val name = mth.getDeclaringClass().getFullName() + '.' + makeBaseString()
-		return UiUtils.typeFormat(name, getReturnType())
+		return UiUtils.typeFormat(name, returnType)
 	}
 
 	override fun makeLongStringHtml(): String {
 		val name = mth.getDeclaringClass().getFullName() + '.' + makeBaseString()
-		return UiUtils.typeFormatHtml(name, getReturnType())
+		return UiUtils.typeFormatHtml(name, returnType)
 	}
 
 	override fun disableHtml(): Boolean = false
 
-	override fun makeDescString(): String = UiUtils.typeStr(getReturnType()) + " " + makeBaseString()
+	override fun makeDescString(): String = UiUtils.typeStr(returnType) + " " + makeBaseString()
 
 	override fun hasDescString(): Boolean = false
 

@@ -31,7 +31,6 @@ object CharsetDialog {
 	 * @param currentCharsetName 当前字符集名，用于预选；不可用时忽略
 	 * @return 选中字符集的规范名；取消返回 `null`
 	 */
-	@JvmStatic
 	fun chooseCharset(parent: Component?, currentCharsetName: String?): String? {
 		val availableCharsets: Collection<Charset> = Charset.availableCharsets().values
 

@@ -21,7 +21,7 @@ class SmaliRegister(private val num: Int, private val endOffsetValue: Int) : Reg
 	private var runtimeNum: Int = 0
 
 	/** @return 运行时寄存器编号 */
-	fun getRuntimeRegNum(): Int = runtimeNum
+	val runtimeRegNum: Int get() = runtimeNum
 
 	/** 设置运行时寄存器编号。 */
 	fun setRuntimeRegNum(runtimeNum: Int) {

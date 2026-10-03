@@ -22,7 +22,7 @@ import java.util.SortedSet
 class CollectPlugins(private val mainWindow: MainWindow) {
 
 	fun build(): CloseablePlugins {
-		val currentDecompiler: JadxDecompiler? = mainWindow.getWrapper().getCurrentDecompiler()
+		val currentDecompiler: JadxDecompiler? = mainWindow.getWrapper().currentDecompiler
 		if (currentDecompiler != null) {
 			val plugins: SortedSet<PluginContext> = currentDecompiler.getPluginManager().resolvedPluginContexts
 			return CloseablePlugins(ArrayList(plugins), null)

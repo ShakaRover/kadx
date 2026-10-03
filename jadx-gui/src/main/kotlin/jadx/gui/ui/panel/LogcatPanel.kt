@@ -123,10 +123,10 @@ class LogcatPanel(private val debugPanel: JDebuggerPanel) : JPanel() {
 		val menuPanel = JToolBar()
 
 		val procObj = CheckCombo(NLS.str("logcat.process"), 1, msgIndex, pkgs.toTypedArray())
-		val procBox = procObj.getContent()
+		val procBox = procObj.content
 		procObj.selectAllBut(pids.indexOf(pid))
 
-		val msgTypeBox = CheckCombo(NLS.str("logcat.level"), 2, msgIndex, msgTypes).getContent()
+		val msgTypeBox = CheckCombo(NLS.str("logcat.level"), 2, msgIndex, msgTypes).content
 
 		menuPanel.add(procBox)
 		menuPanel.add(Box.createRigidArea(Dimension(5, 0)))
@@ -153,7 +153,7 @@ class LogcatPanel(private val debugPanel: JDebuggerPanel) : JPanel() {
 		this.pid = pid.toInt()
 		try {
 			this.logcatController = LogcatController(this, device)
-			this.procs = device.getProcessList()
+			this.procs = device.processList
 			if (!this.showLogcat()) {
 				debugPanel.log(NLS.str("logcat.error_fail_start"))
 			}
@@ -193,7 +193,7 @@ class LogcatPanel(private val debugPanel: JDebuggerPanel) : JPanel() {
 	}
 
 	/** Logcat 是否已就绪。 */
-	fun isReady(): Boolean = this.ready
+	val isReady: Boolean get() = this.ready
 
 	private fun isAtBottom(scrollbar: JScrollBar): Boolean {
 		val model: BoundedRangeModel = scrollbar.getModel()
@@ -206,8 +206,8 @@ class LogcatPanel(private val debugPanel: JDebuggerPanel) : JPanel() {
 		val scrollbar = logcatScroll.getVerticalScrollBar()
 		val atBottom = isAtBottom(scrollbar)
 
-		val logString = " > " + logcatInfo.getTimestamp() + " [pid: " + logcatInfo.getPid() + "] " +
-			logcatInfo.getMsgTypeString() + ": " + logcatInfo.getMsg() + "\n"
+		val logString = " > " + logcatInfo.timestamp + " [pid: " + logcatInfo.getPid() + "] " +
+			logcatInfo.msgTypeString + ": " + logcatInfo.getMsg() + "\n"
 
 		if (logcatInfo.getMsgType().toInt() == 0) {
 			return // ignore unknown
@@ -269,7 +269,7 @@ class LogcatPanel(private val debugPanel: JDebuggerPanel) : JPanel() {
 			}
 		}
 
-		fun getContent(): JPanel {
+		val content: JPanel get() {
 			val labelComp = NodeLabel.noHtml("$label: ")
 			val stores = Array(ids.size) { j -> CheckComboStore(index[j], ids[j], true) }
 			combo = JComboBox(stores)

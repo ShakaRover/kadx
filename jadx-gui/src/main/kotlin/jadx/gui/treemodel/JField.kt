@@ -32,7 +32,7 @@ class JField(
 ) : JNode(),
 	JRenameNode {
 
-	fun getJavaField(): JavaField = field
+	val javaField: JavaField get() = this.field
 
 	override fun getJavaNode(): JavaNode = field
 

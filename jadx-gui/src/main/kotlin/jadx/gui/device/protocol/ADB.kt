@@ -30,7 +30,6 @@ import java.util.regex.Pattern
  */
 object ADB {
 
-	@JvmField
 	val ADB_CHARSET: Charset = StandardCharsets.UTF_8
 
 	private val LOG: Logger = LoggerFactory.getLogger(ADB::class.java)
@@ -151,8 +150,8 @@ object ADB {
 		return null
 	}
 
-	@Throws(IOException::class)
-	fun getFeatures(): List<String> {
+	@get:Throws(IOException::class)
+	val features: List<String> get() {
 		val rst = exec(CMD_FEATURES)
 		if (rst != null) {
 			return String(rst, ADB_CHARSET).trim().split(",")
@@ -329,21 +328,16 @@ object ADB {
 
 	/** 设备上的一个进程（`ps` 输出的一行）。 */
 	class Process {
-		@JvmField
 		var user: String = ""
 
-		@JvmField
 		var pid: String = ""
 
-		@JvmField
 		var ppid: String = ""
 
-		@JvmField
 		var name: String = ""
 
 		companion object {
 			/** 解析一行 `ps` 输出；字段不足时返回 null。 */
-			@JvmStatic
 			fun make(processLine: String): Process? {
 				val fields = processLine.split(Regex("\\s+"))
 				if (fields.size >= 4) {
