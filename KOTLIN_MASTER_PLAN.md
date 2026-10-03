@@ -192,7 +192,8 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 |----|------|-----:|
 | G01 | `utils` | 26 | ✅ db02895c |
 | G02 | `ui/codearea` + `ui/codearea/mode` | 23 | ✅ a161e431 |
-| G03 | `treemodel` | 21 | ⏳ |
+| G03 | `treemodel` | 21 | ✅ f5339248 |
+| G04 | `ui/action` | 18 | ⏳ |
 | G03 | `treemodel` | 21 |
 | G04 | `ui/action` | 18 |
 | G05 | `jobs` | 17 |
