@@ -7,10 +7,8 @@ dependencies {
 	api(project(":jadx-plugins:jadx-input-api"))
 	api(project(":jadx-commons:jadx-zip"))
 
-	implementation("com.google.code.gson:gson:2.14.0")
-	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
-
-	testImplementation("org.apache.commons:commons-lang3:3.20.0")
+	implementation(libs.gson)
+	implementation(libs.kotlinx.coroutines.core)
 
 	testImplementation(project(":jadx-plugins:jadx-dex-input"))
 	// 'ClassNotFound' error is raised if set as 'testRuntime'
@@ -20,13 +18,9 @@ dependencies {
 	testImplementation(project(":jadx-plugins:jadx-java-input"))
 	testImplementation(project(":jadx-plugins:jadx-raung-input"))
 
-	testImplementation("org.eclipse.jdt:ecj") {
-		version {
-			prefer("3.33.0")
-			strictly("[3.33, 3.34[") // from 3.34 compiled with Java 17
-		}
-	}
-	testImplementation("tools.profiler:async-profiler:4.4")
+	testImplementation(libs.commons.lang3)
+	testImplementation(libs.eclipse.jdt.ecj)
+	testImplementation(libs.async.profiler)
 }
 
 val jadxTestJavaVersion = getTestJavaVersion()
