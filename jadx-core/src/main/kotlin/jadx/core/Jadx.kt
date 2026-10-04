@@ -104,6 +104,7 @@ object Jadx {
 	 * AUTO / RESTRUCTURE 使用完整的区域恢复流程；SIMPLE 只做基础处理；
 	 * FALLBACK 仅输出原始指令。
 	 */
+	@JvmStatic
 	fun getPassesList(args: JadxArgs): MutableList<IDexTreeVisitor> = when (args.decompilationMode) {
 		DecompilationMode.AUTO, DecompilationMode.RESTRUCTURE -> getRegionsModePasses(args)
 		DecompilationMode.SIMPLE -> getSimpleModePasses(args)
@@ -114,6 +115,7 @@ object Jadx {
 	/**
 	 * 正式反编译前的准备步骤：签名处理、注解覆写、Android 常量、重命名/去混淆、使用信息收集等。
 	 */
+	@JvmStatic
 	val preDecompilePassesList: MutableList<IDexTreeVisitor> get() {
 		val passes = ArrayList<IDexTreeVisitor>()
 		passes.add(SignatureProcessor())
@@ -138,6 +140,7 @@ object Jadx {
 	 *
 	 * 顺序大致为：指令 IR → 基本块 IR → SSA/类型推断 → 区域恢复 → 变量处理 → 代码生成准备。
 	 */
+	@JvmStatic
 	fun getRegionsModePasses(args: JadxArgs): MutableList<IDexTreeVisitor> {
 		val passes = ArrayList<IDexTreeVisitor>()
 		// 指令 IR
@@ -236,6 +239,7 @@ object Jadx {
 	/**
 	 * 简单（SIMPLE）模式 Pass 链：不做控制流区域恢复，直接输出带 goto 的线性代码。
 	 */
+	@JvmStatic
 	fun getSimpleModePasses(args: JadxArgs): MutableList<IDexTreeVisitor> {
 		val passes = ArrayList<IDexTreeVisitor>()
 		if (args.isDebugInfo) {
@@ -281,6 +285,7 @@ object Jadx {
 	/**
 	 * 回退（FALLBACK）模式 Pass 链：不恢复控制流，只反汇编指令。
 	 */
+	@JvmStatic
 	val fallbackPassesList: MutableList<IDexTreeVisitor> get() {
 		val passes = ArrayList<IDexTreeVisitor>()
 		passes.add(AttachTryCatchVisitor())
@@ -290,7 +295,9 @@ object Jadx {
 		return passes
 	}
 
+	@JvmStatic
 	val version: String get() = JadxBuildInfo.getJadxVersion()
 
+	@JvmStatic
 	fun isDevVersion(): Boolean = version == VERSION_DEV
 }

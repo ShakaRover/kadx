@@ -44,3 +44,10 @@ jadx-output/
 
 cliff.toml
 jadx-gui/src/main/resources/logback.xml
+
+# OSS decompilation harness: keep scripts/README, ignore cloned projects + heavy artifacts
+/tests/oss/
+/tests/work/
+/tests/tmp/
+/tests/apks/
+/tests/out/

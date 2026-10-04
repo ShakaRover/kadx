@@ -386,7 +386,10 @@ class TypeUpdate(private val root: RootNode) {
 	}
 
 	private fun sameFirstArgListener(updateInfo: TypeUpdateInfo, insn: InsnNode, arg: InsnArg, candidateType: ArgType): TypeUpdateResult? {
-		val changeArg = if (isAssign(insn, arg)) insn.getArg(0) else checkNotNull(insn.result)
+		// 上游 Java 为 `isAssign(insn, arg) ? insn.getArg(0) : insn.getResult()`；
+		// `insn.result` 可能为 null（该 CONST 没有 result，也无另一侧可传播），此时直接返回 SAME，
+		// 避免旧转换引入的 checkNotNull 抛 IllegalStateException 导致整个方法反编译失败。
+		val changeArg = if (isAssign(insn, arg)) insn.getArg(0) else insn.result ?: return TypeUpdateResult.SAME
 		if (updateInfo.hasUpdateWithType(changeArg, candidateType)) {
 			return TypeUpdateResult.CHANGED
 		}
