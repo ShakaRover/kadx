@@ -6,9 +6,11 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import java.awt.event.AdjustmentListener
 import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
+import javax.swing.JScrollBar
 import javax.swing.JSpinner
 import javax.swing.JTextField
 import javax.swing.event.ChangeListener
@@ -43,6 +45,13 @@ object UiFlowUtils {
 		val listener = ChangeListener { trySend(spinner.getValue().toString()) }
 		spinner.addChangeListener(listener)
 		awaitClose { spinner.removeChangeListener(listener) }
+	}.distinctUntilChanged()
+
+	/** 滚动条位置变化（去重）。 */
+	fun scrollBarEvents(scrollBar: JScrollBar): Flow<Int> = callbackFlow {
+		val listener = AdjustmentListener { e -> trySend(e.value) }
+		scrollBar.addAdjustmentListener(listener)
+		awaitClose { scrollBar.removeAdjustmentListener(listener) }
 	}.distinctUntilChanged()
 
 	/** 微调框回车确认（去重）。 */

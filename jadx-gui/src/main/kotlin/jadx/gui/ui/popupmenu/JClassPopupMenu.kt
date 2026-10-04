@@ -70,6 +70,7 @@ class JClassPopupMenu(private val mainWindow: MainWindow, jClass: JClass) : JPop
 				savePath = selectedPath
 			}
 
+			savePath.toAbsolutePath().getParent()?.let { mainWindow.getSettings().setLastSaveFilePath(it) }
 			saveJClass(jClass, savePath, exportType)
 
 			LOG.info("Done saving {}", savePath)

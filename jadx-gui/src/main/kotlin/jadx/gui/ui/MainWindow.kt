@@ -1,6 +1,7 @@
 package jadx.gui.ui
 
 import ch.qos.logback.classic.Level
+import com.formdev.flatlaf.FlatClientProperties
 import com.formdev.flatlaf.FlatLaf
 import com.formdev.flatlaf.extras.FlatInspector
 import com.formdev.flatlaf.extras.FlatUIDefaultsInspector
@@ -102,13 +103,23 @@ import jadx.gui.utils.Icons
 import jadx.gui.utils.LafManager
 import jadx.gui.utils.Link
 import jadx.gui.utils.NLS
+import jadx.gui.utils.TextStandardActions
 import jadx.gui.utils.UiUtils
 import jadx.gui.utils.dbg.UIWatchDog
 import jadx.gui.utils.fileswatcher.LiveReloadWorker
+import jadx.gui.utils.flow.UiFlowUtils
 import jadx.gui.utils.shortcut.ShortcutsController
 import jadx.gui.utils.ui.ActionHandler
 import jadx.gui.utils.ui.FileOpenerHelper
 import jadx.gui.utils.ui.NodeLabel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.swing.Swing
 import org.exbin.bined.swing.section.SectCodeArea
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -144,9 +155,11 @@ import java.util.TimerTask
 import java.util.function.Consumer
 import javax.swing.AbstractAction
 import javax.swing.Action
+import javax.swing.BorderFactory
 import javax.swing.Box
 import javax.swing.JCheckBox
 import javax.swing.JCheckBoxMenuItem
+import javax.swing.JComponent
 import javax.swing.JFrame
 import javax.swing.JLabel
 import javax.swing.JMenu
@@ -156,9 +169,11 @@ import javax.swing.JPanel
 import javax.swing.JPopupMenu
 import javax.swing.JScrollPane
 import javax.swing.JSplitPane
+import javax.swing.JTextField
 import javax.swing.JToggleButton
 import javax.swing.JToolBar
 import javax.swing.JTree
+import javax.swing.KeyStroke
 import javax.swing.SwingUtilities
 import javax.swing.ToolTipManager
 import javax.swing.UIManager
@@ -167,10 +182,10 @@ import javax.swing.event.TreeExpansionEvent
 import javax.swing.event.TreeWillExpandListener
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeCellRenderer
-import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreeNode
 import javax.swing.tree.TreePath
 import javax.swing.tree.TreeSelectionModel
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * jadx-gui 主窗口（应用唯一的顶层 `JFrame`）。
@@ -185,6 +200,7 @@ import javax.swing.tree.TreeSelectionModel
  * **为什么公共 getter 都写成显式函数**：该类是被几乎所有 gui 类引用的中心节点，
  * 保留 `fun getXxx()` 形式可让 Kotlin 调用点的 `.getXxx()` 写法零改动。
  */
+@OptIn(FlowPreview::class)
 class MainWindow(@Transient private val settings: JadxSettings) :
 	JFrame(),
 	IMainWindow {
@@ -232,7 +248,8 @@ class MainWindow(@Transient private val settings: JadxSettings) :
 	private lateinit var quickTabsAndCodeSplitPane: JSplitPane
 
 	private lateinit var tree: JTree
-	private lateinit var treeModel: DefaultTreeModel
+	private lateinit var treeModel: FilterableTreeModel
+	private lateinit var treeFilterField: JTextField
 	private var treeRoot: JRoot? = null
 	private lateinit var tabbedPane: TabbedPane
 	private lateinit var heapUsageBar: HeapUsageBar
@@ -268,6 +285,9 @@ class MainWindow(@Transient private val settings: JadxSettings) :
 
 	private val loadListeners: MutableList<ILoadListener> = ArrayList()
 	private val treeUpdateListener: MutableList<(JRoot) -> Unit> = ArrayList()
+	private val treeFilterScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
+
+	@Volatile
 	private var loaded: Boolean = false
 	private var settingsOpen: Boolean = false
 	private var showUndisplayedCharsDialog: Boolean = false
@@ -563,17 +583,25 @@ class MainWindow(@Transient private val settings: JadxSettings) :
 			Runnable {
 				backgroundExecutor.waitForComplete()
 				synchronized(ReloadProject.EVENT) {
+					if (!loaded && project.filePaths.isEmpty()) {
+						reopenComplete()
+						return@synchronized
+					}
 					saveAll()
 					closeAll()
 					System.gc()
-					loadFiles(
-						Runnable {
-							menuBar.reloadShortcuts()
-							events().send(ReloadSettingsWindow.INSTANCE)
-							LOG.debug("reopen complete")
-						},
-					)
+					loadFiles(Runnable { reopenComplete() })
 				}
+			},
+		)
+	}
+
+	private fun reopenComplete() {
+		UiUtils.uiRunAndWait(
+			Runnable {
+				menuBar.reloadShortcuts()
+				events().send(ReloadSettingsWindow.INSTANCE)
+				LOG.debug("reopen complete")
 			},
 		)
 	}
@@ -886,6 +914,7 @@ class MainWindow(@Transient private val settings: JadxSettings) :
 		treeRoot = root
 		root.setFlatPackages(isFlattenPackage)
 		treeModel.setRoot(root)
+		treeFilterField.setText("")
 		addTreeCustomNodes()
 		root.update()
 		reloadTree()
@@ -1456,8 +1485,10 @@ class MainWindow(@Transient private val settings: JadxSettings) :
 		mainPanel.add(treeSplitPane)
 
 		val treeRootNode = DefaultMutableTreeNode(NLS.str("msg.open_file"))
-		treeModel = DefaultTreeModel(treeRootNode)
+
+		treeModel = FilterableTreeModel(this, treeRootNode)
 		tree = JTree(treeModel)
+		tree.setLargeModel(true)
 		ToolTipManager.sharedInstance().registerComponent(tree)
 		tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION)
 		tree.setFocusable(false)
@@ -1542,16 +1573,43 @@ class MainWindow(@Transient private val settings: JadxSettings) :
 		progressPane = ProgressPanel(this, true)
 		issuesPanel = IssuesPanel(this)
 
+		treeFilterField = JTextField()
+		TextStandardActions.attach(treeFilterField)
+		treeFilterField.setToolTipText(NLS.str("tree.filter"))
+		treeFilterField.putClientProperty(FlatClientProperties.TEXT_FIELD_SHOW_CLEAR_BUTTON, true)
+		treeFilterField.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, NLS.str("tree.filter"))
+		treeFilterField.registerKeyboardAction(
+			{ treeFilterField.setText("") },
+			KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+			JComponent.WHEN_FOCUSED,
+		)
+
+		treeFilterScope.launch(Dispatchers.Default) {
+			UiFlowUtils.textFieldChanges(treeFilterField)
+				.debounce(300.milliseconds)
+				.collect { treeModel.setFilter(it) }
+		}
+
+		val filterPanel = JPanel(BorderLayout())
+		filterPanel.setBorder(BorderFactory.createEmptyBorder(5, 2, 2, 2))
+		filterPanel.add(treeFilterField, BorderLayout.CENTER)
+
 		val leftPane = JPanel(BorderLayout())
 		val treeScrollPane = JScrollPane(tree)
 		treeScrollPane.setMinimumSize(Dimension(100, 150))
+		treeFilterScope.launch {
+			UiFlowUtils.scrollBarEvents(treeScrollPane.verticalScrollBar)
+				.collect { treeModel.expandVisibleFilteredNodes(tree) }
+		}
 
 		val bottomPane = JPanel(BorderLayout())
 		bottomPane.add(issuesPanel, BorderLayout.PAGE_START)
 		bottomPane.add(progressPane, BorderLayout.PAGE_END)
 
+		leftPane.add(filterPanel, BorderLayout.PAGE_START)
 		leftPane.add(treeScrollPane, BorderLayout.CENTER)
 		leftPane.add(bottomPane, BorderLayout.PAGE_END)
+
 		treeSplitPane.setLeftComponent(leftPane)
 
 		tabbedPane = TabbedPane(this, tabsController)
@@ -1689,9 +1747,13 @@ class MainWindow(@Transient private val settings: JadxSettings) :
 					guiPluginsManager.runGlobalUnload()
 					UiUtils.uiRunAndWait(
 						Runnable {
-							heapUsageBar.reset()
-							editorThemeManager.unload()
-							dispose()
+							try {
+								heapUsageBar.reset()
+								editorThemeManager.unload()
+								treeFilterScope.cancel()
+							} finally {
+								dispose()
+							}
 						},
 					)
 				} catch (e: Exception) {
@@ -1776,7 +1838,11 @@ class MainWindow(@Transient private val settings: JadxSettings) :
 
 	fun getBackgroundExecutor(): BackgroundExecutor = backgroundExecutor
 
+	fun getTree(): JTree = tree
+
 	fun getTreeRoot(): JRoot = checkNotNull(treeRoot)
+
+	fun getTreeFilterField(): JTextField = treeFilterField
 
 	fun getDebuggerPanel(): JDebuggerPanel {
 		initDebuggerPanel()

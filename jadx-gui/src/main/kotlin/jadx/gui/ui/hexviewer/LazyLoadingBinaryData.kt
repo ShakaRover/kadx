@@ -92,8 +92,14 @@ class LazyLoadingBinaryData(private val inputStream: InputStream, expectedSize: 
 	override fun getDataSize(): Long = size
 
 	override fun getByte(position: Long): Byte {
-		if (!ensurePositionLoaded(position)) {
-			throw RuntimeException("Unreachable position: $position")
+		if (position < 0) {
+			throw IndexOutOfBoundsException("Position out of bounds: $position")
+		}
+		if (!ensurePositionLoaded(position + 1)) {
+			throw IndexOutOfBoundsException("Unreachable position: $position")
+		}
+		if (position >= size) {
+			throw IndexOutOfBoundsException("Position out of bounds: $position")
 		}
 		val blockNum = (position / blockSize).toInt()
 		val blockOffset = (position % blockSize).toInt()

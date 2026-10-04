@@ -18,6 +18,7 @@ import jadx.gui.ui.MainWindow
 import jadx.gui.ui.action.ActionModel
 import jadx.gui.ui.action.CommentSearchAction
 import jadx.gui.ui.action.CopyReferenceAction
+import jadx.gui.ui.action.CopySmaliReferenceAction
 import jadx.gui.ui.action.FindUsageAction
 import jadx.gui.ui.action.FridaAction
 import jadx.gui.ui.action.GoToDeclarationAction
@@ -182,6 +183,7 @@ class CodeArea internal constructor(panel: ContentPanel, jnode: JNode) :
 		popup.add(CommentSearchAction(this))
 		popup.add(RenameAction(this))
 		popup.add(CopyReferenceAction(this))
+		popup.add(CopySmaliReferenceAction(this))
 		popup.addSeparator()
 		popup.add(FridaAction(this))
 		popup.add(XposedAction(this))

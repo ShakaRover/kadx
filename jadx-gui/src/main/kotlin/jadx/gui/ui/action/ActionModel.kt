@@ -153,6 +153,7 @@ enum class ActionModel(
 	FRIDA_COPY(ActionCategory.CODE_AREA, NLS.str("popup.frida"), null, null, Shortcut.keyboard(KeyEvent.VK_F)),
 	XPOSED_COPY(ActionCategory.CODE_AREA, NLS.str("popup.xposed"), null, null, Shortcut.keyboard(KeyEvent.VK_Y)),
 	COPY_REFERENCE(ActionCategory.CODE_AREA, NLS.str("popup.copy_reference"), null, null, Shortcut.keyboard(KeyEvent.VK_R)),
+	COPY_SMALI_REFERENCE(ActionCategory.CODE_AREA, NLS.str("popup.copy_smali_reference"), null, null, null),
 	JSON_PRETTIFY(ActionCategory.CODE_AREA, NLS.str("popup.json_prettify"), null, null, null),
 
 	SCRIPT_RUN(ActionCategory.PLUGIN_SCRIPT, NLS.str("script.run"), null, "ui/run", Shortcut.keyboard(KeyEvent.VK_F8)),

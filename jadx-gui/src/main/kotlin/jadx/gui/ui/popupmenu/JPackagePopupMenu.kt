@@ -97,6 +97,7 @@ class JPackagePopupMenu(private val mainWindow: MainWindow, pkg: JPackage) : JPo
 			}
 
 			val savePath = selectedPaths[0]
+			mainWindow.getSettings().setLastSaveFilePath(savePath)
 			saveJPackage(pkg, savePath, exportType)
 		}
 

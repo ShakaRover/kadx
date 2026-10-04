@@ -31,17 +31,13 @@ class QuarkReportData {
 		/** 把 `"80%"` 之类的置信度转成整数。 */
 		fun parseConfidence(): Int = Integer.parseInt(checkNotNull(confidence).replace("%", ""))
 
-		override fun toString(): String {
-			val sb = StringBuffer("Crime{")
-			sb.append("crime='").append(crime).append('\'')
-			sb.append(", confidence='").append(confidence).append('\'')
-			sb.append(", permissions=").append(permissions)
-			sb.append(", native_api=").append(native_api)
-			sb.append(", combination=").append(combination)
-			sb.append(", register=").append(register)
-			sb.append('}')
-			return sb.toString()
-		}
+		override fun toString(): String = "Crime{crime='" + crime +
+			"', confidence='" + confidence +
+			"', permissions=" + permissions +
+			", native_api=" + native_api +
+			", combination=" + combination +
+			", register=" + register +
+			'}'
 	}
 
 	class Method {

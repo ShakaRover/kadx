@@ -49,6 +49,11 @@ class JResourcePopupMenu(private val mainWindow: MainWindow, resource: JResource
 				return@addActionListener
 			}
 
+			if (resource.getType() == JResource.JResType.FILE) {
+				savePath.toAbsolutePath().getParent()?.let { mainWindow.getSettings().setLastSaveFilePath(it) }
+			} else {
+				mainWindow.getSettings().setLastSaveFilePath(savePath)
+			}
 			saveJResource(resource, savePath, true)
 
 			LOG.info("Done saving {}", savePath)
