@@ -1,70 +1,77 @@
 package jadx.gui.plugins.context
 
-import jadx.core.plugins.PluginContext
+import jadx.core.plugins.PluginRuntime
+import jadx.core.utils.Utils
 import jadx.gui.settings.data.ITabStatePersist
 import jadx.gui.ui.MainWindow
 import jadx.gui.ui.codearea.CodeArea
 import jadx.gui.ui.codearea.JNodePopupBuilder
 import jadx.gui.utils.ui.ActionHandler
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 /**
  * GUI 插件的公共上下文：集中保存所有插件注册到界面的扩展点。
  *
- * **做什么**：为每个插件构建 [GuiPluginContext]，并收集代码区弹窗动作、
- * 树节点弹窗项、输入分类、标签页状态适配器等；同时负责把插件菜单项加入主窗口。
+ * **做什么**：为每个插件构建 [GuiPluginContext]，并按「全局 / 项目」两个作用域
+ * 收集代码区弹窗动作、树节点弹窗项、输入分类、标签页状态适配器等；
+ * 同时负责把插件菜单项加入主窗口。
+ *
+ * **作用域语义**：全局插件的扩展点在工程关闭后保留；项目插件的扩展点在
+ * [resetProjectScope] 时清理，并重新挂载全局菜单动作。
  *
  * **线程模型**：保持原 Swing 模型，菜单动作交由主窗口的后台执行器运行。
  */
 class CommonGuiPluginsContext(private val mainWindow: MainWindow) {
 
-	private val pluginsMap: MutableMap<PluginContext, GuiPluginContext> = HashMap()
+	companion object {
+		private val LOG: Logger = LoggerFactory.getLogger(CommonGuiPluginsContext::class.java)
+	}
 
-	private val codePopupActions: MutableList<CodePopupAction> = ArrayList()
-	private val treePopupMenus: MutableList<TreePopupMenuEntry> = ArrayList()
-	private val treeInputs: MutableList<ITreeInputCategory> = ArrayList()
-	private val tabStateAdapters: MutableList<ITabStatePersist> = ArrayList()
+	private val globalScope = GuiPluginsRegistry()
+	private val projectScope = GuiPluginsRegistry()
 
-	/** 为某个插件构建并登记其 GUI 上下文。 */
-	fun buildForPlugin(pluginContext: PluginContext): GuiPluginContext {
-		val guiPluginContext = GuiPluginContext(this, pluginContext)
-		pluginsMap[pluginContext] = guiPluginContext
+	private val globalPlugins: MutableMap<PluginRuntime, GuiPluginContext> = HashMap()
+	private val projectPlugins: MutableMap<PluginRuntime, GuiPluginContext> = HashMap()
+
+	/** 为某个插件构建并登记其 GUI 上下文（区分全局 / 项目作用域）。 */
+	fun buildForPlugin(pluginRuntime: PluginRuntime, isGlobalPlugin: Boolean): GuiPluginContext {
+		val registry = if (isGlobalPlugin) globalScope else projectScope
+		val guiPluginContext = GuiPluginContext(this, registry, pluginRuntime)
+		(if (isGlobalPlugin) globalPlugins else projectPlugins)[pluginRuntime] = guiPluginContext
 		return guiPluginContext
 	}
 
-	/** 按插件上下文取回其 GUI 上下文；不存在时返回 `null`。 */
-	fun getPluginGuiContext(pluginContext: PluginContext): GuiPluginContext? = pluginsMap[pluginContext]
-
-	/** 按插件 ID 取回其 GUI 上下文；不存在时返回 `null`。 */
-	fun getGuiPluginContextById(pluginId: String): GuiPluginContext? {
-		for (guiPluginContext in pluginsMap.values) {
-			if (guiPluginContext.getPluginContext().getPluginId() == pluginId) {
-				return guiPluginContext
-			}
+	/** 把全局插件的自定义设置页复制到对应的项目插件上下文。 */
+	fun copyGlobalPluginData(globalContext: PluginRuntime, projectContext: PluginRuntime) {
+		val globalGuiContext = globalPlugins[globalContext]
+		val projectGuiContext = projectPlugins[projectContext]
+		if (globalGuiContext != null && projectGuiContext != null) {
+			projectGuiContext.setCustomSettings(globalGuiContext.customSettingsGroup)
 		}
-		return null
 	}
 
-	/** 清空界面扩展点并重置插件菜单。 */
-	fun reset() {
-		codePopupActions.clear()
-		treePopupMenus.clear()
-		treeInputs.clear()
+	/** 清理项目级扩展点，重新挂载全局菜单动作。 */
+	fun resetProjectScope() {
+		projectScope.clear()
+		projectPlugins.clear()
 		mainWindow.resetPluginsMenu()
+		for (menuAction in globalScope.menuActions) {
+			mainWindow.addToPluginsMenu(menuAction)
+		}
 	}
 
 	fun getMainWindow(): MainWindow = mainWindow
 
-	val codePopupActionList: MutableList<CodePopupAction> get() = codePopupActions
+	fun getCodePopupActionList(): List<CodePopupAction> = Utils.mergeLists(globalScope.codePopupActions, projectScope.codePopupActions) ?: emptyList()
 
-	val treePopupMenuEntries: MutableList<TreePopupMenuEntry> get() = treePopupMenus
+	fun getTreePopupMenuEntries(): List<TreePopupMenuEntry> = Utils.mergeLists(globalScope.treePopupMenuEntries, projectScope.treePopupMenuEntries) ?: emptyList()
 
-	val treeInputCategories: MutableList<ITreeInputCategory> get() = treeInputs
+	fun getTreeInputCategories(): List<ITreeInputCategory> = Utils.mergeLists(globalScope.treeInputCategories, projectScope.treeInputCategories) ?: emptyList()
 
-	val tabStatePersistAdapters: MutableList<ITabStatePersist> get() = tabStateAdapters
+	fun getTabStatePersistAdapters(): List<ITabStatePersist> = Utils.mergeLists(globalScope.tabStatePersistAdapters, projectScope.tabStatePersistAdapters) ?: emptyList()
 
-	/** 向「插件」菜单添加一项，点击后在后台执行 [action]。 */
-	fun addMenuAction(name: String, action: Runnable) {
+	internal fun addMenuAction(registry: GuiPluginsRegistry, name: String, action: Runnable) {
 		val item = ActionHandler(
 			Runnable {
 				try {
@@ -75,21 +82,19 @@ class CommonGuiPluginsContext(private val mainWindow: MainWindow) {
 			},
 		)
 		item.setNameAndDesc(name)
+		registry.menuActions.add(item)
 		mainWindow.addToPluginsMenu(item)
 	}
 
 	/** 把所有代码区弹窗动作追加到给定弹窗构建器（若有）。 */
 	fun appendPopupMenus(codeArea: CodeArea, popup: JNodePopupBuilder) {
-		if (codePopupActions.isEmpty()) {
+		val codePopupActionList = getCodePopupActionList()
+		if (codePopupActionList.isEmpty()) {
 			return
 		}
 		popup.addSeparator()
-		for (codePopupAction in codePopupActions) {
+		for (codePopupAction in codePopupActionList) {
 			popup.add(codePopupAction.buildAction(codeArea))
 		}
-	}
-
-	companion object {
-		private val LOG = LoggerFactory.getLogger(CommonGuiPluginsContext::class.java)
 	}
 }

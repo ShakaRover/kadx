@@ -22,7 +22,6 @@ import jadx.core.dex.nodes.ProcessState.GENERATED_AND_UNLOADED
 import jadx.core.dex.nodes.ProcessState.NOT_LOADED
 import jadx.core.dex.nodes.ProcessState.PROCESS_COMPLETE
 import jadx.core.dex.nodes.RootNode
-import jadx.core.plugins.AppContext
 import jadx.core.utils.exceptions.JadxRuntimeException
 import jadx.gui.cache.code.CodeCacheMode
 import jadx.gui.cache.code.CodeStringCache
@@ -30,12 +29,10 @@ import jadx.gui.cache.code.disk.BufferCodeCache
 import jadx.gui.cache.code.disk.DiskCodeCache
 import jadx.gui.cache.usage.UsageCacheMode
 import jadx.gui.cache.usage.UsageInfoCache
-import jadx.gui.plugins.context.CommonGuiPluginsContext
 import jadx.gui.settings.JadxProject
 import jadx.gui.settings.JadxSettings
 import jadx.gui.ui.MainWindow
 import jadx.gui.utils.CacheObject
-import jadx.plugins.tools.JadxExternalPluginsLoader
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.Collections
@@ -59,7 +56,6 @@ class JadxWrapper(private val mainWindow: MainWindow) {
 
 	@Volatile
 	private var decompiler: JadxDecompiler? = null
-	private var guiPluginsContext: CommonGuiPluginsContext? = null
 
 	/** 关闭旧反编译器（若存在）并创建、加载新的反编译器实例。 */
 	fun open() {
@@ -67,15 +63,17 @@ class JadxWrapper(private val mainWindow: MainWindow) {
 		try {
 			synchronized(DECOMPILER_UPDATE_SYNC) {
 				val project = getProject()
+				val guiPluginsManager = mainWindow.getGuiPluginsManager()
 				val jadxArgs = settings.toJadxArgs()
-				jadxArgs.pluginLoader = JadxExternalPluginsLoader()
+				jadxArgs.pluginLoader = guiPluginsManager.buildProjectPluginLoader()
 				jadxArgs.filesGetter = JadxFilesGetter.INSTANCE
 				project.fillJadxArgs(jadxArgs)
 				JadxAppCommon.applyEnvVars(jadxArgs)
 
 				val decompiler = JadxDecompiler(jadxArgs)
 				this.decompiler = decompiler
-				guiPluginsContext = initGuiPluginsContext(decompiler, mainWindow)
+				guiPluginsManager.initGuiPluginsContext(decompiler.getPluginManager(), jadxArgs, false)
+				guiPluginsManager.injectGlobalPlugins(decompiler)
 				initUsageCache(jadxArgs)
 				registerCodeCache(decompiler)
 				decompiler.setEventsImpl(mainWindow.events())
@@ -112,10 +110,7 @@ class JadxWrapper(private val mainWindow: MainWindow) {
 					decompiler.close()
 					this.decompiler = null
 				}
-				if (guiPluginsContext != null) {
-					resetGuiPluginsContext()
-					guiPluginsContext = null
-				}
+				mainWindow.getGuiPluginsManager().resetProjectScope()
 			}
 		} catch (e: Exception) {
 			LOG.error("Jadx decompiler close error", e)
@@ -168,14 +163,8 @@ class JadxWrapper(private val mainWindow: MainWindow) {
 		}
 	}
 
-	fun getGuiPluginsContext(): CommonGuiPluginsContext = checkNotNull(guiPluginsContext)
-
-	fun resetGuiPluginsContext() {
-		checkNotNull(guiPluginsContext).reset()
-	}
-
 	fun reloadPasses() {
-		resetGuiPluginsContext()
+		mainWindow.getGuiPluginsManager().resetProjectScope()
 		checkNotNull(decompiler).reloadPasses()
 	}
 
@@ -311,22 +300,5 @@ class JadxWrapper(private val mainWindow: MainWindow) {
 
 		/** 保护 [decompiler] 字段读写的监视器。 */
 		private val DECOMPILER_UPDATE_SYNC = Any()
-
-		/**
-		 * 初始化 GUI 插件上下文，并向核心插件管理器注册“新增插件”监听器，
-		 * 为每个插件构建 GUI 上下文与文件访问器。
-		 */
-		fun initGuiPluginsContext(decompiler: JadxDecompiler, mainWindow: MainWindow): CommonGuiPluginsContext {
-			val guiPluginsContext = CommonGuiPluginsContext(mainWindow)
-			decompiler.getPluginManager().registerAddPluginListener(
-				{ pluginContext ->
-					val appContext = AppContext()
-					appContext.setGuiContext(guiPluginsContext.buildForPlugin(pluginContext))
-					appContext.setFilesGetter(decompiler.getArgs().filesGetter)
-					pluginContext.setAppContext(appContext)
-				},
-			)
-			return guiPluginsContext
-		}
 	}
 }

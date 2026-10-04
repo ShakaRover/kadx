@@ -193,7 +193,7 @@ class CodeArea internal constructor(panel: ContentPanel, jnode: JNode) :
 		popup.addSeparator()
 		popup.add(ConvertNumberAction(this))
 
-		mainWindow.getWrapper().getGuiPluginsContext().appendPopupMenus(this, popup)
+		mainWindow.getGuiPluginsManager().getPluginsContext().appendPopupMenus(this, popup)
 
 		// 鼠标右键点击时移动光标
 		popupMenu.addPopupMenuListener(object : DefaultPopupMenuListener {

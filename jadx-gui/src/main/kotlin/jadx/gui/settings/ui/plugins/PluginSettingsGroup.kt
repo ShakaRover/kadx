@@ -1,14 +1,13 @@
 package jadx.gui.settings.ui.plugins
 
 import jadx.api.plugins.gui.ISettingsGroup
-import jadx.core.plugins.PluginContext
+import jadx.core.plugins.PluginRuntime
 import jadx.core.utils.StringUtils
 import jadx.core.utils.Utils
 import jadx.gui.ui.MainWindow
 import jadx.gui.utils.Link
 import jadx.gui.utils.NLS
 import jadx.gui.utils.UiUtils
-import jadx.gui.utils.plugins.CloseablePlugins
 import jadx.plugins.tools.JadxPluginsList
 import jadx.plugins.tools.JadxPluginsTools
 import jadx.plugins.tools.data.JadxPluginMetadata
@@ -43,7 +42,7 @@ import javax.swing.SwingConstants
 internal class PluginSettingsGroup(
 	private val pluginsSettings: PluginSettings,
 	private val mainWindow: MainWindow,
-	private val collectedPlugins: CloseablePlugins,
+	private val collectedPlugins: List<PluginRuntime>,
 ) : ISettingsGroup {
 
 	private val title: String = NLS.str("preferences.plugins")
@@ -61,7 +60,6 @@ internal class PluginSettingsGroup(
 
 	override fun close(save: Boolean) {
 		subGroups.forEach { it.close(save) }
-		collectedPlugins.close()
 	}
 
 	private fun buildMainSettingsPage(): JPanel {
@@ -111,14 +109,14 @@ internal class PluginSettingsGroup(
 
 	private fun applyData(listModel: DefaultListModel<BasePluginListNode>) {
 		val installed = JadxPluginsTools.instance.getInstalled()
-		val nodes = ArrayList<BasePluginListNode>(installed.size + collectedPlugins.getList().size)
+		val nodes = ArrayList<BasePluginListNode>(installed.size + collectedPlugins.size)
 		val installedSet = HashSet<String?>(installed.size)
 		for (pluginMetadata in installed) {
 			installedSet.add(pluginMetadata.pluginId)
 			nodes.add(InstalledPluginNode(pluginMetadata))
 		}
-		for (plugin in collectedPlugins.getList()) {
-			if (!installedSet.contains(plugin.getPluginId())) {
+		for (plugin in collectedPlugins) {
+			if (!installedSet.contains(plugin.pluginId)) {
 				nodes.add(LoadedPluginNode(plugin))
 			}
 		}

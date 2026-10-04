@@ -3,13 +3,16 @@ package jadx.gui.plugins.context
 import jadx.api.JadxDecompiler
 import jadx.api.JavaClass
 import jadx.api.JavaNode
+import jadx.api.gui.IMainWindow
+import jadx.api.gui.plugins.JadxGuiContextExt
 import jadx.api.gui.tree.ITreeNode
 import jadx.api.metadata.ICodeNodeRef
 import jadx.api.plugins.events.types.NodeRenamedByUser
 import jadx.api.plugins.gui.ISettingsGroup
-import jadx.api.plugins.gui.JadxGuiContext
 import jadx.api.plugins.gui.JadxGuiSettings
+import jadx.api.plugins.options.JadxPluginOptions
 import jadx.core.plugins.PluginContext
+import jadx.core.plugins.PluginRuntime
 import jadx.core.utils.exceptions.JadxRuntimeException
 import jadx.gui.settings.data.ITabStatePersist
 import jadx.gui.treemodel.JNode
@@ -37,16 +40,30 @@ import javax.swing.KeyStroke
  *
  * **线程模型**：保持 Swing 模型（`UiUtils.uiRun` / `invokeLater`），UI 更新在 EDT 上执行。
  */
-class GuiPluginContext(
+class GuiPluginContext internal constructor(
 	private val commonContext: CommonGuiPluginsContext,
-	private val pluginContext: PluginContext,
-) : JadxGuiContext {
+	private val registry: GuiPluginsRegistry,
+	private val pluginRuntime: PluginRuntime,
+) : JadxGuiContextExt {
 
 	private var customSettings: ISettingsGroup? = null
 
 	fun getCommonContext(): CommonGuiPluginsContext = commonContext
 
-	fun getPluginContext(): PluginContext = pluginContext
+	override fun getMainWindow(): IMainWindow = commonContext.getMainWindow()
+
+	override fun registerOptions(options: JadxPluginOptions) {
+		pluginRuntime.registerOptions(options)
+	}
+
+	/** 插件 id。 */
+	val pluginId: String get() = pluginRuntime.pluginId
+
+	/**
+	 * Internal method with plugin load guard.
+	 */
+	internal fun getPluginContext(): PluginContext = pluginRuntime.pluginContext
+		?: throw JadxRuntimeException("Plugin not yet loaded")
 
 	override fun getMainFrame(): JFrame = commonContext.getMainWindow()
 
@@ -55,7 +72,7 @@ class GuiPluginContext(
 	}
 
 	override fun addMenuAction(name: String, action: Runnable) {
-		commonContext.addMenuAction(name, action)
+		commonContext.addMenuAction(registry, name, action)
 	}
 
 	override fun addPopupMenuAction(
@@ -66,21 +83,21 @@ class GuiPluginContext(
 	) {
 		// 插件 API 使用 Java 函数类型，内部实现改用 Kotlin 函数类型，这里做一次适配
 		val enabledCheck: ((ICodeNodeRef) -> Boolean)? = enabled?.let { f -> { node -> f.apply(node) } }
-		commonContext.codePopupActionList.add(CodePopupAction(name, enabledCheck, keyBinding) { node -> action.accept(node) })
+		registry.codePopupActions.add(CodePopupAction(name, enabledCheck, keyBinding) { node -> action.accept(node) })
 	}
 
 	override fun addTreePopupMenuEntry(name: String, addPredicate: Predicate<ITreeNode>, action: Consumer<ITreeNode>) {
-		commonContext.treePopupMenuEntries.add(TreePopupMenuEntry(name, { node -> addPredicate.test(node) }) { node -> action.accept(node) })
+		registry.treePopupMenuEntries.add(TreePopupMenuEntry(name, { node -> addPredicate.test(node) }) { node -> action.accept(node) })
 	}
 
 	/** 注册一个输入分类器。 */
 	fun registerTreeInputCategory(inputCategory: ITreeInputCategory) {
-		commonContext.treeInputCategories.add(inputCategory)
+		registry.treeInputCategories.add(inputCategory)
 	}
 
 	/** 注册一个标签页状态持久化适配器。 */
 	fun registerTabStatePersistAdapter(tabStatePersist: ITabStatePersist) {
-		commonContext.tabStatePersistAdapters.add(tabStatePersist)
+		registry.tabStatePersistAdapters.add(tabStatePersist)
 	}
 
 	override fun registerGlobalKeyBinding(id: String, keyBinding: String, action: Runnable): Boolean {
@@ -101,7 +118,7 @@ class GuiPluginContext(
 
 	override fun settings(): JadxGuiSettings = GuiSettingsContext(this)
 
-	internal fun setCustomSettings(customSettingsGroup: ISettingsGroup) {
+	internal fun setCustomSettings(customSettingsGroup: ISettingsGroup?) {
 		this.customSettings = customSettingsGroup
 	}
 

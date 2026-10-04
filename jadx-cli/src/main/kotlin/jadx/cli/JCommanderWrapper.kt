@@ -275,12 +275,12 @@ class JCommanderWrapper(private val argsObj: JadxCLIArgs) {
 		JadxDecompiler(argsObj.toJadxArgs()).use { decompiler ->
 			val pluginManager = decompiler.getPluginManager()
 			pluginManager.load(decompiler.getArgs().pluginLoader)
-			pluginManager.initAll()
+			pluginManager.initAll(decompiler)
 			try {
-				for (context in pluginManager.allPluginContexts) {
-					val options = context.getOptions()
+				for (plugin in pluginManager.allPlugins) {
+					val options = plugin.options
 					if (options != null) {
-						appendPlugin(context.getPluginInfo(), options, sb, maxNamesLen)
+						appendPlugin(plugin.pluginInfo, options, sb, maxNamesLen)
 					}
 				}
 			} finally {

@@ -25,7 +25,7 @@ import jadx.core.dex.visitors.SaveCode
 import jadx.core.export.ExportGradle
 import jadx.core.export.OutDirs
 import jadx.core.plugins.JadxPluginManager
-import jadx.core.plugins.PluginContext
+import jadx.core.plugins.PluginRuntime
 import jadx.core.plugins.events.JadxEventsImpl
 import jadx.core.utils.DecompilerScheduler
 import jadx.core.utils.Utils
@@ -89,7 +89,7 @@ class JadxDecompiler : Closeable {
 
 	constructor(args: JadxArgs) {
 		this.args = checkNotNull(args)
-		this.pluginManager = JadxPluginManager(this)
+		this.pluginManager = JadxPluginManager(args)
 		this.resourcesLoader = ResourcesLoader(this)
 		this.zipReader = ZipReader(args.security)
 	}
@@ -145,8 +145,9 @@ class JadxDecompiler : Closeable {
 		val inputPaths = Utils.collectionMap(args.inputFiles) { it.toPath() }
 		val inputFiles = FileUtils.expandDirs(inputPaths)
 		val start = System.currentTimeMillis()
-		for (plugin in pluginManager.resolvedPluginContexts) {
-			for (codeLoader in plugin.getCodeInputs()) {
+		for (plugin in pluginManager.resolvedPlugins) {
+			val pluginContext = plugin.pluginContext ?: continue
+			for (codeLoader in pluginContext.getCodeInputs()) {
 				try {
 					// JadxCodeInput.loadFiles 参数类型是显式 java.util.List（为兼容 Java SAM），此处做一次未检查转型
 					@Suppress("UNCHECKED_CAST")
@@ -202,9 +203,9 @@ class JadxDecompiler : Closeable {
 		pluginManager.providesSuggestion("java-input", if (args.isUseDxInput) "java-convert" else "java-input")
 		pluginManager.load(args.pluginLoader)
 		if (LOG.isDebugEnabled) {
-			LOG.debug("Resolved plugins: {}", pluginManager.resolvedPluginContexts)
+			LOG.debug("Resolved plugins: {}", pluginManager.resolvedPlugins)
 		}
-		pluginManager.initResolved()
+		pluginManager.initResolved(this)
 		if (LOG.isDebugEnabled) {
 			val passes = customPasses.values.flatMap { it }
 				.map { p -> p.getInfo().getName() }

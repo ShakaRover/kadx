@@ -7,7 +7,8 @@ import jadx.api.plugins.gui.JadxGuiContext
 import jadx.api.plugins.options.OptionDescription
 import jadx.api.plugins.options.OptionFlag
 import jadx.api.plugins.options.OptionType
-import jadx.core.plugins.PluginContext
+import jadx.core.plugins.AppContext
+import jadx.core.plugins.PluginRuntime
 import jadx.core.utils.Utils
 import jadx.gui.logs.LogOptions
 import jadx.gui.plugins.context.GuiPluginContext
@@ -15,7 +16,6 @@ import jadx.gui.settings.JadxSettings
 import jadx.gui.settings.ui.SettingsGroup
 import jadx.gui.ui.MainWindow
 import jadx.gui.utils.NLS
-import jadx.gui.utils.plugins.CloseablePlugins
 import jadx.gui.utils.plugins.CollectPlugins
 import jadx.gui.utils.plugins.SettingsGroupPluginWrap
 import jadx.gui.utils.ui.DocumentUpdateListener
@@ -39,12 +39,12 @@ import javax.swing.JTextField
 class PluginSettings(private val mainWindow: MainWindow, private val settings: JadxSettings) {
 
 	fun build(): ISettingsGroup {
-		val collectedPlugins: CloseablePlugins = CollectPlugins(mainWindow).build()
+		val collectedPlugins: List<PluginRuntime> = CollectPlugins(mainWindow).build()
 		val pluginsGroup = PluginSettingsGroup(this, mainWindow, collectedPlugins)
-		for (context in collectedPlugins.getList()) {
-			val pluginGroup = addPluginGroup(context)
+		for (plugin in collectedPlugins) {
+			val pluginGroup = addPluginGroup(plugin)
 			if (pluginGroup != null) {
-				pluginsGroup.getSubGroups().add(SettingsGroupPluginWrap(context.getPluginId(), pluginGroup))
+				pluginsGroup.getSubGroups().add(SettingsGroupPluginWrap(plugin.pluginId, pluginGroup))
 			}
 		}
 		return pluginsGroup
@@ -102,20 +102,21 @@ class PluginSettings(private val mainWindow: MainWindow, private val settings: J
 		}
 	}
 
-	private fun addPluginGroup(context: PluginContext): ISettingsGroup? {
-		val guiContext: JadxGuiContext? = context.getGuiContext()
+	private fun addPluginGroup(plugin: PluginRuntime): ISettingsGroup? {
+		val appContext: AppContext? = plugin.appContext
+		val guiContext: JadxGuiContext? = appContext?.getGuiContext()
 		if (guiContext is GuiPluginContext) {
 			val customSettingsGroup = guiContext.customSettingsGroup
 			if (customSettingsGroup != null) {
 				return customSettingsGroup
 			}
 		}
-		val options = context.getOptions() ?: return null
+		val options = plugin.options ?: return null
 		val optionsDescriptions = options.getOptionsDescriptions()
 		if (optionsDescriptions.isEmpty()) {
 			return null
 		}
-		val settingsGroup = SettingsGroup(context.getPluginInfo().getName())
+		val settingsGroup = SettingsGroup(plugin.pluginInfo.getName())
 		addOptions(settingsGroup, optionsDescriptions)
 		return settingsGroup
 	}

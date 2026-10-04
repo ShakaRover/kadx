@@ -23,7 +23,6 @@ import jadx.core.deobf.DeobfAliasProvider
 import jadx.core.deobf.conditions.DeobfWhitelist
 import jadx.core.deobf.conditions.JadxRenameConditions
 import jadx.core.export.ExportGradleType
-import jadx.core.plugins.PluginContext
 import jadx.core.plugins.files.IJadxFilesGetter
 import jadx.core.plugins.files.TempFilesGetter
 import jadx.core.utils.files.FileUtils
@@ -388,8 +387,9 @@ class JadxArgs : Closeable {
 			if (decompiler == null) {
 				return ""
 			}
-			return decompiler.getPluginManager().resolvedPluginContexts
-				.joinToString(":") { obj: PluginContext -> obj.getInputsHash() }
+			return decompiler.getPluginManager().resolvedPlugins
+				.mapNotNull { plugin -> plugin.pluginContext }
+				.joinToString(":") { context -> context.getInputsHash() }
 		}
 	}
 }

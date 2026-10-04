@@ -28,11 +28,11 @@ import java.nio.file.Path
 import java.util.function.Supplier
 
 /**
- * 插件运行时上下文：同时实现 [JadxPluginContext]（对插件暴露能力）与
+ * 插件项目级上下文：同时实现 [JadxPluginContext]（对插件暴露能力）与
  * [JadxPluginRuntimeData]（对宿主暴露插件数据）。
  *
- * **做什么**：持有插件实例、元信息、类加载器、代码输入、选项与输入哈希；
- * 负责在插件的类加载器上下文中调用 `init` / `unload`。
+ * **做什么**：绑定到某个 `JadxDecompiler`，收集插件注册的代码输入，
+ * 并把插件元信息、选项、生命周期状态委托给 [PluginRuntime]。
  *
  * **为什么保留显式 getter**：这是插件公共 API 与 jadx-gui/cli 直接调用的类型，
  * 所有 `getXxx()` 保持 JVM 方法名不变，Java 调用方零改动。
@@ -43,51 +43,15 @@ import java.util.function.Supplier
 class PluginContext internal constructor(
 	private val decompiler: JadxDecompiler,
 	private val pluginsData: JadxPluginsData,
-	private val plugin: JadxPlugin,
+	private val pluginRuntime: PluginRuntime,
 ) : JadxPluginContext,
 	JadxPluginRuntimeData,
 	Comparable<PluginContext> {
 
-	private val pluginInfo: JadxPluginInfo = plugin.getPluginInfo()
-	private val pluginClassLoader: ClassLoader = plugin.javaClass.classLoader
-
-	/** 应用级上下文；由宿主在 init 前注入。 */
-	private var appContext: AppContext? = null
-
 	private val codeInputs: MutableList<JadxCodeInput> = ArrayList()
-	private var options: JadxPluginOptions? = null
 	private var inputsHashSupplier: Supplier<String>? = null
 
-	private var initialized: Boolean = false
-
-	/** 初始化插件：在插件类加载器上下文中调用 [JadxPlugin.init]。 */
-	fun init() {
-		classLoaderWrap {
-			plugin.init(this)
-			initialized = true
-		}
-	}
-
-	/** 卸载插件：仅在已初始化时在插件类加载器上下文中调用 [JadxPlugin.unload]。 */
-	fun unload() {
-		if (initialized) {
-			classLoaderWrap { plugin.unload() }
-		}
-	}
-
-	/** 临时把当前线程的上下文类加载器切换为插件类加载器，执行任务后恢复。 */
-	fun classLoaderWrap(task: Runnable) {
-		val thread = Thread.currentThread()
-		val prevClassLoader = thread.contextClassLoader
-		thread.contextClassLoader = pluginClassLoader
-		try {
-			task.run()
-		} finally {
-			thread.contextClassLoader = prevClassLoader
-		}
-	}
-
-	override fun isInitialized(): Boolean = initialized
+	override fun isInitialized(): Boolean = pluginRuntime.isInitialized
 
 	override fun getArgs(): JadxArgs = decompiler.getArgs()
 
@@ -104,12 +68,7 @@ class PluginContext internal constructor(
 	override fun getCodeInputs(): List<JadxCodeInput> = codeInputs
 
 	override fun registerOptions(options: JadxPluginOptions) {
-		try {
-			this.options = requireNotNull(options)
-			options.setOptions(getArgs().pluginOptions)
-		} catch (e: Exception) {
-			throw JadxRuntimeException("Failed to apply options for plugin: " + getPluginId(), e)
-		}
+		pluginRuntime.registerOptions(options)
 	}
 
 	override fun registerInputsHashSupplier(supplier: Supplier<String>) {
@@ -130,7 +89,7 @@ class PluginContext internal constructor(
 
 	/** 默认输入哈希：拼接所有「会改变输出代码」的选项值后取 MD5。 */
 	private fun defaultOptionsHash(): String {
-		val options = this.options ?: return ""
+		val options = pluginRuntime.options ?: return ""
 		val allOptions = getArgs().pluginOptions
 		val sb = StringBuilder()
 		for (optDesc in options.getOptionsDescriptions()) {
@@ -145,25 +104,19 @@ class PluginContext internal constructor(
 
 	override fun getResourcesLoader(): IResourcesLoader = decompiler.getResourcesLoader()
 
-	fun getAppContext(): AppContext? = appContext
+	override fun getGuiContext(): JadxGuiContext? = pluginRuntime.appContext?.getGuiContext()
 
-	fun setAppContext(appContext: AppContext) {
-		this.appContext = appContext
-	}
+	override fun getPluginInstance(): JadxPlugin = pluginRuntime.pluginInstance
 
-	override fun getGuiContext(): JadxGuiContext? = requireNotNull(appContext).getGuiContext()
+	override fun getPluginInfo(): JadxPluginInfo = pluginRuntime.pluginInfo
 
-	override fun getPluginInstance(): JadxPlugin = plugin
+	override fun getPluginId(): String = pluginRuntime.pluginId
 
-	override fun getPluginInfo(): JadxPluginInfo = pluginInfo
-
-	override fun getPluginId(): String = pluginInfo.getPluginId()
-
-	override fun getOptions(): JadxPluginOptions? = options
+	override fun getOptions(): JadxPluginOptions? = pluginRuntime.options
 
 	override fun plugins(): IJadxPlugins = pluginsData
 
-	override fun files(): IJadxFiles = JadxFilesData(pluginInfo, requireNotNull(appContext).getFilesGetter())
+	override fun files(): IJadxFiles = JadxFilesData(getPluginInfo(), checkNotNull(pluginRuntime.appContext).getFilesGetter())
 
 	@Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
 	override fun loadCodeFiles(files: java.util.List<Path>, closeable: Closeable?): ICodeLoader = MergeCodeLoader(

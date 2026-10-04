@@ -18,8 +18,8 @@ import java.nio.file.Path
  */
 class TreeInputsHelper(mainWindow: MainWindow) {
 
-	private val categoryData: List<CategoryData> = mainWindow.getWrapper().getGuiPluginsContext()
-		.treeInputCategories
+	private val categoryData: List<CategoryData> = mainWindow.getGuiPluginsManager().getPluginsContext()
+		.getTreeInputCategories()
 		.map { CategoryData(it) }
 
 	private var simpleFiles: MutableList<Path> = ArrayList()

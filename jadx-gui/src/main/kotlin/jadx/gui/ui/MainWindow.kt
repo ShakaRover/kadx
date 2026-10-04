@@ -9,6 +9,7 @@ import jadx.api.JadxArgs
 import jadx.api.JavaClass
 import jadx.api.JavaNode
 import jadx.api.ResourceFile
+import jadx.api.gui.IMainWindow
 import jadx.api.plugins.events.JadxEvents
 import jadx.api.plugins.events.types.ReloadProject
 import jadx.api.plugins.events.types.ReloadSettingsWindow
@@ -37,7 +38,7 @@ import jadx.gui.jobs.TaskWithExtraOnFinish
 import jadx.gui.logs.LogCollector
 import jadx.gui.logs.LogOptions
 import jadx.gui.logs.LogPanel
-import jadx.gui.plugins.context.CommonGuiPluginsContext
+import jadx.gui.plugins.GuiPluginsManager
 import jadx.gui.plugins.context.TreePopupMenuEntry
 import jadx.gui.plugins.mappings.RenameMappingsGui
 import jadx.gui.plugins.quark.QuarkDialog
@@ -184,7 +185,9 @@ import javax.swing.tree.TreeSelectionModel
  * **为什么公共 getter 都写成显式函数**：该类是被几乎所有 gui 类引用的中心节点，
  * 保留 `fun getXxx()` 形式可让 Kotlin 调用点的 `.getXxx()` 写法零改动。
  */
-class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
+class MainWindow(@Transient private val settings: JadxSettings) :
+	JFrame(),
+	IMainWindow {
 
 	/** 当前工程（可被重新加载/新建替换，故为可变属性）。 */
 	@Transient
@@ -278,9 +281,14 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 
 	private val renameMappings: RenameMappingsGui
 
+	/** jadx-gui 插件管理器（全局作用域）。 */
+	@Transient
+	private val guiPluginsManager: GuiPluginsManager
+
 	init {
 		project = JadxProject(this)
 		wrapper = JadxWrapper(this)
+		guiPluginsManager = GuiPluginsManager(this)
 		cacheObject = CacheObject(wrapper)
 		liveReloadWorker = LiveReloadWorker(this)
 		renameMappings = RenameMappingsGui(this)
@@ -313,6 +321,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 		treeSplitPane.setDividerLocation(settings.treeWidth)
 		heapUsageBar.setVisible(settings.isShowHeapUsageBar)
 		setVisible(true)
+		UiUtils.bgRun(Runnable { guiPluginsManager.load() })
 		processCommandLineArgs()
 	}
 
@@ -970,8 +979,8 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 	private fun treeRightClickAction(e: MouseEvent) {
 		val node = getJNodeUnderMouse(e) ?: return
 		var menu = node.onTreePopupMenu(this)
-		val pluginsContext = wrapper.getGuiPluginsContext()
-		for (entry in pluginsContext.treePopupMenuEntries) {
+		val pluginsContext = guiPluginsManager.getPluginsContext()
+		for (entry in pluginsContext.getTreePopupMenuEntries()) {
 			val menuItem = entry.buildEntry(node)
 			if (menuItem != null) {
 				if (menu == null) {
@@ -1677,6 +1686,7 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 					UiUtils.uiRunAndWait(Runnable { settings.sync() })
 
 					closeAll()
+					guiPluginsManager.runGlobalUnload()
 					UiUtils.uiRunAndWait(
 						Runnable {
 							heapUsageBar.reset()
@@ -1749,6 +1759,8 @@ class MainWindow(@Transient private val settings: JadxSettings) : JFrame() {
 	}
 
 	fun getWrapper(): JadxWrapper = wrapper
+
+	fun getGuiPluginsManager(): GuiPluginsManager = guiPluginsManager
 
 	fun getProject(): JadxProject = project
 

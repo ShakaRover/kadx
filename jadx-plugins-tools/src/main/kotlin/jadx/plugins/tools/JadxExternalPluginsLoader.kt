@@ -14,9 +14,12 @@ import java.nio.file.Files.isDirectory
 import java.nio.file.Files.isRegularFile
 import java.nio.file.Path
 import java.util.ServiceLoader
+import java.util.function.Predicate
 import kotlin.streams.toList
 
-class JadxExternalPluginsLoader : JadxPluginLoader {
+class JadxExternalPluginsLoader @JvmOverloads constructor(
+	private val pluginClassFilter: Predicate<Class<*>> = Predicate { true },
+) : JadxPluginLoader {
 	companion object {
 		private val LOG = LoggerFactory.getLogger(JadxExternalPluginsLoader::class.java)
 		const val JADX_PLUGIN_CLASSLOADER_PREFIX = "jadx-plugin:"
@@ -52,14 +55,15 @@ class JadxExternalPluginsLoader : JadxPluginLoader {
 		val map = HashMap<String, JadxPlugin>()
 		loadFromPath(map, pluginPath)
 		val loaded = map.size
-		if (loaded == 0) {
-			throw JadxRuntimeException("No plugin found in jar: $pluginPath")
-		}
 		if (loaded > 1) {
 			val plugins = map.values.joinToString(", ") { it.getPluginInfo().getPluginId() }
 			throw JadxRuntimeException("Expect only one plugin per jar: $pluginPath, but found: $loaded - $plugins")
 		}
-		return checkNotNull(first(map.values))
+		val plugin = first(map.values)
+		if (plugin == null) {
+			throw JadxRuntimeException("No plugin found in jar: $pluginPath")
+		}
+		return plugin
 	}
 
 	private fun loadFromClsLoader(map: MutableMap<String, JadxPlugin>, classLoader: ClassLoader) {
@@ -68,7 +72,10 @@ class JadxExternalPluginsLoader : JadxPluginLoader {
 		for (provider in providers) {
 			val pluginClass = provider.type()
 			val clsName = pluginClass.name
-			if (!map.containsKey(clsName) && pluginClass.classLoader == classLoader) {
+			if (!map.containsKey(clsName) &&
+				pluginClass.classLoader == classLoader &&
+				pluginClassFilter.test(pluginClass)
+			) {
 				map[clsName] = provider.get()
 			}
 		}

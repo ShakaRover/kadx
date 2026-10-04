@@ -1,46 +1,46 @@
 package jadx.core.plugins
 
+import jadx.api.JadxArgs
 import jadx.api.JadxDecompiler
 import jadx.api.plugins.JadxPlugin
-import jadx.api.plugins.input.JadxCodeInput
 import jadx.api.plugins.loader.JadxPluginLoader
 import jadx.api.plugins.options.JadxPluginOptions
-import jadx.api.plugins.options.OptionDescription
 import jadx.core.plugins.versions.VerifyRequiredVersion
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.SortedSet
 import java.util.TreeMap
 import java.util.TreeSet
+import java.util.function.Consumer
 
 /**
  * 插件管理器：加载、注册、解析、初始化与卸载插件。
  *
  * **做什么**：
- * - `load` / `register`：把插件包装为 [PluginContext] 并加入 `allPlugins`；
+ * - `load` / `register`：把插件包装为 [PluginRuntime] 并加入 `allPlugins`；
  * - `resolve`：处理多个插件提供同一功能（`provides`）的冲突，选出 `resolvedPlugins`；
  * - `init` / `unload`：对插件执行生命周期回调；
- * - 对外暴露已加载 / 已解析的插件集合与全部代码输入。
+ * - 对外暴露已加载 / 已解析的插件集合。
  *
  * **为什么用 `SortedSet` + [TreeSet]**：插件需要按 id 稳定排序，
- * 便于测试与 GUI 展示；[PluginContext] 已实现 `Comparable`。
+ * 便于测试与 GUI 展示；[PluginRuntime] 已实现 `Comparable`。
  *
  * **K2 注意**：原 Java 的 `private synchronized void resolve()` 转成普通函数 +
  * [Synchronized] 注解。
  */
-class JadxPluginManager(private val decompiler: JadxDecompiler) {
+class JadxPluginManager(private val jadxArgs: JadxArgs) {
 
 	companion object {
 		private val LOG: Logger = LoggerFactory.getLogger(JadxPluginManager::class.java)
 	}
 
-	private val pluginsData: JadxPluginsData = JadxPluginsData(decompiler, this)
-	private val disabledPlugins: Set<String> = decompiler.getArgs().disabledPlugins
-	private val allPlugins: SortedSet<PluginContext> = TreeSet()
-	private val resolvedPlugins: SortedSet<PluginContext> = TreeSet()
+	private val pluginsData: JadxPluginsData = JadxPluginsData(this)
+	private val disabledPlugins: Set<String> = jadxArgs.disabledPlugins
+	private val allPluginsSet: SortedSet<PluginRuntime> = TreeSet()
+	private val resolvedPluginsSet: SortedSet<PluginRuntime> = TreeSet()
 	private val provideSuggestions: MutableMap<String, String> = TreeMap()
 
-	private val addPluginListeners: MutableList<(PluginContext) -> Unit> = ArrayList()
+	private val addPluginListeners: MutableList<Consumer<PluginRuntime>> = ArrayList()
 
 	/**
 	 * 添加冲突解决建议：当多个插件提供同一 `provides` 时，优先选择 [pluginId]。
@@ -51,58 +51,64 @@ class JadxPluginManager(private val decompiler: JadxDecompiler) {
 
 	/** 通过加载器加载全部插件，并解析出可用集合。 */
 	fun load(pluginLoader: JadxPluginLoader) {
-		allPlugins.clear()
+		val plugins = pluginLoader.load()
+
+		// 允许重复 load（passes 重载时会用到），但保留通过 'register' 方法添加的插件
+		val loadedIds = plugins.map { p -> p.getPluginInfo().getPluginId() }.toSet()
+		allPluginsSet.removeIf { context -> loadedIds.contains(context.pluginId) }
+
 		val verifyRequiredVersion = VerifyRequiredVersion()
-		for (plugin in pluginLoader.load()) {
+		for (plugin in plugins) {
 			addPlugin(plugin, verifyRequiredVersion)
 		}
 		resolve()
 	}
 
 	/** 注册单个插件（已存在或版本不兼容时跳过），并重新解析。 */
-	fun register(plugin: JadxPlugin) {
+	fun register(plugin: JadxPlugin): PluginRuntime? {
 		requireNotNull(plugin)
 		val addedPlugin = addPlugin(plugin, VerifyRequiredVersion())
 		if (addedPlugin == null) {
-			LOG.debug("Can't register plugin, it was disabled: {}", plugin.getPluginInfo().getPluginId())
-			return
+			LOG.debug("Plugin not registered: {}", plugin.getPluginInfo().getPluginId())
+			return null
 		}
-		LOG.debug("Register plugin: {}", addedPlugin.getPluginId())
+		LOG.debug("Register plugin: {}", addedPlugin.pluginId)
 		resolve()
+		return addedPlugin
 	}
 
 	/**
-	 * 把插件包装为 [PluginContext] 并加入 `allPlugins`。
+	 * 把插件包装为 [PluginRuntime] 并加入 `allPlugins`。
 	 *
 	 * @return 插件被禁用或版本不兼容时返回 null
 	 */
-	private fun addPlugin(plugin: JadxPlugin, verifyRequiredVersion: VerifyRequiredVersion): PluginContext? {
-		val pluginContext = PluginContext(decompiler, pluginsData, plugin)
-		if (disabledPlugins.contains(pluginContext.getPluginId())) {
+	private fun addPlugin(plugin: JadxPlugin, verifyRequiredVersion: VerifyRequiredVersion): PluginRuntime? {
+		val pluginRuntime = PluginRuntime(plugin, jadxArgs)
+		if (disabledPlugins.contains(pluginRuntime.pluginId)) {
 			return null
 		}
-		val requiredJadxVersion = pluginContext.getPluginInfo().getRequiredJadxVersion()
+		val requiredJadxVersion = pluginRuntime.pluginInfo.getRequiredJadxVersion()
 		if (!verifyRequiredVersion.isCompatible(requiredJadxVersion)) {
 			LOG.warn(
 				"Plugin '{}' not loaded: requires '{}' jadx version which it is not compatible with current: {}",
-				pluginContext,
+				pluginRuntime,
 				requiredJadxVersion,
 				verifyRequiredVersion.jadxVersion,
 			)
 			return null
 		}
-		LOG.debug("Loading plugin: {}", pluginContext)
-		if (!allPlugins.add(pluginContext)) {
-			throw IllegalArgumentException("Duplicate plugin id: " + pluginContext + ", class " + plugin.javaClass)
+		LOG.debug("Loading plugin: {}", pluginRuntime)
+		if (!allPluginsSet.add(pluginRuntime)) {
+			throw IllegalArgumentException("Duplicate plugin id: " + pluginRuntime + ", class " + plugin.javaClass)
 		}
-		addPluginListeners.forEach { l -> l(pluginContext) }
-		return pluginContext
+		addPluginListeners.forEach { l -> l.accept(pluginRuntime) }
+		return pluginRuntime
 	}
 
 	/** 按插件 id 卸载，并重新解析。 */
 	fun unload(pluginId: String): Boolean {
-		val result = allPlugins.removeIf { context ->
-			if (context.getPluginId() == pluginId) {
+		val result = allPluginsSet.removeIf { context ->
+			if (context.pluginId == pluginId) {
 				LOG.debug("Unload plugin: {}", pluginId)
 				true
 			} else {
@@ -112,10 +118,9 @@ class JadxPluginManager(private val decompiler: JadxDecompiler) {
 		resolve()
 		return result
 	}
+	val allPlugins: SortedSet<PluginRuntime> get() = allPluginsSet
 
-	val allPluginContexts: SortedSet<PluginContext> get() = allPlugins
-
-	val resolvedPluginContexts: SortedSet<PluginContext> get() = resolvedPlugins
+	val resolvedPlugins: SortedSet<PluginRuntime> get() = resolvedPluginsSet
 
 	/**
 	 * 解析插件冲突：对每个 `provides` 分组，若只有一个插件则直接采用；
@@ -123,15 +128,15 @@ class JadxPluginManager(private val decompiler: JadxDecompiler) {
 	 */
 	@Synchronized
 	private fun resolve() {
-		val provides: Map<String, List<PluginContext>> = allPlugins.groupBy { p -> p.getPluginInfo().getProvides() }
-		val resolved = ArrayList<PluginContext>(provides.size)
+		val provides: Map<String, List<PluginRuntime>> = allPluginsSet.groupBy { p -> p.pluginInfo.getProvides() }
+		val resolved = ArrayList<PluginRuntime>(provides.size)
 		provides.forEach { (provide, list) ->
 			if (list.size == 1) {
 				resolved.add(list[0])
 			} else {
 				val suggestion = provideSuggestions[provide]
 				if (suggestion != null) {
-					list.firstOrNull { p -> p.getPluginId() == suggestion }
+					list.firstOrNull { p -> p.pluginId == suggestion }
 						?.let { resolved.add(it) }
 				} else {
 					val selected = list[0]
@@ -140,58 +145,61 @@ class JadxPluginManager(private val decompiler: JadxDecompiler) {
 				}
 			}
 		}
-		resolvedPlugins.clear()
-		resolvedPlugins.addAll(resolved)
+		resolvedPluginsSet.clear()
+		resolvedPluginsSet.addAll(resolved)
 	}
 
 	/** 初始化全部插件。 */
-	fun initAll() {
-		init(allPlugins)
+	fun initAll(decompiler: JadxDecompiler) {
+		init(decompiler, allPluginsSet)
 	}
 
 	/** 仅初始化已解析的插件。 */
-	fun initResolved() {
-		init(resolvedPlugins)
+	fun initResolved(decompiler: JadxDecompiler) {
+		init(decompiler, resolvedPluginsSet)
 	}
 
 	/** 依次初始化给定插件集合：注入默认上下文、调用 init，最后校验选项描述。 */
-	fun init(pluginContexts: SortedSet<PluginContext>) {
+	fun init(decompiler: JadxDecompiler, plugins: SortedSet<PluginRuntime>) {
 		val defAppContext = buildDefaultAppContext()
-		for (context in pluginContexts) {
+		for (pluginRuntime in plugins) {
 			try {
-				if (context.getAppContext() == null) {
-					context.setAppContext(defAppContext)
+				if (pluginRuntime.appContext == null) {
+					pluginRuntime.appContext = defAppContext
 				}
-				context.init()
+				pluginRuntime.init(PluginContext(decompiler, pluginsData, pluginRuntime))
 			} catch (e: Exception) {
-				LOG.error("Failed to init plugin: {}", context.getPluginId(), e)
+				LOG.error("Failed to init plugin: {}", pluginRuntime.pluginId, e)
 			}
 		}
-		for (context in pluginContexts) {
-			val options = context.getOptions()
-			if (options != null) {
-				verifyOptions(context, options)
+		for (pluginRuntime in plugins) {
+			val context = pluginRuntime.pluginContext
+			if (context != null) {
+				val options = context.getOptions()
+				if (options != null) {
+					verifyOptions(context, options)
+				}
 			}
 		}
 	}
 
 	/** 卸载全部插件。 */
 	fun unloadAll() {
-		unload(allPlugins)
+		unload(allPluginsSet)
 	}
 
 	/** 仅卸载已解析的插件。 */
 	fun unloadResolved() {
-		unload(resolvedPlugins)
+		unload(resolvedPluginsSet)
 	}
 
 	/** 依次卸载给定插件集合，单个失败只记警告。 */
-	fun unload(pluginContexts: SortedSet<PluginContext>) {
-		for (context in pluginContexts) {
+	fun unload(plugins: SortedSet<PluginRuntime>) {
+		for (pluginRuntime in plugins) {
 			try {
-				context.unload()
+				pluginRuntime.unload()
 			} catch (e: Exception) {
-				LOG.warn("Failed to unload plugin: {}", context.getPluginId(), e)
+				LOG.warn("Failed to unload plugin: {}", pluginRuntime.pluginId, e)
 			}
 		}
 	}
@@ -200,7 +208,7 @@ class JadxPluginManager(private val decompiler: JadxDecompiler) {
 	private fun buildDefaultAppContext(): AppContext {
 		val appContext = AppContext()
 		appContext.setGuiContext(null)
-		appContext.setFilesGetter(decompiler.getArgs().filesGetter)
+		appContext.setFilesGetter(jadxArgs.filesGetter)
 		return appContext
 	}
 
@@ -229,13 +237,10 @@ class JadxPluginManager(private val decompiler: JadxDecompiler) {
 		}
 	}
 
-	/** 汇总所有已解析插件注册的代码输入。 */
-	val codeInputs: List<JadxCodeInput> get() = resolvedPluginContexts.flatMap { p -> p.getCodeInputs() }
-
 	/** 注册插件添加监听器，并立即对已存在的插件回调一次。 */
-	fun registerAddPluginListener(listener: (PluginContext) -> Unit) {
+	fun registerAddPluginListener(listener: Consumer<PluginRuntime>) {
 		this.addPluginListeners.add(listener)
 		// 对已添加的插件立即执行一次
-		allPluginContexts.forEach { p -> listener(p) }
+		allPluginsSet.forEach { p -> listener.accept(p) }
 	}
 }
