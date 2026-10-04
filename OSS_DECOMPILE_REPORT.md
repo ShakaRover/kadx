@@ -56,7 +56,24 @@ release 构建一律开启 R8/minify（更贴近真实发布产物，且能覆�
 | architecture-samples release | 3810 | 35 | 82 |
 | uhabits release | 3127 | 6 | 11 |
 
-合计：26,100 个 .java / 156 个错误文件 / 334 处错误，**无卡死、无整类失败**。
+合计：26,100 个 .java / 156 个错误文件，**无卡死、无整类失败**。
+
+**关于「失败方法」的三种口径**（诚实区分，避免误读）：
+
+| 口径 | 数量 | 含义 |
+|------|-----:|------|
+| CLI/API 错误计数（`getErrorsCount()`） | 334 | jadx 内部错误计数的官方口径 |
+| 完整失败方法（`Method not decompiled` dump） | **196** | 整个方法无法生成，输出为字节码 dump + 错误堆栈 |
+| 方法内局部错误注释（`JADX ERROR` 嵌在方法体中） | ~500 | 某个代码区域生成失败，以错误注释替代，方法主体仍在 |
+
+即 **196 个方法（约占全部方法的 0.7%）完全反编译失败**，另约 500 个方法带局部错误注释。
+失败方法的原因 ~93% 是 RegionMakerVisitor 的 Regions count/stack limit 与 StackOverflowError
+（Compose/coroutines 的超大方法），上游同步点 `4e2b8d54` 同样存在。
+
+**应用业务代码归属**：`org.fossify.*`（Calc/Notes）、`net.gsantner.*`（markor，未混淆，失败类全部为
+androidx/kotlinx）、`de.danoeh.*`（AntennaPod）等保留包名的 app 代码**零失败**；Calc/Notes 中 42/44 个
+失败类是 R8 混淆后的 `defpackage` 类（无 mapping 文件，无法精确归因 app/库，但同构建中 app 包名类
+全部保留原名且零失败，间接说明混淆类以库代码为主）；arch 项目整体混淆，归因近似。
 
 **错误分类**（全部 release APK 合计，方法级错误点 694 处，按来源 pass）：
 
