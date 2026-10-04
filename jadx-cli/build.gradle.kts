@@ -55,3 +55,32 @@ tasks.shadowJar {
 	// shadow jar not needed
 	configurations = listOf()
 }
+
+// 对**真实开源项目 APK** 的反编译回归测试（“错误数不得上升”看门狗）。
+// 默认不参与 check/build；需显式指定含 *.apk 的目录：
+//   JADX_REAL_APKS=$PWD/tests/apks ./gradlew :jadx-cli:realApkTest
+//   或 ./gradlew :jadx-cli:realApkTest -PjadxRealApks=$PWD/tests/apks
+// 真实 APK 较大，需要更大的堆（默认 test 堆会 OOM）。
+tasks.named<Test>("test") {
+	// 正常测试不跑真实 APK（体积大、需外部目录）
+	filter { excludeTestsMatching("*RealApkDecompileTest") }
+}
+
+tasks.register<Test>("realApkTest") {
+	description = "Decompile real OSS APKs and assert error baselines (opt-in)"
+	group = "verification"
+	testClassesDirs =
+		sourceSets.test
+			.get()
+			.output.classesDirs
+	classpath = sourceSets.test.get().runtimeClasspath
+	maxHeapSize = "4g"
+	useJUnitPlatform()
+	filter { includeTestsMatching("*RealApkDecompileTest") }
+	outputs.upToDateWhen { false }
+	val apkDir =
+		providers
+			.gradleProperty("jadxRealApks")
+			.orElse(providers.environmentVariable("JADX_REAL_APKS"))
+	apkDir.orNull?.let { systemProperty("jadx.real.apks", it) }
+}

@@ -154,8 +154,24 @@ grep -rhoE "JADX ERROR: [A-Za-z ]+" tests/out/Calculator/sources | sort | uniq -
 
 ## 6. 回归测试
 
+### 自动化：真实 APK 反编译测试（已加入仓库）
+
+`jadx-cli/src/test/kotlin/jadx/cli/RealApkDecompileTest.kt` + `jadx-cli/src/test/resources/real-apk-baseline.properties`：
+用 `JadxDecompiler` API 反编译真实 APK，断言 `getErrorsCount()` 不超过基线（“错误数不得上升”看门狗）。
+
+```bash
+JADX_REAL_APKS=$PWD/tests/apks ./gradlew :jadx-cli:realApkTest
+```
+
+- 默认跳过（真实 APK 不入库）；需显式指定 APK 目录。
+- 已从普通 `test` 任务中排除，不拖慢 `./gradlew build`。
+- 当前基线：`Calculator-calculator-10-foss-debug.apk = 342`
+  （注意：这是 `JadxDecompiler.getErrorsCount()` 的口径；CLI 日志里的 “finished with errors, count: N” 统计口径不同）。
+
+### 单元回归
+
 - `jadx-core/src/test/kotlin/jadx/core/JadxStaticApiTest.kt` —— 锁定 `Jadx` 插件可见成员的 JVM 静态表面（覆盖问题 1）。
-- 问题 2 由本次 OSS 反编译流程覆盖（其触发需要特定 Compose 字节码形态，难以用最小 fixture 稳定复现）；已在此文档记录触发类与堆栈，便于后续补充最小复现。
+- 问题 2 由上述真实 APK 流程覆盖（其触发需要特定 Compose 字节码形态，难以用最小 fixture 稳定复现）；已在此文档记录触发类与堆栈，便于后续补充最小复现。
 
 ## 7. 后续建议
 

@@ -4,7 +4,23 @@
 
 详细结果见仓库根目录的 [`OSS_DECOMPILE_REPORT.md`](../OSS_DECOMPILE_REPORT.md)。
 
-## 用法
+## 自动化回归测试（推荐）
+
+仓库内置了针对真实 APK 的反编译回归测试 `RealApkDecompileTest`
+（`jadx-cli/src/test/kotlin/jadx/cli/RealApkDecompileTest.kt`），用于「错误数不得上升」看门狗：
+
+```bash
+# 先构建 APK（见上）
+JADX_REAL_APKS=$PWD/tests/apks ./gradlew :jadx-cli:realApkTest
+# 或
+./gradlew :jadx-cli:realApkTest -PjadxRealApks=$PWD/tests/apks
+```
+
+- 只检查 `jadx-cli/src/test/resources/real-apk-baseline.properties` 中有条目的 APK（键=文件名，值=允许的最大错误数）。
+- 修复问题后应**下调**基线值。
+- 该任务默认不参与 `build`/`check`（真实 APK 大、需外部目录），且已从普通 `test` 任务中排除。
+
+## 用法（手动）
 
 ```bash
 # 1) 构建 jadx CLI
