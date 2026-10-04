@@ -204,7 +204,7 @@ class ClassInheritanceGraphDialog(mainWindow: MainWindow, private val cls: Class
 		}
 		val themeOutOfFocus = UIManager.getColor("Component.disabledBorderColor")
 		val outOfFocus = "color=" + DotGraphUtils.formatColor(themeOutOfFocus)
-		val name = DotGraphUtils.interfaceFormatName(argType, cls, longNames)
+		val name = DotGraphUtils.interfaceFormatName(argType, cls.root(), longNames)
 		f.format("Node_%d [ label=\"{%s}\" %s %s]\n", nodeID, DotGraphUtils.toDotNodeName(name), outOfFocus, extra)
 		return nodeID
 	}

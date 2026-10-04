@@ -28,7 +28,7 @@ class JadxCodeComment(
 	// 私有属性（不生成 JVM 访问器），Gson 通过反射直接读写这些字段
 	private var nodeRef: IJavaNodeRef? = nodeRef
 	private var codeRef: IJavaCodeRef? = codeRef
-	private var comment: String? = comment
+	private var comment: String? = comment?.replace("*/", "* /")
 	private var style: CommentStyle = style
 
 	/** 只挂到节点上、使用默认行注释风格。 */
@@ -55,7 +55,8 @@ class JadxCodeComment(
 	override fun getComment(): String = checkNotNull(comment) { "comment is not set" }
 
 	fun setComment(comment: String) {
-		this.comment = comment
+		// 清洗用户注释，避免其中的 "*/" 提前结束块注释
+		this.comment = comment.replace("*/", "* /")
 	}
 
 	override fun getStyle(): CommentStyle = style

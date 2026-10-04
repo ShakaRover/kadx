@@ -20,6 +20,7 @@ import jadx.core.dex.nodes.IContainer
 import jadx.core.dex.nodes.IRegion
 import jadx.core.dex.nodes.InsnNode
 import jadx.core.dex.nodes.MethodNode
+import jadx.core.dex.nodes.RootNode
 import jadx.core.dex.regions.SwitchRegion
 import jadx.core.dex.regions.SynchronizedRegion
 import jadx.core.dex.regions.TryCatchRegion
@@ -431,12 +432,13 @@ class DotGraphUtils {
 
 		fun methodFormatName(methodNode: MethodNode, longName: Boolean): String {
 			if (longName) {
+				val root = methodNode.root()
 				val parentClass = methodNode.parentClass
 				val argTypes = methodNode.argTypes
 				val retType = methodNode.returnType
 				return classFormatName(parentClass, true) + "." + methodFormatName(methodNode, false) +
-					'(' + Utils.listToString(argTypes, ", ") { e -> argTypeFormatName(e, parentClass, true) } + "):" +
-					argTypeFormatName(retType, parentClass, true)
+					'(' + Utils.listToString(argTypes, ", ") { e -> argTypeFormatName(e, root, true) } + "):" +
+					argTypeFormatName(retType, root, true)
 			}
 			return methodNode.alias
 		}
@@ -452,14 +454,19 @@ class DotGraphUtils {
 			return name
 		}
 
-		fun interfaceFormatName(iface: ArgType, cls: ClassNode, longName: Boolean): String {
-			val ifaceInfo = ClassInfo.fromType(cls.root(), iface)
+		fun interfaceFormatName(iface: ArgType, root: RootNode, longName: Boolean): String {
+			val ifaceInfo = ClassInfo.fromType(root, iface)
 			return if (longName) ifaceInfo.aliasFullName else ifaceInfo.aliasShortName
 		}
 
-		fun argTypeFormatName(arg: ArgType, cls: ClassNode, longName: Boolean): String {
+		fun rawNameFormatName(rawName: String, root: RootNode, longName: Boolean): String {
+			val ifaceInfo = ClassInfo.fromName(root, rawName)
+			return if (longName) ifaceInfo.aliasFullName else ifaceInfo.aliasShortName
+		}
+
+		fun argTypeFormatName(arg: ArgType, root: RootNode, longName: Boolean): String {
 			if (arg.isObject() && !arg.isGenericType()) {
-				val superCls = cls.root().resolveClass(arg)
+				val superCls = root.resolveClass(arg)
 				if (superCls != null) {
 					return classFormatName(superCls, longName)
 				}

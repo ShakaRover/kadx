@@ -1,6 +1,7 @@
 package jadx.core.dex.visitors
 
 import jadx.api.plugins.input.data.attributes.JadxAttrType
+import jadx.core.codegen.ClassGen
 import jadx.core.dex.attributes.AFlag
 import jadx.core.dex.attributes.AType
 import jadx.core.dex.attributes.FieldInitInsnAttr
@@ -277,35 +278,33 @@ class ExtractFieldInit : AbstractVisitor() {
 
 		private fun fixFieldsOrder(cls: ClassNode, inits: List<FieldInitInfo>) {
 			val orderedFields = processFieldsDependencies(cls, inits)
-			applyFieldsOrder(cls, orderedFields)
+
+			// 应用源码行号与别名排序（与方法、内部类相同的排序方式）
+			val clsFields = cls.fields as MutableList<FieldNode>
+			val sortingMap = HashMap<FieldNode, String>()
+			clsFields.sortWith(
+				compareBy<FieldNode> { it.sourceLine }
+					.thenBy { sortingMap.getOrPut(it) { ClassGen.getShortAlias(it) } },
+			)
+
+			if (orderedFields.isNotEmpty()) {
+				// 检查是否已经有序
+				val ordered = Collections.indexOfSubList(clsFields, orderedFields) != -1
+				if (!ordered) {
+					clsFields.removeAll(orderedFields)
+					clsFields.addAll(orderedFields)
+				}
+			}
 		}
 
 		private fun processFieldsDependencies(cls: ClassNode, inits: List<FieldInitInfo>): List<FieldNode> {
-			val orderedFields = Utils.collectionMap(inits) { v -> v.fieldNode }
 			// 收集依赖字段
-			val deps = HashMap<FieldNode, MutableList<FieldNode>>(inits.size)
-			for (initInfo in inits) {
-				val insn = initInfo.putInsn
-				val staticField = insn.type == InsnType.SPUT
-				val useType = if (staticField) InsnType.SGET else InsnType.IGET
-				insn.visitInsns(
-					{ subInsn ->
-						if (subInsn.type == useType) {
-							val fieldInfo = (subInsn as IndexInsnNode).index as FieldInfo
-							if (fieldInfo.declClass == cls.classInfo) {
-								val depField = cls.searchField(fieldInfo)
-								if (depField != null) {
-									deps.getOrPut(initInfo.fieldNode) { ArrayList() }.add(depField)
-								}
-							}
-						}
-					},
-				)
-			}
+			val deps = buildFieldDeps(cls, inits)
 			if (deps.isEmpty()) {
-				return orderedFields
+				return Collections.emptyList()
 			}
 			// 构建新列表，把依赖字段放到使用字段之前
+			val orderedFields = Utils.collectionMap(inits) { v -> v.fieldNode }
 			val result = ArrayList<FieldNode>()
 			for (field in orderedFields) {
 				val idx = result.indexOf(field)
@@ -338,14 +337,27 @@ class ExtractFieldInit : AbstractVisitor() {
 			return result
 		}
 
-		private fun applyFieldsOrder(cls: ClassNode, orderedFields: List<FieldNode>) {
-			val clsFields = cls.fields as MutableList<FieldNode>
-			// 检查是否已经有序
-			val ordered = Collections.indexOfSubList(clsFields, orderedFields) != -1
-			if (!ordered) {
-				clsFields.removeAll(orderedFields)
-				clsFields.addAll(orderedFields)
+		private fun buildFieldDeps(cls: ClassNode, inits: List<FieldInitInfo>): Map<FieldNode, MutableList<FieldNode>> {
+			val deps = HashMap<FieldNode, MutableList<FieldNode>>(inits.size)
+			for (initInfo in inits) {
+				val insn = initInfo.putInsn
+				val staticField = insn.type == InsnType.SPUT
+				val useType = if (staticField) InsnType.SGET else InsnType.IGET
+				insn.visitInsns(
+					{ subInsn ->
+						if (subInsn.type == useType) {
+							val fieldInfo = (subInsn as IndexInsnNode).index as FieldInfo
+							if (fieldInfo.declClass == cls.classInfo) {
+								val depField = cls.searchField(fieldInfo)
+								if (depField != null) {
+									deps.getOrPut(initInfo.fieldNode) { ArrayList() }.add(depField)
+								}
+							}
+						}
+					},
+				)
 			}
+			return deps
 		}
 
 		private fun compareFieldInits(base: List<FieldInitInfo>, other: List<FieldInitInfo>): Boolean {
@@ -356,7 +368,29 @@ class ExtractFieldInit : AbstractVisitor() {
 			for (i in 0 until count) {
 				val baseInsn = base[i].putInsn
 				val otherInsn = other[i].putInsn
-				if (!baseInsn.isSame(otherInsn)) {
+				if (!sameFieldInit(baseInsn, otherInsn)) {
+					return false
+				}
+			}
+			return true
+		}
+
+		private fun sameFieldInit(first: InsnNode, second: InsnNode): Boolean {
+			if (!first.isSame(second)) {
+				return false
+			}
+			for (i in 0 until first.argsCount) {
+				val firstArg = first.getArg(i)
+				val secondArg = second.getArg(i)
+				// 构造函数可能对同一实例使用不同寄存器 / SSA 变量
+				if (firstArg.isThis() && secondArg.isThis()) {
+					continue
+				}
+				if (firstArg.isInsnWrap && secondArg.isInsnWrap) {
+					if (!sameFieldInit((firstArg as InsnWrapArg).wrapInsn, (secondArg as InsnWrapArg).wrapInsn)) {
+						return false
+					}
+				} else if (firstArg != secondArg) {
 					return false
 				}
 			}
@@ -385,6 +419,9 @@ class ExtractFieldInit : AbstractVisitor() {
 				InsnNode.wrapArg(fldArg)
 			}
 			field.addAttr(FieldInitInsnAttr(mth, assignInsn))
+			if (putInsn.sourceLine != 0) {
+				field.setSourceLine(putInsn.sourceLine)
+			}
 		}
 	}
 }

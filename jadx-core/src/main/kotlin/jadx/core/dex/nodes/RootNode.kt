@@ -19,6 +19,7 @@ import jadx.api.plugins.pass.types.JadxPreparePass
 import jadx.core.Jadx
 import jadx.core.ProcessClass
 import jadx.core.clsp.ClspGraph
+import jadx.core.dex.attributes.AttrNode
 import jadx.core.dex.attributes.AttributeStorage
 import jadx.core.dex.info.ClassInfo
 import jadx.core.dex.info.ConstStorage
@@ -52,7 +53,7 @@ import jadx.core.utils.DebugChecks.insertPasses as insertDebugPasses
 class RootNode private constructor(
 	decompilerRef: JadxDecompiler?,
 	jadxArgs: JadxArgs,
-) {
+) : AttrNode() {
 	constructor(decompiler: JadxDecompiler) : this(decompiler, decompiler.getArgs())
 
 	/**

@@ -131,6 +131,13 @@ object ListUtils {
 		return list
 	}
 
+	fun <T> concatSetsToList(first: Set<T>, second: Set<T>): List<T> {
+		val list = ArrayList<T>(first.size + second.size)
+		list.addAll(first)
+		list.addAll(second)
+		return list
+	}
+
 	/**
 	 * 把旧元素替换为新元素。
 	 * 兼容 null 与不可变空列表（`Collections.emptyList()` 产生的对象）。

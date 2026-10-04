@@ -173,6 +173,11 @@ class TestI18n {
 			"script.log",
 			"script.format",
 			"script.check",
+			// keys for GUI features ported from upstream in a later sync step (S3)
+			"tree.filter",
+			"popup.copy_smali_reference",
+			"graph_viewer.inheritance_graph.distance",
+			"graph_viewer.inheritance_graph.siblings",
 		)
 
 		private val NLS_STR_USAGE = Pattern.compile("NLS\\.str\\(\"([\\w._]*)\"[,)]")

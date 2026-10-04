@@ -5,6 +5,7 @@ import jadx.api.ICodeInfo
 import jadx.api.ICodeWriter
 import jadx.api.JadxArgs
 import jadx.api.args.IntegerFormat
+import jadx.api.metadata.ICodeAnnotation
 import jadx.api.metadata.annotations.NodeEnd
 import jadx.api.plugins.input.data.AccessFlags
 import jadx.api.plugins.input.data.annotations.EncodedType
@@ -21,6 +22,7 @@ import jadx.core.dex.attributes.nodes.NotificationAttrNode
 import jadx.core.dex.attributes.nodes.SkipMethodArgsAttr
 import jadx.core.dex.info.AccessInfo
 import jadx.core.dex.info.ClassInfo
+import jadx.core.dex.info.FieldInfo
 import jadx.core.dex.instructions.args.ArgType
 import jadx.core.dex.instructions.args.LiteralArg
 import jadx.core.dex.instructions.args.PrimitiveType
@@ -36,6 +38,7 @@ import jadx.core.utils.android.AndroidResourcesUtils
 import jadx.core.utils.exceptions.CodegenException
 import jadx.core.utils.exceptions.JadxRuntimeException
 import java.util.ArrayList
+import java.util.HashMap
 import java.util.HashSet
 import java.util.Objects
 
@@ -285,7 +288,13 @@ class ClassGen(
 		nodes.addAll(cls.innerClasses)
 		nodes.addAll(cls.methods)
 		nodes.removeIf { node -> skipNode(node) }
-		nodes.sortBy { it.sourceLine }
+		// 按源码行号排序，其次内部类优先，最后按别名稳定排序（同方法/内部类的排序方式）
+		val sortingCache = HashMap<NotificationAttrNode, String>()
+		nodes.sortWith(
+			compareBy<NotificationAttrNode> { it.sourceLine }
+				.thenBy { if (it.annType == ICodeAnnotation.AnnType.CLASS) 0 else 1 }
+				.thenBy { sortingCache.getOrPut(it) { getShortAlias(it) } },
+		)
 		for (node in nodes) {
 			if (node is ClassNode) {
 				addInnerClass(clsCode, node)
@@ -766,6 +775,29 @@ class ClassGen(
 	val imports: Set<ClassInfo> get() = parentGenRef?.imports ?: importsSet
 
 	companion object {
+		/** 计算节点用于稳定排序的短别名（类短名 / 方法签名 / 字段名:类型）。 */
+		@JvmStatic
+		fun getShortAlias(node: NotificationAttrNode): String = when (node.annType) {
+			ICodeAnnotation.AnnType.CLASS -> (node as ClassNode).classInfo.aliasShortName
+
+			ICodeAnnotation.AnnType.METHOD -> {
+				val mth = node as MethodNode
+				val root = mth.root()
+				val args = mth.methodInfo.argumentsTypes.joinToString("") { type ->
+					TypeGen.signature(ArgType.tryToResolveClassAlias(root, type))
+				}
+				mth.alias + '(' + args + ')' +
+					TypeGen.signature(ArgType.tryToResolveClassAlias(root, mth.methodInfo.returnType))
+			}
+
+			ICodeAnnotation.AnnType.FIELD -> {
+				val fldInfo = (node as FieldNode).fieldInfo
+				fldInfo.alias + ':' + TypeGen.signature(ArgType.tryToResolveClassAlias(node.root(), fldInfo.type))
+			}
+
+			else -> throw IllegalArgumentException("Unexpected type: " + node.annType)
+		}
+
 		private fun isBothClassesInOneTopClass(useCls: ClassInfo, extClsInfo: ClassInfo): Boolean {
 			val a = useCls.topParentClass
 			val b = extClsInfo.topParentClass

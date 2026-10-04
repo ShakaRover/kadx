@@ -19,6 +19,6 @@ class TestSwitchInLoop9 : IntegrationTest() {
 			.containsOne("case 1:")
 			.containsOne("while (")
 			.containsOne("default")
-			.containsOne("327")
+			.containsOne("i += 327;")
 	}
 }

@@ -70,6 +70,10 @@ class ClspGraph(private val root: RootNode) {
 
 	fun getClsDetails(type: ArgType): ClspClass? = checkNotNull(nameMap)[type.getObject()]
 
+	fun getClsDetails(fullClsName: String): ClspClass? = checkNotNull(nameMap)[fullClsName]
+
+	fun getClsNameMap(): Map<String, ClspClass>? = nameMap
+
 	@Nullable
 	fun getMethodDetails(methodInfo: MethodInfo): IMethodDetails? {
 		val cls = checkNotNull(nameMap)[methodInfo.declClass.rawName] ?: return null
