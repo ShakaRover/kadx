@@ -15,6 +15,7 @@ import jadx.core.dex.nodes.IRegion
 import jadx.core.dex.nodes.InsnContainer
 import jadx.core.dex.nodes.InsnNode
 import jadx.core.dex.nodes.MethodNode
+import java.util.BitSet
 import jadx.core.dex.regions.Region
 import jadx.core.dex.regions.conditions.IfCondition
 import jadx.core.dex.regions.conditions.IfInfo
@@ -162,6 +163,7 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 		}
 
 		// getPathCross 可能找不到 outBlock（例如一个分支有 return），需进一步检查
+		// Attempt four: 仍无 outBlock 时，按 try 作用域边界回退（上游 #2791）
 		if (info.getOutBlock() == null) {
 			val scopeOutBlockThen = findScopeOutBlock(info.thenBlock)
 			val scopeOutBlockElse = findScopeOutBlock(info.elseBlock)
@@ -244,6 +246,7 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 				return null
 			}
 
+			// Attempt one: 两分支支配边界的交集存在唯一块 —— 直接采用
 			val thenDomFrontier = BlockUtils.newBlocksBitSet(mth)
 			thenDomFrontier.or(checkNotNull(thenBlock.domFrontier))
 			thenDomFrontier.set(thenBlock.pos)
@@ -261,42 +264,67 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 				return oneBlock
 			}
 
+			// Attempt two: 两分支支配边界并集中的候选汇聚块
 			val union = BlockUtils.newBlocksBitSet(mth)
 			union.or(checkNotNull(thenBlock.domFrontier))
 			union.or(checkNotNull(elseBlock.domFrontier))
 			union.clear(checkNotNull(mth.exitBlock).pos)
-
 			val candidates = BlockUtils.newBlocksBitSet(mth)
 			for (candidate in BlockUtils.bitSetToBlocks(mth, union)) {
 				if (isCandidateForOutBlock(mth, thenBlock, elseBlock, candidate)) {
 					candidates.set(candidate.pos)
 				}
 			}
-
 			val bottom = BlockUtils.getBottomBlock(BlockUtils.bitSetToBlocks(mth, candidates), true)
 			if (bottom != null) {
+				// 候选可到达路径交叉块、且交叉块不可回达候选时，候选只是中间伪汇聚——
+				// 其「两分支可达」经由非分支作用域路径（循环回边/汇聚后路径）成立，
+				// 真正的边界是更远的交叉块。取伪汇聚会把 outBlock 提前到分支块自身或
+				// 中间块，区域栈边界失效、块被指数级重复处理
+				// （CoreTextFieldKt：511 块 → 22.8 万区域节点，反编译超时）。
+				val cross = BlockUtils.getPathCross(mth, thenBlock, elseBlock)
+				if (cross != null && BlockUtils.isPathExists(bottom, cross) && !BlockUtils.isPathExists(cross, bottom)) {
+					return cross
+				}
 				return bottom
 			}
 
-			// 回退：再次使用路径交叉
-			return BlockUtils.getPathCross(mth, thenBlock, elseBlock)
+			// Attempt three: 路径交叉
+			val cross = BlockUtils.getPathCross(mth, thenBlock, elseBlock)
+			if (cross != null) {
+				return cross
+			}
+			return null
 		}
 
-		fun isCandidateForOutBlock(mth: MethodNode, thenBlock: BlockNode, elseBlock: BlockNode, candidate: BlockNode): Boolean {
+
+		private fun isCandidateForOutBlock(mth: MethodNode, thenBlock: BlockNode, elseBlock: BlockNode, candidate: BlockNode): Boolean {
 			if (candidate.predecessors.size < 2) {
 				return false
 			}
-
 			val coverageThenPreds = BlockUtils.newBlocksBitSet(mth)
 			val coverageElsePreds = BlockUtils.newBlocksBitSet(mth)
-
 			if (candidate === elseBlock) {
 				coverageElsePreds.set(candidate.pos)
 			}
 			if (candidate === thenBlock) {
 				coverageThenPreds.set(candidate.pos)
 			}
-
+			// 守卫：候选本身就是某个分支块，且另一分支可经「干净路径」到达一个被两分支同时支配的前驱
+			// ——说明该前驱位于真汇聚点下游（分支早已重汇聚，此候选是循环回边回卷出的重入口）。
+			// 接受它会把 outBlock 拉回分支块自身，区域栈边界失效、块被反复重复处理
+			// （CoreTextFieldKt：511 块 → 22.8 万区域节点，反编译超时）。
+			// 仅被支配但无干净路径（纯回边可达）的前驱无害，不拒绝。
+			if (candidate === elseBlock || candidate === thenBlock) {
+				val otherBlock = if (candidate === elseBlock) thenBlock else elseBlock
+				for (pred in candidate.predecessors) {
+					if (thenBlock.isDominator(pred) && elseBlock.isDominator(pred) &&
+						BlockUtils.isPathExists(otherBlock, pred)
+					) {
+						return false
+					}
+				}
+			}
 			for (pred in candidate.predecessors) {
 				if (BlockUtils.isPathExists(thenBlock, pred)) {
 					coverageThenPreds.set(pred.pos)
@@ -308,13 +336,32 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 			if (coverageElsePreds.cardinality() == 0 || coverageThenPreds.cardinality() == 0) {
 				return false
 			}
-
 			val coverageElsePred = BlockUtils.bitSetToOneBlock(mth, coverageElsePreds)
 			val coverageThenPred = BlockUtils.bitSetToOneBlock(mth, coverageThenPreds)
 			if (coverageElsePred != null && coverageElsePred === coverageThenPred) {
 				return false
 			}
 			return true
+		}
+
+		/** 取「可到达其余所有候选」的最先汇聚点；候选间无全到达关系时返回 null（回退 Attempt three） */
+		private fun getFirstMergeBlock(candidates: List<BlockNode>): BlockNode? {
+			if (candidates.size <= 1) {
+				return candidates.firstOrNull()
+			}
+			for (top in candidates) {
+				var topOk = true
+				for (other in candidates) {
+					if (other !== top && !BlockUtils.isAnyPathExists(top, other)) {
+						topOk = false
+						break
+					}
+				}
+				if (topOk) {
+					return top
+				}
+			}
+			return null
 		}
 
 		private fun isBadBranchBlock(info: IfInfo, block: BlockNode): Boolean {

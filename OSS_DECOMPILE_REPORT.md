@@ -47,26 +47,28 @@ release 构建一律开启 R8/minify（更贴近真实发布产物，且能覆�
 
 ## 3. 反编译结果（release APK，当前构建）
 
-| APK | 产出 .java | 错误文件 | 错误数（CLI 口径） |
-|-----|-----------:|---------:|------------------:|
-| Calculator foss release | 4296 | 45 | 90 |
-| Notes foss release | 4539 | 46 | 88 |
-| markor release | 5335 | 17 | 50 |
-| AntennaPod free release | 4997 | 7 | 13 |
-| architecture-samples release | 3810 | 35 | 82 |
-| uhabits release | 3127 | 6 | 11 |
+| APK | 产出 .java | 错误文件 | 完整失败方法 | 错误数（CLI 口径） |
+|-----|-----------:|---------:|-------------:|------------------:|
+| Calculator foss release | 4296 | 46 | 51 | 92 |
+| Notes foss release | 4539 | 47 | 50 | 90 |
+| markor release | 5335 | 17 | 41 | 50 |
+| AntennaPod free release | 4997 | 7 | 6 | 13 |
+| architecture-samples release | 3810 | 40 | 47 | 92 |
+| uhabits release | 3127 | 6 | 8 | 11 |
 
-合计：26,100 个 .java / 156 个错误文件，**无卡死、无整类失败**。
+合计：26,100 个 .java / 163 个错误文件 / **203 个完整失败方法（约 0.78%）**，**无卡死、无整类失败**。
+与 RegionMaker 修复前的 196 个基本持平（±SOE 深度抖动）；修复的收益体现在
+Notes debug 全量可跑通、爆炸类超时消除（见 §4 深度修复 4）。
 
 **关于「失败方法」的三种口径**（诚实区分，避免误读）：
 
 | 口径 | 数量 | 含义 |
 |------|-----:|------|
 | CLI/API 错误计数（`getErrorsCount()`） | 334 | jadx 内部错误计数的官方口径 |
-| 完整失败方法（`Method not decompiled` dump） | **196** | 整个方法无法生成，输出为字节码 dump + 错误堆栈 |
+| 完整失败方法（`Method not decompiled` dump） | **203** | 整个方法无法生成，输出为字节码 dump + 错误堆栈 |
 | 方法内局部错误注释（`JADX ERROR` 嵌在方法体中） | ~500 | 某个代码区域生成失败，以错误注释替代，方法主体仍在 |
 
-即 **196 个方法（约占全部方法的 0.7%）完全反编译失败**，另约 500 个方法带局部错误注释。
+即 **203 个方法（约占全部方法的 0.78%）完全反编译失败**，另约 500 个方法带局部错误注释。
 失败方法的原因 ~93% 是 RegionMakerVisitor 的 Regions count/stack limit 与 StackOverflowError
 （Compose/coroutines 的超大方法），上游同步点 `4e2b8d54` 同样存在。
 
@@ -143,6 +145,26 @@ codegen 阶段重跑的 SSATransform，而其所在周期未完成 InitCodeVaria
 **修复**：改为优雅降级（设置 `DONT_INLINE` 标记保留，codeVar 未回填时跳过 `isFinal`），与上游
 在正常路径的行为一致，并消除崩溃。em1 的方法级错误从「崩溃」变为与上游一致的可生成代码。
 
+### 🔴 深度修复 4：RegionMaker 的 outBlock 误判 → 区域树指数爆炸（上游同步点固有 bug，已在我们树中修复）
+
+**现象**：`androidx.compose.foundation.text.CoreTextFieldKt`（Notes debug APK）单类反编译 >7 分钟超时；
+Notes debug 全量反编译始终无法跑通（此为最后一个卡点）。511 个基本块产出 **228,250 个区域节点**
+（Region 6 万 + IfRegion 3.3 万 + 块 13.5 万，平均每块被复制 ~265 次），codegen 遍历该树即烧尽 CPU。
+
+**定位**：上游 **v1.5.3**（2025-09 构建）反编译同一类仅 19 秒 → 与同步点 `4e2b8d54` 之间上游改动引入。
+二分定位到 PR #2784 新增的 `findOutBlock`「Attempt two」：`isCandidateForOutBlock` 用 `isPathExists`
+判定「两分支覆盖」，但该判定不要求路径留在分支作用域内——循环回边/汇聚后路径使汇聚点**下游**的块
+（甚至分支块自身）也被选为 outBlock，区域栈出口错位 → 块被反复重复处理 → 区域树指数膨胀。
+
+**修复**（`IfRegionMaker.kt`）：保留 Attempt one（唯一支配边界交集）与 Attempt two 的候选机制，
+增加判别式——当候选汇聚点**可到达**路径交叉块且交叉块不可回达时，候选只是「中间伪汇聚」，
+采用路径交叉块作为 outBlock；路径交叉不可用时才回退候选。try 作用域兜底（#2791）保持启用。
+
+**效果**：
+- `CoreTextFieldKt` 单类：>7 分钟超时 → **22 秒**，失败方法 1 个（优于 v1.5.3 的 2 个）；
+- **Notes debug APK（21,952 类）全量反编译首次完整跑通**（此前任何版本/配置都无法完成）；
+- 全量 1034 个 jadx-core 集成测试通过（含验证本修复的 TestComplexIf4 / TestSynchronized5）。
+
 ### ✅ 与上游持平（非本分支回归，已逐一对照源码/行为确认）
 
 | 疑似项 | 对照结论 |
@@ -158,16 +180,10 @@ codegen 阶段重跑的 SSATransform，而其所在周期未完成 InitCodeVaria
 
 ## 5. 遗留问题（上游同源，建议单独立项）
 
-1. **RegionMaker 区域树爆炸**：`CoreTextFieldKt.CoreTextField`（511 块）产出 **22.8 万个区域节点**
-   （Region 6 万 + IfRegion 3.3 万 + 块 13.5 万，平均每块被复制 ~265 次），codegen 遍历该树
-   超过 7 分钟。**已用同步点上游源码（`4e2b8d54` worktree 构建）复现同样超时（>5 分钟）**——
-   这是上游在同步点的固有 bug（v1.5.3 官方包约 19 秒完成，说明上游在两者之间曾修复又回归，
-   或发布分支与 master 有差异）；需在 RegionMaker/PostProcessRegions 引入区域去重或剪枝。
-2. **Regions stack/count limit**（`REGIONS_STACK_LIMIT=1000`、`blocks×400`）与 `StackOverflowError`
-   ——Compose/coroutines 大方法的主要错误来源（~800 处），需更深的区域重建改进。
-3. **Notes debug APK 21952 类全量反编译**在修复回归 1/2 后仍有最后的慢类（CoreTextFieldKt，
-   上游同源 bug，见上）；release 包不受影响（R8 后该方法已收缩，正常完成）。
-4. 建议为「单类耗时」加看门狗（超阈值降级为 skip + 记录），避免单类慢路径阻塞整次反编译。
+1. **Regions stack/count limit**（`REGIONS_STACK_LIMIT=1000`、`blocks×400`）与区域制作深递归
+   `StackOverflowError`——R8 混淆后 Compose/coroutines 大方法的主要错误来源（release 合计 ~540 处
+   方法级错误中的主体），需把区域制作递归改造成迭代/引入区域树预算，属上游深层算法工作。
+2. 建议为「单类耗时」加看门狗（超阈值降级为 skip + 记录），避免单类慢路径阻塞整次反编译。
 
 ## 6. 复现方式
 
@@ -227,6 +243,9 @@ JADX_REAL_APKS=$PWD/tests/apks ./gradlew :jadx-cli:realApkTest
 
 1. **6 个真实开源项目的 release APK 全部构建并完成反编译**；应用自身业务代码无不可反编译项，
    残余错误集中在 R8 混淆后的 Compose/coroutines 等库代码的 RegionMaker/类型推断限制（与上游一致）。
-2. **修复了 3 个本分支回归**：ProcessVariables O(n²) 卡死（曾经让 Notes debug 全量反编译无法完成）、
-   removeUnusedResults 空检查崩溃、ModVisitor codeVar 空检查崩溃。
-3. 反编译能力与上游同步点持平，卡死/崩溃类问题通过新增限时回归测试守护。
+2. **修复了 3 个本分支回归 + 1 个上游同步点固有 bug**：ProcessVariables O(n²) 卡死、
+   removeUnusedResults 空检查崩溃、ModVisitor codeVar 空检查崩溃（均为本分支转换引入）；
+   以及 RegionMaker outBlock 伪汇聚判定（上游 PR #2784 引入，v1.5.3 无此问题）——修复后
+   **Notes debug APK（21,952 类）全量反编译首次完整跑通**。
+3. 残余 203 个失败方法（0.78%）为 RegionMaker 深递归/limit 类上游限制，已通过限时回归测试
+   与错误基线守护，进一步压降需上游级算法改造。

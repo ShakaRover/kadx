@@ -39,6 +39,9 @@ class RealApkSingleClassTest {
 	private val cases = listOf(
 		// ProcessVariables O(n^2) 挂死回归：修复前 >20min，修复后 ~25s（含加载）
 		Case("Notes-notes-13-foss-debug.apk", "androidx.compose.foundation.text.BasicTextFieldKt", 150, 50),
+		// RegionMaker 区域爆炸回归：上游 Attempt two 伪汇聚候选把 outBlock 拉到分支块自身/中间块，
+		// 修复前 >7min 超时（511 块产出 22.8 万区域节点），修复后 ~22s
+		Case("Notes-notes-13-foss-debug.apk", "androidx.compose.foundation.text.CoreTextFieldKt", 150, 50),
 		// ModVisitor "Code variable not set" 崩溃回归
 		Case("Calculator-release-calculator-10-foss-release.apk", "em1", 120, 10),
 	)
