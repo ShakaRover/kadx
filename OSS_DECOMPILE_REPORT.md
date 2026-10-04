@@ -32,11 +32,17 @@ tests/
 
 | 项目 | 语言 | 结果 |
 |------|------|------|
-| `FossifyOrg/Calculator`（v10） | Kotlin + Jetpack Compose | ✅ 构建成功（foss/core/gplay 三个变体），已反编译 |
-| `FossifyOrg/Notes` | Kotlin + Compose | 已克隆，构建脚本就绪 |
+| `FossifyOrg/Calculator`（v10） | Kotlin + Jetpack Compose | ✅ 构建成功（foss/core/gplay 三个变体），已完整反编译：22245 类 |
+| `FossifyOrg/Notes`（v13） | Kotlin + Compose | ✅ 构建成功；反编译到 **99%（21951/21952）后超时（>20min）**，产出 23532 个 `.java`，错误 111 个文件 |
 | `android/architecture-samples` | Kotlin | 已克隆，构建脚本就绪 |
 
 > Calculator 的 debug APK 含 **22245 个类**，覆盖 Kotlin stdlib、kotlinx.coroutines、AndroidX Compose、Room、Jackson、Glide、jsoup 等大量真实字节码，是很好的压力样本。
+
+### Notes 额外发现
+
+- **有一个类让反编译卡死**：进度停在 `21951 of 21952 (99%)`，20 分钟超时未结束 → 某个 pass 存在**死循环/超慢路径**（待定位，建议后续加「单类超时」看门狗）。
+- 错误分布与 Calculator 同类：`JadxOverflowException` 137、`JadxRuntimeException` 34、代码生成 6、类型推断 3、`StackOverflowError` 2。
+- **App 自身代码（`org.fossify`）仅 2 个错误文件**，其余均为库字节码。
 
 ## 3. 发现与修复
 
@@ -153,6 +159,7 @@ grep -rhoE "JADX ERROR: [A-Za-z ]+" tests/out/Calculator/sources | sort | uniq -
 
 ## 7. 后续建议
 
-1. 继续用 `Notes` / `architecture-samples` 扩充样本，建立**错误数基线**，在 CI 中做「错误数不得上升」的看门狗。
-2. 针对 `Regions stack size limit`（122 处）与 `ArgType.getObject() on UnknownArg`（76 处）立项优化。
-3. 把「插件可见静态面」纳入更系统的守护（`jadx.core.*` 中被插件调用的类）。
+1. 继续用 `architecture-samples` 等扩充样本，建立**错误数基线**，在 CI 中做「错误数不得上升」的看门狗。
+2. **单类超时看门狗**：Notes 出现「99% 卡死 >20min」，需定位该 pass 的死循环/超慢路径（可先用 `--single-class` 二分定位）。
+3. 针对 `Regions stack size limit`（122+137 处）与 `ArgType.getObject() on UnknownArg`（76 处）立项优化。
+4. 把「插件可见静态面」纳入更系统的守护（`jadx.core.*` 中被插件调用的类）。
