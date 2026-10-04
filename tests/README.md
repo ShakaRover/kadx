@@ -2,23 +2,33 @@
 
 用真实开源 Android 项目验证本仓库 jadx 的反编译质量。**所有产物都在仓库内，不使用 `/tmp`。**
 
+当前覆盖 6 个开源项目（release 变体，R8 minify）：
+`FossifyOrg/Calculator`、`FossifyOrg/Notes`、`android/architecture-samples`、
+`AntennaPod/AntennaPod`、`iSoron/uhabits`、`gsantner/markor`。
+
 详细结果见仓库根目录的 [`OSS_DECOMPILE_REPORT.md`](../OSS_DECOMPILE_REPORT.md)。
 
 ## 自动化回归测试（推荐）
 
-仓库内置了针对真实 APK 的反编译回归测试 `RealApkDecompileTest`
-（`jadx-cli/src/test/kotlin/jadx/cli/RealApkDecompileTest.kt`），用于「错误数不得上升」看门狗：
+仓库内置两类真实 APK 回归测试（默认跳过、不参与 `build`/`check`）：
 
 ```bash
-# 先构建 APK（见上）
+# 先构建 jadx CLI
+./gradlew :jadx-cli:installDist
+
+# 跑全部真实 APK 回归（错误基线看门狗 + 已知慢类限时测试）
 JADX_REAL_APKS=$PWD/tests/apks ./gradlew :jadx-cli:realApkTest
-# 或
-./gradlew :jadx-cli:realApkTest -PjadxRealApks=$PWD/tests/apks
 ```
 
-- 只检查 `jadx-cli/src/test/resources/real-apk-baseline.properties` 中有条目的 APK（键=文件名，值=允许的最大错误数）。
-- 修复问题后应**下调**基线值。
-- 该任务默认不参与 `build`/`check`（真实 APK 大、需外部目录），且已从普通 `test` 任务中排除。
+1. `RealApkDecompileTest` —— 全量反编译 APK，断言 `getErrorsCount()` 不超过
+   `jadx-cli/src/test/resources/real-apk-baseline.properties` 中的基线（"错误数不得上升"看门狗）。
+   修复问题后应**下调**基线值。
+2. `RealApkSingleClassTest` —— 对曾导致挂死/崩溃的已知类做**限时单类反编译**
+   （当前覆盖 `BasicTextFieldKt` 的 ProcessVariables O(n²) 挂死回归、`em1` 的 ModVisitor
+   codeVar 崩溃回归）。超时或错误超标即失败。
+
+两个测试都需要 `JADX_REAL_APKS`（或 `-PjadxRealApks=`）指向含真实 `*.apk` 的目录；
+真实 APK 不入库。
 
 ## 用法（手动）
 
@@ -32,13 +42,23 @@ git clone --depth 1 https://github.com/FossifyOrg/Calculator.git
 cd -
 
 # 3) 构建 APK（自动写 local.properties，使用 tests/work 作为 GRADLE_USER_HOME、tests/tmp 作为 TMPDIR）
-bash tests/build-apk.sh Calculator
+#    release 变体（R8 minify）：
+bash tests/build-apk.sh Calculator release assembleFossRelease
+bash tests/build-apk.sh markor release assembleFlavorDefaultRelease
+bash tests/build-apk.sh AntennaPod release :app:assembleFreeRelease \
+    -PreleaseStoreFile=$PWD/tests/work/keystore/oss-test.keystore \
+    -PreleaseStorePassword=oss-test-pass -PreleaseKeyAlias=oss-test -PreleaseKeyPassword=oss-test-pass
+#    debug 变体：
+bash tests/build-apk.sh Calculator debug assembleFossDebug
 
 # 4) 反编译 + 统计错误
 export JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/tests/tmp"
-jadx-cli/build/install/jadx/bin/jadx -d tests/out/Calculator --show-bad-code \
-    tests/apks/Calculator-calculator-10-foss-debug.apk > tests/work/logs/Calculator.log 2>&1
-grep -rl "JADX ERROR" tests/out/Calculator/sources | wc -l
+jadx-cli/build/install/jadx/bin/jadx -d tests/out/Calc-foss-release --show-bad-code \
+    tests/apks/Calculator-release-calculator-10-foss-release.apk > tests/work/logs/dec.log 2>&1
+grep -rl "JADX ERROR" tests/out/Calc-foss-release/sources | wc -l
+
+# 5) 定位卡点类（卡死时最后一行即卡点类）
+jadx-cli/build/install/jadx/bin/jadx --log-level debug --threads-count 4 -d tests/out/x <apk> 2>&1 | grep "Decompiling class:" | tail -1
 ```
 
 ## 目录
@@ -46,11 +66,11 @@ grep -rl "JADX ERROR" tests/out/Calculator/sources | wc -l
 | 目录 | 内容 | 是否入库 |
 |------|------|----------|
 | `oss/` | 克隆的开源项目 | 忽略 |
-| `work/` | Gradle user home、日志 | 忽略 |
+| `work/` | Gradle user home、日志、上游对照源码/二进制 | 忽略 |
 | `tmp/` | 临时目录（替代 `/tmp`） | 忽略 |
 | `apks/` | 构建出的 APK | 忽略 |
 | `out/` | 反编译输出 | 忽略 |
-| `build-apk.sh` | 构建脚本 | **入库** |
+| `build-apk.sh` | 构建脚本（支持 debug/release 变体与附加 gradle 任务/参数） | **入库** |
 
 ## 环境要求
 

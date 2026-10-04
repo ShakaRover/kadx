@@ -62,8 +62,13 @@ class ProcessVariables : AbstractVisitor() {
 		}
 
 		val codeVarUsage = mergeUsageMaps(codeVars, ssaUsageMap)
+		if (codeVarUsage.isEmpty()) {
+			return
+		}
+		// 构建区域树 DFS 序号索引，供声明点检查做 O(1) 区间判断
+		val regionIndex = RegionOrderIndex(checkNotNull(mth.region))
 		for ((codeVar, usageList) in codeVarUsage) {
-			declareVar(mth, codeVar, usageList)
+			declareVar(mth, codeVar, usageList, regionIndex)
 		}
 	}
 
@@ -89,10 +94,14 @@ class ProcessVariables : AbstractVisitor() {
 							}
 							if (remove) {
 								insn.setResult(null)
-								val sv = checkNotNull(ssaVar)
-								mth.removeSVar(sv)
-								for (arg in sv.useList) {
-									arg.resetSSAVar()
+								if (ssaVar == null) {
+									// 上游同路径会 NPE；此处某些寄存器结果尚未绑定 SSA 变量，跳过变量清理即可
+									LOG.debug("Unused result without SSA var in {}: {}", mth, insn)
+								} else {
+									mth.removeSVar(ssaVar)
+									for (arg in ssaVar.useList) {
+										arg.resetSSAVar()
+									}
 								}
 							}
 						}
@@ -184,7 +193,7 @@ class ProcessVariables : AbstractVisitor() {
 	}
 
 	/** 尝试在赋值点声明变量；失败则在方法起始区域声明 */
-	private fun declareVar(mth: MethodNode, codeVar: CodeVar, usageList: List<VarUsage>) {
+	private fun declareVar(mth: MethodNode, codeVar: CodeVar, usageList: List<VarUsage>, regionIndex: RegionOrderIndex) {
 		if (codeVar.isDeclared) {
 			return
 		}
@@ -197,9 +206,15 @@ class ProcessVariables : AbstractVisitor() {
 		if (mergedUsage.assigns.isEmpty() && mergedUsage.uses.isEmpty()) {
 			return
 		}
+		if (LOG.isDebugEnabled && mergedUsage.assigns.size + mergedUsage.uses.size > 2000) {
+			LOG.debug(
+				"HUGE var usage in {}: ssaVars={}, assigns={}, uses={}",
+				mth, codeVar.ssaVars.size, mergedUsage.assigns.size, mergedUsage.uses.size,
+			)
+		}
 
 		// 检查变量能否在某个赋值点声明
-		if (checkDeclareAtAssign(usageList, mergedUsage)) {
+		if (checkDeclareAtAssign(usageList, mergedUsage, regionIndex)) {
 			return
 		}
 
@@ -248,13 +263,15 @@ class ProcessVariables : AbstractVisitor() {
 		}
 		return codeVarUsage
 	}
-	private fun checkDeclareAtAssign(list: List<VarUsage>, mergedUsage: VarUsage): Boolean {
+	private fun checkDeclareAtAssign(list: List<VarUsage>, mergedUsage: VarUsage, regionIndex: RegionOrderIndex): Boolean {
 		if (mergedUsage.assigns.isEmpty()) {
 			return false
 		}
+		val assignsBounds = regionIndex.boundsOf(mergedUsage.assigns)
+		val usesBounds = regionIndex.boundsOf(mergedUsage.uses)
 		for (u in list) {
 			for (assign in u.assigns) {
-				if (canDeclareAt(mergedUsage, assign)) {
+				if (canDeclareAt(mergedUsage, assign, assignsBounds, usesBounds, regionIndex)) {
 					return checkDeclareAtAssign(checkNotNull(u.getVar()))
 				}
 			}
@@ -262,7 +279,13 @@ class ProcessVariables : AbstractVisitor() {
 		return false
 	}
 
-	private fun canDeclareAt(usage: VarUsage, usePlace: UsePlace): Boolean {
+	private fun canDeclareAt(
+		usage: VarUsage,
+		usePlace: UsePlace,
+		assignsBounds: RegionOrderIndex.Bounds,
+		usesBounds: RegionOrderIndex.Bounds,
+		regionIndex: RegionOrderIndex,
+	): Boolean {
 		val region = usePlace.region
 		// 处理变量在多个循环中使用的场景
 		if (region is LoopRegion) {
@@ -276,38 +299,83 @@ class ProcessVariables : AbstractVisitor() {
 		if (region.contains(AFlag.ELSE_IF_CHAIN)) {
 			return false
 		}
-		return isAllUseAfter(usePlace, usage.assigns) &&
-			isAllUseAfter(usePlace, usage.uses)
+		return regionIndex.isAllUseAfter(usePlace, assignsBounds) &&
+			regionIndex.isAllUseAfter(usePlace, usesBounds)
 	}
 
-	/** 检查是否所有 [usePlaces] 都在 [checkPlace] 之后 */
-	private fun isAllUseAfter(checkPlace: UsePlace, usePlaces: List<UsePlace>): Boolean {
-		val region = checkPlace.region
-		val block = checkPlace.block
-		val toCheck: MutableSet<UsePlace> = HashSet(usePlaces)
-		var blockFound = false
-		for (subBlock in region.subBlocks) {
-			if (!blockFound && subBlock === block) {
-				blockFound = true
+	/**
+	 * 方法区域树的 DFS 前序编号索引：
+	 * - [blockOrder]：每个块的前序 DFS 编号；
+	 * - [regionIntervals]：每个区域所覆盖块编号的连续区间（区域树嵌套无重叠，故必为连续区间）。
+	 *
+	 * 用于把「所有使用位置都在 [checkPlace] 之后（含同块）且包含于其区域」的判断
+	 * 从 HashSet + 逐层向上遍历（对超大方法退化为平方级，卡死反编译）降为 O(1) 区间比较：
+	 * 使用位置全部满足 `区间包含 && 编号不小于检查块` ⟺ `min ≥ max(区间首, 检查块) && max ≤ 区间尾`。
+	 */
+	private class RegionOrderIndex(root: IRegion) {
+		private val blockOrder: MutableMap<IBlock, Int> = HashMap()
+		private val regionIntervals: MutableMap<IRegion, IntRange> = HashMap()
+
+		init {
+			walk(root)
+		}
+
+		private fun walk(container: IContainer): IntRange {
+			if (container is IBlock) {
+				val idx = blockOrder.size
+				blockOrder[container] = idx
+				return idx..idx
 			}
-			if (blockFound) {
-				toCheck.removeAll { isContainerContainsUsePlace(subBlock, it) }
-				if (toCheck.isEmpty()) {
-					return true
+			val region = container as IRegion
+			var min = Int.MAX_VALUE
+			var max = Int.MIN_VALUE
+			for (sub in region.subBlocks) {
+				val range = walk(sub)
+				if (range.isEmpty()) {
+					continue
+				}
+				if (range.first < min) {
+					min = range.first
+				}
+				if (range.last > max) {
+					max = range.last
 				}
 			}
+			val interval = if (min > max) IntRange.EMPTY else min..max
+			regionIntervals[region] = interval
+			return interval
 		}
-		return false
-	}
 
-	private fun isContainerContainsUsePlace(subBlock: IContainer, usePlace: UsePlace): Boolean {
-		if (subBlock === usePlace.block) {
-			return true
+		/** 计算 [usePlaces] 的 DFS 编号范围；遇到索引外的块返回“不可证明”界（必定失败）；空列表返回“无约束”界 */
+		fun boundsOf(usePlaces: List<UsePlace>): Bounds {
+			var min = Int.MAX_VALUE
+			var max = Int.MIN_VALUE
+			for (place in usePlaces) {
+				val order = blockOrder[place.block]
+				if (order == null) {
+					return Bounds(Int.MIN_VALUE, Int.MAX_VALUE)
+				}
+				if (order < min) {
+					min = order
+				}
+				if (order > max) {
+					max = order
+				}
+			}
+			return Bounds(min, max)
 		}
-		if (subBlock is IRegion) {
-			return RegionUtils.isRegionContainsRegion(subBlock, usePlace.region)
+
+		/** 检查 [bounds] 覆盖的所有使用位置是否都在 [checkPlace] 之后（含同块）且包含于其所在区域 */
+		fun isAllUseAfter(checkPlace: UsePlace, bounds: Bounds): Boolean {
+			val interval = regionIntervals[checkPlace.region] ?: return false
+			val blockPos = blockOrder[checkPlace.block] ?: return false
+			return bounds.minOrder >= interval.first &&
+				bounds.minOrder >= blockPos &&
+				bounds.maxOrder <= interval.last
 		}
-		return false
+
+		/** DFS 编号范围 [minOrder, maxOrder] */
+		class Bounds(val minOrder: Int, val maxOrder: Int)
 	}
 
 	/** 尝试在 SSA 变量的赋值指令处声明 */

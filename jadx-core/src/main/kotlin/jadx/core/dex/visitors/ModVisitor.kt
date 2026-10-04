@@ -513,7 +513,15 @@ class ModVisitor : AbstractVisitor() {
 		private fun anonymousCallArgMod(arg: InsnArg) {
 			arg.add(AFlag.DONT_INLINE)
 			if (arg.isRegister) {
-				checkNotNull((arg as RegisterArg).sVar).codeVar.isFinal = true
+				val sVar = (arg as RegisterArg).sVar
+				if (sVar != null && sVar.isCodeVarSet()) {
+					sVar.codeVar.isFinal = true
+				} else {
+					LOG.warn(
+						"BUGD: unset codeVar arg={} sVar={} assign={} parentInsn={}",
+						arg, sVar, sVar?.assign?.getParentInsn(), arg.getParentInsn(),
+					)
+				}
 			}
 		}
 

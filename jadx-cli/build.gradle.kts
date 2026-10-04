@@ -64,6 +64,7 @@ tasks.shadowJar {
 tasks.named<Test>("test") {
 	// 正常测试不跑真实 APK（体积大、需外部目录）
 	filter { excludeTestsMatching("*RealApkDecompileTest") }
+	filter { excludeTestsMatching("*RealApkSingleClassTest") }
 }
 
 tasks.register<Test>("realApkTest") {
@@ -77,6 +78,7 @@ tasks.register<Test>("realApkTest") {
 	maxHeapSize = "4g"
 	useJUnitPlatform()
 	filter { includeTestsMatching("*RealApkDecompileTest") }
+	filter { includeTestsMatching("*RealApkSingleClassTest") }
 	outputs.upToDateWhen { false }
 	val apkDir =
 		providers

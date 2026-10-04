@@ -379,6 +379,7 @@ class JadxDecompiler : Closeable {
 				Runnable {
 					for (cls in decompileBatch) {
 						try {
+							LOG.debug("Decompiling class: {}", cls)
 							val clsNode = cls.getClassNode()
 							val code = clsNode.getCode()
 							SaveCode.save(outDir, clsNode, code)
