@@ -1,5 +1,20 @@
 # 上游同步计划（upstream/master @ 4e2b8d54, 2026-10-03）
 
+## ✅ 同步完成（S1–S4）
+
+| 批次 | 内容 | 提交 |
+|------|------|------|
+| S1 | 核心反编译逻辑（ExtractFieldInit #2956、ClassGen #2957、JadxCodeComment #2940、ClspGraph/ListUtils/DotGraphUtils/RootNode…）+ 9 个 i18n + 4 个新测试 | `0ef31249c` |
+| S2 | 插件系统重构 + 新模块 `jadx-gui-api`（PluginRuntime/GuiPluginsManager/GuiPluginsRegistry/IJadxGuiPlugin/NoPluginOptions；删 CloseablePlugins）+ 新测试 | `9a4b63f68` |
+| S3 | GUI 功能（树过滤 #2941、复制 smali 引用 #2955、双向继承图 #2935、hexviewer 块边界 #2948、导出目录记忆 #2954）+ 测试 | `ef940933a` |
+| S4 | 版本目录迁移（`gradle/libs.versions.toml`）+ Gradle 9.7.1 + 工作流 | `fef3ca0a3` |
+
+**结果**：全部 `./gradlew build` 绿；core 测试 1018 → **1027+**；Kotlin 升至 2.4.20、Gradle 9.7.1。
+**保留我们的差异**：协程依赖（catalog 内）、`jadx-gui-api` 模块、已移除的 RxJava；`jadx-rewrite.gradle.kts` 删除。
+**核对**：`FilterableTreeModel` 的 `runBlocking` 与上游 `Future.get()` 语义一致（在后台 filter 线程，不在 EDT）。
+
+---
+
 > 背景：本仓库已把上游 **全部 Java 转成 Kotlin**（0 `.java`），并做了现代化/协程化。
 > 上游从我们的分叉点 `6b3116f0` 之后新增 **23 个提交**。**无法直接 merge**（上游改 Java，我们已删 Java 改 Kotlin）。
 > 做法：**逐文件把上游的功能性改动手工移植到我们的 Kotlin 实现**；新增文件转 Kotlin 加入；删除文件同步删除；资源/build 直接应用。
