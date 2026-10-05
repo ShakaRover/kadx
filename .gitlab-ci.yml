@@ -11,4 +11,4 @@ stages:
 build-test:
   stage: test
   image: eclipse-temurin:21
-  script: JADX_BUILD_JAVA_VERSION=11 JADX_TEST_JAVA_VERSION=11 ./gradlew clean build dist distWin
+  script: KADX_BUILD_JAVA_VERSION=11 KADX_TEST_JAVA_VERSION=11 ./gradlew clean build dist distWin

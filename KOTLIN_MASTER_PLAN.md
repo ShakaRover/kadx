@@ -1,4 +1,4 @@
-# JADX 全量 Kotlin 化 —— 总指挥计划（MASTER PLAN）
+# KADX 全量 Kotlin 化 —— 总指挥计划（MASTER PLAN）
 
 > 本文件是**唯一权威的进度与派单台账**。SOP 管"怎么做"（KOTLIN_MIGRATION_SOP.md），
 > 记忆文档记"坑位"（KOTLIN_CONVERSION.md），本文件记"谁在什么时候做什么、做到哪了"。
@@ -55,26 +55,26 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 
 | 模块 | main java | main kt | test java | test kt | 状态 |
 |------|----------:|--------:|----------:|--------:|------|
-| jadx-commons/jadx-app-commons | 0 | 4 | 0 | 0 | ✅ |
-| jadx-commons/jadx-zip | 0 | 17 | 0 | 0 | ✅ |
-| jadx-commons/jadx-analysis | 0 | 12 | 0 | 1 | ✅ a29dca28 |
-| jadx-plugins/jadx-input-api | 0 | 57 | 0 | 0 | ✅ |
-| jadx-plugins/jadx-dex-input | 0 | 40 | 0 | 2 | ✅ |
-| jadx-plugins/jadx-java-input | 0 | 61 | 0 | 3 | ✅ |
-| jadx-plugins/jadx-smali-input | 0 | 4 | 0 | 0 | ✅ |
-| jadx-plugins/jadx-apks-input | 0 | 3 | 0 | 0 | ✅ |
-| jadx-plugins/jadx-apkm-input | 0 | 5 | 0 | 0 | ✅ |
-| jadx-plugins/jadx-java-convert | 0 | 7 | 0 | 0 | ✅ |
-| jadx-plugins/jadx-raung-input | 0 | 2 | 0 | 0 | ✅ |
-| jadx-plugins-tools | 0 | 18 | 0 | 1 | ✅ |
-| **jadx-core** | **0** | **568** | **472** | **668** | 🟢 main+test 均完成（test 剩 466 个有意 Java：fixture/输入/harness） |
-| jadx-cli | 0 | 21 | 0 | 0 | ✅ 5df919da |
-| jadx-gui | 0 | 407 | 0 | 9 | ✅ 4b241c6c / 1250f10f（全 Kotlin） |
+| kadx-commons/kadx-app-commons | 0 | 4 | 0 | 0 | ✅ |
+| kadx-commons/kadx-zip | 0 | 17 | 0 | 0 | ✅ |
+| kadx-commons/kadx-analysis | 0 | 12 | 0 | 1 | ✅ a29dca28 |
+| kadx-plugins/kadx-input-api | 0 | 57 | 0 | 0 | ✅ |
+| kadx-plugins/kadx-dex-input | 0 | 40 | 0 | 2 | ✅ |
+| kadx-plugins/kadx-java-input | 0 | 61 | 0 | 3 | ✅ |
+| kadx-plugins/kadx-smali-input | 0 | 4 | 0 | 0 | ✅ |
+| kadx-plugins/kadx-apks-input | 0 | 3 | 0 | 0 | ✅ |
+| kadx-plugins/kadx-apkm-input | 0 | 5 | 0 | 0 | ✅ |
+| kadx-plugins/kadx-java-convert | 0 | 7 | 0 | 0 | ✅ |
+| kadx-plugins/kadx-raung-input | 0 | 2 | 0 | 0 | ✅ |
+| kadx-plugins-tools | 0 | 18 | 0 | 1 | ✅ |
+| **kadx-core** | **0** | **568** | **472** | **668** | 🟢 main+test 均完成（test 剩 466 个有意 Java：fixture/输入/harness） |
+| kadx-cli | 0 | 21 | 0 | 0 | ✅ 5df919da |
+| kadx-gui | 0 | 407 | 0 | 9 | ✅ 4b241c6c / 1250f10f（全 Kotlin） |
 | **合计剩余 .java** | | | | | **约 435**（gui 413 + cli 21 + analysis 1，均非 fixture） |
 
-> jadx-core main 的 556 含批次 1 的 **24 个待删重复 .java**，真实待转 **532**。
+> kadx-core main 的 556 含批次 1 的 **24 个待删重复 .java**，真实待转 **532**。
 
-## 4. 批次登记表 —— 阶段 3：jadx-core main（真实待转 532）
+## 4. 批次登记表 —— 阶段 3：kadx-core main（真实待转 532）
 
 > 依赖原则：AST 叶子 → attributes/instructions → utils/clsp → CFG/SSA/regions → pass 链 → codegen/api。
 > 每批次 ≤ ~30 文件；若单包超限，Worker 可内部再拆，但只提交一次、只更新本表一次。
@@ -135,9 +135,9 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 
 **里程碑 M1：** C01–C05 完成后 → 全量 `./gradlew build`（AST 子阶段收口）。 ✅ 已达成（c67a4e3a，BUILD SUCCESSFUL）
 **里程碑 M2：** C01–C18 完成后 → 全量 build（`dex/*` 全转完，仅剩 codegen/api/xmlgen/export）。 ✅ 已达成（1b54a6ac）
-**里程碑 M3：** C01–C28 完成后 → 全量 build（core main + api 收口）。 ✅ 已达成（d6e58719，`find jadx-core/src/main -name '*.java'` = 0，BUILD SUCCESSFUL）
+**里程碑 M3：** C01–C28 完成后 → 全量 build（core main + api 收口）。 ✅ 已达成（d6e58719，`find kadx-core/src/main -name '*.java'` = 0，BUILD SUCCESSFUL）
 
-## 5. 阶段 3 收尾：jadx-core test 迁移（674）
+## 5. 阶段 3 收尾：kadx-core test 迁移（674）
 
 > 测试代码属阶段最后，**必须在 core main 全部转完（M3）后开始**，否则 main 改签名会反复返工。
 > 测试类只需机械平替 + 保留 JUnit/断言语义；包内 helper 一并转。
@@ -159,30 +159,30 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | T22 | `tests/integration/variables`(16) + `arith`(14) | 30 | ✅ 1d4578c1 |
 | T23 | `integration/java8`(11) + `functional`(8) + `api/compiler`(8) | 27 | ✅ 64c01198 |
 | T24 | `synchronize`(7)+`rename`(7)+`deobf`(7)+`annotations`(7)+`android`(7) | 35 | ✅ 52f4fc2a |
-| T25 | debuginfo/export/assertj/usethis/api-utils/profiles + 测试基础设施 | 28 | ✅ a2e9e7f4（`IntegrationTest.java`、`JadxAssertions.java` 有意保留 Java） |
-| T26 | `jadx/core/**` 单元测试 + `NotYetImplemented*` | 26 | ✅ 12f62644 |
+| T25 | debuginfo/export/assertj/usethis/api-utils/profiles + 测试基础设施 | 28 | ✅ a2e9e7f4（`IntegrationTest.java`、`KadxAssertions.java` 有意保留 Java） |
+| T26 | `kadx/core/**` 单元测试 + `NotYetImplemented*` | 26 | ✅ 12f62644 |
 | T27 | integration 零散包（code/jbc/fallback/special/deobf.a）+ `BaseExternalTest` | 9 | ✅ 070ed590 |
 
 > **有意保留的 Java 测试文件（不计入待转）：** `tests/api/IntegrationTest.java`（harness 基础设施）、
-> `tests/api/utils/assertj/JadxAssertions.java`（548 个测试静态导入其继承的 AssertJ 静态方法，Kotlin 无法继承 Java 静态成员）、
+> `tests/api/utils/assertj/KadxAssertions.java`（548 个测试静态导入其继承的 AssertJ 静态方法，Kotlin 无法继承 Java 静态成员）、
 > `names/pkg/a.java`、`names/pkg/b.java`、`names/pkg2/TestCls.java`、`names/pkg2/System.java`（反编译输入）。
 
-**里程碑 M4：** T01–T26 完成 → 全量 `./gradlew :jadx-core:test` + `./gradlew build`（core 彻底 Kotlin 化）。 ✅ 已达成（070ed590；仅剩 6 个有意保留的 Java：IntegrationTest/JadxAssertions/4 个反编译输入；460+ 个 `*Fixture.java` 为输入保留）
+**里程碑 M4：** T01–T26 完成 → 全量 `./gradlew :kadx-core:test` + `./gradlew build`（core 彻底 Kotlin 化）。 ✅ 已达成（070ed590；仅剩 6 个有意保留的 Java：IntegrationTest/KadxAssertions/4 个反编译输入；460+ 个 `*Fixture.java` 为输入保留）
 
-## 6. 阶段 4：jadx-cli（main 15 + test 6）
+## 6. 阶段 4：kadx-cli（main 15 + test 6）
 
 | ID | 范围 | 约数 | 依赖 | 状态 |
 |----|------|-----:|------|------|
 | CL01 | `cli` 包全部 main（含 `config`/`commands`/`plugins`/`tools`/`clst`） | 15 | M3 | ✅ 5df919da |
 | CL02 | `cli` test（含 `plugins/tools/utils/PluginUtilsTest`） | 6 | CL01 | ✅ 5df919da |
 
-> CLI 已 100% Kotlin；`jadx-cli/build.gradle.kts` 补上了 `id("jadx-kotlin")`；jcommander 注解落在 Kotlin backing field 上（`javap` 验证）。
+> CLI 已 100% Kotlin；`kadx-cli/build.gradle.kts` 补上了 `id("kadx-kotlin")`；jcommander 注解落在 Kotlin backing field 上（`javap` 验证）。
 
 > CLI 依赖 core 公共 API；core main 收口后再动，避免 API 震荡。
 
-## 7. 阶段 5：jadx-gui（main 405 + test 8）—— **先语法迁移**
+## 7. 阶段 5：kadx-gui（main 405 + test 8）—— **先语法迁移**
 
-> **状态：✅ 已完成（G01–G21）。** `find jadx-gui/src -name '*.java'` = 0。
+> **状态：✅ 已完成（G01–G21）。** `find kadx-gui/src -name '*.java'` = 0。
 > 全程保持原 Swing 线程模型（`SwingWorker` / `invokeLater` / RxJava），**未引入协程**。
 > 阶段 5.2（协程重构）待另立专项，不在本计划范围。
 
@@ -208,7 +208,7 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | G18 | `plugins/{context,quark,mappings}` + `utils/plugins` | 18 | ✅ 087aa7d0 |
 | G19 | `ui`(不含 MainWindow)+`startpage`+`filedialog`+`menu`+`cellrenders`+`export`+`treenodes` | 22 | ✅ 3032ef69 |
 | G20 | gui 顶层（除 MainWindow）+ `cache/code` + `events` + `tree` | 15 | ✅ a524054a |
-| G20b | `ui/MainWindow`（单个大文件） | 1 | ✅ 1250f10f（jadx-gui main 全 Kotlin） |
+| G20b | `ui/MainWindow`（单个大文件） | 1 | ✅ 1250f10f（kadx-gui main 全 Kotlin） |
 | G03 | `treemodel` | 21 |
 | G04 | `ui/action` | 18 |
 | G05 | `jobs` | 17 |
@@ -227,14 +227,14 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 | G18 | `plugins/context`+`quark`+`mappings` + `utils/plugins` | 18 |
 | G19 | `ui`(+`startpage`,`filedialog`,`menu`,`cellrenders`,`export`,`treenodes`) | 23 |
 | G20 | `cache/code`(+`disk`,`manager`) + `events`(+`types`,`services`) + `tree` + 顶层入口 | 15 |
-| G21 | gui test（8 java；`TestJadxUpdate.kt` 已转） | 8 | ✅ 4b241c6c（jadx-gui 全 Kotlin） |
-| X01 | `jadx-plugins/jadx-rename-mappings` test 漏网 2 文件 | 2 | ✅ 042021e7 |
+| G21 | gui test（8 java；`TestKadxUpdate.kt` 已转） | 8 | ✅ 4b241c6c（kadx-gui 全 Kotlin） |
+| X01 | `kadx-plugins/kadx-rename-mappings` test 漏网 2 文件 | 2 | ✅ 042021e7 |
 
 ## 8. 阶段 1 尾巴
 
 | ID | 范围 | 约数 | 状态 |
 |----|------|-----:|------|
-| A01 | `jadx-commons/jadx-analysis` 剩余 1 个测试（JadxCallGraphTest） | 1 | ✅ a29dca28 |
+| A01 | `kadx-commons/kadx-analysis` 剩余 1 个测试（KadxCallGraphTest） | 1 | ✅ a29dca28 |
 
 ---
 
@@ -259,7 +259,7 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 - Java 子类访问 `protected` 字段 → `@JvmField protected`（C01：`InsnNode.insnType/offset`）。
 - Java 静态调用 → `@JvmStatic`（`updateBlockPositions`、`wrapArg`、`duplicateArg`、`addSyntheticClass`、`getForClass/getOrBuild`）；泛型静态方法需去 reified。
 - Java 子类覆写的方法必须 `open`；协变返回要显式（`getUseIn()` 返回 `List<ClassNode>`）；受检异常加 `@Throws(CodegenException::class)`。
-- SAM 接口 → `fun interface`（`ICodeDataUpdateListener`）；构造函数多默认参 → `@JvmOverloads`；被测试使用的旧构造器要保留（`RootNode(JadxArgs)`）。
+- SAM 接口 → `fun interface`（`ICodeDataUpdateListener`）；构造函数多默认参 → `@JvmOverloads`；被测试使用的旧构造器要保留（`RootNode(KadxArgs)`）。
 
 **运行时（重点）：**
 - Kotlin `!!`/非空返回 会在原 Java 返回 null 处 NPE → 恢复可空（`getBasicBlocks`、`BlockNode.doms/postDoms`、`clsData`）。
@@ -269,7 +269,7 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 - 自递归陷阱：`MethodNode.toAttrString()` 应调 `super.toAttrString()`。
 
 **下游 Kotlin 调用点（重点）：**
-- Java 类的合成属性（`.methodInfo`、`.sVars`、`.argRegs`、`.useIn`、`.type`、`.isConstructor` …）在类转 Kotlin 后**失效**，必须改为真实 property 或显式 `getXxx()`。C01 改了 `jadx-analysis`、`jadx-rename-mappings`、`jadx-kotlin-metadata`、`jadx-gui`。
+- Java 类的合成属性（`.methodInfo`、`.sVars`、`.argRegs`、`.useIn`、`.type`、`.isConstructor` …）在类转 Kotlin 后**失效**，必须改为真实 property 或显式 `getXxx()`。C01 改了 `kadx-analysis`、`kadx-rename-mappings`、`kadx-kotlin-metadata`、`kadx-gui`。
 - **每单派发时必须提醒 Worker：转完后 grep 全仓该类的 `.kt` 调用点。**
 
 ### 9.2 批次 C02 追加教训
@@ -310,9 +310,9 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 ### 9.7 批次 C22 追加教训（公共 API 高危）
 
 - **公共 API getter 一律保留显式函数**（`fun getX()`），不用 Kotlin 属性：Java 调用方零改动，且 `getRoot()` 等可空返回值语义清晰。代价是 Kotlin 调用点的 `.prop` 合成属性失效，需改 `.getX()`（本批共修 ~90 处，脚本批量处理）。
-- **`internal fun` 会被 Kotlin 改名（`convertClassNode$jadx_core`），Java 测试无法调用**：`JadxDecompiler.convertClassNode/convertFieldNode/convertMethodNode/convertPackageNode/convertNodes` 必须为 public（加 `@ApiStatus.Internal` 标注非稳定），否则 `jadx-core` test 的 `JadxInternalAccess.java` 编译失败。
-- **`JadxArgs` 用 Kotlin 属性最省事**：getter/setter 自动生成，但布尔 `isX` 与普通 `getX` 的 Kotlin 调用点混用；`pluginOptions` 必须是 `Map`（而非 `MutableMap`）才能接受 `mapValues` 的只读 Map，同时 Java 侧仍能 `.put()`。
-- **`java.util.List` 显式参数（`JadxCodeInput.loadFiles`）从 Kotlin 传参**：Kotlin `List` 与 `java.util.ArrayList` 都不匹配显式 `java.util.List`，需 `@Suppress("UNCHECKED_CAST") input as java.util.List<Path>`。
+- **`internal fun` 会被 Kotlin 改名（`convertClassNode$kadx_core`），Java 测试无法调用**：`KadxDecompiler.convertClassNode/convertFieldNode/convertMethodNode/convertPackageNode/convertNodes` 必须为 public（加 `@ApiStatus.Internal` 标注非稳定），否则 `kadx-core` test 的 `KadxInternalAccess.java` 编译失败。
+- **`KadxArgs` 用 Kotlin 属性最省事**：getter/setter 自动生成，但布尔 `isX` 与普通 `getX` 的 Kotlin 调用点混用；`pluginOptions` 必须是 `Map`（而非 `MutableMap`）才能接受 `mapValues` 的只读 Map，同时 Java 侧仍能 `.put()`。
+- **`java.util.List` 显式参数（`KadxCodeInput.loadFiles`）从 Kotlin 传参**：Kotlin `List` 与 `java.util.ArrayList` 都不匹配显式 `java.util.List`，需 `@Suppress("UNCHECKED_CAST") input as java.util.List<Path>`。
 - **构造器里的初始化逻辑不能丢**：`ResourcesLoader` 原构造器 `resTableParserProviders.add(new ResTableBinaryParserProvider())` 被漏掉，导致 ARSC 解码返回空 subFiles（`testResourcesLoad` 失败）；转换时务必逐行比对构造器/静态块。
 - **`ICodeWriter.attachAnnotation/attachDefinition/attachLineAnnotation/add(String)` 参数要可空**：原 Java 实现显式判空 no-op（`add` 则 `append(null)`），声明非空会让 `InsnGen` 等调用点编译失败。
 - **`@JvmStatic` 静态成员在 Kotlin 调用点写 `Xxx.member` 即可**（companion 也支持），无需 `.Companion.`。
@@ -320,7 +320,7 @@ Commander 复核项：① `git show --stat` 里 .java 删除数与 .kt 新增数
 
 ## 11. 测试迁移策略（关键决策：Option A）
 
-集成测试的嵌套 `TestCls` 是**被测 Java 输入**（jadx 是 Java 反编译器），必须保持 Java 字节码；
+集成测试的嵌套 `TestCls` 是**被测 Java 输入**（kadx 是 Java 反编译器），必须保持 Java 字节码；
 若用 Kotlin 写 fixture，会引入 `final`/`@Metadata`/`@Nullable`/Intrinsics，反编译输出改变、断言必破。
 
 **因此确定 Option A：**
@@ -356,10 +356,10 @@ Z4 f25fd99d（loops 47）· Z5 e5e0ce67（trycatch 44）· Z6 3f4841b5（conditi
 Z8 39a2bc6a（inner 33）· Z9 f4e51311（switches 31）· Z10 3dfc650e（invoke+enums 40）·
 Z11 e56d87b4（generics+arrays+inline 43）· Z12 7af6e8ba（arith+java8+variables 33）·
 Z13 875e29ec（deobf+annotations+android+rename+names 34）· Z14 22d6621e（剩余 fixtures 17）·
-**Z15 c196a856（IntegrationTest + JadxAssertions → Kotlin；零 Java）。**
+**Z15 c196a856（IntegrationTest + KadxAssertions → Kotlin；零 Java）。**
 
 ### Z15 要点（收尾）
-- `JadxAssertions` 必须用 Kotlin **`object`**（不是 `class + companion`）：K2 下 companion 成员无法用 `import JadxAssertions.assertThat` 导入，`object` 才能保住 703 处现有导入；`@JvmStatic` 仍为 ECJ 编译的 Java fixture 产生真静态方法。
+- `KadxAssertions` 必须用 Kotlin **`object`**（不是 `class + companion`）：K2 下 companion 成员无法用 `import KadxAssertions.assertThat` 导入，`object` 才能保住 703 处现有导入；`@JvmStatic` 仍为 ECJ 编译的 Java fixture 产生真静态方法。
 - 需在 companion 里 `@JvmStatic` 转发实际用到的 AssertJ 重载（泛型 + 各基本类型 + `CharSequence/Throwable/Class/File/Path/Iterable/List/Map/Stream/Array/8 种基本类型数组`）；引用参数可空以复刻 Java 平台类型（修了一个真 NPE）。
 - `IntegrationTest` 保持 `args`/`resMap` 为 `@JvmField` + 显式 `getArgs()/setResMap()`，~100 个 Kotlin 测试零改动。
 
@@ -368,4 +368,4 @@ Z13 875e29ec（deobf+annotations+android+rename+names 34）· Z14 22d6621e（剩
 - **全部模块完成；仓库源码 `.java` = 0**（`find . -name '*.java' -not -path '*/build/*'` = 0，`git ls-files '*.java'` = 0）。
 - **总 Kotlin 文件 2436**；`./gradlew build` **BUILD SUCCESSFUL**（core 1018 tests / cli 24 / gui 39 / 各插件全绿）。
 - 集成测试的 Java fixture 已改为 Kotlin `*Fixture.kt`（`object` + stub + `const val JAVA_SOURCE`，harness 反射读取并用 ECJ 编译）；测试语义与断言完全不变。
-- **后续（可选）：** 阶段 5.2 协程重构（`jadx.gui.jobs` / `BackgroundWorker` → `Dispatchers.Swing`）。
+- **后续（可选）：** 阶段 5.2 协程重构（`kadx.gui.jobs` / `BackgroundWorker` → `Dispatchers.Swing`）。

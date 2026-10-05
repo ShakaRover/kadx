@@ -1,0 +1,48 @@
+package kadx.zip.parser
+
+import java.io.InputStream
+import java.nio.ByteBuffer
+import java.util.zip.DataFormatException
+import java.util.zip.Inflater
+import java.util.zip.InflaterInputStream
+
+/**
+ * Deflate 解压工具（仅供 KadxZipParser 使用）。
+ */
+internal class ZipDeflate {
+	companion object {
+		private const val BUFFER_SIZE = 4096 // 流式解压的缓冲区大小（对应原 Java 的 static final int）
+
+		fun decompressEntryToBytes(buf: ByteBuffer, entry: KadxZipEntry): ByteArray {
+			buf.position(entry.dataStart) // 把共享 buffer 定位到该条目的数据起始位置
+			val entryBuf = buf.slice() // slice 得到独立子缓冲，不影响原 buffer 的状态
+
+			entryBuf.limit((entry.compressedSize).toInt()) // 截取长度限定为该条目的压缩大小（int 强转）
+			if (entry.uncompressedSize > Int.MAX_VALUE) {
+				throw DataFormatException("Entry too large: " + entry.uncompressedSize)
+			}
+			val out = ByteArray(entry.uncompressedSize.toInt()) // 按解压后大小分配输出缓冲
+			val inflater = Inflater(true) // true 表示输入是 zlib 格式（带头/校验和），与 zip 规范一致
+			inflater.setInput(entryBuf)
+			val written = inflater.inflate(out)
+			inflater.end()
+			if (written != out.size) {
+				throw DataFormatException(
+					"Unexpected size of decompressed entry: " + entry +
+						", got: " + written + ", expected: " + out.size,
+				)
+			}
+			return out
+		}
+
+		fun decompressEntryToStream(buf: ByteBuffer, entry: KadxZipEntry): InputStream {
+			val stream = KadxZipParser.bufferToStream( // 调用 KadxZipParser 的静态方法（原 Java 用 static import）
+				buf,
+				entry.dataStart,
+				(entry.compressedSize).toInt(),
+			)
+			val inflater = Inflater(true)
+			return InflaterInputStream(stream, inflater, BUFFER_SIZE) // 解压流：边读边 inflate
+		}
+	}
+}

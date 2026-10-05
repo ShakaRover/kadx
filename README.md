@@ -1,22 +1,22 @@
-<img src="https://raw.githubusercontent.com/skylot/jadx/master/jadx-gui/src/main/resources/logos/jadx-logo.png" width="64" align="left" />
+<img src="https://raw.githubusercontent.com/skylot/jadx/master/kadx-gui/src/main/resources/logos/kadx-logo.png" width="64" align="left" />
 
-## JADX
+## KADX
 
 ![Build status](https://img.shields.io/github/actions/workflow/status/skylot/jadx/build-artifacts.yml)
 ![GitHub contributors](https://img.shields.io/github/contributors/skylot/jadx)
 ![GitHub all releases](https://img.shields.io/github/downloads/skylot/jadx/total)
 ![GitHub release (latest by SemVer)](https://img.shields.io/github/downloads/skylot/jadx/latest/total)
 ![Latest release](https://img.shields.io/github/release/skylot/jadx.svg)
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.skylot/jadx-core)](https://search.maven.org/search?q=g:io.github.skylot%20AND%20jadx)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.skylot/jadx-core)](https://search.maven.org/search?q=g:io.github.skylot%20AND%20kadx)
 ![Java 11+](https://img.shields.io/badge/Java-11%2B-blue)
 [![License](http://img.shields.io/:license-apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 
-**jadx** - Dex to Java decompiler
+**kadx** - Dex to Java decompiler
 
 Command line and GUI tools for producing Java source code from Android Dex and Apk files
 
 > [!WARNING]
-> Please note that in most cases **jadx** can't decompile all 100% of the code, so errors will occur.<br />
+> Please note that in most cases **kadx** can't decompile all 100% of the code, so errors will occur.<br />
 > Check [Troubleshooting guide](https://github.com/skylot/jadx/wiki/Troubleshooting-Q&A#decompilation-issues) for workarounds.
 
 **Main features:**
@@ -24,16 +24,16 @@ Command line and GUI tools for producing Java source code from Android Dex and A
 - decode `AndroidManifest.xml` and other resources from `resources.arsc`
 - deobfuscator included
 
-**jadx-gui features:**
+**kadx-gui features:**
 - view decompiled code with highlighted syntax
 - jump to declaration
 - find usage
 - full text search
 - smali debugger, check [wiki page](https://github.com/skylot/jadx/wiki/Smali-debugger) for setup and usage
 
-Jadx-gui key bindings can be found [here](https://github.com/skylot/jadx/wiki/JADX-GUI-Key-bindings)
+Kadx-gui key bindings can be found [here](https://github.com/skylot/jadx/wiki/KADX-GUI-Key-bindings)
 
-See these features in action here: [jadx-gui features overview](https://github.com/skylot/jadx/wiki/jadx-gui-features-overview)
+See these features in action here: [kadx-gui features overview](https://github.com/skylot/jadx/wiki/kadx-gui-features-overview)
 
 <img src="https://user-images.githubusercontent.com/118523/142730720-839f017e-38db-423e-b53f-39f5f0a0316f.png" width="700"/>
 
@@ -43,8 +43,8 @@ See these features in action here: [jadx-gui features overview](https://github.c
 - latest [unstable build ![GitHub commits since tagged version (branch)](https://img.shields.io/github/commits-since/skylot/jadx/latest/master)](https://nightly.link/skylot/jadx/workflows/build-artifacts/master)
 
 After download unpack zip file go to `bin` directory and run:
-- `jadx` - command line version
-- `jadx-gui` - UI version
+- `kadx` - command line version
+- `kadx-gui` - UI version
 
 On Windows run `.bat` files with double-click\
 **Note:** ensure you have installed Java 11 or later 64-bit version.
@@ -52,43 +52,43 @@ For Windows, you can download it from [oracle.com](https://www.oracle.com/java/t
 
 ### Install
 - Arch Linux
-  [![Arch Linux package](https://img.shields.io/archlinux/v/extra/any/jadx)](https://archlinux.org/packages/extra/any/jadx/)
-  [![AUR Version](https://img.shields.io/aur/version/jadx-git)](https://aur.archlinux.org/packages/jadx-git)
+  [![Arch Linux package](https://img.shields.io/archlinux/v/extra/any/kadx)](https://archlinux.org/packages/extra/any/kadx/)
+  [![AUR Version](https://img.shields.io/aur/version/kadx-git)](https://aur.archlinux.org/packages/kadx-git)
   ```bash
-  sudo pacman -S jadx
+  sudo pacman -S kadx
   ```
 - macOS
-  [![homebrew version](https://img.shields.io/homebrew/v/jadx)](https://formulae.brew.sh/formula/jadx)
+  [![homebrew version](https://img.shields.io/homebrew/v/kadx)](https://formulae.brew.sh/formula/kadx)
   ```bash
-  brew install jadx
+  brew install kadx
   ```
 - Flathub
-  [![Flathub Version](https://img.shields.io/flathub/v/com.github.skylot.jadx)](https://flathub.org/apps/com.github.skylot.jadx)
+  [![Flathub Version](https://img.shields.io/flathub/v/com.github.skylot.kadx)](https://flathub.org/apps/com.github.skylot.kadx)
   ```bash
-  flatpak install flathub com.github.skylot.jadx
+  flatpak install flathub com.github.skylot.kadx
   ```
 
-### Use jadx as a library
-You can use jadx in your java projects, check details on [wiki page](https://github.com/skylot/jadx/wiki/Use-jadx-as-a-library)
+### Use kadx as a library
+You can use kadx in your java projects, check details on [wiki page](https://github.com/skylot/jadx/wiki/Use-kadx-as-a-library)
 
 ### Build from source
 JDK 17 or higher must be installed:
 ```
 git clone https://github.com/skylot/jadx.git
-cd jadx
+cd kadx
 ./gradlew dist
 ```
 
 (on Windows, use `gradlew.bat` instead of `./gradlew`)
 
-Scripts for run jadx will be placed in `build/jadx/bin`
-and also packed to `build/jadx-<version>.zip`
+Scripts for run kadx will be placed in `build/kadx/bin`
+and also packed to `build/kadx-<version>.zip`
 
 ### Usage
 ```
-jadx[-gui] [command] [options] <input files> (.apk, .dex, .jar, .class, .smali, .zip, .aar, .arsc, .aab, .xapk, .apkm, .jadx.kts)
+kadx[-gui] [command] [options] <input files> (.apk, .dex, .jar, .class, .smali, .zip, .aar, .arsc, .aab, .xapk, .apkm, .kadx.kts)
 commands (use '<command> --help' for command options):
-  plugins	  - manage jadx plugins
+  plugins	  - manage kadx plugins
 
 options:
   -d, --output-dir                              - output directory
@@ -135,8 +135,8 @@ options:
   --deobf-min                                   - min length of name, renamed if shorter, default: 3
   --deobf-max                                   - max length of name, renamed if longer, default: 64
   --deobf-whitelist                             - space separated list of classes (full name) and packages (ends with '.*') to exclude from deobfuscation, default: android.support.v4.* android.support.v7.* android.support.v4.os.* android.support.annotation.Px androidx.core.os.* androidx.annotation.Px
-  --deobf-cfg-file                              - deobfuscation mappings file used for JADX auto-generated names (in the JOBF file format), default: same dir and name as input file with '.jobf' extension
-  --deobf-cfg-file-mode                         - set mode for handling the JADX auto-generated names' deobfuscation map file:
+  --deobf-cfg-file                              - deobfuscation mappings file used for KADX auto-generated names (in the JOBF file format), default: same dir and name as input file with '.jobf' extension
+  --deobf-cfg-file-mode                         - set mode for handling the KADX auto-generated names' deobfuscation map file:
                                                    'read' - read if found, don't save (default)
                                                    'read-or-save' - read if found, save otherwise (don't overwrite)
                                                    'overwrite' - don't read, always save
@@ -182,8 +182,8 @@ options:
                                                    empty - for default config
                                                    path to '.json' file
                                                    short name - file will be saved in config directory
-  --print-files                                 - print files and directories used by jadx (config, cache, temp)
-  --version                                     - print jadx version
+  --print-files                                 - print files and directories used by kadx (config, cache, temp)
+  --version                                     - print kadx version
   -h, --help                                    - print this help
 
 Plugin options (-P<name>=<value>):
@@ -209,22 +209,22 @@ Plugin options (-P<name>=<value>):
     - smali-input.api-level                     - Android API level, default: 27
 
 Environment variables:
-  JADX_DISABLE_XML_SECURITY - set to 'true' to disable all security checks for XML files
-  JADX_DISABLE_ZIP_SECURITY - set to 'true' to disable all security checks for zip files
-  JADX_DISABLE_ALL_SECURITY_FLAGS - set to 'true' to disable all security flags (xml, string, app package)
-  JADX_ZIP_MAX_ENTRIES_COUNT - maximum allowed number of entries in zip files (default: 100 000)
-  JADX_CONFIG_DIR - custom config directory, using system by default
-  JADX_CACHE_DIR - custom cache directory, using system by default
-  JADX_TMP_DIR - custom temp directory, using system by default
+  KADX_DISABLE_XML_SECURITY - set to 'true' to disable all security checks for XML files
+  KADX_DISABLE_ZIP_SECURITY - set to 'true' to disable all security checks for zip files
+  KADX_DISABLE_ALL_SECURITY_FLAGS - set to 'true' to disable all security flags (xml, string, app package)
+  KADX_ZIP_MAX_ENTRIES_COUNT - maximum allowed number of entries in zip files (default: 100 000)
+  KADX_CONFIG_DIR - custom config directory, using system by default
+  KADX_CACHE_DIR - custom cache directory, using system by default
+  KADX_TMP_DIR - custom temp directory, using system by default
 
 Examples:
-  jadx -d out classes.dex
-  jadx --rename-flags "none" classes.dex
-  jadx --rename-flags "valid, printable" classes.dex
-  jadx --log-level ERROR app.apk
-  jadx -Pdex-input.verify-checksum=no app.apk
+  kadx -d out classes.dex
+  kadx --rename-flags "none" classes.dex
+  kadx --rename-flags "valid, printable" classes.dex
+  kadx --log-level ERROR app.apk
+  kadx -Pdex-input.verify-checksum=no app.apk
 ```
-These options also work in jadx-gui running from command line and override options from preferences' dialog
+These options also work in kadx-gui running from command line and override options from preferences' dialog
 
 Usage for `plugins` command
 ```
@@ -233,7 +233,7 @@ options:
   -i, --install <locationId>      - install plugin with locationId
   -j, --install-jar <path-to.jar> - install plugin from jar file
   -l, --list                      - list installed plugins
-  -a, --available                 - list available plugins from jadx-plugins-list (aka marketplace)
+  -a, --available                 - list available plugins from kadx-plugins-list (aka marketplace)
   -u, --update                    - update installed plugins
   --uninstall <pluginId>          - uninstall plugin with pluginId
   --disable <pluginId>            - disable plugin with pluginId

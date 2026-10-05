@@ -1,0 +1,18 @@
+package kadx.tests.integration.enums
+
+import kadx.tests.api.IntegrationTest
+import kadx.tests.api.utils.assertj.KadxAssertions.assertThat
+import org.junit.jupiter.api.Test
+
+/**
+ * 枚举内使用 `EnumSet`/`ArrayList` 静态字段：反编译时不应插入多余的 `(Enum)` 强转。
+ */
+class TestEnums9 : IntegrationTest() {
+
+	@Test
+	fun test() {
+		assertThat(getClassNode(TestEnums9Fixture.TestCls::class.java))
+			.code()
+			.doesNotContain("EnumSet.of((Enum) INT,")
+	}
+}

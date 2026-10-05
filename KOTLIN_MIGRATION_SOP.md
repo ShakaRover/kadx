@@ -1,6 +1,6 @@
-# JADX Java 至 Kotlin 全量渐进式重构与注释补全规范指南（无状态标准版）
+# KADX Java 至 Kotlin 全量渐进式重构与注释补全规范指南（无状态标准版）
 
-本指南为 **JADX (Dex to Java decompiler)** 项目从 Java 全量迁移至 Kotlin 的**标准化操作手册（SOP）**。
+本指南为 **KADX (Dex to Java decompiler)** 项目从 Java 全量迁移至 Kotlin 的**标准化操作手册（SOP）**。
 
 无论是开发者还是 AI Agent（如 Claude Code, Cursor, Copilot 等），在执行逐文件迁移与注释补全任务时，**必须严格遵循本文档中定义的拓扑顺序、转换标准、K2 避坑红线与验证流程**。
 
@@ -10,23 +10,23 @@
 
 ## 1. 项目全局架构与依赖拓扑分析
 
-JADX 内部模块存在明确的自底向上依赖关系。为了防止出现"底层 Kotlin 类变更导致上层 Java 类编译崩溃"或"类型循环依赖"的问题，**必须严格按照以下 5 个阶段的顺序逐模块、逐 Package 推进**。
+KADX 内部模块存在明确的自底向上依赖关系。为了防止出现"底层 Kotlin 类变更导致上层 Java 类编译崩溃"或"类型循环依赖"的问题，**必须严格按照以下 5 个阶段的顺序逐模块、逐 Package 推进**。
 
 ```
-                    [ 阶段 1: jadx-commons ]
-                    (jadx-app-commons, jadx-zip, jadx-analysis)
+                    [ 阶段 1: kadx-commons ]
+                    (kadx-app-commons, kadx-zip, kadx-analysis)
                                  │
                                  ▼
-               [ 阶段 2: jadx-plugins/jadx-input-api ]
+               [ 阶段 2: kadx-plugins/kadx-input-api ]
                      与各大 Input Plugin 接口
                                  │
                                  ▼
-                     [ 阶段 3: jadx-core 核心 ]
+                     [ 阶段 3: kadx-core 核心 ]
                     (内部细分为 5 个子阶段 Pass)
                                  │
             ┌────────────────────┴────────────────────┐
             ▼                                         ▼
-  [ 阶段 4: jadx-cli ]                      [ 阶段 5: jadx-gui ]
+  [ 阶段 4: kadx-cli ]                      [ 阶段 5: kadx-gui ]
                                             (需分为语法转换与协程重构)
 ```
 
@@ -47,50 +47,50 @@ JADX 内部模块存在明确的自底向上依赖关系。为了防止出现"�
 
 执行迁移时，**一次只处理一个 Package 或独立文件批次**。处理完该批次内的所有文件并编译通过、测试通过、**及时完成 Git 提交**后，方可进入下一个批次。
 
-### 阶段 1：通用基础库 (`jadx-commons`)
+### 阶段 1：通用基础库 (`kadx-commons`)
 *迁移目标：基础环境定义、ZIP 格式解包工具、分析导出工具。*
-1. `jadx-commons/jadx-app-commons` ✅ 已完成（JadxCommonEnv/JadxSystemInfo/JadxTempFiles/JadxCommonFiles）
-2. `jadx-commons/jadx-zip` ✅ 已完成（4 个批次：接口/选项/安全、条目/内容/io、fallback/parser/security、JadxZipParser/ZipReader）
-3. `jadx-commons/jadx-analysis` ← **下一个批次**
+1. `kadx-commons/kadx-app-commons` ✅ 已完成（KadxCommonEnv/KadxSystemInfo/KadxTempFiles/KadxCommonFiles）
+2. `kadx-commons/kadx-zip` ✅ 已完成（4 个批次：接口/选项/安全、条目/内容/io、fallback/parser/security、KadxZipParser/ZipReader）
+3. `kadx-commons/kadx-analysis` ← **下一个批次**
 
-### 阶段 2：插件 API 与输入插件接口 (`jadx-plugins`)
+### 阶段 2：插件 API 与输入插件接口 (`kadx-plugins`)
 *迁移目标：插件开放 API、解包数据接口、输入插件实现。*
-1. `jadx-plugins/jadx-input-api`
-2. `jadx-plugins/*-input` (包含 `jadx-dex-input`, `jadx-java-input`, `jadx-smali-input` 等，建议从小类开始分批迁移)
-3. `jadx-plugins-tools`
+1. `kadx-plugins/kadx-input-api`
+2. `kadx-plugins/*-input` (包含 `kadx-dex-input`, `kadx-java-input`, `kadx-smali-input` 等，建议从小类开始分批迁移)
+3. `kadx-plugins-tools`
 
-### 阶段 3：反编译引擎核心 (`jadx-core`)
+### 阶段 3：反编译引擎核心 (`kadx-core`)
 *风险等级：极高（重度依赖图论、位运算、抽象语法树及类型推导，热点性能敏感）*  
 *内部依赖严禁错乱，必须严格按照以下 5 个子阶段顺序执行：*
 
 1. **阶段 3.1 基础数据结构与 AST 节点**：
-   - `jadx.core.dex.instructions.args` (`ArgType`, `RegisterArg`, `InsnArg` 等)
-   - `jadx.core.dex.instructions` (`InsnNode`, `InsnType` 等)
-   - `jadx.core.dex.attributes` (`AFlag`, `AType` 属性标记架构)
-   - `jadx.core.dex.nodes` (`BlockNode`, `MethodNode`, `ClassNode`, `RootNode`)
+   - `kadx.core.dex.instructions.args` (`ArgType`, `RegisterArg`, `InsnArg` 等)
+   - `kadx.core.dex.instructions` (`InsnNode`, `InsnType` 等)
+   - `kadx.core.dex.attributes` (`AFlag`, `AType` 属性标记架构)
+   - `kadx.core.dex.nodes` (`BlockNode`, `MethodNode`, `ClassNode`, `RootNode`)
 2. **阶段 3.2 DEX/Class 工具与 Classpath 校验**：
-   - `jadx.core.utils` (`StringUtils`, `ListUtils` 等)
-   - `jadx.core.utils.files` (`FileUtils` 等)
-   - `jadx.core.clsp` (Classpath 校验与类层次结构加载)
-   - `jadx.core.dex.trycatch` (Catch 块与 Exception 处理器)
+   - `kadx.core.utils` (`StringUtils`, `ListUtils` 等)
+   - `kadx.core.utils.files` (`FileUtils` 等)
+   - `kadx.core.clsp` (Classpath 校验与类层次结构加载)
+   - `kadx.core.dex.trycatch` (Catch 块与 Exception 处理器)
 3. **阶段 3.3 控制流图与 SSA 变换**：
-   - `jadx.core.dex.visitors.blocks` (Block 切分与 Dominator 树计算)
-   - `jadx.core.dex.visitors.ssa` (SSA  静态单赋值转换)
-   - `jadx.core.dex.visitors.regions` (Region 区域分析)
+   - `kadx.core.dex.visitors.blocks` (Block 切分与 Dominator 树计算)
+   - `kadx.core.dex.visitors.ssa` (SSA  静态单赋值转换)
+   - `kadx.core.dex.visitors.regions` (Region 区域分析)
 4. **阶段 3.4 核心 Pass 转换链**：
    - 按逻辑复杂度递增：`debuginfo` ➔ `typeinference` ➔ `shrink` ➔ `reconstruction` ➔ 其余 Visitor
 5. **阶段 3.5 代码生成与对外 API**：
-   - `jadx.core.codegen` (`CodeWriter`, `ClassGen`, `InsnGen`)
-   - `jadx.api` (`JadxDecompiler`, `JadxArgs` 等主入口)
+   - `kadx.core.codegen` (`CodeWriter`, `ClassGen`, `InsnGen`)
+   - `kadx.api` (`KadxDecompiler`, `KadxArgs` 等主入口)
 
-### 阶段 4：命令行工具 (`jadx-cli`)
-1. `jadx.cli.clsp`
-2. `jadx.cli` (`JadxCLI`, `JadxCLIArgs`)
+### 阶段 4：命令行工具 (`kadx-cli`)
+1. `kadx.cli.clsp`
+2. `kadx.cli` (`KadxCLI`, `KadxCLIArgs`)
 
-### 阶段 5：图形界面系统 (`jadx-gui`)
-> **注意**：为了规避线程死锁与 UI 异常，`jadx-gui` 的迁移**必须分为两步**：
+### 阶段 5：图形界面系统 (`kadx-gui`)
+> **注意**：为了规避线程死锁与 UI 异常，`kadx-gui` 的迁移**必须分为两步**：
 1. **阶段 5.1（语法直接迁移）**：保持原 Swing 线程模型（`SwingWorker`、`SwingUtilities.invokeLater`），将 `.java` 逐包转为 `.kt`。
-2. **阶段 5.2（协程异步重构）**：在语法全量迁移完成且测试通过后，再单独将 `jadx.gui.jobs` / `BackgroundWorker` 机制重构为 Kotlin Coroutines (`Dispatchers.Swing`)。
+2. **阶段 5.2（协程异步重构）**：在语法全量迁移完成且测试通过后，再单独将 `kadx.gui.jobs` / `BackgroundWorker` 机制重构为 Kotlin Coroutines (`Dispatchers.Swing`)。
 
 ---
 
@@ -118,7 +118,7 @@ AI 在自动转换代码时极易引入死锁、内存泄漏、GC 停顿或逻�
 * 不可空声明 `T`，可空声明 `T?`。对于可空变量使用 `?.`、`?:` 或 `(checkNotNull())`，严禁裸写 `!!`。
 
 ### 🔴 规则 5：热点循环性能规范
-* 在 `jadx-core` 密集 Pass 中，避免使用高频创建 Iterator/Collection 对象的集合函数（如 `.map/.filter`），保持标准 `for` 循环。
+* 在 `kadx-core` 密集 Pass 中，避免使用高频创建 Iterator/Collection 对象的集合函数（如 `.map/.filter`），保持标准 `for` 循环。
 
 ### 🔴 规则 6：严禁在 Kotlin 源码中显式引用 `java.util.List` / `Map` / `Set`（Kotlin 侧目标位置）
 * **现象**（2026-09 实测，Kotlin 1.9.24 / 2.2.20 / 2.3.10 / 2.3.21 均复现，非版本回归，属 Kotlin 设计行为）：
@@ -126,13 +126,13 @@ AI 在自动转换代码时极易引入死锁、内存泄漏、GC 停顿或逻�
   * `kotlin.collections.ArrayList` → 目标 `java.util.List`（显式）：❌
   * `java.util.List`（值）→ `kotlin.collections.List` 参数：❌ `argument type mismatch`
   * `java.util.ArrayList`（类）→ 目标 `kotlin.collections.List`：✅
-  * `java.util.List` 作**参数**类型：✅（如 `JadxCodeInput.loadFiles(input: java.util.List<Path>)`）
+  * `java.util.List` 作**参数**类型：✅（如 `KadxCodeInput.loadFiles(input: java.util.List<Path>)`）
   * 本质：Kotlin 把 `java.util.ArrayList` 等**类**映射到 `kotlin.collections.*`，其超类型是 Kotlin 侧接口；而源码中显式写的 `java.util.List` 是另一个描述符，两者互不兼容。字节码层面二者都是 `java.util.List`，对 Java 调用方无差异。
 * **正确做法**：
   1. Kotlin 函数签名中的集合类型一律用 Kotlin 侧 `List` / `MutableList`（字节码不变，Java 调用方兼容）。
-  2. 实现 `JadxCodeInput` 等**显式声明 `java.util.List` 的 Kotlin 接口**时，覆写签名必须精确匹配（`java.util.List<Path>`）；接口传来的值要传给 Kotlin 侧 `List` 参数时，需经 `java.util.ArrayList` 中转：`val l = java.util.ArrayList<T>(); l.addAll(input); f(l)`（`java.util.ArrayList` → Kotlin List 参数 ✅）。
+  2. 实现 `KadxCodeInput` 等**显式声明 `java.util.List` 的 Kotlin 接口**时，覆写签名必须精确匹配（`java.util.List<Path>`）；接口传来的值要传给 Kotlin 侧 `List` 参数时，需经 `java.util.ArrayList` 中转：`val l = java.util.ArrayList<T>(); l.addAll(input); f(l)`（`java.util.ArrayList` → Kotlin List 参数 ✅）。
   3. 接收 Java 方法返回的 List（Kotlin 视角为 Kotlin List）的 Kotlin 函数，参数用 Kotlin 侧 `List`。
-* **已验证案例**：`jadx-dex-input` batch-1 的 `DexInputPlugin.loadFiles`（公共方法 Kotlin List 参数 + 接口覆写 `java.util.List` + `java.util.ArrayList` 桥接）。
+* **已验证案例**：`kadx-dex-input` batch-1 的 `DexInputPlugin.loadFiles`（公共方法 Kotlin List 参数 + 接口覆写 `java.util.List` + `java.util.ArrayList` 桥接）。
 
 ---
 
@@ -178,7 +178,7 @@ AI 在自动转换代码时极易引入死锁、内存泄漏、GC 停顿或逻�
 
 ````markdown
 你现在是一名熟悉 JVM 字节码、DEX 文件结构及 Kotlin 2.3.10 K2 编译器特性的资深编译器工程师。
-请按照《JADX Java 至 Kotlin 全量渐进式重构与注释补全规范指南（无状态标准版）》的要求，将我提供的 JADX Java 文件重构为高质量的 Kotlin 代码。
+请按照《KADX Java 至 Kotlin 全量渐进式重构与注释补全规范指南（无状态标准版）》的要求，将我提供的 KADX Java 文件重构为高质量的 Kotlin 代码。
 
 【重构与注释要求】：
 1. **代码质量与互操作性**：

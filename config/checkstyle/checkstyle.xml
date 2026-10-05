@@ -125,7 +125,7 @@
 				 java.util.LinkedHashMap, java.util.LinkedHashSet, java.util.TreeMap, java.util.TreeSet"/>
 		</module>
 		<module name="IllegalImport">
-			<property name="illegalClasses" value="jadx.core.utils.DebugUtils"/>
+			<property name="illegalClasses" value="kadx.core.utils.DebugUtils"/>
 			<!-- don't use nullable annotations from RxJava -->
 			<property name="illegalClasses" value="io.reactivex.rxjava3.annotations.NonNull"/>
 			<property name="illegalClasses" value="io.reactivex.rxjava3.annotations.Nullable"/>

@@ -1,11 +1,11 @@
-# jadx-java-input Kotlin 转换计划（当前活跃模块）
+# kadx-java-input Kotlin 转换计划（当前活跃模块）
 
-**模块：** `jadx-plugins/jadx-java-input`
+**模块：** `kadx-plugins/kadx-java-input`
 **文件总数：** main 61 + test 3 = 64 个 Java 文件（main 约 4700 行）
 **批次划分：** 10 个批次，每个 ≤10 文件，严格按 SOP 拓扑顺序（自底向上：utils → attributes → code → data model → 顶层入口 → test）
 
-> 前置模块已全部完成：jadx-commons ✅、jadx-input-api ✅（含 IJadxAttribute/PinnedAttribute，9c04682e）、jadx-dex-input ✅。
-> 本模块是阶段 2 的最后一个大输入插件；完成后仅剩 `jadx-plugins-tools`（18+1），随后进入阶段 3 jadx-core。
+> 前置模块已全部完成：kadx-commons ✅、kadx-input-api ✅（含 IKadxAttribute/PinnedAttribute，9c04682e）、kadx-dex-input ✅。
+> 本模块是阶段 2 的最后一个大输入插件；完成后仅剩 `kadx-plugins-tools`（18+1），随后进入阶段 3 kadx-core。
 
 ---
 
@@ -90,8 +90,8 @@ ModifiedUTF8DecoderTest / DescriptorParserTest / CustomLoadTest → `src/test/ko
 ## 风险点与转换要点（执行前必读）
 
 ### R1 — IJavaAttribute / JavaAttrType 通配符覆写问题（本模块最大坑位）
-- input-api 的同类接口曾判定为"Kotlin 转换禁区"，后在 **9c04682e** 用**星投影**解决：`fun getAttrType(): IJadxAttrType<*>`（而非 `out T`——声明式协变不写入字节码，javac 看到不变型会拒绝窄化覆写；星投影两侧语言都接受）。
-- java-input 的 `IJavaAttribute.getAttrType()` / `JavaAttrType<T extends IJavaAttribute>` 是同一模式 → **直接复用星投影方案**，转完必须全仓编译验证 jadx-core（大量 Java 子类以具体类型覆写）。
+- input-api 的同类接口曾判定为"Kotlin 转换禁区"，后在 **9c04682e** 用**星投影**解决：`fun getAttrType(): IKadxAttrType<*>`（而非 `out T`——声明式协变不写入字节码，javac 看到不变型会拒绝窄化覆写；星投影两侧语言都接受）。
+- java-input 的 `IJavaAttribute.getAttrType()` / `JavaAttrType<T extends IJavaAttribute>` 是同一模式 → **直接复用星投影方案**，转完必须全仓编译验证 kadx-core（大量 Java 子类以具体类型覆写）。
 
 ### R2 — Kotlin 关键字冲突
 - 参数/字段名 `in`、`object`、`val` 等保留字：私有实现细节重命名（如 dex-input 的 `sectionReader`），公共 API 名称不变。
@@ -111,13 +111,13 @@ ModifiedUTF8DecoderTest / DescriptorParserTest / CustomLoadTest → `src/test/ko
 
 ```bash
 # 1. 模块编译 + 测试
-./gradlew :jadx-plugins:jadx-java-input:test
+./gradlew :kadx-plugins:kadx-java-input:test
 # 2. SOP 要求：commit 前全量 build 必须绿（含 spotlessCheck，先跑 ./gradlew spotlessApply）
 ./gradlew build
 ```
 
 - **每批次完成后立即 git commit**：`refactor(java-input): migrate batch-N (X files)`
-- 跨模块调用点检查重点：jadx-core / plugins-tools / cli / gui（Java 侧静态访问、字段改方法等）
+- 跨模块调用点检查重点：kadx-core / plugins-tools / cli / gui（Java 侧静态访问、字段改方法等）
 - 全量完成标志：main 61/61 + test 3/3 Kotlin，`./gradlew build` 绿
 
 ---
@@ -126,12 +126,12 @@ ModifiedUTF8DecoderTest / DescriptorParserTest / CustomLoadTest → `src/test/ko
 
 | 顺序 | 目标 | 规模 |
 |------|------|------|
-| 阶段 2 收尾 | `jadx-plugins-tools` | main 18 + test 1 |
-| 阶段 3.1~3.5 | `jadx-core`（严格按 SOP 子阶段：AST → utils/clsp/trycatch → blocks/ssa/regions → pass 链 → codegen/api） | main 556 + test 674，主体工作量 |
-| 阶段 4 | `jadx-cli` | main 15 + test 6 |
-| 阶段 5.1/5.2 | `jadx-gui`（先语法迁移，后协程重构） | main 405 + test 8 |
-| 遗留清理 | `jadx-analysis` 剩余 1 个测试文件 JadxCallGraphTest.java | 1 |
+| 阶段 2 收尾 | `kadx-plugins-tools` | main 18 + test 1 |
+| 阶段 3.1~3.5 | `kadx-core`（严格按 SOP 子阶段：AST → utils/clsp/trycatch → blocks/ssa/regions → pass 链 → codegen/api） | main 556 + test 674，主体工作量 |
+| 阶段 4 | `kadx-cli` | main 15 + test 6 |
+| 阶段 5.1/5.2 | `kadx-gui`（先语法迁移，后协程重构） | main 405 + test 8 |
+| 遗留清理 | `kadx-analysis` 剩余 1 个测试文件 KadxCallGraphTest.java | 1 |
 
 ---
 
-**最后更新：** jadx-java-input ✅（61+3）、jadx-plugins-tools ✅（18+1）已完成。下一阶段：jadx-core（556 main + 674 test）。
+**最后更新：** kadx-java-input ✅（61+3）、kadx-plugins-tools ✅（18+1）已完成。下一阶段：kadx-core（556 main + 674 test）。

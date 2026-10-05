@@ -23,35 +23,35 @@ jobs:
           release: 25
 
 
-      - name: Set jadx version
+      - name: Set kadx version
         uses: actions/github-script@v9
         with:
           script: |
-            const jadxVersion = context.ref.split('/').pop().substring(1)
-            core.exportVariable('JADX_VERSION', jadxVersion);
+            const kadxVersion = context.ref.split('/').pop().substring(1)
+            core.exportVariable('KADX_VERSION', kadxVersion);
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
 
       - name: Build No-JRE bundle
-        run: ./gradlew dist -PjadxBundleType=win-no-jre
+        run: ./gradlew dist -PkadxBundleType=win-no-jre
 
       - name: Save bundle artifact
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ format('jadx-gui-{0}-win.zip', env.JADX_VERSION) }}
-          path: ${{ format('build/distWin/jadx-gui-{0}-win.zip', env.JADX_VERSION) }}
+          name: ${{ format('kadx-gui-{0}-win.zip', env.KADX_VERSION) }}
+          path: ${{ format('build/distWin/kadx-gui-{0}-win.zip', env.KADX_VERSION) }}
           if-no-files-found: error
           retention-days: 1
 
       - name: Build JRE bundle
-        run: ./gradlew dist -PbundleJRE=true -PjadxBundleType=win-jre
+        run: ./gradlew dist -PbundleJRE=true -PkadxBundleType=win-jre
 
       - name: Save JRE bundle artifact
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ format('jadx-gui-{0}-with-jre-win.zip', env.JADX_VERSION) }}
-          path: ${{ format('build/distWinWithJre/jadx-gui-{0}-with-jre-win.zip', env.JADX_VERSION) }}
+          name: ${{ format('kadx-gui-{0}-with-jre-win.zip', env.KADX_VERSION) }}
+          path: ${{ format('build/distWinWithJre/kadx-gui-{0}-with-jre-win.zip', env.KADX_VERSION) }}
           if-no-files-found: error
           retention-days: 1
 
@@ -69,13 +69,13 @@ jobs:
           wix.exe --version
 
       - name: Build msi bundle
-        run: ./gradlew :jadx-gui:jpackage -PjadxBundleType=msi
+        run: ./gradlew :kadx-gui:jpackage -PkadxBundleType=msi
 
       - name: Save msi artifact
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ format('jadx-gui-{0}.msi', env.JADX_VERSION) }}
-          path: jadx-gui/build/jpackage/jadx-gui-*.msi
+          name: ${{ format('kadx-gui-{0}.msi', env.KADX_VERSION) }}
+          path: kadx-gui/build/jpackage/kadx-gui-*.msi
           if-no-files-found: error
           retention-days: 1
 
@@ -93,23 +93,23 @@ jobs:
           distribution: temurin
           java-version: 25
 
-      - name: Set jadx version
+      - name: Set kadx version
         uses: actions/github-script@v9
         with:
           script: |
-            const jadxVersion = context.ref.split('/').pop().substring(1)
-            core.exportVariable('JADX_VERSION', jadxVersion);
+            const kadxVersion = context.ref.split('/').pop().substring(1)
+            core.exportVariable('KADX_VERSION', kadxVersion);
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
 
       - name: Build
-        run: ./gradlew distMac -PjadxBundleType=dmg
+        run: ./gradlew distMac -PkadxBundleType=dmg
 
       - name: Save macOS DMG artifact
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ format('jadx-gui-{0}-mac-{1}', env.JADX_VERSION, runner.arch) }}
+          name: ${{ format('kadx-gui-{0}-mac-{1}', env.KADX_VERSION, runner.arch) }}
           path: build/distMac/*.dmg
           if-no-files-found: error
           retention-days: 1
@@ -126,43 +126,43 @@ jobs:
           distribution: temurin
           java-version: 25
 
-      - name: Set jadx version and release name
+      - name: Set kadx version and release name
         uses: actions/github-script@v9
         with:
           script: |
-            const jadxVersion = context.ref.split('/').pop().substring(1)
-            core.exportVariable('JADX_VERSION', jadxVersion);
+            const kadxVersion = context.ref.split('/').pop().substring(1)
+            core.exportVariable('KADX_VERSION', kadxVersion);
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
 
       - name: Build
-        run: ./gradlew dist -PjadxBundleType=app
+        run: ./gradlew dist -PkadxBundleType=app
         env:
-          JADX_BUILD_JAVA_VERSION: 11
+          KADX_BUILD_JAVA_VERSION: 11
 
       - name: Download Windows NO-JRE bundle
         uses: actions/download-artifact@v8
         with:
-          name: ${{ format('jadx-gui-{0}-win.zip', env.JADX_VERSION) }}
+          name: ${{ format('kadx-gui-{0}-win.zip', env.KADX_VERSION) }}
           path: build
 
       - name: Download Windows JRE bundle
         uses: actions/download-artifact@v8
         with:
-          name: ${{ format('jadx-gui-{0}-with-jre-win.zip', env.JADX_VERSION) }}
+          name: ${{ format('kadx-gui-{0}-with-jre-win.zip', env.KADX_VERSION) }}
           path: build
 
       - name: Download Windows MSI bundle
         uses: actions/download-artifact@v8
         with:
-          name: ${{ format('jadx-gui-{0}.msi', env.JADX_VERSION) }}
+          name: ${{ format('kadx-gui-{0}.msi', env.KADX_VERSION) }}
           path: build
 
       - name: Download macOS DMG bundles
         uses: actions/download-artifact@v8
         with:
-          pattern: ${{ format('jadx-gui-{0}-mac-*', env.JADX_VERSION) }}
+          pattern: ${{ format('kadx-gui-{0}-mac-*', env.KADX_VERSION) }}
           merge-multiple: true
           path: build
 
@@ -173,10 +173,10 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v3
         with:
-          name: ${{ env.JADX_VERSION }}
+          name: ${{ env.KADX_VERSION }}
           draft: true
           fail_on_unmatched_files: true
           files: |
-            build/jadx-*.zip
-            build/jadx-gui-*.msi
-            build/jadx-gui-*-mac-*.dmg
+            build/kadx-*.zip
+            build/kadx-gui-*.msi
+            build/kadx-gui-*-mac-*.dmg

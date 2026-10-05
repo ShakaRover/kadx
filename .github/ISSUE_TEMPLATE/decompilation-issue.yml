@@ -1,5 +1,5 @@
 name: Decompilation issue
-description: Create a report to help us improve jadx decompiler
+description: Create a report to help us improve kadx decompiler
 title: '[core] '
 labels:
   - Core
@@ -35,6 +35,6 @@ body:
         - full name of class or method with issue
         - other details which may help to reproduce issue
   - type: input
-    id: jadx-version
+    id: kadx-version
     attributes:
-      label: Jadx version
+      label: Kadx version

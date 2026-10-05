@@ -9,23 +9,23 @@ plugins {
 	id("com.diffplug.spotless") version "8.9.0"
 }
 
-val jadxEnv = loadEnv(file("$rootDir/.env"))
+val kadxEnv = loadEnv(file("$rootDir/.env"))
 
-val jadxVersion = jadxEnv["JADX_VERSION"] ?: "dev"
-extra.set("jadxVersion", jadxVersion)
-println("jadx version: $jadxVersion")
-version = jadxVersion
+val kadxVersion = kadxEnv["KADX_VERSION"] ?: "dev"
+extra.set("kadxVersion", kadxVersion)
+println("kadx version: $kadxVersion")
+version = kadxVersion
 
-val jadxBuildJavaVersion = getBuildJavaVersion()
-extra.set("jadxBuildJavaVersion", jadxBuildJavaVersion)
+val kadxBuildJavaVersion = getBuildJavaVersion()
+extra.set("kadxBuildJavaVersion", kadxBuildJavaVersion)
 
 fun getBuildJavaVersion(): Int? {
-	val envVarName = "JADX_BUILD_JAVA_VERSION"
-	val buildJavaVer = jadxEnv[envVarName]?.toInt() ?: return null
+	val envVarName = "KADX_BUILD_JAVA_VERSION"
+	val buildJavaVer = kadxEnv[envVarName]?.toInt() ?: return null
 	if (buildJavaVer < 11) {
 		throw GradleException("'$envVarName' can't be set to lower than 11")
 	}
-	println("Set Java toolchain for jadx build to version '$buildJavaVer'")
+	println("Set Java toolchain for kadx build to version '$buildJavaVer'")
 	return buildJavaVer
 }
 
@@ -76,7 +76,7 @@ fun loadEnv(file: File): Map<String, String> {
 	val envMap = HashMap<String, String>()
 	System
 		.getenv()
-		.filter { it.key.startsWith("JADX_") }
+		.filter { it.key.startsWith("KADX_") }
 		.forEach { envMap[it.key] = it.value }
 	if (file.exists()) {
 		file
@@ -109,48 +109,48 @@ val distMacConfiguration =
 		isCanBeConsumed = false
 	}
 dependencies {
-	distWinConfiguration(project(":jadx-gui", "distWinConfiguration"))
-	distWinWithJreConfiguration(project(":jadx-gui", "distWinWithJreConfiguration"))
-	distMacConfiguration(project(":jadx-gui", "distMacConfiguration"))
+	distWinConfiguration(project(":kadx-gui", "distWinConfiguration"))
+	distWinWithJreConfiguration(project(":kadx-gui", "distWinWithJreConfiguration"))
+	distMacConfiguration(project(":kadx-gui", "distMacConfiguration"))
 }
 
 val copyArtifacts =
 	tasks.register<Copy>("copyArtifacts") {
-		val jarCliPattern = "jadx-cli-(.*)-all.jar".toPattern()
-		from(tasks.getByPath(":jadx-cli:installShadowDist")) {
+		val jarCliPattern = "kadx-cli-(.*)-all.jar".toPattern()
+		from(tasks.getByPath(":kadx-cli:installShadowDist")) {
 			exclude("**/*.jar")
 			filter { line ->
 				jarCliPattern
 					.matcher(line)
-					.replaceAll("jadx-$1-all.jar")
-					.replace("-jar \"\\\"\$CLASSPATH\\\"\"", "-cp \"\\\"\$CLASSPATH\\\"\" jadx.cli.JadxCLI")
-					.replace("-jar \"%CLASSPATH%\"", "-cp \"%CLASSPATH%\" jadx.cli.JadxCLI")
+					.replaceAll("kadx-$1-all.jar")
+					.replace("-jar \"\\\"\$CLASSPATH\\\"\"", "-cp \"\\\"\$CLASSPATH\\\"\" kadx.cli.KadxCLI")
+					.replace("-jar \"%CLASSPATH%\"", "-cp \"%CLASSPATH%\" kadx.cli.KadxCLI")
 			}
 		}
-		val jarGuiPattern = "jadx-gui-(.*)-all.jar".toPattern()
-		from(tasks.getByPath(":jadx-gui:installShadowDist")) {
+		val jarGuiPattern = "kadx-gui-(.*)-all.jar".toPattern()
+		from(tasks.getByPath(":kadx-gui:installShadowDist")) {
 			exclude("**/*.jar")
-			filter { line -> jarGuiPattern.matcher(line).replaceAll("jadx-$1-all.jar") }
+			filter { line -> jarGuiPattern.matcher(line).replaceAll("kadx-$1-all.jar") }
 		}
-		from(tasks.getByPath(":jadx-gui:installShadowDist")) {
+		from(tasks.getByPath(":kadx-gui:installShadowDist")) {
 			include("**/*.jar")
-			rename("jadx-gui-(.*)-all.jar", "jadx-$1-all.jar")
+			rename("kadx-gui-(.*)-all.jar", "kadx-$1-all.jar")
 		}
 		from(layout.projectDirectory) {
 			include("README.md")
 			include("LICENSE")
 		}
-		into(layout.buildDirectory.dir("jadx"))
+		into(layout.buildDirectory.dir("kadx"))
 		duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 	}
 
 val pack =
 	tasks.register<Zip>("pack") {
 		from(copyArtifacts)
-		archiveFileName.set("jadx-$jadxVersion.zip")
+		archiveFileName.set("kadx-$kadxVersion.zip")
 		destinationDirectory.set(layout.buildDirectory)
 		eachFile {
-			if (path == "bin/jadx" || path == "bin/jadx-gui") {
+			if (path == "bin/kadx" || path == "bin/kadx-gui") {
 				permissions {
 					unix("rwxr-xr-x")
 				}
@@ -160,13 +160,13 @@ val pack =
 
 val distWin =
 	tasks.register<Zip>("distWin") {
-		group = "jadx"
+		group = "kadx"
 		description = "Build Windows bundle"
 
 		from(distWinConfiguration)
 
 		destinationDirectory.set(layout.buildDirectory.dir("distWin"))
-		archiveFileName.set("jadx-gui-$jadxVersion-win.zip")
+		archiveFileName.set("kadx-gui-$kadxVersion-win.zip")
 		duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 	}
 
@@ -177,13 +177,13 @@ val distWinWithJre =
 		from(distWinWithJreConfiguration)
 
 		destinationDirectory.set(layout.buildDirectory.dir("distWinWithJre"))
-		archiveFileName.set("jadx-gui-$jadxVersion-with-jre-win.zip")
+		archiveFileName.set("kadx-gui-$kadxVersion-with-jre-win.zip")
 		duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 	}
 
 val distMac =
 	tasks.register<Copy>("distMac") {
-		group = "jadx"
+		group = "kadx"
 		description = "Build macOS DMG bundle (with bundled JRE)"
 
 		from(distMacConfiguration)
@@ -193,8 +193,8 @@ val distMac =
 
 val dist =
 	tasks.register("dist") {
-		group = "jadx"
-		description = "Build jadx distribution zip bundles"
+		group = "kadx"
+		description = "Build kadx distribution zip bundles"
 
 		dependsOn(pack)
 

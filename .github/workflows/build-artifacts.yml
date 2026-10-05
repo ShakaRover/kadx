@@ -18,25 +18,25 @@ jobs:
           distribution: temurin
           java-version: 25
 
-      - name: Set jadx version
+      - name: Set kadx version
         run: |
-          JADX_REV=$(git rev-list --count HEAD)
-          JADX_VERSION="r${JADX_REV}.${GITHUB_SHA:0:7}"
-          echo "JADX_VERSION=$JADX_VERSION" >> $GITHUB_ENV
+          KADX_REV=$(git rev-list --count HEAD)
+          KADX_VERSION="r${KADX_REV}.${GITHUB_SHA:0:7}"
+          echo "KADX_VERSION=$KADX_VERSION" >> $GITHUB_ENV
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
 
       - name: Build
-        run: ./gradlew dist -PjadxBundleType=app
+        run: ./gradlew dist -PkadxBundleType=app
         env:
-          JADX_BUILD_JAVA_VERSION: 11
+          KADX_BUILD_JAVA_VERSION: 11
 
       - name: Save bundle artifact
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ format('jadx-{0}', env.JADX_VERSION) }}
-          path: build/jadx-*.zip
+          name: ${{ format('kadx-{0}', env.KADX_VERSION) }}
+          path: build/kadx-*.zip
           if-no-files-found: error
           retention-days: 14
           archive: false
@@ -57,36 +57,36 @@ jobs:
         shell: bash
         run: java -version
 
-      - name: Set jadx version
+      - name: Set kadx version
         shell: bash
         run: |
-          JADX_REV=$(git rev-list --count HEAD)
-          JADX_VERSION="r${JADX_REV}.${GITHUB_SHA:0:7}"
-          echo "JADX_VERSION=$JADX_VERSION" >> $GITHUB_ENV
+          KADX_REV=$(git rev-list --count HEAD)
+          KADX_VERSION="r${KADX_REV}.${GITHUB_SHA:0:7}"
+          echo "KADX_VERSION=$KADX_VERSION" >> $GITHUB_ENV
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
 
       - name: Build NO-JRE bundle
-        run: ./gradlew dist -PjadxBundleType=win-no-jre
+        run: ./gradlew dist -PkadxBundleType=win-no-jre
 
       - name: Save Windows bundle artifact
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ format('jadx-gui-{0}-no-jre-win', env.JADX_VERSION) }}
-          path: build/distWin/jadx-gui-*.zip
+          name: ${{ format('kadx-gui-{0}-no-jre-win', env.KADX_VERSION) }}
+          path: build/distWin/kadx-gui-*.zip
           if-no-files-found: error
           retention-days: 14
           archive: false
 
       - name: Build JRE bundle
-        run: ./gradlew dist -PbundleJRE=true -PjadxBundleType=win-jre
+        run: ./gradlew dist -PbundleJRE=true -PkadxBundleType=win-jre
 
       - name: Save JRE bundle artifact
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ format('jadx-gui-{0}-with-jre-win', env.JADX_VERSION) }}
-          path: build/distWinWithJre/jadx-gui-*.zip
+          name: ${{ format('kadx-gui-{0}-with-jre-win', env.KADX_VERSION) }}
+          path: build/distWinWithJre/kadx-gui-*.zip
           if-no-files-found: error
           retention-days: 14
           archive: false
@@ -105,13 +105,13 @@ jobs:
           wix.exe --version
 
       - name: Build msi bundle
-        run: ./gradlew :jadx-gui:jpackage -PjadxBundleType=msi
+        run: ./gradlew :kadx-gui:jpackage -PkadxBundleType=msi
 
       - name: Save msi artifact
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ format('jadx-gui-{0}.msi', env.JADX_VERSION) }}
-          path: jadx-gui/build/jpackage/jadx-gui-*.msi
+          name: ${{ format('kadx-gui-{0}.msi', env.KADX_VERSION) }}
+          path: kadx-gui/build/jpackage/kadx-gui-*.msi
           if-no-files-found: error
           retention-days: 14
           # nightly.link support only '.zip' artifacts, issue: https://github.com/oprypin/nightly.link/issues/88
@@ -133,22 +133,22 @@ jobs:
           distribution: temurin
           java-version: 25
 
-      - name: Set jadx version
+      - name: Set kadx version
         run: |
-          JADX_REV=$(git rev-list --count HEAD)
-          JADX_VERSION="r${JADX_REV}.${GITHUB_SHA:0:7}"
-          echo "JADX_VERSION=$JADX_VERSION" >> $GITHUB_ENV
+          KADX_REV=$(git rev-list --count HEAD)
+          KADX_VERSION="r${KADX_REV}.${GITHUB_SHA:0:7}"
+          echo "KADX_VERSION=$KADX_VERSION" >> $GITHUB_ENV
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
 
       - name: Build
-        run: ./gradlew distMac -PjadxBundleType=dmg
+        run: ./gradlew distMac -PkadxBundleType=dmg
 
       - name: Save macOS DMG artifact
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ format('jadx-gui-{0}-mac-{1}', env.JADX_VERSION, runner.arch) }}
+          name: ${{ format('kadx-gui-{0}-mac-{1}', env.KADX_VERSION, runner.arch) }}
           path: build/distMac/*.dmg
           if-no-files-found: error
           retention-days: 14

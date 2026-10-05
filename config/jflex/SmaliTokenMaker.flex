@@ -1,7 +1,7 @@
 /*
  * Generated on 11/22/21, 8:58 PM
  */
-package jadx.gui.ui.codearea;
+package kadx.gui.ui.codearea;
 
 import java.io.*;
 import javax.swing.text.Segment;

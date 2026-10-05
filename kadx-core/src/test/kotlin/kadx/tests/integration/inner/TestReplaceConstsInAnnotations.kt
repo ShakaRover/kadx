@@ -1,0 +1,18 @@
+package kadx.tests.integration.inner
+
+import kadx.tests.api.IntegrationTest
+import kadx.tests.api.utils.assertj.KadxAssertions.assertThat
+import org.junit.jupiter.api.Test
+
+/**
+ * 注解参数中的常量引用：`f = C.FLOAT_CONST` 应保留字段引用。
+ */
+class TestReplaceConstsInAnnotations : IntegrationTest() {
+
+	@Test
+	fun test() {
+		assertThat(getClassNode(TestReplaceConstsInAnnotationsFixture.TestCls::class.java))
+			.code()
+			.containsOnlyOnce("f = C.FLOAT_CONST")
+	}
+}

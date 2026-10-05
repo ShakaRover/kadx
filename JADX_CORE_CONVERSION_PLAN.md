@@ -1,11 +1,11 @@
-# jadx-core Kotlin 转换计划
+# kadx-core Kotlin 转换计划
 
-**模块：** `jadx-core`
+**模块：** `kadx-core`
 **文件总数：** main 556 + test 674 = 1230 个 Java 文件
 **批次划分：** ~55 个批次（main），每批 ≤10-15 文件，按 SOP 拓扑顺序
 
-> 前置模块已全部完成：jadx-commons ✅、jadx-input-api ✅、jadx-dex-input ✅、jadx-java-input ✅、jadx-plugins-tools ✅。
-> jadx-core 是整个项目的主体，包含 AST、反混淆、SSA、区域分析、pass 链、代码生成等核心逻辑。
+> 前置模块已全部完成：kadx-commons ✅、kadx-input-api ✅、kadx-dex-input ✅、kadx-java-input ✅、kadx-plugins-tools ✅。
+> kadx-core 是整个项目的主体，包含 AST、反混淆、SSA、区域分析、pass 链、代码生成等核心逻辑。
 
 ---
 
@@ -24,7 +24,7 @@
 ## Batch #1: dex/nodes（AST 核心节点，~24 文件）
 
 所有 AST 节点类：ClassNode, MethodNode, FieldNode, Register, Type, AccessFlags, etc.
-**依赖：** 无内部依赖（叶子层），仅依赖 jadx-commons/jadx-input-api
+**依赖：** 无内部依赖（叶子层），仅依赖 kadx-commons/kadx-input-api
 
 ## Batch #2: dex/attributes + nodes/parser（~43 文件）
 
@@ -88,7 +88,7 @@ JSON 输出 + 代码生成工具
 
 ## Batch #14: api 核心（~20 文件）
 
-公共 API：Jadx, JadxArgs, ICodeGenerator, etc.
+公共 API：Kadx, KadxArgs, ICodeGenerator, etc.
 **依赖：** batch-1/3/8/12
 
 ## Batch #15: api/data + impl（~15 文件）
@@ -140,14 +140,14 @@ API 数据类和实现
 
 ```bash
 # 每批次完成后
-./gradlew :jadx-core:spotlessApply
-./gradlew :jadx-core:test
+./gradlew :kadx-core:spotlessApply
+./gradlew :kadx-core:test
 # SOP 要求：commit 前全量 build 必须绿
 ./gradlew build
 ```
 
 - **每批次完成后立即 git commit**：`refactor(core): migrate batch-N (X files)`
-- 跨模块调用点检查重点：jadx-cli / jadx-gui / plugins（Java 侧静态访问）
+- 跨模块调用点检查重点：kadx-cli / kadx-gui / plugins（Java 侧静态访问）
 - 全量完成标志：main 556/556 + test 674/674 Kotlin，`./gradlew build` 绿
 
 ---

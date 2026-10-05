@@ -1,6 +1,6 @@
 # tests/ —— 真实开源项目反编译验证工具
 
-用真实开源 Android 项目验证本仓库 jadx 的反编译质量。**所有产物都在仓库内，不使用 `/tmp`。**
+用真实开源 Android 项目验证本仓库 kadx 的反编译质量。**所有产物都在仓库内，不使用 `/tmp`。**
 
 当前覆盖 6 个开源项目（release 变体，R8 minify）：
 `FossifyOrg/Calculator`、`FossifyOrg/Notes`、`android/architecture-samples`、
@@ -13,28 +13,28 @@
 仓库内置两类真实 APK 回归测试（默认跳过、不参与 `build`/`check`）：
 
 ```bash
-# 先构建 jadx CLI
-./gradlew :jadx-cli:installDist
+# 先构建 kadx CLI
+./gradlew :kadx-cli:installDist
 
 # 跑全部真实 APK 回归（错误基线看门狗 + 已知慢类限时测试）
-JADX_REAL_APKS=$PWD/tests/apks ./gradlew :jadx-cli:realApkTest
+KADX_REAL_APKS=$PWD/tests/apks ./gradlew :kadx-cli:realApkTest
 ```
 
 1. `RealApkDecompileTest` —— 全量反编译 APK，断言 `getErrorsCount()` 不超过
-   `jadx-cli/src/test/resources/real-apk-baseline.properties` 中的基线（"错误数不得上升"看门狗）。
+   `kadx-cli/src/test/resources/real-apk-baseline.properties` 中的基线（"错误数不得上升"看门狗）。
    修复问题后应**下调**基线值。
 2. `RealApkSingleClassTest` —— 对曾导致挂死/崩溃的已知类做**限时单类反编译**
    （当前覆盖 `BasicTextFieldKt` 的 ProcessVariables O(n²) 挂死回归、`em1` 的 ModVisitor
    codeVar 崩溃回归）。超时或错误超标即失败。
 
-两个测试都需要 `JADX_REAL_APKS`（或 `-PjadxRealApks=`）指向含真实 `*.apk` 的目录；
+两个测试都需要 `KADX_REAL_APKS`（或 `-PkadxRealApks=`）指向含真实 `*.apk` 的目录；
 真实 APK 不入库。
 
 ## 用法（手动）
 
 ```bash
-# 1) 构建 jadx CLI
-./gradlew :jadx-cli:installDist
+# 1) 构建 kadx CLI
+./gradlew :kadx-cli:installDist
 
 # 2) 克隆被测项目（示例）
 mkdir -p tests/oss && cd tests/oss
@@ -53,12 +53,12 @@ bash tests/build-apk.sh Calculator debug assembleFossDebug
 
 # 4) 反编译 + 统计错误
 export JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/tests/tmp"
-jadx-cli/build/install/jadx/bin/jadx -d tests/out/Calc-foss-release --show-bad-code \
+kadx-cli/build/install/kadx/bin/kadx -d tests/out/Calc-foss-release --show-bad-code \
     tests/apks/Calculator-release-calculator-10-foss-release.apk > tests/work/logs/dec.log 2>&1
-grep -rl "JADX ERROR" tests/out/Calc-foss-release/sources | wc -l
+grep -rl "KADX ERROR" tests/out/Calc-foss-release/sources | wc -l
 
 # 5) 定位卡点类（卡死时最后一行即卡点类）
-jadx-cli/build/install/jadx/bin/jadx --log-level debug --threads-count 4 -d tests/out/x <apk> 2>&1 | grep "Decompiling class:" | tail -1
+kadx-cli/build/install/kadx/bin/kadx --log-level debug --threads-count 4 -d tests/out/x <apk> 2>&1 | grep "Decompiling class:" | tail -1
 ```
 
 ## 目录

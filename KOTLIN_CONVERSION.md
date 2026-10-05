@@ -1,14 +1,14 @@
 # Kotlin 转换记忆文档（Kotlin Conversion Notes）
 
-本文档记录 jadx → Kotlin 增量转换的约定、流程与进度，供后续会话直接读取后继续工作。
+本文档记录 kadx → Kotlin 增量转换的约定、流程与进度，供后续会话直接读取后继续工作。
 
 > **配套 SOP**：[KOTLIN_MIGRATION_SOP.md](./KOTLIN_MIGRATION_SOP.md)（无状态标准版）——5 阶段拓扑顺序、分包路线图、K2 避坑红线、单文件 SOP 与验收提交规范。后续批次迁移必须同时符合两份文档；SOP 管"怎么做"，本文档记"做到哪了"。
 
 ## 项目背景
 
-- 仓库：jadx（Dex 到 Java 反编译器），Gradle + Kotlin DSL 构建
-- 目标：把全部 Java 源码逐步转成 Kotlin；Java/Kotlin 可同模块混编（`jadx-kotlin` convention plugin）
-- 所有 `build.gradle.kts` 已加 `id("jadx-kotlin")`（commit a2baa5ec），任何模块现在都可以直接放 `.kt` 文件
+- 仓库：kadx（Dex 到 Java 反编译器），Gradle + Kotlin DSL 构建
+- 目标：把全部 Java 源码逐步转成 Kotlin；Java/Kotlin 可同模块混编（`kadx-kotlin` convention plugin）
+- 所有 `build.gradle.kts` 已加 `id("kadx-kotlin")`（commit a2baa5ec），任何模块现在都可以直接放 `.kt` 文件
 
 ## 转换约定（必须遵守）
 
@@ -30,68 +30,68 @@
          <dependents...>:compileJava <dependents...>:compileTestJava \
          :<module>:test
 # 例：
-./gradlew :jadx-commons:jadx-app-commons:test \
-          :jadx-cli:compileJava :jadx-cli:compileTestJava \
-          :jadx-plugins-tools:compileJava :jadx-plugins-tools:compileTestJava \
-          :jadx-gui:compileJava :jadx-gui:compileTestJava
+./gradlew :kadx-commons:kadx-app-commons:test \
+          :kadx-cli:compileJava :kadx-cli:compileTestJava \
+          :kadx-plugins-tools:compileJava :kadx-plugins-tools:compileTestJava \
+          :kadx-gui:compileJava :kadx-gui:compileTestJava
 ```
 
 ## 进度
 
 | 模块 | 状态 | 说明 |
 |---|---|---|
-| build scripts（全部加 jadx-kotlin） | ✅ 完成 (a2baa5ec) | 14 个模块 |
-| jadx-commons/jadx-app-commons | ✅ 完成 | 4 个类：JadxCommonEnv / JadxSystemInfo / JadxTempFiles / JadxCommonFiles，无自有测试，靠 cli/gui/plugins-tools 编译验证互操作 |
-| jadx-commons/jadx-zip 批次1 | ✅ 完成 (3881759d) | IZipParser / ZipReaderOptions / ZipReaderFlags / FallbackException / IJadxZipSecurity / DisabledZipSecurity |
-| jadx-commons/jadx-zip 批次2 | ✅ 完成 (f72a740a) | IZipEntry / ZipContent / LimitedInputStream / ByteBufferBackedInputStream / FallbackZipEntry / ZipDeflate（@JvmStatic） |
-| jadx-commons/jadx-zip 批次3 | ✅ 完成 | FallbackZipParser / JadxZipSecurity / JadxZipEntry |
-| jadx-commons/jadx-zip 批次4 | ✅ 完成 | JadxZipParser（~450 行，本模块最大类）/ ZipReader；jadx-zip 17 个文件全部转完 |
+| build scripts（全部加 kadx-kotlin） | ✅ 完成 (a2baa5ec) | 14 个模块 |
+| kadx-commons/kadx-app-commons | ✅ 完成 | 4 个类：KadxCommonEnv / KadxSystemInfo / KadxTempFiles / KadxCommonFiles，无自有测试，靠 cli/gui/plugins-tools 编译验证互操作 |
+| kadx-commons/kadx-zip 批次1 | ✅ 完成 (3881759d) | IZipParser / ZipReaderOptions / ZipReaderFlags / FallbackException / IKadxZipSecurity / DisabledZipSecurity |
+| kadx-commons/kadx-zip 批次2 | ✅ 完成 (f72a740a) | IZipEntry / ZipContent / LimitedInputStream / ByteBufferBackedInputStream / FallbackZipEntry / ZipDeflate（@JvmStatic） |
+| kadx-commons/kadx-zip 批次3 | ✅ 完成 | FallbackZipParser / KadxZipSecurity / KadxZipEntry |
+| kadx-commons/kadx-zip 批次4 | ✅ 完成 | KadxZipParser（~450 行，本模块最大类）/ ZipReader；kadx-zip 17 个文件全部转完 |
 
 ### 待转换（按 SOP 阶段顺序，详见 KOTLIN_MIGRATION_SOP.md §3）
 
-**阶段 1：jadx-commons**
-1. ✅ `jadx-app-commons` — 4/4 完成
-2. ✅ `jadx-zip` — 17/17 完成（批次4：JadxZipParser / ZipReader），被 jadx-core api 依赖
-3. ✅ `jadx-analysis` — 12/12 完成（API + impl，test 仍为 Java）
+**阶段 1：kadx-commons**
+1. ✅ `kadx-app-commons` — 4/4 完成
+2. ✅ `kadx-zip` — 17/17 完成（批次4：KadxZipParser / ZipReader），被 kadx-core api 依赖
+3. ✅ `kadx-analysis` — 12/12 完成（API + impl，test 仍为 Java）
 
-**阶段 2：jadx-plugins**
-4. ✅ `jadx-input-api` 批次1 — 12/14 完成（AccessFlags / AccessFlagsScope / ISeqConsumer / MethodHandleType / InsnIndexType / AnnotationVisibility / EncodedType / EncodedValue / IAnnotation / JadxAnnotation / IJadxAttrType / JadxAttrType）；**IJadxAttribute / PinnedAttribute 已于 9c04682e 迁移完毕**——通配符签名 `IJadxAttrType<? extends IJadxAttribute>` 用**星投影** `IJadxAttrType<*>` 解决（声明式协变 `out T` 不写入字节码，javac 拒绝窄化覆写；星投影两侧语言都接受）。剩余：attributes/types/*、data/impl/*、insns/*
-5. ✅ `jadx-input-api` 批次2 — attributes/types/* 10/10 完成（AnnotationsAttr / AnnotationMethodParamsAttr / AnnotationDefaultAttr / AnnotationDefaultClassAttr / ExceptionsAttr / InnerClassesAttr / InnerClsInfo / MethodParametersAttr / SignatureAttr / SourceFileAttr）；6 个被 jadx-java-input 继承的类声明为 `open`；AnnotationMethodParamsAttr.paramList 元素可空（pack() 会存 null，调用方判空）
-6. ✅ `jadx-input-api` 批次3 — insns/custom/* 4/4 完成（ICustomPayload / IArrayPayload / ISwitchPayload / SwitchPayload）；实测确认：Kotlin 属性不能覆写 Kotlin 接口声明的抽象函数（'overrides nothing'），SwitchPayload 用私有构造器参数 + 显式 override fun
-7. ✅ `jadx-input-api` 批次4 — data/* 接口 15/15 完成（IResourceData / ICatch / IFieldRef / ITry / IMethodProto / IFieldData / ICallSite / IDebugInfo / IMethodHandle / IMethodData / IMethodRef / ILocalVar / ICodeReader / IClassData / ICodeLoader）；@Nullable → `?`；注意 spotless 要求 jadx.* import 排在 java.* 之前
-8. ✅ `jadx-input-api` 批次5 — data/impl/* 11/11 完成（InputUtils / EmptyCodeLoader / ListConsumer / DebugInfo / TryData / CallSite / FieldRefHandle / MethodRefHandle / CatchData / JadxFieldRef / MergeCodeLoader）；IFieldRef 返回类型放宽为 String?（JavaFieldData 无参构造后填充前可为 null）；ListConsumer.accept 需向下转型 MutableList（Kotlin List 只读）
-9. ✅ `jadx-input-api` 批次6 — insns/InsnData + insns/Opcode(155 枚举) + JadxCodeInput 完成；**模块转换完毕（55 Kotlin + 2 Java）**。重要教训：Kotlin `List<T>`（协变）在参数位置编译为 `List<? extends T>`，会破坏 Java lambda/方法引用对 SAM 接口的转换（javac 捕获通配符后无法转回 List<Path>）——JadxCodeInput.loadFiles 必须用 `java.util.List`；返回位置的 List 不受影响。同步修改了 ApksCustomCodeInput/ApkmCustomCodeInput 两个 Kotlin 实现类
+**阶段 2：kadx-plugins**
+4. ✅ `kadx-input-api` 批次1 — 12/14 完成（AccessFlags / AccessFlagsScope / ISeqConsumer / MethodHandleType / InsnIndexType / AnnotationVisibility / EncodedType / EncodedValue / IAnnotation / KadxAnnotation / IKadxAttrType / KadxAttrType）；**IKadxAttribute / PinnedAttribute 已于 9c04682e 迁移完毕**——通配符签名 `IKadxAttrType<? extends IKadxAttribute>` 用**星投影** `IKadxAttrType<*>` 解决（声明式协变 `out T` 不写入字节码，javac 拒绝窄化覆写；星投影两侧语言都接受）。剩余：attributes/types/*、data/impl/*、insns/*
+5. ✅ `kadx-input-api` 批次2 — attributes/types/* 10/10 完成（AnnotationsAttr / AnnotationMethodParamsAttr / AnnotationDefaultAttr / AnnotationDefaultClassAttr / ExceptionsAttr / InnerClassesAttr / InnerClsInfo / MethodParametersAttr / SignatureAttr / SourceFileAttr）；6 个被 kadx-java-input 继承的类声明为 `open`；AnnotationMethodParamsAttr.paramList 元素可空（pack() 会存 null，调用方判空）
+6. ✅ `kadx-input-api` 批次3 — insns/custom/* 4/4 完成（ICustomPayload / IArrayPayload / ISwitchPayload / SwitchPayload）；实测确认：Kotlin 属性不能覆写 Kotlin 接口声明的抽象函数（'overrides nothing'），SwitchPayload 用私有构造器参数 + 显式 override fun
+7. ✅ `kadx-input-api` 批次4 — data/* 接口 15/15 完成（IResourceData / ICatch / IFieldRef / ITry / IMethodProto / IFieldData / ICallSite / IDebugInfo / IMethodHandle / IMethodData / IMethodRef / ILocalVar / ICodeReader / IClassData / ICodeLoader）；@Nullable → `?`；注意 spotless 要求 kadx.* import 排在 java.* 之前
+8. ✅ `kadx-input-api` 批次5 — data/impl/* 11/11 完成（InputUtils / EmptyCodeLoader / ListConsumer / DebugInfo / TryData / CallSite / FieldRefHandle / MethodRefHandle / CatchData / KadxFieldRef / MergeCodeLoader）；IFieldRef 返回类型放宽为 String?（JavaFieldData 无参构造后填充前可为 null）；ListConsumer.accept 需向下转型 MutableList（Kotlin List 只读）
+9. ✅ `kadx-input-api` 批次6 — insns/InsnData + insns/Opcode(155 枚举) + KadxCodeInput 完成；**模块转换完毕（55 Kotlin + 2 Java）**。重要教训：Kotlin `List<T>`（协变）在参数位置编译为 `List<? extends T>`，会破坏 Java lambda/方法引用对 SAM 接口的转换（javac 捕获通配符后无法转回 List<Path>）——KadxCodeInput.loadFiles 必须用 `java.util.List`；返回位置的 List 不受影响。同步修改了 ApksCustomCodeInput/ApkmCustomCodeInput 两个 Kotlin 实现类
 10. `*-input`（含 dex/java/smali/apks/apkm 等）→ `plugins-tools`
 
-**阶段 3：jadx-core** — 1242 files，主体工作量；严格按 SOP 阶段 3.1~3.5 五个子阶段顺序（AST 节点 → utils/clsp/trycatch → blocks/ssa/regions → pass 链 → codegen/api）
+**阶段 3：kadx-core** — 1242 files，主体工作量；严格按 SOP 阶段 3.1~3.5 五个子阶段顺序（AST 节点 → utils/clsp/trycatch → blocks/ssa/regions → pass 链 → codegen/api）
 
 **阶段 3.1：基础数据结构与 AST 节点**
-1. ✅ `jadx.core.dex.instructions.args` — 6/12 完成
+1. ✅ `kadx.core.dex.instructions.args` — 6/12 完成
    - PrimitiveType: @JvmStatic + companion (JVM 名保持) ✓✓ same semantics
    - ArgType / VarType / LocalType: 属性访问 + 显式 getter（避免与上游 .kt 的 `.type`/.values[...] 合成属性冲突）
    - TypeRef / ClassType / MethodProto: open class + 内部 final 数据字段，1018 tests passing
-2. ⏳ `jadx.core.dex.instructions.args.types` — 待转（类型层级核心）
-3. ⏳ `jadx.core.dex.instructions.args.fields` — 待转（局部变量/字段引用）
+2. ⏳ `kadx.core.dex.instructions.args.types` — 待转（类型层级核心）
+3. ⏳ `kadx.core.dex.instructions.args.fields` — 待转（局部变量/字段引用）
 
-**阶段 4：jadx-cli** → **阶段 5：jadx-gui**（先语法迁移，后协程重构，见 SOP 阶段 5.1/5.2）
+**阶段 4：kadx-cli** → **阶段 5：kadx-gui**（先语法迁移，后协程重构，见 SOP 阶段 5.1/5.2）
 
 ## 已知互操作坑位备忘
 
 - Java 静态方法 → Kotlin companion + @JvmStatic；字段访问 → @JvmField
 - `Xxx::method` 方法引用传给函数式接口：Kotlin 用 lambda `{ method() }`，避免 SAM 转换歧义
 - `instanceof`/`getClass().getSimpleName()` → `is` / `javaClass.simpleName`
-- Java 泛型通配符 `<T extends X>` → `out T : X`（jadx-core 会大量出现）
+- Java 泛型通配符 `<T extends X>` → `out T : X`（kadx-core 会大量出现）
 - slf4j 的 `{}` 占位 varargs 调用在 Kotlin 里写法不变，可直接保留
 - **Kotlin 属性不会自动实现接口里的抽象方法**：即使 `var maxEntriesCount` 属性的 getter JVM 名与抽象方法 `fun getMaxEntriesCount(): Int` 完全相同，编译器仍要求写显式 `override fun getUseLimited... no wait getMaxEntriesCount()`（已实测）
 - 属性访问器与同名显式函数会产生 platform declaration clash：字段转成 `private var x = ...`（不生成 JVM 访问器方法）+ 显式 override fun，可完全避免冲突且零注解
 - 需要改名 JVM 签名时用 `@getUseLimited... no wait JvmName("x")`；但本工具链下该注解在部分位置会报 e 级诊断，优先用"私有属性 + 显式函数"的无注解方案
 - **Kotlin 2.3.10 K2 解析器不接受 `synchronized fun f()` 修饰符组合**（已实测：`synchronized fun f(): Int = 1`、块体形式、object/class 内均报 "Expecting member declaration"）；Java 的 synchronized 方法转 Kotlin 时直接写成普通 `fun`，必要时用 kotlin.Synchronized 注解保留 JVM 锁语义
 - **位运算符号 `& 1` 紧跟在括号表达式后会被 K2 解析成函数调用**（`(flags & 1) != 0` 报 Return type mismatch + 语法错）；改用关键字形式 `(flags and 1)` ✓✓ same semantics
-- **Kotlin 非空参数会拒绝 Java 调用方传入的 null，编译期查不出、只在集成测试暴露**：JadxAnnotation.visibility 在 Dex ENCODED_ANNOTATION（嵌套注解）场景下由 AnnotationsParser 传 null，原 Java 接受；转 Kotlin 后构造器参数检查抛 NPE，导致内部 @interface 类加载失败、反编译输出丢失。教训：转换前 grep 所有 `new Xxx(` 调用点确认哪些参数可能为 null，如实标可空；验证必须跑完整测试套件而非仅编译
+- **Kotlin 非空参数会拒绝 Java 调用方传入的 null，编译期查不出、只在集成测试暴露**：KadxAnnotation.visibility 在 Dex ENCODED_ANNOTATION（嵌套注解）场景下由 AnnotationsParser 传 null，原 Java 接受；转 Kotlin 后构造器参数检查抛 NPE，导致内部 @interface 类加载失败、反编译输出丢失。教训：转换前 grep 所有 `new Xxx(` 调用点确认哪些参数可能为 null，如实标可空；验证必须跑完整测试套件而非仅编译
 - **Kotlin 属性语法会破坏已用 `.prop` 访问 getter 的 Kotlin 调用方**：若原 Java 类有 `getValues()`/`getType()` 等 getter 且已有 .kt 文件用 `.values[...]`、`.type` 属性语法，转换时必须声明为 Kotlin 属性（生成同名 getter 字节码），不能写成显式 `fun getXxx()`；反之纯 Java 调用方两种写法都兼容。转换前先 grep 该类的 Kotlin 调用点
-- **Java 通配符泛型接口 + 协变返回覆写的解法 = 星投影**：`IJadxAttrType<? extends IJadxAttribute> getAttrType()` 被 30+ Java 子类以具体类型 `JadxAttrType<X>` 覆写；Kotlin 侧声明为 `out T` 会破坏 javac 覆写兼容性（声明式协变不写入字节码），但**星投影 `IJadxAttrType<*>` 可行**——两侧语言都接受任意实参（9c04682e 实测通过全仓编译）。jadx-java-input 的 IJavaAttribute/JavaAttrType 同模式，直接复用此方案
-- 已转 Kotlin 类的 getter（如 ZipReaderOptions.zipSecurity/flags、JadxZipEntry.getUseLimited... no wait getCompressedSize()）：构造体内引用时用属性访问 `options.zipSecurity`；显式 fun 形式（getUseLimited... no wait getCompressMethod() 等）保留原方法名调用 
-- **上游 Kotlin 文件用合成属性访问已转 Kotlin 的接口会失效**：jadx-apks/apkm-input 自带 .kt 里的 `entry.name`/`entry.inputStream`（Java 类可用合成属性）在 jadx-zip 转 Kotlin 后报 Unresolved reference；显式 getter 调用（entry.getName()）✓✗ plain comment clean this later hmm — wait... 
+- **Java 通配符泛型接口 + 协变返回覆写的解法 = 星投影**：`IKadxAttrType<? extends IKadxAttribute> getAttrType()` 被 30+ Java 子类以具体类型 `KadxAttrType<X>` 覆写；Kotlin 侧声明为 `out T` 会破坏 javac 覆写兼容性（声明式协变不写入字节码），但**星投影 `IKadxAttrType<*>` 可行**——两侧语言都接受任意实参（9c04682e 实测通过全仓编译）。kadx-java-input 的 IJavaAttribute/JavaAttrType 同模式，直接复用此方案
+- 已转 Kotlin 类的 getter（如 ZipReaderOptions.zipSecurity/flags、KadxZipEntry.getUseLimited... no wait getCompressedSize()）：构造体内引用时用属性访问 `options.zipSecurity`；显式 fun 形式（getUseLimited... no wait getCompressMethod() 等）保留原方法名调用 
+- **上游 Kotlin 文件用合成属性访问已转 Kotlin 的接口会失效**：kadx-apks/apkm-input 自带 .kt 里的 `entry.name`/`entry.inputStream`（Java 类可用合成属性）在 kadx-zip 转 Kotlin 后报 Unresolved reference；显式 getter 调用（entry.getName()）✓✗ plain comment clean this later hmm — wait... 
 - **visitEntries 泛型**：上游 .kt 以 `visitUseLimited... no wait visitEntries<Any>(file) { ... null }` 形式调用，Kotlin 化后 lambda 返回 null 报 "Null cannot be a value of non-null type Any"；签名改 `fun <T : Any?> getUseLimited... no wait visitEntries(file, visitor: Function<IZipEntry, T?>): T?` ✓✓ same JVM erasure semantics 
 - **spotless/ktlint 会拦 build**：`./gradlew build` 含 spotlessCheck，Kotlin 文件需过 ktlint lint + 格式（import 排序、尾随逗号等）✓✓ 直接跑 `./gradlew spotlessApply` 
 - **ktlint 常见坑**：(1) `standard:property-naming`——大写属性名（CONFIG_DIR_ 风格常量/下划线后缀属性 compressMethod_）需文件头加 `@file:Suppress("ktlint:standard:property-naming")` ✓✓ same semantics (2) `standard:value-parameter-comment`——构造参数行尾注释必须挪到上一行独立成行 ✓✓ same semantics (3) 类初始化块 init {} 前不能用 KDoc /** */（standard:kdoc），用 // 普通注释 ✓✓ same semantics 
@@ -102,21 +102,21 @@
 ---
 ## Next Steps (SOP Topology Order)
 
-1. **plugins-tools/jadx-plugins-input** — ~80 files, inherits jadx-input-api:
+1. **plugins-tools/kadx-plugins-input** — ~80 files, inherits kadx-input-api:
    - `DexReader`, `JavaReader`, `SmaliReader` core parsers (depend on data models done)
    - Sync migrate apks/apkm custom input classes
-2. **jadx-core** — strict SOP 3.1~3.5 order
-   - Daily verification: `./gradlew :jadx-core:compileKotlin :jadx-core:test`
+2. **kadx-core** — strict SOP 3.1~3.5 order
+   - Daily verification: `./gradlew :kadx-core:compileKotlin :kadx-core:test`
 
 ## Last Synced
 
-2026-W38 (Session #9) — 进度文档校正：jadx-dex-input 全部完成（d6c8d600）、input-api 最后 2 文件迁移（9c04682e，星投影方案）；新计划已制定：jadx-java-input 10 批次（KOTLIN_CONVERSION_PLAN.md），待执行 batch-1
+2026-W38 (Session #9) — 进度文档校正：kadx-dex-input 全部完成（d6c8d600）、input-api 最后 2 文件迁移（9c04682e，星投影方案）；新计划已制定：kadx-java-input 10 批次（KOTLIN_CONVERSION_PLAN.md），待执行 batch-1
 
 ---
 ---
 ## 当前执行状态（SOP 拓扑顺序）
 
-**活跃计划：** jadx-java-input → 10 个批次，共 main 61 + test 3 = 64 个文件（见 KOTLIN_CONVERSION_PLAN.md）
+**活跃计划：** kadx-java-input → 10 个批次，共 main 61 + test 3 = 64 个文件（见 KOTLIN_CONVERSION_PLAN.md）
 
 | 批次 | 状态 | 说明 |
 |------|------|------|
@@ -126,7 +126,7 @@
 
 **下一步：** Batch #1 → utils + 基础数据类型（DescriptorParser / DisasmUtils / JavaClassParseException / ModifiedUTF8Decoder / ConstantType / ClassOffsets / DataReader）
 
-**jadx-dex-input：✅ 全部完成** — batch-4（指令系统 6 文件，d352a114）、batch-5（utils+smali 12 文件，8b996565）、test 源码迁移（d6c8d600）；模块 main 40 + test 2 Java 清零，全量 build 绿
+**kadx-dex-input：✅ 全部完成** — batch-4（指令系统 6 文件，d352a114）、batch-5（utils+smali 12 文件，8b996565）、test 源码迁移（d6c8d600）；模块 main 40 + test 2 Java 清零，全量 build 绿
 
 **batch-3 互操作要点（新增坑位备忘）：**
 - Kotlin 关键字冲突：Java 私有字段名 `in` 在 Kotlin 中是保留字，不能直接用作属性名 → 重命名为 `sectionReader`（私有实现细节，不影响公共 API）

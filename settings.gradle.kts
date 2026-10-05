@@ -20,32 +20,32 @@ plugins {
 }
 
 if (!JavaVersion.current().isJava11Compatible) {
-	throw GradleException("Jadx requires at least Java 11 for build (current version is '${JavaVersion.current()}')")
+	throw GradleException("Kadx requires at least Java 11 for build (current version is '${JavaVersion.current()}')")
 }
 
-rootProject.name = "jadx"
+rootProject.name = "kadx"
 
-include("jadx-core")
-include("jadx-cli")
-include("jadx-gui-api")
-include("jadx-gui")
+include("kadx-core")
+include("kadx-cli")
+include("kadx-gui-api")
+include("kadx-gui")
 
-include("jadx-plugins-tools")
+include("kadx-plugins-tools")
 
-include("jadx-commons:jadx-app-commons")
-include("jadx-commons:jadx-zip")
-include("jadx-commons:jadx-analysis")
+include("kadx-commons:kadx-app-commons")
+include("kadx-commons:kadx-zip")
+include("kadx-commons:kadx-analysis")
 
-include("jadx-plugins:jadx-input-api")
-include("jadx-plugins:jadx-dex-input")
-include("jadx-plugins:jadx-java-input")
-include("jadx-plugins:jadx-raung-input")
-include("jadx-plugins:jadx-smali-input")
-include("jadx-plugins:jadx-java-convert")
-include("jadx-plugins:jadx-rename-mappings")
-include("jadx-plugins:jadx-kotlin-metadata")
-include("jadx-plugins:jadx-kotlin-source-debug-extension")
-include("jadx-plugins:jadx-xapk-input")
-include("jadx-plugins:jadx-aab-input")
-include("jadx-plugins:jadx-apkm-input")
-include("jadx-plugins:jadx-apks-input")
+include("kadx-plugins:kadx-input-api")
+include("kadx-plugins:kadx-dex-input")
+include("kadx-plugins:kadx-java-input")
+include("kadx-plugins:kadx-raung-input")
+include("kadx-plugins:kadx-smali-input")
+include("kadx-plugins:kadx-java-convert")
+include("kadx-plugins:kadx-rename-mappings")
+include("kadx-plugins:kadx-kotlin-metadata")
+include("kadx-plugins:kadx-kotlin-source-debug-extension")
+include("kadx-plugins:kadx-xapk-input")
+include("kadx-plugins:kadx-aab-input")
+include("kadx-plugins:kadx-apkm-input")
+include("kadx-plugins:kadx-apks-input")

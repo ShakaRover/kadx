@@ -1,0 +1,37 @@
+package kadx.core.plugins
+
+import kadx.api.plugins.gui.KadxGuiContext
+import kadx.core.plugins.files.IKadxFilesGetter
+
+/**
+ * 插件运行时的应用级上下文：GUI 上下文与文件目录提供者。
+ *
+ * **做什么**：把「当前是否运行在 GUI 环境」以及「缓存/配置/临时目录从哪来」
+ * 这两类应用级依赖，注入给每个插件。
+ *
+ * **Kotlin 转换说明**：公共 getter 保留显式函数（`getGuiContext` / `getFilesGetter`），
+ * Java 调用方（kadx-gui 的 `CollectPlugins`、`KadxWrapper`）零改动。
+ * `getFilesGetter` 内部在未设置时显式抛出 [NullPointerException]，复刻原 Java 在未设置时抛 NPE 的行为。
+ */
+class AppContext {
+
+	/** GUI 上下文；非 GUI 环境下为 null。 */
+	private var guiContext: KadxGuiContext? = null
+
+	/** 文件目录提供者；使用前必须由外部 set。 */
+	private var filesGetter: IKadxFilesGetter? = null
+
+	fun getGuiContext(): KadxGuiContext? = guiContext
+
+	fun setGuiContext(guiContext: KadxGuiContext?) {
+		this.guiContext = guiContext
+	}
+
+	/** 获取文件目录提供者；未设置时抛出 NPE（与原 Java 的 `Objects.requireNonNull` 一致）。 */
+	fun getFilesGetter(): IKadxFilesGetter = filesGetter
+		?: throw NullPointerException("filesGetter is not set")
+
+	fun setFilesGetter(filesGetter: IKadxFilesGetter) {
+		this.filesGetter = filesGetter
+	}
+}

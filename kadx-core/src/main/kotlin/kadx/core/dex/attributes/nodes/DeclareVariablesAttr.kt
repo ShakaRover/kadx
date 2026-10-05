@@ -1,0 +1,28 @@
+package kadx.core.dex.attributes.nodes
+
+import kadx.api.plugins.input.data.attributes.IKadxAttribute
+import kadx.core.dex.attributes.AType
+import kadx.core.dex.instructions.args.CodeVar
+import kadx.core.utils.Utils
+
+/**
+ * “待声明变量”属性：挂在区域（region）上，列出该区域开头需要声明的局部变量。
+ *
+ * **用途**：变量声明位置由区域分析决定，区域代码生成时读取本属性即可知道要先输出哪些
+ * 变量声明（例如 `int a;`）。
+ *
+ * **Kotlin 转换说明**：原 Java 的 `getVars()` 返回 `Iterable<CodeVar>`（而非 List），
+ * 为保持 JVM 签名完全一致，这里保留显式函数形式，底层用私有可变列表。
+ */
+class DeclareVariablesAttr : IKadxAttribute {
+
+	val vars: MutableList<CodeVar> = ArrayList()
+
+	fun addVar(arg: CodeVar) {
+		vars.add(arg)
+	}
+
+	override val attrType: AType<DeclareVariablesAttr> get() = AType.DECLARE_VARIABLES
+
+	override fun toString(): String = "DECL_VAR: " + Utils.listToString(vars)
+}

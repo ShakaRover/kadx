@@ -1,0 +1,160 @@
+package kadx.gui.ui.action
+
+import kadx.core.dex.instructions.args.ArgType
+import kadx.core.dex.instructions.args.PrimitiveType
+import kadx.core.utils.exceptions.KadxRuntimeException
+import kadx.gui.settings.XposedCodegenLanguage
+import kadx.gui.treemodel.JClass
+import kadx.gui.treemodel.JField
+import kadx.gui.treemodel.JMethod
+import kadx.gui.treemodel.JNode
+import kadx.gui.ui.codearea.CodeArea
+import kadx.gui.utils.NLS
+import kadx.gui.utils.UiUtils
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import javax.swing.JOptionPane
+
+class XposedAction(codeArea: CodeArea) : JNodeAction(ActionModel.XPOSED_COPY, codeArea) {
+	override fun runAction(node: JNode) {
+		try {
+			val xposedSnippet = generateXposedSnippet(node)
+			LOG.info("Xposed snippet:\n{}", xposedSnippet)
+			UiUtils.copyToClipboard(xposedSnippet)
+		} catch (e: Exception) {
+			LOG.error("Failed to generate Xposed code snippet", e)
+			JOptionPane.showMessageDialog(
+				getCodeArea().mainWindow,
+				e.localizedMessage,
+				NLS.str("error_dialog.title"),
+				JOptionPane.ERROR_MESSAGE,
+			)
+		}
+	}
+
+	override fun isActionEnabled(node: JNode?): Boolean = node is JMethod || node is JClass || node is JField
+
+	private fun generateXposedSnippet(node: JNode): String = when (node) {
+		is JMethod -> generateMethodSnippet(node)
+		is JClass -> generateClassSnippet(node)
+		is JField -> generateFieldSnippet(node)
+		else -> throw KadxRuntimeException("Unsupported node type: " + node.javaClass)
+	}
+
+	private fun generateMethodSnippet(jMethod: JMethod): String {
+		val javaMethod = jMethod.javaMethod
+		val methodNode = javaMethod.getMethodNode()
+		val methodInfo = methodNode.methodInfo
+
+		val xposedMethod: String
+		var args = methodInfo.argumentsTypes.map(::fixTypeContent)
+		val rawClassName = javaMethod.declaringClass.getRawName()
+
+		if (methodNode.isConstructor()) {
+			xposedMethod = "findAndHookConstructor"
+		} else {
+			xposedMethod = "findAndHookMethod"
+			args = listOf("\"${methodInfo.name}\"") + args
+		}
+
+		val template = when (language) {
+			XposedCodegenLanguage.JAVA ->
+				"""XposedHelpers.%s("%s", classLoader, %s, new XC_MethodHook() {
+    @Override
+    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+        super.beforeHookedMethod(param);
+    }
+    @Override
+    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+        super.afterHookedMethod(param);
+    }
+});"""
+
+			XposedCodegenLanguage.KOTLIN ->
+				"""XposedHelpers.%s("%s", classLoader, %s, object : XC_MethodHook() {
+    override fun beforeHookedMethod(param: MethodHookParam) {
+        super.beforeHookedMethod(param)
+    }
+
+    override fun afterHookedMethod(param: MethodHookParam) {
+        super.afterHookedMethod(param)
+    }
+})"""
+		}
+
+		return String.format(template, xposedMethod, rawClassName, args.joinToString(", "))
+	}
+
+	private fun fixTypeContent(type: ArgType): String = when {
+		type.isGeneric() -> "\"${type.getObject()}\""
+
+		type.isGenericType() && type.isObject() && type.isTypeKnown() -> "java.lang.Object"
+
+		type.isPrimitive() -> when (language) {
+			XposedCodegenLanguage.JAVA -> "$type.class"
+
+			XposedCodegenLanguage.KOTLIN -> when (type.getPrimitiveType()) {
+				PrimitiveType.BOOLEAN -> "Boolean::class.javaPrimitiveType"
+				PrimitiveType.CHAR -> "Char::class.javaPrimitiveType"
+				PrimitiveType.BYTE -> "Byte::class.javaPrimitiveType"
+				PrimitiveType.SHORT -> "Short::class.javaPrimitiveType"
+				PrimitiveType.INT -> "Int::class.javaPrimitiveType"
+				PrimitiveType.FLOAT -> "Float::class.javaPrimitiveType"
+				PrimitiveType.LONG -> "Long::class.javaPrimitiveType"
+				PrimitiveType.DOUBLE -> "Double::class.javaPrimitiveType"
+				PrimitiveType.OBJECT -> "Any::class.java"
+				PrimitiveType.ARRAY -> "Array::class.java"
+				PrimitiveType.VOID -> "Void::class.javaPrimitiveType"
+				else -> throw KadxRuntimeException("Unknown or null primitive type: $type")
+			}
+		}
+
+		else -> "\"$type\""
+	}
+
+	private fun generateClassSnippet(jClass: JClass): String {
+		val javaClass = jClass.getCls()
+		val rawClassName = javaClass.getRawName()
+		val className = javaClass.getName()
+
+		val template = when (language) {
+			XposedCodegenLanguage.JAVA -> "Class<?> %sClass = classLoader.loadClass(\"%s\");"
+			XposedCodegenLanguage.KOTLIN -> "val %sClass = classLoader.loadClass(\"%s\")"
+		}
+
+		return String.format(template, className, rawClassName)
+	}
+
+	private fun generateFieldSnippet(jField: JField): String {
+		val javaField = jField.javaField
+		val static = if (javaField.getAccessFlags().isStatic()) "Static" else ""
+		val type = PRIMITIVE_TYPE_MAPPING.getOrDefault(javaField.getFieldNode().type.toString(), "Object")
+		val xposedMethod = "XposedHelpers.get${static}${type}Field"
+
+		val template = when (language) {
+			XposedCodegenLanguage.JAVA -> "%s(/*runtimeObject*/, \"%s\");"
+			XposedCodegenLanguage.KOTLIN -> "%s(/*runtimeObject*/, \"%s\")"
+		}
+
+		return String.format(template, xposedMethod, javaField.getFieldNode().fieldInfo.name)
+	}
+
+	private val language: XposedCodegenLanguage
+		get() = getCodeArea().mainWindow.getSettings().xposedCodegenLanguage
+
+	companion object {
+		private val LOG: Logger = LoggerFactory.getLogger(XposedAction::class.java)
+		private const val serialVersionUID = 2641585141624592578L
+
+		private val PRIMITIVE_TYPE_MAPPING = mapOf(
+			"int" to "Int",
+			"byte" to "Byte",
+			"short" to "Short",
+			"long" to "Long",
+			"float" to "Float",
+			"double" to "Double",
+			"char" to "Char",
+			"boolean" to "Boolean",
+		)
+	}
+}

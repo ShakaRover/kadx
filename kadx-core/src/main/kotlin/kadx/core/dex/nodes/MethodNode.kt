@@ -1,0 +1,593 @@
+package kadx.core.dex.nodes
+
+import kadx.api.ICodeInfo
+import kadx.api.JavaMethod
+import kadx.api.metadata.ICodeAnnotation
+import kadx.api.metadata.annotations.NodeDeclareRef
+import kadx.api.metadata.annotations.VarNode
+import kadx.api.plugins.input.data.ICodeReader
+import kadx.api.plugins.input.data.IDebugInfo
+import kadx.api.plugins.input.data.IMethodData
+import kadx.api.plugins.input.data.attributes.KadxAttrType
+import kadx.api.utils.CodeUtils.getLineEndForPos
+import kadx.core.dex.attributes.AFlag
+import kadx.core.dex.attributes.AType
+import kadx.core.dex.attributes.nodes.LoopInfo
+import kadx.core.dex.attributes.nodes.MethodOverrideAttr
+import kadx.core.dex.attributes.nodes.MethodThrowsAttr
+import kadx.core.dex.attributes.nodes.NotificationAttrNode
+import kadx.core.dex.info.AccessInfo
+import kadx.core.dex.info.MethodInfo
+import kadx.core.dex.instructions.InsnDecoder
+import kadx.core.dex.instructions.args.ArgType
+import kadx.core.dex.instructions.args.InsnArg
+import kadx.core.dex.instructions.args.RegisterArg
+import kadx.core.dex.instructions.args.SSAVar
+import kadx.core.dex.nodes.utils.TypeUtils
+import kadx.core.dex.regions.Region
+import kadx.core.dex.trycatch.ExceptionHandler
+import kadx.core.dex.visitors.InitCodeVariables.Companion.initCodeVar
+import kadx.core.utils.Utils.collectionMap
+import kadx.core.utils.Utils.listToString
+import kadx.core.utils.exceptions.DecodeException
+import kadx.core.utils.exceptions.KadxRuntimeException
+import org.slf4j.LoggerFactory
+import java.util.Collections
+
+class MethodNode(
+	val parentClass: ClassNode,
+	mthData: IMethodData,
+) : NotificationAttrNode(),
+	IMethodDetails,
+	ILoadable,
+	ICodeNode,
+	Comparable<MethodNode> {
+	companion object {
+		private val LOG = LoggerFactory.getLogger(MethodNode::class.java)
+		private val EMPTY_INSN_ARRAY = arrayOfNulls<InsnNode>(0)
+
+		fun build(classNode: ClassNode, methodData: IMethodData): MethodNode {
+			val methodNode = MethodNode(classNode, methodData)
+			methodNode.addAttrs(methodData.attributes)
+			return methodNode
+		}
+	}
+
+	val mthInfo: MethodInfo = MethodInfo.fromRef(parentClass.root(), mthData.methodRef)
+	var accFlags: AccessInfo = AccessInfo(mthData.accessFlags, AccessInfo.AFType.METHOD)
+
+	lateinit var retType: ArgType
+
+	lateinit var argTypesValue: List<ArgType>
+
+	lateinit var typeParametersValue: List<ArgType>
+
+	val codeReader: ICodeReader?
+
+	val insnsCountValue: Int
+	private var noCode: Boolean
+
+	init {
+		val reader = mthData.codeReader
+		if (reader == null) {
+			noCode = true
+			codeReader = null
+			insnsCountValue = 0
+		} else {
+			noCode = false
+			codeReader = reader.copy()
+			insnsCountValue = reader.unitsCount
+		}
+		retType = mthInfo.returnType
+		argTypesValue = mthInfo.argumentsTypes
+		typeParametersValue = emptyList()
+		unload()
+	}
+
+	private var regsCount: Int = 0
+	private var argsStartReg: Int = 0
+	private var loaded: Boolean = false
+
+	private var thisArg: RegisterArg? = null
+	private var argsList: List<RegisterArg>? = null
+	var instructions: Array<InsnNode?>? = null
+	var blocks: List<BlockNode>? = null
+	private var blocksMaxCId: Int = 0
+	var enterBlock: BlockNode? = null
+	var exitBlock: BlockNode? = null
+	private var sVars: MutableList<SSAVar> = ArrayList()
+	private var exceptionHandlers: MutableList<ExceptionHandler> = ArrayList()
+	private var loops: List<LoopInfo> = emptyList()
+	var region: Region? = null
+
+	private var useInValue: List<MethodNode> = emptyList()
+	private var unresolvedUsed: List<MethodInfo> = emptyList()
+	private var methodsUsed: MutableSet<MethodNode> = HashSet()
+	private var callsSelf: Boolean = false
+	var javaNode: JavaMethod? = null
+
+	override fun unload() {
+		loaded = false
+		thisArg = null
+		argsList = null
+		sVars = ArrayList()
+		instructions = null
+		blocks = null
+		blocksMaxCId = 0
+		enterBlock = null
+		exitBlock = null
+		region = null
+		exceptionHandlers = ArrayList()
+		loops = emptyList()
+		unloadAttributes()
+	}
+
+	fun updateTypes(argTypes: List<ArgType>, retType: ArgType) {
+		this.argTypesValue = argTypes
+		this.retType = retType
+	}
+
+	fun updateTypeParameters(typeParameters: List<ArgType>) {
+		this.typeParametersValue = typeParameters
+	}
+
+	override fun load() {
+		if (loaded) return
+		try {
+			loaded = true
+			if (noCode) {
+				regsCount = 0
+				initArguments(argTypesValue)
+				return
+			}
+			regsCount = checkNotNull(codeReader).registersCount
+			argsStartReg = checkNotNull(codeReader).argsStartReg
+			initArguments(argTypesValue)
+			if (contains(AType.KADX_ERROR)) {
+				instructions = EMPTY_INSN_ARRAY
+			} else {
+				val decoder = InsnDecoder(this)
+				instructions = decoder.process(checkNotNull(codeReader))
+			}
+		} catch (e: Exception) {
+			if (!noCode) {
+				unload()
+				noCode = true
+				load()
+				noCode = false
+			}
+			throw DecodeException(this, "Load method exception: ${e.javaClass.simpleName}: ${e.message}", e)
+		}
+	}
+
+	fun reload() {
+		unload()
+		try {
+			load()
+		} catch (e: DecodeException) {
+			throw KadxRuntimeException("Failed to reload method ${javaClass.name}.$name")
+		}
+	}
+
+	private fun initArguments(args: List<ArgType>) {
+		var pos = getArgsStartPos(args)
+		val typeUtils = root().typeUtils
+		if (accFlags.isStatic()) {
+			thisArg = null
+		} else {
+			val thisClsType = typeUtils.expandTypeVariables(this, parentClass.getType())
+			val arg = InsnArg.reg(pos++, thisClsType)
+			arg.add(AFlag.THIS)
+			arg.add(AFlag.IMMUTABLE_TYPE)
+			thisArg = arg
+		}
+		if (args.isEmpty()) {
+			argsList = emptyList()
+			return
+		}
+		val list = ArrayList<RegisterArg>(args.size)
+		var p = pos
+		for (argType in args) {
+			val expandedType = typeUtils.expandTypeVariables(this, argType)
+			val regArg = InsnArg.reg(p, expandedType)
+			regArg.add(AFlag.METHOD_ARGUMENT)
+			regArg.add(AFlag.IMMUTABLE_TYPE)
+			list.add(regArg)
+			p += argType.regCount
+		}
+		argsList = list
+	}
+
+	private fun getArgsStartPos(args: List<ArgType>): Int {
+		if (noCode) return 0
+		if (argsStartReg != -1) return argsStartReg
+		var pos = regsCount
+		for (arg in args) {
+			pos -= arg.regCount
+		}
+		if (!accFlags.isStatic()) {
+			pos--
+		}
+		return pos
+	}
+
+	override val argTypes: List<ArgType>
+		get() {
+			if (argTypesValue == null) {
+				throw KadxRuntimeException("Method generic types not initialized: $this")
+			}
+			return argTypesValue
+		}
+
+	fun updateArgTypes(newArgTypes: List<ArgType>, comment: String) {
+		addDebugComment("$comment, original types: $argTypes")
+		argTypesValue = Collections.unmodifiableList(newArgTypes)
+		initArguments(newArgTypes)
+	}
+
+	fun containsGenericArgs(): Boolean = mthInfo.argumentsTypes != argTypes
+
+	override val returnType: ArgType get() = retType
+
+	fun updateReturnType(type: ArgType) {
+		retType = type
+	}
+
+	fun isVoidReturn(): Boolean = mthInfo.returnType == ArgType.VOID
+
+	fun collectArgNodes(): List<VarNode> {
+		val codeInfo: ICodeInfo = topParentClass.getCode()
+		val mthDefPos = defPosition
+		val lineEndPos = getLineEndForPos(codeInfo.codeStr, mthDefPos)
+		val argsCount = mthInfo.argsCount
+		val args = ArrayList<VarNode>(argsCount)
+		codeInfo.codeMetadata.searchDown(mthDefPos) { pos, ann ->
+			if (pos > lineEndPos) return@searchDown true
+			if (ann is NodeDeclareRef) {
+				val declRef = ann.getNode()
+				if (declRef is VarNode) {
+					if (declRef.getMth() !== this) return@searchDown true
+					args.add(declRef)
+				}
+			}
+			null
+		}
+		if (args.size != argsCount) {
+			LOG.warn("Incorrect args count, expected: {}, got: {}", argsCount, args.size)
+		}
+		return args
+	}
+
+	val argRegs: List<RegisterArg> get() {
+		if (argsList == null) {
+			throw KadxRuntimeException("Method arg registers not loaded: $this, class status: ${parentClass.topParentClass.state}")
+		}
+		return checkNotNull(argsList)
+	}
+
+	val allArgRegs: List<RegisterArg> get() {
+		val argRegs = argRegs
+		if (thisArg != null) {
+			val list = ArrayList<RegisterArg>(argRegs.size + 1)
+			list.add(checkNotNull(thisArg))
+			list.addAll(argRegs)
+			return list
+		}
+		return argRegs
+	}
+
+	fun getThisArg(): RegisterArg? = thisArg
+
+	fun skipFirstArgument() {
+		add(AFlag.SKIP_FIRST_ARG)
+	}
+
+	override val typeParameters: List<ArgType> get() = typeParametersValue
+
+	val name: String get() = mthInfo.name
+
+	val alias: String get() = mthInfo.alias
+
+	override val declaringClass: ClassNode? get() = parentClass
+
+	val topParentClass: ClassNode get() = parentClass.topParentClass
+
+	fun isNoCode(): Boolean = noCode
+
+	fun unloadInsnArr() {
+		instructions = null
+	}
+
+	fun initBasicBlocks() {
+		blocks = ArrayList()
+	}
+
+	fun finishBasicBlocks() {
+		val lockedBlocks = kadx.core.utils.Utils.lockList(checkNotNull(blocks))
+		blocks = lockedBlocks
+		loops = kadx.core.utils.Utils.lockList(loops as MutableList<LoopInfo>)
+		for (block in lockedBlocks) {
+			block.lock()
+		}
+	}
+
+	// 原 Java 方法可能返回 null（块处理前），调用方（如 DebugChecks）会判空，故保留可空返回
+	val basicBlocks: List<BlockNode>? get() = blocks
+
+	fun setBasicBlocks(blocks: List<BlockNode>) {
+		this.blocks = blocks
+		updateBlockPositions()
+	}
+
+	fun updateBlockPositions() {
+		BlockNode.updateBlockPositions(checkNotNull(blocks))
+	}
+
+	val nextBlockCId: Int get() = blocksMaxCId++
+
+	val preExitBlocks: List<BlockNode> get() = checkNotNull(exitBlock).predecessors
+
+	fun isPreExitBlock(block: BlockNode): Boolean {
+		val successors = block.successors
+		if (successors.size == 1) {
+			return successors[0] == exitBlock
+		}
+		return checkNotNull(exitBlock).predecessors.contains(block)
+	}
+
+	fun resetLoops() {
+		loops = ArrayList()
+	}
+
+	fun registerLoop(loop: LoopInfo) {
+		if (loops.isEmpty()) {
+			loops = ArrayList(5)
+		}
+		loop.id = loops.size
+		(loops as MutableList<LoopInfo>).add(loop)
+	}
+
+	fun getLoopForBlock(block: BlockNode): LoopInfo? {
+		if (loops.isEmpty()) return null
+		for (loop in loops) {
+			if (loop.loopBlocks.contains(block)) {
+				return loop
+			}
+		}
+		return null
+	}
+
+	fun getAllLoopsForBlock(block: BlockNode): List<LoopInfo> {
+		if (loops.isEmpty()) return emptyList()
+		val list = ArrayList<LoopInfo>(loops.size)
+		for (loop in loops) {
+			if (loop.loopBlocks.contains(block)) {
+				list.add(loop)
+			}
+		}
+		return list
+	}
+
+	val loopsCount: Int get() = loops.size
+
+	fun getLoops(): Iterable<LoopInfo> = loops
+
+	fun addExceptionHandler(handler: ExceptionHandler): ExceptionHandler {
+		if (exceptionHandlers.isEmpty()) {
+			exceptionHandlers = ArrayList(2)
+		}
+		exceptionHandlers.add(handler)
+		return handler
+	}
+
+	fun clearExceptionHandlers(): Boolean = exceptionHandlers.removeIf { it.isRemoved() }
+
+	fun getExceptionHandlers(): Iterable<ExceptionHandler> = exceptionHandlers
+
+	fun isNoExceptionHandlers(): Boolean = exceptionHandlers.isEmpty()
+
+	val exceptionHandlersCount: Int get() = exceptionHandlers.size
+
+	override val throws: List<ArgType> get() {
+		val throwsAttr = get(AType.METHOD_THROWS)
+		if (throwsAttr != null) {
+			return collectionMap(throwsAttr.list) { s: String -> ArgType.`object`(s) }
+		}
+		val exceptionsAttr = get(KadxAttrType.EXCEPTIONS)
+		if (exceptionsAttr != null) {
+			return collectionMap(exceptionsAttr.list) { s: String -> ArgType.`object`(s) }
+		}
+		return emptyList()
+	}
+
+	fun isArgsOverloaded(): Boolean {
+		val thisMthInfo = mthInfo
+		for (method in parentClass.methods) {
+			if (method == this) continue
+			if (method.mthInfo.isOverloadedBy(thisMthInfo)) {
+				return true
+			}
+		}
+		return root().methodUtils.isMethodArgsOverloaded(parentClass.classInfo.type, thisMthInfo)
+	}
+
+	fun isConstructor(): Boolean = accFlags.isConstructor() && mthInfo.isConstructor()
+
+	fun isDefaultConstructor(): Boolean {
+		if (!isConstructor()) return false
+		var defaultArgCount = 0
+		val args = argsList
+		if (parentClass.classInfo.isInner && !parentClass.accessFlags.isStatic()) {
+			val outerCls = parentClass.parentClass
+			if (args != null && args.isNotEmpty() && args[0].getInitType() == outerCls.classInfo.type) {
+				defaultArgCount = 1
+			}
+		}
+		return args == null || args.size == defaultArgCount
+	}
+
+	fun getRegsCount(): Int = regsCount
+
+	fun getArgsStartReg(): Int = argsStartReg
+
+	fun makeSyntheticRegArg(type: ArgType): RegisterArg {
+		val arg = InsnArg.reg(0, type)
+		arg.add(AFlag.SYNTHETIC)
+		val ssaVar = makeNewSVar(arg)
+		initCodeVar(ssaVar)
+		ssaVar.setType(type)
+		return arg
+	}
+
+	fun makeSyntheticRegArg(type: ArgType, name: String): RegisterArg {
+		val arg = makeSyntheticRegArg(type)
+		arg.name = name
+		return arg
+	}
+
+	fun makeNewSVar(assignArg: RegisterArg): SSAVar {
+		val regNum = assignArg.regNum
+		return makeNewSVar(regNum, getNextSVarVersion(regNum), assignArg)
+	}
+
+	fun makeNewSVar(regNum: Int, version: Int, assignArg: RegisterArg): SSAVar {
+		val ssaVar = SSAVar(regNum, version, assignArg)
+		if (sVars.isEmpty()) {
+			sVars = ArrayList()
+		}
+		sVars.add(ssaVar)
+		return ssaVar
+	}
+
+	private fun getNextSVarVersion(regNum: Int): Int {
+		var v = -1
+		for (sVar in sVars) {
+			if (sVar.regNum == regNum) {
+				v = maxOf(v, sVar.version)
+			}
+		}
+		return v + 1
+	}
+
+	fun removeSVar(ssaVar: SSAVar) {
+		sVars.remove(ssaVar)
+	}
+
+	val SVars: List<SSAVar> get() = sVars
+
+	override val rawAccessFlags: Int get() = accFlags.rawValue()
+
+	override var accessFlags: AccessInfo
+		get() = accFlags
+		set(value) {
+			accFlags = value
+		}
+
+	override fun root(): RootNode = parentClass.root()
+
+	override fun typeName(): String = "method"
+
+	override val inputFileName: String? get() = parentClass.inputFileName
+	override val methodInfo: MethodInfo get() = mthInfo
+
+	val methodCodeOffset: Long get() = if (noCode) 0 else checkNotNull(codeReader).codeOffset.toLong()
+
+	val debugInfo: IDebugInfo? get() = if (noCode) null else checkNotNull(codeReader).debugInfo
+
+	fun ignoreMethod() {
+		add(AFlag.DONT_GENERATE)
+		noCode = true
+	}
+
+	override fun rename(newName: String) {
+		val overrideAttr = get(AType.METHOD_OVERRIDE)
+		if (overrideAttr != null) {
+			for (relatedMth in overrideAttr.relatedMthNodes) {
+				relatedMth.mthInfo.alias = newName
+			}
+		} else {
+			mthInfo.alias = newName
+		}
+	}
+
+	fun countInsns(): Long {
+		val insns = instructions
+		if (insns != null) {
+			return insns.size.toLong()
+		}
+		val blks = blocks
+		if (blks != null) {
+			var sum = 0L
+			for (block in blks) {
+				sum += block.instructions.size.toLong()
+			}
+			return sum
+		}
+		return -1
+	}
+
+	val insnsCount: Int get() = insnsCountValue
+
+	val codeStr: String get() = kadx.api.utils.CodeUtils.extractMethodCode(this, topParentClass.getCode())
+
+	override val isVarArg: Boolean get() = accFlags.isVarArgs()
+
+	val isLoaded: Boolean get() = loaded
+
+	// 协变返回类型：保留 Java 原 API 的 List<MethodNode>
+	override val useIn: List<MethodNode> get() = useInValue
+
+	fun setUseIn(useIn: List<MethodNode>) {
+		this.useInValue = useIn
+		for (methodUsedIn in useIn) {
+			methodUsedIn.addUsed(this)
+		}
+	}
+
+	fun addUsed(used: MethodNode?) {
+		if (used != null) {
+			methodsUsed.add(used)
+		}
+	}
+
+	fun setUsed(methodsUsed: List<MethodNode>) {
+		this.methodsUsed = HashSet(methodsUsed)
+	}
+
+	val used: Set<MethodNode> get() {
+		removeInvalidMethodsUsed()
+		return methodsUsed
+	}
+
+	fun getUnresolvedUsed(): List<MethodInfo> = unresolvedUsed
+
+	fun setUnresolvedUsed(unresolvedUsed: List<MethodInfo>) {
+		this.unresolvedUsed = unresolvedUsed
+	}
+
+	fun setCallsSelf(callsSelf: Boolean) {
+		this.callsSelf = callsSelf
+	}
+
+	fun callsSelf(): Boolean = callsSelf
+
+	private fun removeInvalidMethodsUsed() {
+		methodsUsed.removeIf { !it.useIn.contains(this) }
+	}
+
+	override val annType get() = ICodeAnnotation.AnnType.METHOD
+
+	override fun hashCode(): Int = mthInfo.hashCode()
+
+	override fun equals(other: Any?): Boolean {
+		if (this === other) return true
+		if (other !is MethodNode) return false
+		return mthInfo == other.mthInfo
+	}
+
+	override fun compareTo(o: MethodNode): Int = mthInfo.compareTo(o.mthInfo)
+
+	override fun toAttrString(): String = super.toAttrString() + " (m)"
+
+	override fun toString(): String = "$parentClass.${mthInfo.name}(${listToString(argTypes)}):$retType"
+}

@@ -1,0 +1,108 @@
+package kadx.core.utils
+
+import kadx.core.Consts
+import kadx.core.dex.attributes.AType
+import kadx.core.dex.attributes.IAttributeNode
+import kadx.core.dex.attributes.nodes.KadxError
+import kadx.core.dex.nodes.IDexNode
+import kadx.core.dex.nodes.MethodNode
+import kadx.core.utils.exceptions.KadxOverflowException
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.util.ArrayList
+import java.util.Collections
+import java.util.HashSet
+
+/**
+ * 全局错误/警告计数器。
+ *
+ * **用途**：反编译过程中遇到的每个错误/警告都记录到这里（并挂到对应节点上），
+ * 最后统一打印报告。方法级错误还会被去重（同一节点只统计一次）。
+ *
+ * **Kotlin 转换说明**：两个静态入口 [error] / [warning] 使用带交集类型约束的泛型
+ * （`N : IDexNode & IAttributeNode`），Kotlin 用 `where` 子句表达；`@JvmStatic`
+ * 保证 Java 侧 `ErrorsCounter.error(...)` 静态调用不变。原 `synchronized` 方法
+ * 改写为普通函数 + `@Synchronized`（K2 不接受 `synchronized fun`）。
+ */
+class ErrorsCounter {
+
+	val errorNodes: MutableSet<IAttributeNode> = HashSet()
+	private var errorsCount: Int = 0
+	val warnNodes: MutableSet<IAttributeNode> = HashSet()
+	private var warnsCount: Int = 0
+
+	companion object {
+		private val LOG: Logger = LoggerFactory.getLogger(ErrorsCounter::class.java)
+		private val PRINT_MTH_SIZE: Boolean = Consts.DEBUG
+
+		fun <N> error(node: N, warnMsg: String, th: Throwable?): String where N : IDexNode, N : IAttributeNode = node.root().errorsCounter.addError(node, warnMsg, th)
+
+		fun <N> warning(node: N, warnMsg: String) where N : IDexNode, N : IAttributeNode {
+			node.root().errorsCounter.addWarning(node, warnMsg)
+		}
+
+		fun formatMsg(node: IDexNode, msg: String): String = msg + " in " + node.typeName() + ": " + node + ", file: " + node.inputFileName
+	}
+
+	@Synchronized
+	private fun <N> addError(node: N, error: String, e: Throwable?): String where N : IDexNode, N : IAttributeNode {
+		errorNodes.add(node)
+		errorsCount++
+
+		var err = error
+		var throwable = e
+		var msg = formatMsg(node, error)
+		if (PRINT_MTH_SIZE && node is MethodNode) {
+			val mthSize = "[" + node.insnsCount + "] "
+			msg = mthSize + msg
+			err = mthSize + err
+		}
+		if (throwable == null) {
+			LOG.error(msg)
+		} else if (throwable is StackOverflowError) {
+			LOG.error("{}, error: StackOverflowError", msg)
+		} else if (throwable is KadxOverflowException) {
+			// 不打印完整堆栈，只保留 details 信息
+			val details = throwable.message
+			throwable = KadxOverflowException(details)
+			if (details == null || details.isEmpty()) {
+				LOG.error("{}", msg)
+			} else {
+				LOG.error("{}, details: {}", msg, details)
+			}
+		} else {
+			LOG.error(msg, throwable)
+		}
+		node.addAttr(AType.KADX_ERROR, KadxError(err, throwable))
+		return msg
+	}
+
+	@Synchronized
+	private fun <N> addWarning(node: N, warn: String) where N : IDexNode, N : IAttributeNode {
+		warnNodes.add(node)
+		warnsCount++
+		LOG.warn(formatMsg(node, warn))
+	}
+
+	fun printReport() {
+		if (errorCount > 0) {
+			LOG.error("{} errors occurred in following nodes:", errorCount)
+			val errors = ArrayList<String>(errorNodes.size)
+			for (node in errorNodes) {
+				val nodeName = node.javaClass.simpleName.replace("Node", "")
+				errors.add("$nodeName: $node")
+			}
+			Collections.sort(errors)
+			for (err in errors) {
+				LOG.error("  {}", err)
+			}
+		}
+		if (getWarnsCount() > 0) {
+			LOG.warn("{} warnings in {} nodes", getWarnsCount(), warnNodes.size)
+		}
+	}
+
+	val errorCount: Int get() = errorsCount
+
+	fun getWarnsCount(): Int = warnsCount
+}

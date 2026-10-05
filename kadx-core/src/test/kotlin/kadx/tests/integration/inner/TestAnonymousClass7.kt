@@ -1,0 +1,22 @@
+package kadx.tests.integration.inner
+
+import kadx.tests.api.IntegrationTest
+import kadx.tests.api.utils.assertj.KadxAssertions
+import org.junit.jupiter.api.Test
+
+/**
+ * 静态方法中的匿名类捕获 final 参数：静态上下文应正确还原。
+ */
+class TestAnonymousClass7 : IntegrationTest() {
+
+	@Test
+	fun test() {
+		KadxAssertions.assertThat(getClassNode(TestAnonymousClass7Fixture.TestCls::class.java))
+			.code()
+			.containsOne("public static Runnable test(final double d) {")
+			.containsOne("return new Runnable() {")
+			.containsOne("public void run() {")
+			.containsOne("System.out.println(d);")
+			.doesNotContain("synthetic")
+	}
+}

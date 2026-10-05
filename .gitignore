@@ -25,11 +25,11 @@ idea/
 node_modules/
 .vscode/
 
-jadx-output/
+kadx-output/
 *-tmp/
 **/tmp/
 *.jobf
-*.jadx
+*.kadx
 
 *.class
 *.jar
@@ -43,7 +43,7 @@ jadx-output/
 .env
 
 cliff.toml
-jadx-gui/src/main/resources/logback.xml
+kadx-gui/src/main/resources/logback.xml
 
 # OSS decompilation harness: keep scripts/README, ignore cloned projects + heavy artifacts
 /tests/oss/

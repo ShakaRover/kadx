@@ -1,0 +1,99 @@
+package kadx.core.dex.regions.conditions
+
+import kadx.api.ICodeWriter
+import kadx.core.codegen.RegionGen
+import kadx.core.dex.nodes.IBranchRegion
+import kadx.core.dex.nodes.IContainer
+import kadx.core.dex.nodes.IRegion
+import kadx.core.utils.exceptions.CodegenException
+import java.util.Collections
+
+/**
+ * `if (cond) { ... } else { ... }` 对应的区域。
+ *
+ * **结构**：条件来自父类 [ConditionRegion]；[thenRegion] 与 [elseRegion] 分别是两个分支，
+ * 二者都可能为 null（缺少分支）。[invert] 会在取反条件的同时交换两个分支。
+ *
+ * 同样属于区域树节点，保持普通 class（身份语义）。
+ */
+class IfRegion(parent: IRegion?) :
+	ConditionRegion(parent),
+	IBranchRegion {
+
+	private var thenRegionValue: IContainer? = null
+	private var elseRegionValue: IContainer? = null
+
+	val thenRegion: IContainer? get() = thenRegionValue
+
+	fun setThenRegion(thenRegion: IContainer?) {
+		this.thenRegionValue = thenRegion
+	}
+
+	val elseRegion: IContainer? get() = elseRegionValue
+
+	fun setElseRegion(elseRegion: IContainer?) {
+		this.elseRegionValue = elseRegion
+	}
+
+	/** 条件取反并交换 then / else 分支 */
+	fun invert() {
+		invertCondition()
+		// swap regions
+		val tmp = thenRegionValue
+		thenRegionValue = elseRegionValue
+		elseRegionValue = tmp
+	}
+
+	val sourceLine: Int get() = conditionSourceLine
+
+	override val subBlocks: List<IContainer> get() {
+		val conditionBlocks = conditionBlocks
+		val all = ArrayList<IContainer>(conditionBlocks.size + 2)
+		all.addAll(conditionBlocks)
+		val thenRegion = this.thenRegion
+		if (thenRegion != null) {
+			all.add(thenRegion)
+		}
+		val elseRegion = this.elseRegion
+		if (elseRegion != null) {
+			all.add(elseRegion)
+		}
+		return Collections.unmodifiableList(all)
+	}
+
+	/** 分支列表允许包含 null（表示缺失的分支） */
+	override val branches: List<IContainer?> get() {
+		val branches = ArrayList<IContainer?>(2)
+		branches.add(thenRegionValue)
+		branches.add(elseRegionValue)
+		return Collections.unmodifiableList(branches)
+	}
+
+	override fun replaceSubBlock(oldBlock: IContainer, newBlock: IContainer): Boolean {
+		if (oldBlock === thenRegionValue) {
+			thenRegionValue = newBlock
+			updateParent(newBlock, this)
+			return true
+		}
+		if (oldBlock === elseRegionValue) {
+			elseRegionValue = newBlock
+			updateParent(newBlock, this)
+			return true
+		}
+		return false
+	}
+
+	@Throws(CodegenException::class)
+	override fun generate(regionGen: RegionGen, code: ICodeWriter) {
+		regionGen.makeIf(this, code, true)
+	}
+
+	override fun baseString(): String {
+		val sb = StringBuilder()
+		thenRegion?.let { sb.append(it.baseString()) }
+		elseRegion?.let { sb.append(it.baseString()) }
+		return sb.toString()
+	}
+
+	override fun toString(): String = "IF " + conditionBlocks + " THEN: " + thenRegion + " ELSE: " + elseRegion
+}

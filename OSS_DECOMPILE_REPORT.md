@@ -1,7 +1,7 @@
 # 真实开源项目反编译验证报告（OSS decompile report）
 
-**目的**：用真实开源 Android 项目验证本仓库（jadx 的 Kotlin 化 + 现代化分支）能否**完整、正常地反编译**；
-对「能编译但反编译失败」的类，对照源码定位根因、修复 jadx、补测试。
+**目的**：用真实开源 Android 项目验证本仓库（kadx 的 Kotlin 化 + 现代化分支）能否**完整、正常地反编译**；
+对「能编译但反编译失败」的类，对照源码定位根因、修复 kadx、补测试。
 
 **约束**：所有工作产物放在仓库内 `tests/`（已加入 `.gitignore`），**不使用 `/tmp`**。
 
@@ -13,7 +13,7 @@
 |----|----|
 | JDK | 21.0.12 |
 | Android SDK | `~/Android/Sdk`（build-tools 19–37、platforms 21–37） |
-| 被测工具 | 本仓库构建的 `jadx-cli/build/install/jadx/bin/jadx` |
+| 被测工具 | 本仓库构建的 `kadx-cli/build/install/kadx/bin/kadx` |
 | 对照工具 | `skylot/jadx`：v1.5.3 官方发布包 + 同步点源码 `upstream/master@4e2b8d54`（2026-10-03，本地 worktree 构建） |
 | 临时目录 | `tests/tmp`（`JAVA_TOOL_OPTIONS=-Djava.io.tmpdir=…` 指定，避开 `/tmp`） |
 | 构建 | `tests/build-apk.sh <project> release <args…>`（`GRADLE_USER_HOME=tests/work/gradle-home`、`TMPDIR=tests/tmp`） |
@@ -64,9 +64,9 @@ release 构建一律开启 R8/minify（更贴近真实发布产物，且能覆�
 
 | 口径 | 数量 | 含义 |
 |------|-----:|------|
-| CLI/API 错误计数（`getErrorsCount()`） | 334 | jadx 内部错误计数的官方口径 |
+| CLI/API 错误计数（`getErrorsCount()`） | 334 | kadx 内部错误计数的官方口径 |
 | 完整失败方法（`Method not decompiled` dump） | **0** | —— |
-| 方法内局部错误注释（`JADX ERROR` 嵌在方法体中） | ~500 | 某个代码区域生成失败，以错误注释替代，方法主体仍在 |
+| 方法内局部错误注释（`KADX ERROR` 嵌在方法体中） | ~500 | 某个代码区域生成失败，以错误注释替代，方法主体仍在 |
 
 即 **0 个方法完全反编译失败**。仍有约 400 个方法带局部错误/精度警告（类型推断不精确、
 局部区域生成失败等），方法体本身完整生成。RegionMaker 的 Overflow/SOE/出口边异常、
@@ -82,9 +82,9 @@ androidx/kotlinx）、`de.danoeh.*`（AntennaPod）等保留包名的 app 代码
 
 | 类别 | 数量 | 定性 |
 |------|-----:|------|
-| `JadxOverflowException` in RegionMakerVisitor（Regions count/stack limit） | ~120 | 上游同源限制（配额修复后残余，见 §4 深度修复 5） |
-| `JadxRuntimeException` in ModVisitor | ~30 | 上游同源限制（suspend lambda 的 this 寄存器不可变类型冲突） |
-| `JadxRuntimeException` in ConstructorVisitor / PrepareForCodeGen / InitCodeVariables / IfRegionVisitor / ConstInlineVisitor / FinishTypeInference 等 | 59 | 上游同源限制 |
+| `KadxOverflowException` in RegionMakerVisitor（Regions count/stack limit） | ~120 | 上游同源限制（配额修复后残余，见 §4 深度修复 5） |
+| `KadxRuntimeException` in ModVisitor | ~30 | 上游同源限制（suspend lambda 的 this 寄存器不可变类型冲突） |
+| `KadxRuntimeException` in ConstructorVisitor / PrepareForCodeGen / InitCodeVariables / IfRegionVisitor / ConstInlineVisitor / FinishTypeInference 等 | 59 | 上游同源限制 |
 | `UnsupportedOperationException` in RegionMakerVisitor | 6 | 上游同源限制 |
 | `Method code generation error` / `Type inference failed` 等 | ~52 | 上游同源限制 |
 
@@ -134,7 +134,7 @@ NPE 风险但管道中不会出现该状态。
 
 ### 🟡 回归 3：`ModVisitor.anonymousCallArgMod` 的 `checkNotNull(codeVar)` 崩溃
 
-**现象**：Calculator release APK 的 `em1` 类抛 `JadxRuntimeException: Code variable not set in r1v17`
+**现象**：Calculator release APK 的 `em1` 类抛 `KadxRuntimeException: Code variable not set in r1v17`
 （上游 v1.5.3 同类 0 错误）。
 
 **根因**：匿名构造器参数标记路径 `checkNotNull(sVar).codeVar.isFinal = true` 在「重载周期中
@@ -163,11 +163,11 @@ Notes debug 全量反编译始终无法跑通（此为最后一个卡点）。51
 **效果**：
 - `CoreTextFieldKt` 单类：>7 分钟超时 → **22 秒**，失败方法 1 个（优于 v1.5.3 的 2 个）；
 - **Notes debug APK（21,952 类）全量反编译首次完整跑通**（此前任何版本/配置都无法完成）；
-- 全量 1034 个 jadx-core 集成测试通过（含验证本修复的 TestComplexIf4 / TestSynchronized5）。
+- 全量 1034 个 kadx-core 集成测试通过（含验证本修复的 TestComplexIf4 / TestSynchronized5）。
 
 ### 🔴 深度修复 5：无配额的重复块处理 → 区域树级联爆炸（SOE + Regions limit 的主要来源）
 
-**现象**：arch release 的 47 个失败方法中 28 个 `StackOverflowError`、15 个 `JadxOverflowException`
+**现象**：arch release 的 47 个失败方法中 28 个 `StackOverflowError`、15 个 `KadxOverflowException`
 （Regions count/stack limit）；6 个 release APK 合计 203 个失败方法的 ~90% 为这两类。
 
 **定位**：对照上游 PR #2784 的 diff 发现 `RegionMaker.makeRegion` 的重复块语义变更：
@@ -232,7 +232,7 @@ TestSynchronized5 钉住，pre-#2784 语义无法通过它们），但给每块�
   `ModVisitor.removeCheckCast` 在结果寄存器带冲突不可变类型时直接抛异常（上游同源）。
 
 **修复**：
-- `TypeUpdate.apply`：预算耗尽（`JadxOverflowException`）时**放弃本次候选类型传播并返回
+- `TypeUpdate.apply`：预算耗尽（`KadxOverflowException`）时**放弃本次候选类型传播并返回
   REJECT**——walk 无部分副作用（所有更新统一在 `applyUpdates` 落盘，另有现成的
   `rollbackUpdate` 机制），变量保持当前类型，推断继续尝试其他候选，方法不再整体失败。
   输出中受影响变量以 `Type inference failed for: rXvY` 警告标注；
@@ -274,7 +274,7 @@ TestSynchronized5 钉住，pre-#2784 语义无法通过它们），但给每块�
 | `ConstructorVisitor` "Can't remove SSA var still in use"（arch `C/T` 等） | fork 与上游 v1.5.3 同类错误数相同（3=3），上游同源限制 |
 | `ConstInlineVisitor` "Unexpected instance arg in invoke" | 与上游源码逐行一致（同样 throw） |
 | `RegionMaker` regionsLimit / `RegionStack` REGIONS_STACK_LIMIT（1000） | 常量与算法与上游 `4e2b8d54` 完全一致 |
-| 其他 `JadxOverflowException` / 类型推断错误 | 位于 Compose/coroutines 等库代码，属上游既有限制 |
+| 其他 `KadxOverflowException` / 类型推断错误 | 位于 Compose/coroutines 等库代码，属上游既有限制 |
 
 > 说明：上游对照用了两个版本——官方 **v1.5.3**（2025-09 构建）与同步点源码
 > **`4e2b8d54`**（2026-10-03，本仓库 `tests/work/upstream-src` worktree 本地构建），
@@ -290,8 +290,8 @@ TestSynchronized5 钉住，pre-#2784 语义无法通过它们），但给每块�
 ## 6. 复现方式
 
 ```bash
-# 1) 构建 jadx CLI
-./gradlew :jadx-cli:installDist
+# 1) 构建 kadx CLI
+./gradlew :kadx-cli:installDist
 
 # 2) 构建 OSS 项目 release APK（全程在仓库内，不用 /tmp）
 bash tests/build-apk.sh Calculator release assembleFossRelease
@@ -307,23 +307,23 @@ bash tests/build-apk.sh markor release assembleFlavorDefaultRelease
 
 # 3) 反编译并统计错误
 export JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/tests/tmp"
-jadx-cli/build/install/jadx/bin/jadx -d tests/out/Calc-foss-release --show-bad-code \
+kadx-cli/build/install/kadx/bin/kadx -d tests/out/Calc-foss-release --show-bad-code \
     tests/apks/Calculator-release-calculator-10-foss-release.apk > tests/work/logs/dec.log 2>&1
-grep -rl "JADX ERROR" tests/out/Calc-foss-release/sources | wc -l
+grep -rl "KADX ERROR" tests/out/Calc-foss-release/sources | wc -l
 
 # 4) 定位卡点类（卡死时最后一行即卡点类）
-jadx-cli/build/install/jadx/bin/jadx --log-level debug --threads-count 4 -d tests/out/x <apk> 2>&1 | grep "Decompiling class:" | tail -1
+kadx-cli/build/install/kadx/bin/kadx --log-level debug --threads-count 4 -d tests/out/x <apk> 2>&1 | grep "Decompiling class:" | tail -1
 ```
 
 ## 7. 回归测试
 
 ### 自动化：真实 APK 反编译测试（已加入仓库）
 
-`jadx-cli/src/test/kotlin/jadx/cli/RealApkDecompileTest.kt` + `jadx-cli/src/test/resources/real-apk-baseline.properties`：
-用 `JadxDecompiler` API 反编译真实 APK，断言 `getErrorsCount()` 不超过基线（"错误数不得上升"看门狗）。
+`kadx-cli/src/test/kotlin/kadx/cli/RealApkDecompileTest.kt` + `kadx-cli/src/test/resources/real-apk-baseline.properties`：
+用 `KadxDecompiler` API 反编译真实 APK，断言 `getErrorsCount()` 不超过基线（"错误数不得上升"看门狗）。
 
 ```bash
-JADX_REAL_APKS=$PWD/tests/apks ./gradlew :jadx-cli:realApkTest
+KADX_REAL_APKS=$PWD/tests/apks ./gradlew :kadx-cli:realApkTest
 ```
 
 - 默认跳过（真实 APK 不入库）；需显式指定 APK 目录。
@@ -332,14 +332,14 @@ JADX_REAL_APKS=$PWD/tests/apks ./gradlew :jadx-cli:realApkTest
 
 ### 新增：已知慢类限时反编译测试（本次新增）
 
-`jadx-cli/src/test/kotlin/jadx/cli/RealApkSingleClassTest.kt`：
+`kadx-cli/src/test/kotlin/kadx/cli/RealApkSingleClassTest.kt`：
 对曾导致挂死的 `BasicTextFieldKt`（回归 1）与 `em1`（回归 3）做**限时单类反编译**：
 必须在时间预算内完成（挂死即超时失败），且方法级错误数不超过基线。防止两个回归再次引入。
 
 ### 单元回归
 
-- `jadx-core/src/test/kotlin/jadx/core/JadxStaticApiTest.kt` —— 锁定 `Jadx` 插件可见成员的 JVM 静态表面。
-- `ProcessVariables` 行为由 jadx-core 全量测试（1027+）覆盖；两个真实回归由上面的限时测试兜底。
+- `kadx-core/src/test/kotlin/kadx/core/KadxStaticApiTest.kt` —— 锁定 `Kadx` 插件可见成员的 JVM 静态表面。
+- `ProcessVariables` 行为由 kadx-core 全量测试（1027+）覆盖；两个真实回归由上面的限时测试兜底。
 
 ## 8. 结论
 

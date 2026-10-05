@@ -28,4 +28,4 @@ jobs:
       - name: Build
         run: ./gradlew build dist distWin
         env:
-          JADX_BUILD_JAVA_VERSION: 11
+          KADX_BUILD_JAVA_VERSION: 11
