@@ -1,6 +1,8 @@
 package jadx.gui.settings
 
 import com.google.gson.Gson
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import jadx.api.JadxArgs
 import jadx.api.data.ICodeComment
 import jadx.api.data.ICodeRename
@@ -12,6 +14,7 @@ import jadx.api.data.impl.JadxCodeRef
 import jadx.api.data.impl.JadxCodeRename
 import jadx.api.data.impl.JadxNodeRef
 import jadx.api.plugins.utils.CommonFileUtils
+import jadx.core.utils.GsonUtils
 import jadx.core.utils.GsonUtils.defaultGsonBuilder
 import jadx.core.utils.GsonUtils.interfaceReplace
 import jadx.core.utils.exceptions.JadxRuntimeException
@@ -315,6 +318,7 @@ class JadxProject private constructor(
 		return files
 	}
 	companion object {
+		private val LOG = LoggerFactory.getLogger(JadxProject::class.java)
 		const val PROJECT_EXTENSION: String = "jadx"
 
 		private const val SEARCH_HISTORY_LIMIT: Int = 30
@@ -348,7 +352,15 @@ class JadxProject private constructor(
 			val basePath = checkNotNull(path.toAbsolutePath().parent) { "Can't resolve project base path: $path" }
 			try {
 				Files.newBufferedReader(path, StandardCharsets.UTF_8).use { reader: Reader ->
-					return buildGson(basePath).fromJson(reader, ProjectData::class.java)
+					val data: ProjectData? = buildGson(basePath).fromJson(reader, ProjectData::class.java)
+					if (data == null) {
+						// 项目文件为空或损坏（如上次会话崩溃时被截断，Gson 对空文档返回 null，
+						// 上游 Java 不检查、Kotlin 非空声明触发内在空检查）：按空项目处理，
+						// 用户可重新添加输入文件，而不是让整个项目加载失败
+						LOG.warn("Project file is empty or corrupted, loading as empty project: {}", path)
+						return ProjectData()
+					}
+					return data
 				}
 			} catch (e: Exception) {
 				throw JadxRuntimeException("Failed to load project file: $path", e)
