@@ -140,20 +140,18 @@ class ExceptionHandler private constructor(val handlerOffset: Int) {
 	/**
 	 * 查找 try 体底部与 catch 处理器交汇的“底部拆分块”。
 	 *
-	 * 目前不支持带有多个内层 try 的 catch（此时打印警告并返回 null）。
+	 * 多个内层 try 时，底部由各内层 try 体共同构成：任一内层 try 体（或外层 try 体自身）
+	 * 的块到达的 bottom splitter 都是本处理器的合法底部拆分块（上游 TODO：直接返回 null，
+	 * 由调用方退化到推断/回退逻辑）。
 	 */
 	@get:Nullable
 	val bottomSplitter: BlockNode? get() {
 		val handlerTryBlock = checkNotNull(getTryBlock())
-		// TODO: Implement support for finding bottom splitter of catch with inner tries
-		if (handlerTryBlock.getInnerTryBlocks().size > 1) {
-			LOG.warn("No support yet for finding bottom block of try body with multipe inner trys")
-			return null
-		}
-		val searchForTryBody: TryCatchBlockAttr? = if (handlerTryBlock.getInnerTryBlocks().isEmpty()) {
-			handlerTryBlock
-		} else {
-			Utils.getOne(handlerTryBlock.getInnerTryBlocks())
+		val innerTries = handlerTryBlock.getInnerTryBlocks()
+		val searchTries: List<TryCatchBlockAttr> = when {
+			innerTries.isEmpty() -> listOf(handlerTryBlock)
+			innerTries.size == 1 -> listOf(checkNotNull(Utils.getOne(innerTries)))
+			else -> innerTries + handlerTryBlock
 		}
 
 		var splitter: BlockNode? = null
@@ -164,7 +162,7 @@ class ExceptionHandler private constructor(val handlerOffset: Int) {
 
 			for (splitterPredecessor in handlerPredecessor.predecessors) {
 				val tryBody = splitterPredecessor.get(AType.TRY_BLOCK)
-				if (tryBody === searchForTryBody) {
+				if (tryBody != null && searchTries.any { it === tryBody }) {
 					splitter = handlerPredecessor
 					break
 				}
@@ -173,6 +171,10 @@ class ExceptionHandler private constructor(val handlerOffset: Int) {
 			if (splitter != null) {
 				break
 			}
+		}
+		if (splitter == null && innerTries.size > 1) {
+			// 未找到时调用方会自行退化（推断/回退 top splitter），降到 debug 级别避免刷屏
+			LOG.debug("No bottom splitter found for catch with {} inner tries", innerTries.size)
 		}
 		return splitter
 	}

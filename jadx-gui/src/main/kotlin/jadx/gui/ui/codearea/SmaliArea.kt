@@ -34,6 +34,7 @@ import java.awt.event.ActionEvent
 import java.awt.event.KeyEvent
 import java.awt.event.MouseEvent
 import java.beans.PropertyChangeListener
+import javax.swing.UIManager
 import javax.swing.AbstractAction
 import javax.swing.KeyStroke
 import javax.swing.text.BadLocationException
@@ -92,7 +93,12 @@ class SmaliArea internal constructor(contentPanel: ContentPanel, node: JClass, s
 
 	override fun getFont(): Font {
 		if (!::model.isInitialized || isDisposed) {
+			// Swing installUI 阶段组件字体尚未设置，super.getFont() 会返回 null：
+			// 上游 Java 直接返回 null 由 BasicTextUI 兜底（null 时应用 UI 默认字体），
+			// 本覆写声明非空返回，必须自行回退，否则触发内在空检查 NPE 崩溃
 			return super.getFont()
+				?: (UIManager.getFont("TextArea.font") as? Font)
+				?: Font(Font.MONOSPACED, Font.PLAIN, 12)
 		}
 		return model.getFont()
 	}
