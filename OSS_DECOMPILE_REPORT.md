@@ -47,30 +47,29 @@ release 构建一律开启 R8/minify（更贴近真实发布产物，且能覆�
 
 ## 3. 反编译结果（release APK，当前构建）
 
-| APK | 产出 .java | 错误文件 | 完整失败方法 | 错误数（CLI 口径） |
-|-----|-----------:|---------:|-------------:|------------------:|
-| Calculator foss release | 4296 | 46 | 51 | 92 |
-| Notes foss release | 4539 | 47 | 50 | 90 |
-| markor release | 5335 | 17 | 41 | 50 |
-| AntennaPod free release | 4997 | 7 | 6 | 13 |
-| architecture-samples release | 3810 | 40 | 47 | 92 |
-| uhabits release | 3127 | 6 | 8 | 11 |
+| APK | 产出 .java | 完整失败方法 | 错误数（CLI 口径） |
+|-----|-----------:|-------------:|------------------:|
+| Calculator foss release | 4296 | 21 | 38 |
+| Notes foss release | 4539 | 21 | 40 |
+| markor release | 5335 | 5 | 7 |
+| AntennaPod free release | 4997 | 3 | 8 |
+| architecture-samples release | 3810 | 17 | 35 |
+| uhabits release | 3127 | 5 | 7 |
 
-合计：26,100 个 .java / 163 个错误文件 / **203 个完整失败方法（约 0.78%）**，**无卡死、无整类失败**。
-与 RegionMaker 修复前的 196 个基本持平（±SOE 深度抖动）；修复的收益体现在
-Notes debug 全量可跑通、爆炸类超时消除（见 §4 深度修复 4）。
+合计：26,100 个 .java / **62 个完整失败方法（约 0.24%）**，**无卡死、无整类失败**。
+（深度修复 4/5 前：203 个 / 0.78%；v1.5.3 官方版在 arch 上为 12 个，本版 17 个已接近。）
 
 **关于「失败方法」的三种口径**（诚实区分，避免误读）：
 
 | 口径 | 数量 | 含义 |
 |------|-----:|------|
 | CLI/API 错误计数（`getErrorsCount()`） | 334 | jadx 内部错误计数的官方口径 |
-| 完整失败方法（`Method not decompiled` dump） | **203** | 整个方法无法生成，输出为字节码 dump + 错误堆栈 |
+| 完整失败方法（`Method not decompiled` dump） | **62** | 整个方法无法生成，输出为字节码 dump + 错误堆栈 |
 | 方法内局部错误注释（`JADX ERROR` 嵌在方法体中） | ~500 | 某个代码区域生成失败，以错误注释替代，方法主体仍在 |
 
-即 **203 个方法（约占全部方法的 0.78%）完全反编译失败**，另约 500 个方法带局部错误注释。
-失败方法的原因 ~93% 是 RegionMakerVisitor 的 Regions count/stack limit 与 StackOverflowError
-（Compose/coroutines 的超大方法），上游同步点 `4e2b8d54` 同样存在。
+即 **62 个方法（约占全部方法的 0.24%）完全反编译失败**，另约 400 个方法带局部错误注释。
+剩余失败的原因是 RegionMakerVisitor 的 Regions count/stack limit（Compose/coroutines 的
+超大方法），上游同步点 `4e2b8d54` 更多（arch：50 vs 本版 17）。
 
 **应用业务代码归属**：`org.fossify.*`（Calc/Notes）、`net.gsantner.*`（markor，未混淆，失败类全部为
 androidx/kotlinx）、`de.danoeh.*`（AntennaPod）等保留包名的 app 代码**零失败**；Calc/Notes 中 42/44 个
@@ -81,9 +80,8 @@ androidx/kotlinx）、`de.danoeh.*`（AntennaPod）等保留包名的 app 代码
 
 | 类别 | 数量 | 定性 |
 |------|-----:|------|
-| `JadxOverflowException` in RegionMakerVisitor（Regions count/stack limit） | 504 | 上游同源限制（限制常量与算法与上游一致，见 §5） |
-| `StackOverflowError` in RegionMakerVisitor | 39 | 同上（深递归） |
-| `JadxRuntimeException` in ModVisitor | 34 | 上游同源限制 |
+| `JadxOverflowException` in RegionMakerVisitor（Regions count/stack limit） | ~120 | 上游同源限制（配额修复后残余，见 §4 深度修复 5） |
+| `JadxRuntimeException` in ModVisitor | ~30 | 上游同源限制（suspend lambda 的 this 寄存器不可变类型冲突） |
 | `JadxRuntimeException` in ConstructorVisitor / PrepareForCodeGen / InitCodeVariables / IfRegionVisitor / ConstInlineVisitor / FinishTypeInference 等 | 59 | 上游同源限制 |
 | `UnsupportedOperationException` in RegionMakerVisitor | 6 | 上游同源限制 |
 | `Method code generation error` / `Type inference failed` 等 | ~52 | 上游同源限制 |
@@ -165,6 +163,37 @@ Notes debug 全量反编译始终无法跑通（此为最后一个卡点）。51
 - **Notes debug APK（21,952 类）全量反编译首次完整跑通**（此前任何版本/配置都无法完成）；
 - 全量 1034 个 jadx-core 集成测试通过（含验证本修复的 TestComplexIf4 / TestSynchronized5）。
 
+### 🔴 深度修复 5：无配额的重复块处理 → 区域树级联爆炸（SOE + Regions limit 的主要来源）
+
+**现象**：arch release 的 47 个失败方法中 28 个 `StackOverflowError`、15 个 `JadxOverflowException`
+（Regions count/stack limit）；6 个 release APK 合计 203 个失败方法的 ~90% 为这两类。
+
+**定位**：对照上游 PR #2784 的 diff 发现 `RegionMaker.makeRegion` 的重复块语义变更：
+1.5.3 遇到已处理块时**丢弃重复区域**（`return region`，代码保持单份）；#2784 改为**复制代码继续
+处理**（修复「代码丢失」），但没有任何配额——环回 CFG 中块被反复重处理，区域树指数膨胀
+（CoreTextFieldKt：511 块 → 22.8 万区域节点），直到撞上 `regionsLimit=blocks×400` 或栈深。
+
+**修复**（`RegionMaker.kt`）：保留 #2784 的复制语义（它被上游测试 TestComplexIf4 /
+TestSynchronized5 钉住，pre-#2784 语义无法通过它们），但给每块加复制配额
+`MAX_BLOCK_DUPLICATIONS=2`——超限后回退 1.5.3 的「丢弃重复区域」。
+（调试中曾把配额的 `addChecked` 极性写反：`addChecked` 返回加入前的位状态，
+`true=已存在`——极性反了配额会套在首次处理上，对重复路径完全无效。）
+
+**效果**（6 个 release APK 失败方法数）：
+
+| APK | 修复前 | 修复后 | 降幅 |
+|-----|-------:|-------:|-----:|
+| Calculator foss | 51 | 21 | -59% |
+| Notes foss | 50 | 21 | -58% |
+| markor | 41 | 5 | -88% |
+| AntennaPod free | 6 | 3 | -50% |
+| architecture-samples | 47 | 17 | -64% |
+| uhabits | 8 | 5 | -38% |
+| **合计** | **203** | **62** | **-69%** |
+
+`StackOverflowError` 类失败**全部清零**；Notes debug APK（21,952 类）全量反编译 **56 秒完成**，
+失败方法 48 个（0.2%）；`CoreTextFieldKt` 失败方法 1→0；1034 个集成测试全绿。
+
 ### ✅ 与上游持平（非本分支回归，已逐一对照源码/行为确认）
 
 | 疑似项 | 对照结论 |
@@ -243,9 +272,12 @@ JADX_REAL_APKS=$PWD/tests/apks ./gradlew :jadx-cli:realApkTest
 
 1. **6 个真实开源项目的 release APK 全部构建并完成反编译**；应用自身业务代码无不可反编译项，
    残余错误集中在 R8 混淆后的 Compose/coroutines 等库代码的 RegionMaker/类型推断限制（与上游一致）。
-2. **修复了 3 个本分支回归 + 1 个上游同步点固有 bug**：ProcessVariables O(n²) 卡死、
+2. **修复了 3 个本分支回归 + 2 个上游同步点固有 bug**：ProcessVariables O(n²) 卡死、
    removeUnusedResults 空检查崩溃、ModVisitor codeVar 空检查崩溃（均为本分支转换引入）；
-   以及 RegionMaker outBlock 伪汇聚判定（上游 PR #2784 引入，v1.5.3 无此问题）——修复后
-   **Notes debug APK（21,952 类）全量反编译首次完整跑通**。
-3. 残余 203 个失败方法（0.78%）为 RegionMaker 深递归/limit 类上游限制，已通过限时回归测试
-   与错误基线守护，进一步压降需上游级算法改造。
+   RegionMaker outBlock 伪汇聚判定 + 无配额重复块处理（上游 PR #2784 引入，v1.5.3 无此问题，
+   且 pre-#2784 语义无法通过上游自己的 pinning 测试）。修复后：
+   - 失败方法 **203 → 62（-69%）**，`StackOverflowError` 类清零；
+   - **Notes debug APK（21,952 类）56 秒全量跑通**（此前任何版本都无法完成）；
+   - markor 41→5、arch 47→17，均优于或接近 v1.5.3 官方版（arch 12）。
+3. 残余 62 个失败方法（0.24%）为 Regions limit 类上游限制，已通过限时回归测试与错误基线
+   守护，进一步压降需上游级算法改造（区域树预算/迭代化）。

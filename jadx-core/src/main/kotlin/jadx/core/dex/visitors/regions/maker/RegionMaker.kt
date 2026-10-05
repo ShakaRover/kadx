@@ -30,6 +30,9 @@ import jadx.core.utils.exceptions.JadxOverflowException
  * Kotlin 转换说明：`getStack/makeRegion` 等原包级可见方法声明为 `internal`，
  * 供同模块的 maker 类调用；对象引用比较用 `===`。
  */
+/** 单块允许被复制进区域树的最大次数；超限后丢弃重复区域（防止重处理级联爆炸） */
+private const val MAX_BLOCK_DUPLICATIONS = 2
+
 class RegionMaker(mth: MethodNode) {
 	private val mth: MethodNode = mth
 	val stack: RegionStack = RegionStack(mth)
@@ -42,6 +45,9 @@ class RegionMaker(mth: MethodNode) {
 
 	private var regionsCount = 0
 
+	/** 每块已被重复加入区域的次数 */
+	private val dupBlockCounts = HashMap<BlockNode, Int>()
+
 	fun makeMthRegion(): Region = makeRegion(checkNotNull(mth.enterBlock))
 
 	fun makeRegion(startBlock: BlockNode): Region {
@@ -51,7 +57,16 @@ class RegionMaker(mth: MethodNode) {
 			return region
 		}
 		if (processedBlocks.addChecked(startBlock)) {
-			// 同一个块被加入多个区域（反编译代码会重复），继续处理但给出告警
+			// 同一个块被再次加入区域（addChecked 返回 true=已处理过）：上游 #2784 会无配额地
+			// 复制代码并继续处理，修复了「代码丢失」问题，但重复处理会级联放大——区域树
+			// 指数膨胀（CoreTextFieldKt：511 块 → 22.8 万区域节点）并触发 Regions limit / SOE。
+			// 限制每块复制次数，超限后回退 1.5.3 语义：丢弃本次重复区域。
+			val dupCount = (dupBlockCounts[startBlock] ?: 0) + 1
+			if (dupCount > MAX_BLOCK_DUPLICATIONS) {
+				mth.addWarnComment("Removed duplicated region for block: " + startBlock + ' ' + startBlock.getAttributesString())
+				return region
+			}
+			dupBlockCounts[startBlock] = dupCount
 			if (!startBlock.contains(AFlag.DUPLICATED)) {
 				mth.addWarnComment("Code duplicated, block: " + startBlock + ' ' + startBlock.getAttributesString())
 				startBlock.add(AFlag.DUPLICATED)
