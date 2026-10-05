@@ -12,6 +12,8 @@ import kadx.core.dex.nodes.IContainer
 import kadx.core.dex.nodes.IRegion
 import kadx.core.dex.nodes.InsnNode
 import kadx.core.dex.nodes.MethodNode
+import kadx.core.dex.regions.Region
+import kadx.core.dex.regions.SynchronizedRegion
 import kadx.core.dex.regions.SwitchRegion
 import kadx.core.dex.visitors.AbstractVisitor
 import kadx.core.dex.visitors.KadxVisitor
@@ -152,6 +154,19 @@ class SwitchBreakVisitor : AbstractVisitor() {
 	private class IterativeSwitchRegionVisitor(
 		private val builder: () -> BaseSwitchRegionVisitor,
 	) : AbstractRegionVisitor() {
+		/**
+		 * 只有底层列表稳定可变的区域（[Region] 及委托其列表的 [SynchronizedRegion]）才能真正追加；
+		 * 其余区域（IfRegion/LoopRegion/SwitchRegion/TryCatchRegion）的 subBlocks 是重建的
+		 * 临时列表或不可变视图——上游在此强转会抛 UnsupportedOperationException 或静默丢失。
+		 */
+		private fun appendBreakContainer(region: IRegion, container: IContainer) {
+			when (region) {
+				is Region -> region.add(container)
+				is SynchronizedRegion -> region.region.add(container)
+				else -> {}
+			}
+		}
+
 		override fun leaveRegion(mth: MethodNode, region: IRegion) {
 			if (region is SwitchRegion) {
 				val switchVisitor = builder()
@@ -194,8 +209,7 @@ class SwitchBreakVisitor : AbstractVisitor() {
 		override fun leaveRegion(mth: MethodNode, region: IRegion) {
 			if (addBreakRegion.contains(region)) {
 				addBreakRegion.remove(region)
-				@Suppress("UNCHECKED_CAST")
-				(region.subBlocks as MutableList<IContainer>).add(SwitchRegionMaker.buildBreakContainer(currentSwitchRef))
+				SwitchRegionMaker.appendBreakContainer(region, SwitchRegionMaker.buildBreakContainer(currentSwitchRef))
 			}
 			if (cleanupSet.contains(region)) {
 				cleanupSet.remove(region)

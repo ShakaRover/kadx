@@ -56,7 +56,8 @@ class MoveInlineVisitor : AbstractVisitor() {
 		}
 
 		private fun processMove(mth: MethodNode, move: InsnNode): Boolean {
-			val resultArg = checkNotNull(move.result)
+			// 结果已被前面的优雅降级置空（如 unbind）时不内联
+			val resultArg = move.result ?: return false
 			val moveArg = move.getArg(0)
 			if (resultArg.sameRegAndSVar(moveArg)) {
 				return true

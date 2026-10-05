@@ -234,8 +234,13 @@ open class RegionGen(mgen: MethodGen) : InsnGen(mgen, false) {
 
 	@Throws(CodegenException::class)
 	fun makeSwitch(sw: SwitchRegion, code: ICodeWriter) {
-		val insn = checkNotNull(BlockUtils.getLastInsn(sw.header) as? SwitchInsn) {
-			"Switch insn not found in header"
+		val insn = BlockUtils.getLastInsn(sw.header) as? SwitchInsn
+		if (insn == null) {
+			// switch 头块的指令已被级联移除（不可达块清理的边缘状态）：
+			// 无法渲染 switch 语句——输出占位注释并跳过该区域，
+			// 方法整体存活；上游在此抛 CodegenException 导致整方法 dump
+			code.startLine("// KADX WARN: switch instruction lost, region skipped")
+			return
 		}
 		val arg = insn.getArg(0)
 		code.startLine("switch (")

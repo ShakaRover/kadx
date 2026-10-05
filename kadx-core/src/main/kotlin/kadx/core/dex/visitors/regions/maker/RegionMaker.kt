@@ -33,6 +33,9 @@ import kadx.core.utils.exceptions.KadxOverflowException
 /** 单块允许被纳入区域树的最大总次数（首次 + 复制）；超限后丢弃重复区域（防止重处理级联爆炸） */
 private const val MAX_BLOCK_INCLUSIONS = 6
 
+/** 单区域内同一块作为「下一块」的最大重复次数（游走无进度守卫） */
+private const val MAX_WALK_REPEATS = 6
+
 class RegionMaker(mth: MethodNode) {
 	private val mth: MethodNode = mth
 	val stack: RegionStack = RegionStack(mth)
@@ -72,12 +75,26 @@ class RegionMaker(mth: MethodNode) {
 		} else {
 			tryIncludeBlock(startBlock)
 		}
+		// 游走进度守卫：同一块作为「下一块」重复出现超过 [MAX_WALK_REPEATS] 次说明
+		// 游走陷入 ADDED_TO_REGION 块组成的环（无进度、不消耗纳入预算）——
+		// 终止本区域游走，regions count limit 由此结构性不可达
+		val walkRepeats = HashMap<BlockNode, Int>()
 		var next: BlockNode? = startBlock
 		while (next != null) {
 			next = traverse(region, next)
 			regionsCount++
 			if (regionsCount > regionsLimit) {
 				throw KadxOverflowException("Regions count limit reached at block " + startBlock)
+			}
+			if (next != null) {
+				val rep = (walkRepeats[next] ?: 0) + 1
+				walkRepeats[next] = rep
+				if (rep > MAX_WALK_REPEATS) {
+					mth.addWarnComment(
+						"Region walk repeated block " + next + " without progress, region truncated",
+					)
+					break
+				}
 			}
 		}
 		return region

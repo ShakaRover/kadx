@@ -413,7 +413,7 @@ class SwitchRegionMaker(private val mth: MethodNode, private val regionMaker: Re
 		 * UnsupportedOperationException 导致整个方法反编译失败，对其余区域则是静默丢失。
 		 * 这里统一为：可持久化才追加，否则跳过（后续 SwitchBreakVisitor 会补全缺失的 break）。
 		 */
-		private fun appendBreakContainer(region: IRegion, container: IContainer) {
+		internal fun appendBreakContainer(region: IRegion, container: IContainer) {
 			when (region) {
 				is Region -> region.add(container)
 				is SynchronizedRegion -> region.region.add(container)

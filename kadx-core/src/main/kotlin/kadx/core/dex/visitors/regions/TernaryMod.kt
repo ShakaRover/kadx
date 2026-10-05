@@ -320,10 +320,11 @@ class TernaryMod private constructor() :
 			}
 			val elseArg: InsnArg
 			if (elseAssign != null && elseAssign.isConstInsn) {
-				// 内联常量
+				// 结果寄存器未绑定 SSA（优雅降级残留）时仅内联常量、不移除原赋值——
+				// 上游在此 NPE 导致整个方法失败
 				elseArg = InsnArg.wrapInsnIntoArg(elseAssign.copyWithoutResult())
-				val elseVar = checkNotNull(checkNotNull(elseAssign.result).sVar)
-				if (elseVar.useCount == 1 && elseVar.onlyOneUseInPhi === phiInsn) {
+				val elseVar = elseAssign.result?.sVar
+				if (elseVar != null && elseVar.useCount == 1 && elseVar.onlyOneUseInPhi === phiInsn) {
 					InsnRemover.remove(mth, elseAssign)
 				}
 			} else {

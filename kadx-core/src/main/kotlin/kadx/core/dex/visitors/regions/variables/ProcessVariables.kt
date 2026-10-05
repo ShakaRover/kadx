@@ -145,13 +145,21 @@ class ProcessVariables : AbstractVisitor() {
 					) {
 						val resolveMth = mth.root().getMethodUtils().resolveMethod(parentInsn as ConstructorInsn)
 						if (resolveMth != null && resolveMth.contains(AType.SKIP_MTH_ARGS)) {
-							val insnPos = parentInsn.getArgIndex(arg)
-							val mthArgs = resolveMth.argRegs
-							if (0 <= insnPos && insnPos < mthArgs.size) {
-								val mthArg = mthArgs[insnPos]
-								if (mthArg.contains(AFlag.REMOVE) && arg.sameType(mthArg)) {
-									arg.add(AFlag.DONT_GENERATE)
-									return true
+							// 跨类解析的方法可能处于未加载状态（GENERATED_AND_UNLOADED），
+							// argRegs 不可用——跳过本优化即可，方法照常反编译
+							val mthArgs: List<RegisterArg>? = try {
+								resolveMth.argRegs
+							} catch (e: Exception) {
+								null
+							}
+							if (mthArgs != null) {
+								val insnPos = parentInsn.getArgIndex(arg)
+								if (0 <= insnPos && insnPos < mthArgs.size) {
+									val mthArg = mthArgs[insnPos]
+									if (mthArg.contains(AFlag.REMOVE) && arg.sameType(mthArg)) {
+										arg.add(AFlag.DONT_GENERATE)
+										return true
+									}
 								}
 							}
 						}
