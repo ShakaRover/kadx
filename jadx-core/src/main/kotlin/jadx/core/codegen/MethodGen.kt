@@ -250,6 +250,11 @@ class MethodGen(classGen: ClassGen, mth: MethodNode) {
 			DecompilationMode.AUTO -> {
 				if (classGen.isFallbackMode || mth.region == null) {
 					// TODO: try simple mode first
+					if (!classGen.isFallbackMode) {
+						// region 缺失且方法无错误属性：说明某前序 pass 静默跳过了该方法，
+						// 记录日志以便定位（此前这类失败完全没有诊断线索）
+						LOG.debug("Region not built for method: {}", mth)
+					}
 					dumpInstructions(code)
 				} else {
 					addRegionInsns(code)

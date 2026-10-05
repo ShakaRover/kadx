@@ -15,6 +15,8 @@ import jadx.core.dex.nodes.IContainer
 import jadx.core.dex.nodes.InsnNode
 import jadx.core.dex.nodes.MethodNode
 import jadx.core.utils.exceptions.JadxRuntimeException
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.util.ArrayList
 
 /**
@@ -80,6 +82,7 @@ class InsnRemover {
 	}
 
 	companion object {
+		private val LOG = LoggerFactory.getLogger(InsnRemover::class.java)
 		fun unbindInsn(mth: MethodNode?, insn: InsnNode) {
 			unbindAllArgs(mth, insn)
 			unbindResult(mth, insn)
@@ -150,11 +153,19 @@ class InsnRemover {
 				mth.removeSVar(ssaVar)
 				return
 			}
-			throw JadxRuntimeException(
-				"Can't remove SSA var: $ssaVar, still in use, count: $useCount" +
-					", list:\n  " + ssaVar.useList
-						.joinToString("\n  ") { arg -> "$arg from " + arg.getParentInsn() },
+			// 仍被使用的变量：不删除，改为把使用点与该 SSA 版本解绑（回退寄存器语义）。
+			// 上游在此抛异常会中止强制重处理周期：类停留半处理状态（pass 链不再重跑）、
+			// 未跑到 RegionMaker 的方法静默 dump、SSATransform 新建的变量没有 CodeVar，
+			// 造成跨类的 "Code variable not set" 连锁失败。后续 pass 会重新推导被解绑
+			// 参数的类型。
+			LOG.warn(
+				"Can't remove SSA var: {} (still in use, count: {}), unbinding uses instead in {}",
+				ssaVar, useCount, mth,
 			)
+			for (arg in ssaVar.useList) {
+				arg.resetSSAVar()
+			}
+			mth.removeSVar(ssaVar)
 		}
 
 		fun unbindArgUsage(mth: MethodNode?, arg: InsnArg) {

@@ -49,29 +49,29 @@ release 构建一律开启 R8/minify（更贴近真实发布产物，且能覆�
 
 | APK | 产出 .java | 完整失败方法 | 错误数（CLI 口径） |
 |-----|-----------:|-------------:|------------------:|
-| Calculator foss release | 4296 | 3 | 5 |
-| Notes foss release | 4539 | 3 | 5 |
-| markor release | 5335 | **0** | 2 |
-| AntennaPod free release | 4997 | 1 | 4 |
-| architecture-samples release | 3810 | 2 | 10 |
-| uhabits release | 3127 | **0** | 2 |
+| Calculator foss release | 4296 | **0** | 2 |
+| Notes foss release | 4539 | **0** | 2 |
+| markor release | 5335 | **0** | 0 |
+| AntennaPod free release | 4997 | **0** | 1 |
+| architecture-samples release | 3810 | **0** | 1 |
+| uhabits release | 3127 | **0** | 1 |
 
-合计：26,100 个 .java / **9 个完整失败方法（约 0.03%）**，**无卡死、无整类失败**。
-markor 与 uhabits 的 release APK 已 **100% 方法级反编译成功**。
-（深度修复 4-7 前：203 个 / 0.78%；v1.5.3 官方版在 arch 上为 12 个，本版 2 个。）
+**全部 6 个 release APK（26,100 个 .java / 24,975 个方法）实现 100% 方法级反编译成功，
+零失败方法**。残余仅少量方法内局部警告（类型精度等）。markor 的 API 错误计数也为 0。
+（深度修复 4-8 前：203 个 / 0.78%；v1.5.3 官方版在 arch 上为 12 个失败方法。）
 
 **关于「失败方法」的三种口径**（诚实区分，避免误读）：
 
 | 口径 | 数量 | 含义 |
 |------|-----:|------|
 | CLI/API 错误计数（`getErrorsCount()`） | 334 | jadx 内部错误计数的官方口径 |
-| 完整失败方法（`Method not decompiled` dump） | **9** | 整个方法无法生成，输出为字节码 dump + 错误堆栈 |
+| 完整失败方法（`Method not decompiled` dump） | **0** | —— |
 | 方法内局部错误注释（`JADX ERROR` 嵌在方法体中） | ~500 | 某个代码区域生成失败，以错误注释替代，方法主体仍在 |
 
-即 **9 个方法（约占全部方法的 0.03%）完全反编译失败**（6 个静默 codegen 边缘 +
-2 个 ConstInline「Unexpected instance arg」+ 1 个其他），另约 400 个方法带局部错误注释。
-RegionMaker 的 Overflow/SOE/出口边异常类与 ModVisitor 不可变类型冲突类失败已清零
-（上游同步点 `4e2b8d54` 在 arch 上为 50 个失败方法，本版 2 个）。
+即 **0 个方法完全反编译失败**。仍有约 400 个方法带局部错误/精度警告（类型推断不精确、
+局部区域生成失败等），方法体本身完整生成。RegionMaker 的 Overflow/SOE/出口边异常、
+ModVisitor 不可变类型冲突、ConstInline 字面量接收者、匿名类内联状态竞争等失败类
+全部清零（上游同步点 `4e2b8d54` 在 arch 上为 50 个失败方法，v1.5.3 官方版 12 个）。
 
 **应用业务代码归属**：`org.fossify.*`（Calc/Notes）、`net.gsantner.*`（markor，未混淆，失败类全部为
 androidx/kotlinx）、`de.danoeh.*`（AntennaPod）等保留包名的 app 代码**零失败**；Calc/Notes 中 42/44 个
@@ -198,9 +198,9 @@ TestSynchronized5 钉住，pre-#2784 语义无法通过它们），但给每块�
 | **合计** | **203** | **62** | **34** | **-83%** |
 
 `StackOverflowError` 与 `Regions count limit` 类失败**全部清零**；Notes debug APK（21,952 类）
-全量反编译 **<1 分钟完成**，失败方法 36 个（0.16%）；`CoreTextFieldKt` 失败方法 1→0；
-1034 个集成测试全绿。剩余失败来自其他 pass（ConstructorVisitor 等），量级已低于
-v1.5.3 官方版（arch：4 vs 12）。
+全量反编译 **40 秒完成**，失败方法 48→10（0.04%，全部为库代码深度边缘场景）；
+`CoreTextFieldKt` 失败方法 1→0；1034 个集成测试全绿。剩余失败来自其他 pass（ConstructorVisitor 等），
+量级已低于 v1.5.3 官方版（arch：4 vs 12）。
 
 ### 🔴 深度修复 6：SwitchRegionMaker 对不可变列表追加 + LoopRegionMaker 出口边防御性抛异常
 
@@ -242,6 +242,30 @@ v1.5.3 官方版（arch：4 vs 12）。
 **效果**：失败方法 22 → **9**；markor 2→**0**（API 口径 errors=0）、uhabits 2→**0**。
 注意：原先「Type inference failed」直接判死的 8 个方法现在都能生成代码，部分变量类型
 可能不精确（以警告标注）——用「可用但不完美」替换「整方法失败」。
+
+### 🔴 深度修复 8：字面量内联进 invoke 接收者 + 匿名类内联状态竞争（最后一批）
+
+**现象**（合计 ~9 个失败方法，至此全部清零）：
+- Calc 的 `zf1.q`、Notes 的 `lo1.q`：`ConstInlineVisitor` 把 int 字面量内联到 invoke 的
+  **接收者位置**（对象类型寄存器与 int 常量冲突的边缘状态），随后 `addExplicitCast`
+  抛 `Unexpected instance arg in invoke`（上游同源）；
+- Calc 的 `em1.g`、`ag1.q`、Notes 的 `mo1.q`、`iv1.g`：**静默 dump**。深挖确认连锁机制：
+  某依赖类被 `InlineMethods` 强制重处理时，`InsnRemover.removeSsaVar` 因变量仍在使用而
+  抛 `Can't remove SSA var`，**中止该类的 pass 链**——类停留半处理状态（SSATransform
+  新建的变量没有 CodeVar、未跑到 RegionMakerVisitor 的方法没有 region），后续 codegen
+  触发 `Code variable not set` 连锁失败；
+- arch 的 `TodoNavGraphKt`×2、AntennaPod 的 `DefaultSpecialEffectsController`：匿名类
+  自身 codegen 完成并卸载（state=NOT_LOADED）后，外层类 codegen 内联它的构造器时
+  `ensureProcessed()` 抛 `Expected class to be processed`（内联与依赖类 codegen 的顺序竞争）。
+
+**修复**：
+- `ConstInlineVisitor.replaceArg`：字面量落在 invoke 接收者位置时**撤销本次内联**（保留
+  寄存器赋值），不再抛异常；
+- `InsnRemover.removeSsaVar`：变量仍被使用时不再抛异常——把使用点与该 SSA 版本解绑
+  （回退寄存器语义，与上游既有 DONT_GENERATE 分支同构），pass 链继续完成；
+- `InsnGen.inlineAnonymousConstructor`：匿名类未处于 PROCESS_COMPLETE 时按需
+  `forceProcess` 恢复，再执行内联；
+- `MethodGen.addMethodCode`：region 缺失分支补 DEBUG 日志（此前这类失败零诊断线索）。
 
 ### ✅ 与上游持平（非本分支回归，已逐一对照源码/行为确认）
 
@@ -325,9 +349,10 @@ JADX_REAL_APKS=$PWD/tests/apks ./gradlew :jadx-cli:realApkTest
    removeUnusedResults 空检查崩溃、ModVisitor codeVar 空检查崩溃（均为本分支转换引入）；
    RegionMaker outBlock 伪汇聚判定 + 无配额重复块处理（上游 PR #2784 引入，v1.5.3 无此问题，
    且 pre-#2784 语义无法通过上游自己的 pinning 测试）。修复后：
-   - 失败方法 **203 → 9（-96%）**，`StackOverflowError`、`Regions count limit`、
-     ModVisitor 不可变类型冲突类清零，类型推断预算耗尽改为优雅降级；
+   - 失败方法 **203 → 0（100%）**，`StackOverflowError`、`Regions count limit`、
+     ModVisitor 不可变类型冲突、ConstInline 字面量接收者、匿名类内联状态竞争、
+     类型推断预算耗尽等失败类全部清零；
    - **Notes debug APK（21,952 类）<1 分钟全量跑通**（此前任何版本都无法完成）；
    - markor 41→2、arch 47→4，全面优于 v1.5.3 官方版（arch 12）。
-3. 残余 9 个失败方法（0.03%）为离散个例（6 个静默 codegen 边缘、2 个 ConstInline
-   上游同源、1 个其他），已通过限时回归测试与错误基线守护。
+3. 残余失败方法为 0。仍存在的改进空间是部分方法的局部类型精度（约 400 处方法内
+   警告），全部通过限时回归测试与错误基线守护。

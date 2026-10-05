@@ -756,6 +756,12 @@ open class InsnGen(
 
 	@Throws(CodegenException::class)
 	private fun inlineAnonymousConstructor(code: ICodeWriter, cls: ClassNode, insn: ConstructorInsn) {
+		if (!cls.checkProcessed()) {
+			// 被内联的匿名类可能已完成自身 codegen 并卸载（state=NOT_LOADED，与外层类
+			// 的 codegen 存在顺序竞争）。按需重新处理恢复到 PROCESS_COMPLETE——
+			// 直接 ensureProcessed 会抛异常导致外层方法反编译失败
+			mth.root().getProcessClasses().forceProcess(cls)
+		}
 		cls.ensureProcessed()
 		if (this.mth.parentClass === cls) {
 			cls.remove(AType.ANONYMOUS_CLASS)
@@ -788,7 +794,12 @@ open class InsnGen(
 				if (arg.isRegister) {
 					val mthArg = mthArgs[i]
 					val insnArg = arg as RegisterArg
-					checkNotNull(mthArg.sVar).setCodeVar(checkNotNull(insnArg.sVar).codeVar)
+					val argSVar = insnArg.sVar
+					// 参数可能来自中途夭折的重处理周期，CodeVar 尚未初始化：
+					// 跳过名字合并（仅影响输出美观），不抛异常
+					if (argSVar != null && argSVar.isCodeVarSet()) {
+						checkNotNull(mthArg.sVar).setCodeVar(argSVar.codeVar)
+					}
 				}
 			}
 		}

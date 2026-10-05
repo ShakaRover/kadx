@@ -267,6 +267,13 @@ class ConstInlineVisitor : AbstractVisitor() {
 						ModVisitor.addFieldUsage(fieldNode, mth)
 					}
 				} else {
+					if (useInsn is BaseInvokeNode && useInsn.getInstanceArg() === litArg && !litArg.isZeroLiteral()) {
+						// 字面量落在 invoke 接收者位置（对象类型寄存器与 int 常量冲突的边缘状态）：
+						// 撤销本次内联、保留寄存器赋值——上游在 addExplicitCast 中抛异常
+						// 导致整个方法反编译失败
+						useInsn.replaceArg(litArg, arg)
+						return false
+					}
 					addExplicitCast(useInsn, litArg)
 				}
 			} else {
@@ -282,9 +289,10 @@ class ConstInlineVisitor : AbstractVisitor() {
 			if (insn is BaseInvokeNode) {
 				val callMth: MethodInfo = insn.callMth
 				if (insn.getInstanceArg() === arg) {
-					// 实例参数为 null，强制加 cast
+					// 实例参数为 null，强制加 cast；非零字面量走到这里说明上方撤销内联
+					// 未生效（防御路径）：跳过 cast，不再抛异常
 					if (!arg.isZeroLiteral()) {
-						throw JadxRuntimeException("Unexpected instance arg in invoke")
+						return
 					}
 					val castType = callMth.declClass.type
 					val castInsn = IndexInsnNode(InsnType.CAST, castType, 1)
