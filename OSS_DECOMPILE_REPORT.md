@@ -49,27 +49,28 @@ release 构建一律开启 R8/minify（更贴近真实发布产物，且能覆�
 
 | APK | 产出 .java | 完整失败方法 | 错误数（CLI 口径） |
 |-----|-----------:|-------------:|------------------:|
-| Calculator foss release | 4296 | 12 | 21 |
-| Notes foss release | 4539 | 12 | 22 |
+| Calculator foss release | 4296 | 7 | 13 |
+| Notes foss release | 4539 | 7 | 13 |
 | markor release | 5335 | 2 | 4 |
-| AntennaPod free release | 4997 | 2 | 6 |
-| architecture-samples release | 3810 | 4 | 13 |
+| AntennaPod free release | 4997 | 1 | 4 |
+| architecture-samples release | 3810 | 3 | 12 |
 | uhabits release | 3127 | 2 | 2 |
 
-合计：26,100 个 .java / **34 个完整失败方法（约 0.13%）**，**无卡死、无整类失败**。
-（深度修复 4/5 前：203 个 / 0.78%；v1.5.3 官方版在 arch 上为 12 个，本版 4 个。）
+合计：26,100 个 .java / **22 个完整失败方法（约 0.08%）**，**无卡死、无整类失败**。
+（深度修复 4/5/6 前：203 个 / 0.78%；v1.5.3 官方版在 arch 上为 12 个，本版 3 个。）
 
 **关于「失败方法」的三种口径**（诚实区分，避免误读）：
 
 | 口径 | 数量 | 含义 |
 |------|-----:|------|
 | CLI/API 错误计数（`getErrorsCount()`） | 334 | jadx 内部错误计数的官方口径 |
-| 完整失败方法（`Method not decompiled` dump） | **34** | 整个方法无法生成，输出为字节码 dump + 错误堆栈 |
+| 完整失败方法（`Method not decompiled` dump） | **22** | 整个方法无法生成，输出为字节码 dump + 错误堆栈 |
 | 方法内局部错误注释（`JADX ERROR` 嵌在方法体中） | ~500 | 某个代码区域生成失败，以错误注释替代，方法主体仍在 |
 
-即 **34 个方法（约占全部方法的 0.13%）完全反编译失败**，另约 400 个方法带局部错误注释。
-剩余失败来自 ConstructorVisitor / ModVisitor 等其他 pass 的边缘场景；RegionMaker 的
-Overflow/SOE 类失败已清零（上游同步点 `4e2b8d54` 在 arch 上为 50 个失败方法，本版 4 个）。
+即 **22 个方法（约占全部方法的 0.08%）完全反编译失败**，另约 400 个方法带局部错误注释。
+剩余失败来自「Type inference failed」（类型推断震荡）、ModVisitor 不可变类型冲突、
+ConstInline 等其他 pass 的边缘场景；RegionMaker 的 Overflow/SOE/出口边异常类失败已清零
+（上游同步点 `4e2b8d54` 在 arch 上为 50 个失败方法，本版 3 个）。
 
 **应用业务代码归属**：`org.fossify.*`（Calc/Notes）、`net.gsantner.*`（markor，未混淆，失败类全部为
 androidx/kotlinx）、`de.danoeh.*`（AntennaPod）等保留包名的 app 代码**零失败**；Calc/Notes 中 42/44 个
@@ -200,6 +201,26 @@ TestSynchronized5 钉住，pre-#2784 语义无法通过它们），但给每块�
 1034 个集成测试全绿。剩余失败来自其他 pass（ConstructorVisitor 等），量级已低于
 v1.5.3 官方版（arch：4 vs 12）。
 
+### 🔴 深度修复 6：SwitchRegionMaker 对不可变列表追加 + LoopRegionMaker 出口边防御性抛异常
+
+**现象**（合计 ~11 个失败方法）：
+- AntennaPod 的 `ExifInterface` 等 3 个方法：`UnsupportedOperationException` in RegionMakerVisitor——
+  `insertBreaksForCase` 对区域 `subBlocks` 强转 `MutableList` 后追加，遇到 `SwitchRegion`
+  （不可变视图）直接崩溃；
+- Calc/Notes 的 `CoordinatorLayout` 等 ~7 个方法：`Not found exit edge by exit block`——
+  `LoopRegionMaker.checkLoopExits` 在出口块无对应出口边时直接抛异常。
+
+**修复**：
+- `SwitchRegionMaker`：类型感知追加 `appendBreakContainer`——只有底层列表稳定可变的区域
+  （`Region`、委托其列表的 `SynchronizedRegion`）真正追加；其余区域（IfRegion/LoopRegion/
+  SwitchRegion/TryCatchRegion 的 `subBlocks` 是每次重建的临时列表或不可变视图）跳过。
+  上游对 SwitchRegion 会崩溃、对其余区域是「加进临时列表静默丢失」，本修复等价于上游的
+  可观察行为但去除崩溃；缺失的 break 由后续 `SwitchBreakVisitor` 补全。
+- `LoopRegionMaker.checkLoopExits`：抛异常降级为 warn + `return false`——调用方回退到
+  `makeEndlessLoop` 的通用循环处理，方法不再整体失败。
+
+**效果**：失败方法 34 → **22**；AntennaPod 2→1、Calc 12→7、Notes 12→7、arch 4→3。
+
 ### ✅ 与上游持平（非本分支回归，已逐一对照源码/行为确认）
 
 | 疑似项 | 对照结论 |
@@ -282,8 +303,8 @@ JADX_REAL_APKS=$PWD/tests/apks ./gradlew :jadx-cli:realApkTest
    removeUnusedResults 空检查崩溃、ModVisitor codeVar 空检查崩溃（均为本分支转换引入）；
    RegionMaker outBlock 伪汇聚判定 + 无配额重复块处理（上游 PR #2784 引入，v1.5.3 无此问题，
    且 pre-#2784 语义无法通过上游自己的 pinning 测试）。修复后：
-   - 失败方法 **203 → 34（-83%）**，`StackOverflowError` 与 `Regions count limit` 类清零；
+   - 失败方法 **203 → 22（-89%）**，`StackOverflowError` 与 `Regions count limit` 类清零；
    - **Notes debug APK（21,952 类）<1 分钟全量跑通**（此前任何版本都无法完成）；
    - markor 41→2、arch 47→4，全面优于 v1.5.3 官方版（arch 12）。
-3. 残余 34 个失败方法（0.13%）来自 ConstructorVisitor / ModVisitor 等其他 pass 的边缘场景，
-   已通过限时回归测试与错误基线守护。
+3. 残余 22 个失败方法（0.08%）主要为「Type inference failed」（类型推断震荡上限）与
+   ModVisitor 不可变类型冲突，已通过限时回归测试与错误基线守护。

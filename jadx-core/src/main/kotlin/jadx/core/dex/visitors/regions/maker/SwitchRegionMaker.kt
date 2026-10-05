@@ -14,6 +14,7 @@ import jadx.core.dex.nodes.InsnContainer
 import jadx.core.dex.nodes.InsnNode
 import jadx.core.dex.nodes.MethodNode
 import jadx.core.dex.regions.Region
+import jadx.core.dex.regions.SynchronizedRegion
 import jadx.core.dex.regions.SwitchRegion
 import jadx.core.dex.visitors.regions.AbstractRegionVisitor
 import jadx.core.dex.visitors.regions.DepthRegionTraversal
@@ -383,8 +384,7 @@ class SwitchRegionMaker(private val mth: MethodNode, private val regionMaker: Re
 							}
 						}
 						if (insertBreak && canAppendBreak(region)) {
-							@Suppress("UNCHECKED_CAST")
-							(region.subBlocks as MutableList<IContainer>).add(buildBreakContainer(switchRegion))
+							appendBreakContainer(region, buildBreakContainer(switchRegion))
 						}
 					}
 				},
@@ -403,6 +403,23 @@ class SwitchRegionMaker(private val mth: MethodNode, private val regionMaker: Re
 		}
 
 		fun canAppendBreak(region: IRegion): Boolean = !region.contains(AFlag.FALL_THROUGH) && !RegionUtils.hasExitBlock(region)
+
+		/**
+		 * 把 break 容器追加到 [region] 的子块列表。
+		 *
+		 * 只有底层列表稳定可变的区域（[Region] 及委托其列表的 [SynchronizedRegion]）才能真正追加；
+		 * 其余区域（IfRegion/LoopRegion/SwitchRegion/TryCatchRegion）的 `subBlocks` 是每次
+		 * 重建的临时列表或不可变视图——上游在此处对 SwitchRegion 会直接抛
+		 * UnsupportedOperationException 导致整个方法反编译失败，对其余区域则是静默丢失。
+		 * 这里统一为：可持久化才追加，否则跳过（后续 SwitchBreakVisitor 会补全缺失的 break）。
+		 */
+		private fun appendBreakContainer(region: IRegion, container: IContainer) {
+			when (region) {
+				is Region -> region.add(container)
+				is SynchronizedRegion -> region.region.add(container)
+				else -> {}
+			}
+		}
 
 		fun buildBreakContainer(switchRegion: SwitchRegion): InsnContainer {
 			val breakInsn = InsnNode(InsnType.BREAK, 0)

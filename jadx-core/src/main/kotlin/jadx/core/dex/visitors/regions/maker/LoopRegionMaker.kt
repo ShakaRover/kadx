@@ -260,7 +260,10 @@ internal class LoopRegionMaker(
 			}
 		}
 		if (mainExitEdge == null) {
-			throw JadxRuntimeException("Not found exit edge by exit block: " + mainExitBlock)
+			// 出口块与出口边不一致（R8 混淆 CFG 的边缘形态）：上游在此抛异常导致整个方法
+			// 反编译失败。降级为「校验不通过」——调用方回退到 makeEndlessLoop 的通用处理。
+			mth.addWarnComment("Not found exit edge by exit block: " + mainExitBlock)
+			return false
 		}
 
 		val mainOutBlock = mainExitEdge.target
