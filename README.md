@@ -1,4 +1,6 @@
-<img src="https://raw.githubusercontent.com/skylot/jadx/master/kadx-gui/src/main/resources/logos/kadx-logo.png" width="64" align="left" />
+<img src="kadx-gui/src/main/resources/logos/kadx-logo.png" width="64" align="left" />
+
+> **KADX** — 基于 [skylot/jadx](https://github.com/skylot/jadx) 的深度现代化分支（全量 Kotlin 化 + 反编译质量优化）。
 
 ## KADX
 
