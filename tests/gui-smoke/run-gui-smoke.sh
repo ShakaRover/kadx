@@ -10,11 +10,16 @@ set -euo pipefail
 K="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 JAR="${1:?usage: run-gui-smoke.sh <jadx-gui-all.jar> [seconds] [apk]}"
 DUR="${2:-90}"
-APK="${3:-$K/tests/apks/markor-release-net.gsantner.markor-v163-2.16.1-flavorDefault-release-unsigned.apk}"
-[ -f "$APK" ] || { echo "APK not found: $APK (build via tests/build-apk.sh markor release)"; exit 2; }
+REQUIRE_LOAD="${REQUIRE_LOAD:-1}"
+APK="${3-$K/tests/apks/markor-release-net.gsantner.markor-v163-2.16.1-flavorDefault-release-unsigned.apk}"
+if [ -n "$APK" ] && [ ! -f "$APK" ]; then
+  echo "APK not found: $APK (build via tests/build-apk.sh markor release)"
+  exit 2
+fi
 
 PROJ="$K/tests/gui-smoke/gui-test-project.jadx"
-cat > "$PROJ" <<JSON
+if [ -n "$APK" ]; then
+  cat > "$PROJ" <<JSON
 {
   "files": ["$APK"],
   "openTabs": [
@@ -28,22 +33,27 @@ cat > "$PROJ" <<JSON
   ]
 }
 JSON
+else
+  # 纯空项目（复现：损坏项目文件按空项目加载后的 clearTree 路径）
+  echo '{"files": [], "openTabs": []}' > "$PROJ"
+fi
 
 OUT="$(mktemp -p "$K/tests/tmp")"
 export DISPLAY="${DISPLAY:-:1}"
 export JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$K/tests/tmp"
 RC=0
 timeout -k 10 "$DUR" java -jar "$JAR" "$PROJ" > "$OUT.log" 2>&1 || RC=$?
-NPE=$(grep -cE "must not be null|Parameter specified as non-null" "$OUT.log" || true)
-echo "exit=$RC npe_signatures=$NPE log=$OUT.log"
+# 捕获一切错误信号：Kotlin 空安全 NPE、未捕获异常、任何 ERROR 级日志
+NPE=$(grep -cE "must not be null|Parameter specified as non-null|Uncaught thread exception|ERROR - " "$OUT.log" || true)
+echo "exit=$RC error_signatures=$NPE log=$OUT.log"
 if [ "$NPE" != "0" ]; then
-  grep -m2 -B1 -A4 -E "must not be null|Parameter specified as non-null" "$OUT.log"
+  grep -m3 -B1 -A6 -E "must not be null|Parameter specified as non-null|Uncaught thread exception|ERROR - " "$OUT.log"
   exit 1
 fi
-if ! grep -q "Loaded classes" "$OUT.log"; then
+if [ "$REQUIRE_LOAD" = "1" ] && ! grep -q "Loaded classes" "$OUT.log"; then
   # 加载未在时长内完成：标签恢复流程未执行，判定无效
   echo "INCONCLUSIVE: app load did not finish within ${DUR}s"
   exit 3
 fi
-echo "PASS: no nullability NPE signatures; load line:"
+echo "PASS: no error signatures; load line:"
 grep -m1 "Loaded classes" "$OUT.log" || true

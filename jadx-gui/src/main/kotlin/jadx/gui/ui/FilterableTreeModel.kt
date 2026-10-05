@@ -66,11 +66,13 @@ class FilterableTreeModel(
 		LOG.debug("New tree filter '{}'", newFilter)
 		applyFilterFieldOutline("")
 		collectFilteredPaths()
-		SwingUtilities.invokeLater { nodeStructureChanged(getRoot() as TreeNode) }
+		SwingUtilities.invokeLater { nodeStructureChanged(getRoot() as TreeNode?) }
 		SwingUtilities.invokeLater { expandVisibleFilteredNodes(mainWindow.getTree()) }
 	}
 
-	override fun nodeStructureChanged(node: TreeNode) {
+	// 参数必须可空：DefaultTreeModel.setRoot(null)（清空项目树）会以 null 调用本方法，
+	// 上游 Java 透传给同样容忍 null 的 super 实现；Kotlin 非空声明会在空项目加载时 NPE
+	override fun nodeStructureChanged(node: TreeNode?) {
 		super.nodeStructureChanged(node)
 	}
 
