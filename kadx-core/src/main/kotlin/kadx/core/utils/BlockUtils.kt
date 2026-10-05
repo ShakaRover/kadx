@@ -1394,11 +1394,13 @@ object BlockUtils {
 	}
 
 	fun getTopSplitterForHandler(handlerBlock: BlockNode): BlockNode {
-		val block = getBlockWithFlag(handlerBlock.predecessors, AFlag.EXC_TOP_SPLITTER)
-		if (block == null) {
-			throw KadxRuntimeException("Can't find top splitter block for handler:$handlerBlock")
-		}
-		return block
+		return getTopSplitterForHandlerOrNull(handlerBlock)
+			?: throw KadxRuntimeException("Can't find top splitter block for handler:$handlerBlock")
+	}
+
+	/** 同 [getTopSplitterForHandler]，但找不到时返回 null（R8 混淆 CFG 的边缘形态）。 */
+	fun getTopSplitterForHandlerOrNull(handlerBlock: BlockNode): BlockNode? {
+		return getBlockWithFlag(handlerBlock.predecessors, AFlag.EXC_TOP_SPLITTER)
 	}
 
 	/**
@@ -1406,7 +1408,8 @@ object BlockUtils {
 	 */
 	fun getTryAndHandlerCrossBlock(mth: MethodNode, handler: ExceptionHandler): BlockNode? {
 		val start = checkNotNull(handler.getHandlerBlock())
-		val topSplitter = getTopSplitterForHandler(start)
+		// 顶部拆分块缺失（重处理周期边缘状态）时返回 null，调用方均有兜底
+		val topSplitter = getTopSplitterForHandlerOrNull(start) ?: return null
 		val allHandlers = checkNotNull(handler.getTryBlock()).handlers
 		val handlerExitsCandidate = ArrayList(bitSetToBlocks(mth, start.domFrontier))
 		val visited = newBlocksBitSet(mth)

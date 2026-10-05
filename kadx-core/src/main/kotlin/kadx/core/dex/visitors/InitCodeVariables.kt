@@ -125,7 +125,9 @@ class InitCodeVariables : AbstractVisitor() {
 				return
 			}
 			for (phiInsn in phiInsnList) {
-				val resultVar = checkNotNull(phiInsn.result).sVar
+				// PHI 结果缺失（重处理周期中途夭折的边缘状态）时跳过该分支，
+				// 其余参数仍正常收集——上游在此 NPE 导致整个方法失败
+				val resultVar = phiInsn.result?.sVar
 				if (resultVar != null && vars.add(resultVar)) {
 					collectConnectedVars(resultVar.phiList, vars)
 				}

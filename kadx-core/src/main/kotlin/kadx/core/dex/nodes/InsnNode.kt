@@ -366,7 +366,9 @@ open class InsnNode(
 		}
 		for (arg in arguments) {
 			if (arg is RegisterArg) {
-				val ssaVar = checkNotNull(arg.sVar)
+				// 未绑定 SSA 的裸寄存器参数（简化替换产生的边缘状态）跳过重绑定；
+				// 上游在此 NPE 导致整个方法失败
+				val ssaVar = arg.sVar ?: continue
 				ssaVar.use(arg)
 				ssaVar.updateUsedInPhiList()
 			} else if (arg is InsnWrapArg) {

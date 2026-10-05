@@ -438,7 +438,10 @@ class TypeUpdate(private val root: RootNode) {
 	/** 所有参数必须同类型。 */
 	private fun allSameListener(updateInfo: TypeUpdateInfo, insn: InsnNode, arg: InsnArg, candidateType: ArgType): TypeUpdateResult? {
 		if (!isAssign(insn, arg)) {
-			return queueTypeUpdate(updateInfo, checkNotNull(insn.result), candidateType, null)
+			// PHI 结果缺失（中途夭折重处理周期的边缘状态）时无下游可传播，
+			// 保持现状返回 SAME——上游在此 NPE 导致整个方法失败
+			val insnResult = insn.result ?: return TypeUpdateResult.SAME
+			return queueTypeUpdate(updateInfo, insnResult, candidateType, null)
 		}
 		// 用相同类型更新其它参数
 		val updateCallback = ArgsListUpdateCallback(this, updateInfo, insn.argList, candidateType, false)

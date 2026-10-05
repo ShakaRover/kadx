@@ -47,7 +47,8 @@ class ExcHandlersRegionMaker(private val mth: MethodNode, private val regionMake
 				val handlerBlock = handler.getHandlerBlock()
 				if (handlerBlock != null) {
 					blocks.add(handlerBlock)
-					splitters.add(BlockUtils.getTopSplitterForHandler(handlerBlock))
+					// 顶部拆分块缺失时跳过该处理器（出口集退化，方法不再失败）
+					BlockUtils.getTopSplitterForHandlerOrNull(handlerBlock)?.let { splitters.add(it) }
 				} else {
 					mth.addDebugComment("No exception handler block: " + handler)
 				}
@@ -116,7 +117,8 @@ class ExcHandlersRegionMaker(private val mth: MethodNode, private val regionMake
 		val stack = regionMaker.stack.clear()
 		val dom: BlockNode
 		if (handler.isFinally()) {
-			dom = BlockUtils.getTopSplitterForHandler(start)
+			// 顶部拆分块缺失（边缘 CFG）时回退到 handler 起始块，不再使整个方法失败
+			dom = BlockUtils.getTopSplitterForHandlerOrNull(start) ?: start
 		} else {
 			dom = start
 			stack.addExits(exits)

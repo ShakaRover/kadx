@@ -63,8 +63,9 @@ class MoveInlineVisitor : AbstractVisitor() {
 			}
 			if (moveArg.isRegister) {
 				val moveReg = moveArg as RegisterArg
-				if (checkNotNull(moveReg.sVar).isAssignInPhi()) {
-					// 不要打乱已经合并的变量
+				val moveSVar = moveReg.sVar
+				if (moveSVar == null || moveSVar.isAssignInPhi()) {
+					// 未绑定 SSA 的参数不内联；已合并的变量不要打乱
 					return false
 				}
 			}
