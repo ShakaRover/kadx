@@ -91,7 +91,14 @@ class BlockProcessor : AbstractVisitor() {
 							fixed = true
 							break
 						}
-						throw KadxRuntimeException("Unreachable block: $block")
+					// 不可达块 = 死代码：无前驱意味着没有执行路径能到达它。
+					// 用 removeUnreachableBlock 做闭包级联移除（含孤儿后继）并从方法注销——
+					// 上游在此抛异常导致整个方法失败；必须真正从 basicBlocks 注销，
+					// 否则清理循环对同一块无限循环（曾致持锁挂死整个进程）。
+					mth.addWarnComment("Removed unreachable block: $block")
+					removeUnreachableBlock(block, mth)
+					fixed = true
+					break
 					}
 				}
 				if (!fixed) {

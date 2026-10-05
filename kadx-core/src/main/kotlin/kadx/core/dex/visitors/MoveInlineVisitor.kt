@@ -69,7 +69,8 @@ class MoveInlineVisitor : AbstractVisitor() {
 					return false
 				}
 			}
-			val ssaVar = checkNotNull(resultArg.sVar)
+			// 结果寄存器未绑定 SSA（中途夭折重处理周期的残留）时不内联
+			val ssaVar = resultArg.sVar ?: return false
 			if (ssaVar.useList.isEmpty()) {
 				// 结果未被使用
 				return true

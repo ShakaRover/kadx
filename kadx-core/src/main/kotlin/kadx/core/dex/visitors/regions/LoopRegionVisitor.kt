@@ -139,7 +139,10 @@ class LoopRegionVisitor :
 						return false
 					}
 				} catch (error: StackOverflowError) {
-					throw KadxOverflowException("LoopRegionVisitor.assignOnlyInLoop endless recursion")
+					// 深递归（超大方法）无法确认自增参数是否仅在循环内赋值：
+					// 放弃构造 for 循环，退化为 while 渲染——上游在此抛出导致方法失败
+					mth.addWarnComment("assignOnlyInLoop deep recursion, skip for-loop construction")
+					return false
 				}
 			}
 

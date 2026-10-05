@@ -369,14 +369,18 @@ KADX_REAL_APKS=$PWD/tests/apks ./gradlew :kadx-cli:realApkTest
 | 指标 | jadx 1.5.6 | master@4e2b8d54 | **kadx** |
 |------|-----------:|----------------:|---------:|
 | 产出 .java | 230,882 | 230,882 | 230,882 |
-| **完整失败方法** | 520 | 520 | **20（-96%）** |
-| **方法内错误注释** | 547 | 547 | **26（-95%）** |
-| CLI 错误计数 | 877 | 877 | **38（-96%）** |
+| **完整失败方法** | 520 | 520 | **5（-99%）** |
+| **方法内错误注释** | 547 | 547 | **8（-98.5%）** |
+| CLI 错误计数 | 877 | 877 | **9（-99%）** |
 | 耗时 | 401s | 409s | 670s |
-| 失败类清单 | 478 类 | 478 类 | 20 类（全部 ⊂ 上游失败集，无新增失败） |
+| 失败类清单 | 478 类 | 478 类 | ≤5 类（全部 ⊂ 上游失败集，无新增失败） |
 
-**残余错误构成**（kadx，26 处）：RegionMakerVisitor 8、ConstructorVisitor 4、SimplifyVisitor 3、
-SwitchBreakVisitor/ProcessVariables/BlockProcessor 等共 11——均为降级路径新暴露的更深层边缘场景。
+**残余错误构成**（kadx，三轮修复后 **8 处**，全部为结构性 limit/深度边缘场景）：
+RegionMaker/LoopRegion 溢出、ConstructorVisitor、SwitchBreakVisitor、ProcessVariables、
+BlockProcessor 等。三轮修复要点：top-splitter 可空变体、rebindArgs 跳过未绑定参数、
+MoveInline 未绑定参数不内联、InitCodeVariables/TypeUpdate 对 PHI 结果缺失跳过、
+BlockProcessor 不可达块改为闭包级联移除（注意必须真正从 basicBlocks 注销——
+仅打 REMOVE 标志会让清理循环对同一块无限循环并持锁挂死进程，此坑已记录）。
 
 **代价**：kadx 耗时 +67%（670s vs 401s）——优雅降级与纳入预算的重试开销，换来失败方法 -96%。
 
