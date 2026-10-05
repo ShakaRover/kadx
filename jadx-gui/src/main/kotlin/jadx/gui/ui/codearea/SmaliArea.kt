@@ -359,11 +359,14 @@ class SmaliArea internal constructor(contentPanel: ContentPanel, node: JClass, s
 			setStyles(styles as Array<Style>)
 		}
 
-		override fun restoreDefaults(baseFont: Font) {
+		// RSyntaxTextArea 契约：SyntaxScheme(true) 构造时会以 null baseFont 调用
+		// restoreDefaults（上游 Java 参数即 @Nullable）——参数必须可空，否则内在
+		// 空检查在构造期直接 NPE
+		override fun restoreDefaults(baseFont: Font?) {
 			restoreDefaults(baseFont, true)
 		}
 
-		override fun restoreDefaults(baseFont: Font, fontStyles: Boolean) {
+		override fun restoreDefaults(baseFont: Font?, fontStyles: Boolean) {
 			// 注意：这是继续使用编辑器主题的钩子，最好不要删除
 		}
 	}
