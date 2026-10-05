@@ -214,13 +214,6 @@ class ProcessVariables : AbstractVisitor() {
 		if (mergedUsage.assigns.isEmpty() && mergedUsage.uses.isEmpty()) {
 			return
 		}
-		if (LOG.isDebugEnabled && mergedUsage.assigns.size + mergedUsage.uses.size > 2000) {
-			LOG.debug(
-				"HUGE var usage in {}: ssaVars={}, assigns={}, uses={}",
-				mth, codeVar.ssaVars.size, mergedUsage.assigns.size, mergedUsage.uses.size,
-			)
-		}
-
 		// 检查变量能否在某个赋值点声明
 		if (checkDeclareAtAssign(usageList, mergedUsage, regionIndex)) {
 			return

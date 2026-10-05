@@ -523,10 +523,8 @@ class ModVisitor : AbstractVisitor() {
 				if (sVar != null && sVar.isCodeVarSet()) {
 					sVar.codeVar.isFinal = true
 				} else {
-					LOG.warn(
-						"BUGD: unset codeVar arg={} sVar={} assign={} parentInsn={}",
-						arg, sVar, sVar?.assign?.getParentInsn(), arg.getParentInsn(),
-					)
+					// 未绑定 CodeVar 的参数（中断的重处理周期残留）：跳过 final 标记
+					LOG.debug("Skip final flag, codeVar not set: arg={} sVar={}", arg, sVar)
 				}
 			}
 		}
