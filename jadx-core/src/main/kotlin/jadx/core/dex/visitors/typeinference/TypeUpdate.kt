@@ -86,7 +86,12 @@ class TypeUpdate(private val root: RootNode) {
 			updateInfo.applyUpdates()
 			return TypeUpdateResult.CHANGED
 		} catch (e: JadxOverflowException) {
-			throw e
+			// 类型更新预算耗尽：本次候选类型的传播不收敛（R8 混淆代码的大方法上实测
+			// 提额 10 倍也无法收敛）。walk 无部分副作用（更新统一在 applyUpdates 落盘），
+			// 直接放弃本次候选——变量保持当前类型，推断继续尝试其他路径，
+			// 避免整个方法因一个变量反编译失败。
+			mth.addWarn("Type inference budget exceeded for " + ssaVar.toShortString() + ", keeping current type")
+			return TypeUpdateResult.REJECT
 		} catch (e: Exception) {
 			throw JadxRuntimeException("Type update failed for variable: $ssaVar, new type: $candidateType", e)
 		}

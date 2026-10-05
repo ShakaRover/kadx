@@ -49,28 +49,29 @@ release 构建一律开启 R8/minify（更贴近真实发布产物，且能覆�
 
 | APK | 产出 .java | 完整失败方法 | 错误数（CLI 口径） |
 |-----|-----------:|-------------:|------------------:|
-| Calculator foss release | 4296 | 7 | 13 |
-| Notes foss release | 4539 | 7 | 13 |
-| markor release | 5335 | 2 | 4 |
+| Calculator foss release | 4296 | 3 | 5 |
+| Notes foss release | 4539 | 3 | 5 |
+| markor release | 5335 | **0** | 2 |
 | AntennaPod free release | 4997 | 1 | 4 |
-| architecture-samples release | 3810 | 3 | 12 |
-| uhabits release | 3127 | 2 | 2 |
+| architecture-samples release | 3810 | 2 | 10 |
+| uhabits release | 3127 | **0** | 2 |
 
-合计：26,100 个 .java / **22 个完整失败方法（约 0.08%）**，**无卡死、无整类失败**。
-（深度修复 4/5/6 前：203 个 / 0.78%；v1.5.3 官方版在 arch 上为 12 个，本版 3 个。）
+合计：26,100 个 .java / **9 个完整失败方法（约 0.03%）**，**无卡死、无整类失败**。
+markor 与 uhabits 的 release APK 已 **100% 方法级反编译成功**。
+（深度修复 4-7 前：203 个 / 0.78%；v1.5.3 官方版在 arch 上为 12 个，本版 2 个。）
 
 **关于「失败方法」的三种口径**（诚实区分，避免误读）：
 
 | 口径 | 数量 | 含义 |
 |------|-----:|------|
 | CLI/API 错误计数（`getErrorsCount()`） | 334 | jadx 内部错误计数的官方口径 |
-| 完整失败方法（`Method not decompiled` dump） | **22** | 整个方法无法生成，输出为字节码 dump + 错误堆栈 |
+| 完整失败方法（`Method not decompiled` dump） | **9** | 整个方法无法生成，输出为字节码 dump + 错误堆栈 |
 | 方法内局部错误注释（`JADX ERROR` 嵌在方法体中） | ~500 | 某个代码区域生成失败，以错误注释替代，方法主体仍在 |
 
-即 **22 个方法（约占全部方法的 0.08%）完全反编译失败**，另约 400 个方法带局部错误注释。
-剩余失败来自「Type inference failed」（类型推断震荡）、ModVisitor 不可变类型冲突、
-ConstInline 等其他 pass 的边缘场景；RegionMaker 的 Overflow/SOE/出口边异常类失败已清零
-（上游同步点 `4e2b8d54` 在 arch 上为 50 个失败方法，本版 3 个）。
+即 **9 个方法（约占全部方法的 0.03%）完全反编译失败**（6 个静默 codegen 边缘 +
+2 个 ConstInline「Unexpected instance arg」+ 1 个其他），另约 400 个方法带局部错误注释。
+RegionMaker 的 Overflow/SOE/出口边异常类与 ModVisitor 不可变类型冲突类失败已清零
+（上游同步点 `4e2b8d54` 在 arch 上为 50 个失败方法，本版 2 个）。
 
 **应用业务代码归属**：`org.fossify.*`（Calc/Notes）、`net.gsantner.*`（markor，未混淆，失败类全部为
 androidx/kotlinx）、`de.danoeh.*`（AntennaPod）等保留包名的 app 代码**零失败**；Calc/Notes 中 42/44 个
@@ -221,6 +222,27 @@ v1.5.3 官方版（arch：4 vs 12）。
 
 **效果**：失败方法 34 → **22**；AntennaPod 2→1、Calc 12→7、Notes 12→7、arch 4→3。
 
+### 🔴 深度修复 7：类型推断预算耗尽优雅降级 + check-cast 移除防御
+
+**现象**（合计 ~13 个失败方法）：
+- Calc/Notes 的 `a03.a`、`ra2.b` 等 8 个方法：`Type inference error: updates count limit reached`
+  ——单变量的类型传播游走恰好烧满预算（实测提额 10 倍依然烧满，即传播在该 CFG 状态下不收敛，
+  提额不是解）；
+- uhabits/markor 的 `IntrinsicsKt$createCoroutineFromSuspendFunction$N` 等 5 个方法：
+  `ModVisitor.removeCheckCast` 在结果寄存器带冲突不可变类型时直接抛异常（上游同源）。
+
+**修复**：
+- `TypeUpdate.apply`：预算耗尽（`JadxOverflowException`）时**放弃本次候选类型传播并返回
+  REJECT**——walk 无部分副作用（所有更新统一在 `applyUpdates` 落盘，另有现成的
+  `rollbackUpdate` 机制），变量保持当前类型，推断继续尝试其他候选，方法不再整体失败。
+  输出中受影响变量以 `Type inference failed for: rXvY` 警告标注；
+- `ModVisitor.removeCheckCast`：结果寄存器的不可变类型与推断冲突时跳过本优化（保留原
+  cast，输出无害），不再抛异常。
+
+**效果**：失败方法 22 → **9**；markor 2→**0**（API 口径 errors=0）、uhabits 2→**0**。
+注意：原先「Type inference failed」直接判死的 8 个方法现在都能生成代码，部分变量类型
+可能不精确（以警告标注）——用「可用但不完美」替换「整方法失败」。
+
 ### ✅ 与上游持平（非本分支回归，已逐一对照源码/行为确认）
 
 | 疑似项 | 对照结论 |
@@ -303,8 +325,9 @@ JADX_REAL_APKS=$PWD/tests/apks ./gradlew :jadx-cli:realApkTest
    removeUnusedResults 空检查崩溃、ModVisitor codeVar 空检查崩溃（均为本分支转换引入）；
    RegionMaker outBlock 伪汇聚判定 + 无配额重复块处理（上游 PR #2784 引入，v1.5.3 无此问题，
    且 pre-#2784 语义无法通过上游自己的 pinning 测试）。修复后：
-   - 失败方法 **203 → 22（-89%）**，`StackOverflowError` 与 `Regions count limit` 类清零；
+   - 失败方法 **203 → 9（-96%）**，`StackOverflowError`、`Regions count limit`、
+     ModVisitor 不可变类型冲突类清零，类型推断预算耗尽改为优雅降级；
    - **Notes debug APK（21,952 类）<1 分钟全量跑通**（此前任何版本都无法完成）；
    - markor 41→2、arch 47→4，全面优于 v1.5.3 官方版（arch 12）。
-3. 残余 22 个失败方法（0.08%）主要为「Type inference failed」（类型推断震荡上限）与
-   ModVisitor 不可变类型冲突，已通过限时回归测试与错误基线守护。
+3. 残余 9 个失败方法（0.03%）为离散个例（6 个静默 codegen 边缘、2 个 ConstInline
+   上游同源、1 个其他），已通过限时回归测试与错误基线守护。

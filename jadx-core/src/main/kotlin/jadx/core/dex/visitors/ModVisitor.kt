@@ -362,6 +362,12 @@ class ModVisitor : AbstractVisitor() {
 			val castType = insn.index as ArgType
 			if (!ArgType.isCastNeeded(mth.root(), castArg.getType(), castType)) {
 				val result = checkNotNull(insn.result)
+				val resultImType = result.sVar?.immutableType
+				if (resultImType != null && resultImType != castArg.getType()) {
+					// 结果寄存器带有与本次推断冲突的不可变类型（上游在此抛异常导致整个方法
+					// 反编译失败）：保留原 cast 并跳过本优化——cast 在输出中无害
+					return
+				}
 				result.setType(castArg.getType())
 
 				val move = InsnNode(InsnType.MOVE, 1)
