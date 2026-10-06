@@ -46,8 +46,11 @@ abstract class ContentPanel protected constructor(panel: TabbedPane, jnode: JNod
 	/** 主窗口。 */
 	val mainWindow: MainWindow get() = getTabbedPane().getMainWindow()
 
-	/** 对应的树节点。 */
+	/** 对应的树节点（面板存活时非空；dispose 后为 null）。 */
 	fun getNode(): JNode = checkNotNull(node)
+
+	/** 可空版本：供关闭/卸载路径使用（dispose 后 node 为 null）。 */
+	fun getNodeOrNull(): JNode? = node
 
 	/**
 	 * 滚动到代码位置。

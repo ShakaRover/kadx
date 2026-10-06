@@ -274,7 +274,8 @@ class TabbedPane(
 	}
 
 	fun closeCodePanel(contentPanel: ContentPanel, considerPins: Boolean) {
-		controller.closeTab(contentPanel.getNode(), considerPins)
+		val node = contentPanel.getNodeOrNull() ?: return
+		controller.closeTab(node, considerPins)
 	}
 
 	val tabs: List<ContentPanel> get() {
@@ -431,7 +432,7 @@ class TabbedPane(
 		val currentContentPanel = selectedContentPanel
 		if (currentContentPanel === contentPanelToClose) {
 			val last = lastTab
-			if (last != null && last.getNode() != null) {
+			if (last != null && last.getNodeOrNull() != null) {
 				selectTab(last)
 			} else if (getTabCount() > 1) {
 				val removalIdx = indexOfComponent(contentPanelToClose)
@@ -446,7 +447,7 @@ class TabbedPane(
 			}
 		}
 
-		tabsMap.remove(contentPanelToClose.getNode())
+		contentPanelToClose.getNodeOrNull()?.let { tabsMap.remove(it) }
 		remove(contentPanelToClose)
 		contentPanelToClose.dispose()
 	}

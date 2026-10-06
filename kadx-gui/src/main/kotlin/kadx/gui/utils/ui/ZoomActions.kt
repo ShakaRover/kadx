@@ -4,7 +4,6 @@ import kadx.gui.settings.KadxSettings
 import kadx.gui.settings.font.FontAdapter
 import kadx.gui.ui.codearea.SmaliArea
 import kadx.gui.utils.UiUtils
-import java.awt.Container
 import java.awt.Font
 import java.awt.event.ActionEvent
 import java.awt.event.KeyEvent
@@ -40,13 +39,12 @@ class ZoomActions private constructor(
 		actionMap.put(zoomOut, ActionHandler(Runnable { textZoom(-1) }))
 
 		component.addMouseWheelListener { e ->
-			if (e.getModifiersEx() == UiUtils.ctrlButton()) {
+			// 仅在按住 Ctrl 时缩放（位掩码判断，兼容系统附加修饰位）；
+			// 普通滚轮完全不拦截——不消费即由 Swing 原生冒泡给 JScrollPane 滚动内容，
+			// 不再手动向父组件重派发（旧实现会造成重复派发/滚动异常）
+			if (e.getModifiersEx() and UiUtils.ctrlButton() != 0) {
 				textZoom(if (e.getWheelRotation() < 0) 1 else -1)
 				e.consume()
-			} else {
-				// 把事件转发给父组件，保证 JScrollPane 仍能滚动
-				val parent: Container? = component.getParent()
-				parent?.dispatchEvent(e)
 			}
 		}
 	}
