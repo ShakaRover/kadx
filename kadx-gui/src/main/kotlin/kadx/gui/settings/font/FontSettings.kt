@@ -4,6 +4,7 @@ import com.formdev.flatlaf.FlatLaf
 import com.formdev.flatlaf.fonts.inter.FlatInterFont
 import com.formdev.flatlaf.fonts.jetbrains_mono.FlatJetBrainsMonoFont
 import kadx.commons.app.KadxSystemInfo
+import org.slf4j.LoggerFactory
 import kadx.gui.settings.KadxSettingsData
 import kadx.gui.utils.FontUtils
 import kadx.gui.utils.UiUtils
@@ -28,6 +29,7 @@ class FontSettings {
 
 	private var uiZoom: Float = 0f
 	private var applyUiZoomToFonts: Boolean = false
+	private var desktopScale: Float = 1.0f
 
 	init {
 		val defUiFont: Font
@@ -85,6 +87,26 @@ class FontSettings {
 		smaliFontAdapter.setUiZoom(effectiveFontZoom)
 	}
 
+	/**
+	 * 应用桌面缩放（Linux HiDPI）：把桌面缩放系数（如 Xft.dpi/96、GDK_SCALE）
+	 * 乘进全部字体适配器。与用户 [uiZoom] 正交：最终字号 = 字号 × uiZoom × desktopScale。
+	 *
+	 * **为什么不走 FlatLaf 的 flatlaf.uiScale 属性**：实测该属性需在 FlatLaf UIScale
+	 * 类初始化前设置，真实 GUI 启动时序下不生效；直接缩放字体适配器是确定性路径。
+	 */
+	private val LOG = LoggerFactory.getLogger(FontSettings::class.java)
+
+	fun applyDesktopScale(scale: Float) {
+		if (UiUtils.nearlyEqual(desktopScale, scale)) {
+			return
+		}
+		desktopScale = scale
+		uiFontAdapter.setDesktopScale(scale)
+		codeFontAdapter.setDesktopScale(scale)
+		smaliFontAdapter.setDesktopScale(scale)
+		LOG.info("Desktop scale {} applied to fonts", scale)
+	}
+
 	fun getUiFontAdapter(): FontAdapter = uiFontAdapter
 
 	fun getCodeFontAdapter(): FontAdapter = codeFontAdapter
@@ -92,6 +114,36 @@ class FontSettings {
 	fun getSmaliFontAdapter(): FontAdapter = smaliFontAdapter
 
 	companion object {
+		/**
+		 * 检测 Linux 桌面缩放系数：GDK_SCALE（×GDK_DPI_SCALE 补充倍率）优先，
+		 * 其次 KDE/GNOME 的 Xft.dpi 字体缩放（xrdb）。可用 KADX_FORCE_XFT_DPI 覆盖。
+		 * 非 Linux、未设置或 ≤1.05 时返回 1.0。
+		 */
+		fun detectDesktopScale(): Float {
+			if (!KadxSystemInfo.IS_LINUX) {
+				return 1.0f
+			}
+			val gdkScale = System.getenv("GDK_SCALE")?.toDoubleOrNull() ?: 0.0
+			val gdkDpiScale = System.getenv("GDK_DPI_SCALE")?.toDoubleOrNull() ?: 0.0
+			var scale = when {
+				gdkScale >= 1.0 -> gdkScale * if (gdkDpiScale > 1.0) gdkDpiScale else 1.0
+				gdkDpiScale > 1.0 -> gdkDpiScale
+				else -> 0.0
+			}
+			if (scale <= 1.05) {
+				val xftDpi = System.getenv("KADX_FORCE_XFT_DPI")?.toDoubleOrNull()
+					?: runCatching {
+						ProcessBuilder("xrdb", "-query").start().inputStream.bufferedReader().readLines()
+							.firstOrNull { it.startsWith("Xft.dpi") }
+							?.substringAfterLast('\t')?.trim()?.toDoubleOrNull()
+					}.getOrNull() ?: 0.0
+				if (xftDpi > 96.0) {
+					scale = xftDpi / 96.0
+				}
+			}
+			return if (scale > 1.05) scale.toFloat() else 1.0f
+		}
+
 		init {
 			if (KadxSystemInfo.IS_MAC) {
 				// workaround: bundled fonts don't support CJK chars (and composite fonts?) on macOS

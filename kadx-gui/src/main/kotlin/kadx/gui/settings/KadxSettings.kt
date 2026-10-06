@@ -62,6 +62,8 @@ class KadxSettings(private val configAdapter: KadxConfigAdapter<KadxSettingsData
 		// 更新自定义字段
 		shortcutsWrapper.updateShortcuts(settingsData.shortcuts)
 		fontSettings.bindData(settingsData)
+		// Linux HiDPI：字体跟随桌面缩放（Xft.dpi / GDK_SCALE）
+		fontSettings.applyDesktopScale(kadx.gui.settings.font.FontSettings.detectDesktopScale())
 	}
 
 	private fun upgradeSettings(fromVersion: Int) {

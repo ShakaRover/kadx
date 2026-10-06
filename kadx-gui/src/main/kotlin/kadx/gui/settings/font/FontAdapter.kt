@@ -24,6 +24,7 @@ class FontAdapter(defaultFont: Font) {
 	/** 字体变化时把序列化字符串写回设置；在 [bindData] 之前调用 setFont 会抛未初始化异常。 */
 	private lateinit var fontSetter: (String) -> Unit
 	private var uiZoom: Float = 0f
+	private var desktopScale: Float = 1.0f
 
 	init {
 		// Kotlin 非空参数已经隐含了 Objects.requireNonNull 的检查语义
@@ -75,6 +76,12 @@ class FontAdapter(defaultFont: Font) {
 		applyFontZoom()
 	}
 
+	/** 设置桌面缩放系数（Linux HiDPI），与用户缩放相乘。 */
+	fun setDesktopScale(scale: Float) {
+		desktopScale = scale
+		applyFontZoom()
+	}
+
 	private fun loadFromStr(fontStr: String?): Font {
 		if (fontStr != null && fontStr.isNotEmpty()) {
 			try {
@@ -94,10 +101,11 @@ class FontAdapter(defaultFont: Font) {
 	}
 
 	private fun applyFontZoom() {
-		if (UiUtils.nearlyEqual(uiZoom, 1.0f)) {
+		val zoom = uiZoom * desktopScale
+		if (UiUtils.nearlyEqual(zoom, 1.0f)) {
 			effectiveFont = font
 		} else {
-			effectiveFont = font.deriveFont(font.size2D * uiZoom)
+			effectiveFont = font.deriveFont((font.size2D * zoom).toFloat())
 		}
 	}
 

@@ -42,39 +42,10 @@ class KadxGUI {
 		 *
 		 * @param args 命令行参数（与 CLI 共用解析逻辑）
 		 */
-		/**
-		 * Linux HiDPI：跟随系统缩放。
-		 *
-		 * - 启用 FlatLaf 与 JDK 的 UI 缩放（控件/字体按 DPI 放大）；
-		 * - X11 下 JDK 原生只认 GDK_SCALE 整数缩放，这里显式把它接到
-		 *   `sun.java2d.uiScale`，并叠加 GDK_DPI_SCALE 的补充倍率。
-		 * 用户显式传入 `-Dsun.java2d.uiScale` 时不覆盖。
-		 */
-		private fun enableHiDpiScaling() {
-			if (!KadxSystemInfo.IS_LINUX) {
-				return
-			}
-			System.setProperty("flatlaf.uiScaleEnabled", "true")
-			System.setProperty("sun.java2d.uiScale.enabled", "true")
-			if (System.getProperty("sun.java2d.uiScale") != null) {
-				return
-			}
-			val gdkScale = System.getenv("GDK_SCALE")?.toDoubleOrNull() ?: 0.0
-			val gdkDpiScale = System.getenv("GDK_DPI_SCALE")?.toDoubleOrNull() ?: 0.0
-			val scale = when {
-				gdkScale >= 1.0 -> gdkScale * if (gdkDpiScale > 1.0) gdkDpiScale else 1.0
-				gdkDpiScale > 1.0 -> gdkDpiScale
-				else -> 0.0
-			}
-			if (scale > 1.05) {
-				System.setProperty("sun.java2d.uiScale", scale.toString())
-			}
-		}
 
 		@JvmStatic
 		fun main(args: Array<String>) {
 			try {
-				enableHiDpiScaling()
 				GuiConfigLocale.load()
 				val configAdapter: KadxConfigAdapter<KadxSettingsData> = KadxSettings.buildConfigAdapter()
 				val settingsData = KadxCLIArgs.processArgs(args, KadxSettingsData(), configAdapter)
