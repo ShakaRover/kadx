@@ -1,1 +1,27 @@
-<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 252.23 252"><defs><style>.cls-1,.cls-14{fill:none;}.cls-2{fill:#231f20;}.cls-3{fill:#461bbc;}.cls-4{clip-path:url(#clip-path);}.cls-5{clip-path:url(#clip-path-2);}.cls-6{fill:#008275;}.cls-7{font-size:132.44px;}.cls-12,.cls-7{fill:#fff;font-family:FuturaPT-Heavy, Futura PT;}.cls-8{letter-spacing:-0.03em;}.cls-9{clip-path:url(#clip-path-3);}.cls-10{fill:#f15a29;}.cls-11{fill:#9e1f63;}.cls-12{font-size:134.04px;letter-spacing:-0.01em;}.cls-13{letter-spacing:0em;}.cls-14{stroke:#fff;stroke-miterlimit:10;stroke-width:8.91px;}</style><clipPath id="clip-path" transform="translate(0.23)"><circle class="cls-1" cx="126" cy="126" r="125.72"/></clipPath><clipPath id="clip-path-2" transform="translate(0.23)"><polygon class="cls-1" points="45.29 223.57 176.25 75.9 258.09 69.98 258.09 242.47 45.29 242.47 45.29 223.57"/></clipPath><clipPath id="clip-path-3" transform="translate(0.23)"><polygon class="cls-1" points="57.93 195.53 179.7 63.23 69.69 5.58 3.53 19.58 -15.33 132.35 57.93 195.53"/></clipPath></defs><title>kadxlogo</title><circle class="cls-2" cx="126.23" cy="126" r="126"/><path class="cls-3" d="M122.66-68.19" transform="translate(0.23)"/><g class="cls-4"><g class="cls-5"><polygon class="cls-3" points="198.71 223.57 37.48 223.57 142.14 105.88 198.71 223.57"/><polygon class="cls-6" points="170.52 74.83 238.84 87.48 247.15 198.65 190.4 207.09 142.14 105.88 170.52 74.83"/><text class="cls-7" transform="translate(82.68 208.04) scale(0.95 1)"><tspan class="cls-8">D</tspan><tspan x="86.48" y="0">X</tspan></text></g><g class="cls-9"><polyline class="cls-10" points="73.68 193.85 0 126.28 140.52 53.49 171.12 88.7"/><polyline class="cls-11" points="30.86 19.58 30.86 110.86 129.83 59.59 160.42 94.8 181.86 67.19"/><text class="cls-12" transform="translate(10.71 121.84) scale(1.01 1)">J<tspan class="cls-13" x="54.29" y="0">A</tspan></text></g></g><circle class="cls-14" cx="126.08" cy="125.86" r="120.86"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#312E81"/>
+      <stop offset="0.55" stop-color="#4C1D95"/>
+      <stop offset="1" stop-color="#7C3AED"/>
+    </linearGradient>
+    <linearGradient id="kg" gradientUnits="userSpaceOnUse" x1="0" y1="130" x2="0" y2="382">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#DDD6FE"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.28" cy="0.18" r="1">
+      <stop offset="0" stop-color="#8B5CF6" stop-opacity="0.5"/>
+      <stop offset="0.65" stop-color="#8B5CF6" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="115" fill="url(#bg)"/>
+  <rect width="512" height="512" rx="115" fill="url(#glow)"/>
+  <!-- K 字标：竖干 + 两段斜臂（圆角端点） -->
+  <g stroke="url(#kg)" stroke-width="62" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M 180 150 V 362"/>
+    <path d="M 330 152 L 212 256 L 330 360"/>
+  </g>
+  <!-- 点缀：反编译「字节」高亮 -->
+  <circle cx="394" cy="126" r="15" fill="#22D3EE"/>
+  <circle cx="122" cy="388" r="9" fill="#22D3EE" opacity="0.75"/>
+</svg>
