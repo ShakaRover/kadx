@@ -75,4 +75,33 @@ class TaskExecutorTest {
 		executor.awaitTermination()
 		assertEquals(1, executed.get())
 	}
+
+	/**
+	 * 并行阶段的 terminate()：P3 把并行阶段从「Dispatchers.Default + Semaphore」改成
+	 * 「定容线程池 + 有界 Channel 投递」，需要保证 terminate() 后未开始的任务不再执行。
+	 *
+	 * 注意：这里不断言具体数值（受线程调度影响），只断言「绝大部分任务未执行」
+	 * ——因为 [TaskExecutor.wrapTask] 对 terminating 幂等，排空 Channel 的 worker 不会真跑它们。
+	 */
+	@Test
+	fun terminateSkipsPendingInParallelStage() {
+		val executed = AtomicInteger(0)
+		val total = 500
+		val executor = TaskExecutor()
+		executor.setThreadsCount(2)
+		executor.addParallelTasks(
+			(0 until total).map {
+				Runnable {
+					executed.incrementAndGet()
+					executor.terminate()
+				}
+			},
+		)
+		executor.execute()
+		executor.awaitTermination()
+		val ran = executed.get()
+		assertTrue(ran > 0) { "expected at least one task to run" }
+		assertTrue(ran < total / 10) { "terminate() did not stop pending tasks: ran=$ran of $total" }
+		assertEquals(ran, executor.getProgress())
+	}
 }
