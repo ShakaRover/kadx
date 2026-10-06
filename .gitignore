@@ -51,3 +51,6 @@ kadx-gui/src/main/resources/logback.xml
 /tests/tmp/
 /tests/apks/
 /tests/out/
+
+# zcode tooling
+.zcodeignore
