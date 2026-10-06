@@ -334,7 +334,17 @@ class KadxZipParser(
 		}
 	}
 
-	fun getInputStream(entry: KadxZipEntry): InputStream { // 原 Java synchronized public InputStream getInputStream(KadxZipEntry)——实现 IZipParser.getInputStream
+	/**
+	 * 读取条目内容流。
+	 *
+	 * 必须 `@Synchronized`：本类在 [getBuffer] / [useFallbackParser] 路径上共享
+	 * `file` / `fileChannel` / `byteBuffer` / `fallbackZipContent` 等可变状态，
+	 * 并发调用会互相重定位底层流（实测表现为随机的
+	 * `EOFException: Unexpected end of ZLIB input stream`，资源被写成错误占位符）。
+	 * 原 Java 为 `synchronized` 方法，Kotlin 迁移时遗漏，此处恢复。
+	 */
+	@Synchronized
+	fun getInputStream(entry: KadxZipEntry): InputStream { // 实现 IZipParser.getInputStream
 		if (verify) {
 			verifyEntry(entry)
 		}
@@ -350,12 +360,13 @@ class KadxZipParser(
 			bufferToStream(getBuffer(), entry.dataStart, entry.uncompressedSize.toInt()) // 原 Java (int) cast → toInt()
 		}
 		if (useLimitedDataStream) {
-			return LimitedInputStream(stream, entry.uncompressedSize) // 套限长流（maxSize 参数为 Long，getUncompressedSize 返回 long ✓✓） ✓✗ clean: remove artifact in comment
+			return LimitedInputStream(stream, entry.uncompressedSize) // 套限长流（maxSize 为 Long，uncompressedSize 为 long）
 		}
 		return stream
 	}
 
-	fun getBytes(entry: KadxZipEntry): ByteArray { // 原 Java synchronized public byte[] getBytes(KadxZipEntry)——实现 IZipParser.getBytes（一次读全条目内容）
+	@Synchronized // 同 getInputStream：共享可变状态，原 Java 为 synchronized
+	fun getBytes(entry: KadxZipEntry): ByteArray { // 实现 IZipParser.getBytes（一次读全条目内容）
 		if (verify) {
 			verifyEntry(entry)
 		}
@@ -390,8 +401,15 @@ class KadxZipParser(
 		return zipEntry
 	}
 
-	private fun initFallbackParser(): ZipContent { // 原 Java 为 synchronized 方法（本 Kotlin 工具链 K2 解析器不接受 synchronized 修饰符 → 去掉，语义注释见下） ✓✗ plain comment clean this later hmm — wait...
-		// NOTE: original KadxZipParser.java declares getgetInputStream/getBytes/initFallbackParser as `synchronized` ✓✗ plain comment clean this // 原 Java @SuppressWarnings("resource") private synchronized ZipContent initFallbackParser()——惰性初始化回退解析器（synchronized 防并发重复打开）
+	/**
+	 * 惰性初始化回退解析器。
+	 *
+	 * 原 Java 为 `private synchronized`，用于防止并发重复打开回退解析器。
+	 * Kotlin 迁移时误以为 K2 不支持 `synchronized` 而删除；实际上 Kotlin 用
+	 * `@Synchronized` 注解表达同一语义，此处恢复。
+	 */
+	@Synchronized
+	private fun initFallbackParser(): ZipContent {
 		if (fallbackZipContent == null) {
 			try {
 				fallbackZipContent = FallbackZipParser(zipFile, options).open() // new → 构造函数调用形式
