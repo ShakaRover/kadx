@@ -38,7 +38,9 @@ application {
 			"-XX:+IgnoreUnrecognizedVMOptions",
 			"-Xms256M",
 			"-XX:MaxRAMPercentage=70.0",
-			"-XX:ParallelGCThreads=3",
+			// 不要固定 -XX:ParallelGCThreads。上游 jadx 设的 3 在 10 核机器上只用了 30% 的 GC 并行度：
+			// GC 日志实测 `Using 3 workers of 3 for full compaction`，young GC 平均停顿 121ms，
+			// 单次 G1 Full GC 长达 147s；交给 JVM 按核数自动决定（10 核 -> 8）。
 			// disable zip checks (#1962)
 			"-Djdk.util.zip.disableZip64ExtraFieldValidation=true",
 			// Foreign API access for 'directories' library (Windows only)
