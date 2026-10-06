@@ -103,6 +103,7 @@ import kadx.gui.utils.Icons
 import kadx.gui.utils.LafManager
 import kadx.gui.utils.Link
 import kadx.gui.utils.NLS
+import kadx.gui.utils.StartupTimer
 import kadx.gui.utils.TextStandardActions
 import kadx.gui.utils.UiUtils
 import kadx.gui.utils.dbg.UIWatchDog
@@ -738,6 +739,8 @@ class MainWindow(@Transient private val settings: KadxSettings) :
 				selectNodeInTree(singleCls)
 			}
 		}
+		// P5-A1：初始视图就绪（load 序列的最后一个相位）
+		StartupTimer.mark("initial-view.done")
 	}
 
 	fun passesReloaded() {
@@ -922,6 +925,7 @@ class MainWindow(@Transient private val settings: KadxSettings) :
 	}
 
 	fun initTree() {
+		StartupTimer.mark("tree.begin")
 		val root = JRoot(this)
 		treeRoot = root
 		root.setFlatPackages(isFlattenPackage)
@@ -930,6 +934,7 @@ class MainWindow(@Transient private val settings: KadxSettings) :
 		addTreeCustomNodes()
 		root.update()
 		reloadTree()
+		StartupTimer.mark("tree.end")
 	}
 
 	private fun clearTree() {

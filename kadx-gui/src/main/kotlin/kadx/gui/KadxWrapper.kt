@@ -33,6 +33,7 @@ import kadx.gui.settings.KadxProject
 import kadx.gui.settings.KadxSettings
 import kadx.gui.ui.MainWindow
 import kadx.gui.utils.CacheObject
+import kadx.gui.utils.StartupTimer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.Collections
@@ -77,7 +78,9 @@ class KadxWrapper(private val mainWindow: MainWindow) {
 				initUsageCache(kadxArgs)
 				registerCodeCache(decompiler)
 				decompiler.setEventsImpl(mainWindow.events())
+				StartupTimer.mark("load.begin")
 				decompiler.load()
+				StartupTimer.mark("load.end")
 			}
 		} catch (e: Exception) {
 			LOG.error("Kadx decompiler wrapper init error", e)
