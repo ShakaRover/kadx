@@ -195,6 +195,10 @@ class FixTypesVisitor : AbstractVisitor() {
 			return false
 		}
 		for (candidateType in types) {
+			// 预算已耗尽：后续候选只会重复烧满预算（重试风暴），直接放弃
+			if (typeUpdate.isBudgetExhausted(ssaVar)) {
+				return false
+			}
 			val result = typeUpdate.apply(mth, ssaVar, candidateType)
 			if (result == TypeUpdateResult.CHANGED) {
 				return true
@@ -241,6 +245,10 @@ class FixTypesVisitor : AbstractVisitor() {
 	}
 
 	private fun deduceType(mth: MethodNode, ssaVar: SSAVar): Boolean {
+		// 预算已耗尽：不再尝试任何候选（否则 tryWiderObjects 会继续烧预算）
+		if (typeUpdate.isBudgetExhausted(ssaVar)) {
+			return false
+		}
 		if (ssaVar.isTypeImmutable()) {
 			return false
 		}
@@ -776,6 +784,10 @@ class FixTypesVisitor : AbstractVisitor() {
 		val clsp: ClspGraph = checkNotNull(mth.root().getClsp())
 		for (objType in objTypes) {
 			for (ancestor in clsp.getSuperTypes(objType.getObject())) {
+				// 预算已耗尽：停止继续尝试父类型（避免重试风暴）
+				if (typeUpdate.isBudgetExhausted(ssaVar)) {
+					return false
+				}
 				val ancestorType = ArgType.`object`(ancestor)
 				val result = typeUpdate.applyWithWiderAllow(mth, ssaVar, ancestorType)
 				if (result == TypeUpdateResult.CHANGED) {

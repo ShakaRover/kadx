@@ -23,6 +23,7 @@ import kadx.core.utils.exceptions.KadxRuntimeException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.EnumMap
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * 类型更新的核心调度器：对一组相关 SSA 变量做类型检查与传播。
@@ -43,6 +44,20 @@ class TypeUpdate(private val root: RootNode) {
 	private val listenerRegistry: Map<InsnType, ITypeListener> = initListenerRegistry()
 	val typeCompare: TypeCompare = TypeCompare(root)
 	private val args: KadxArgs = root.getArgs()
+
+	/**
+	 * 预算耗尽（[KadxOverflowException]）的 SSA 变量集合。
+	 *
+	 * 一旦某个变量在一次候选类型的传播中烧穿预算，说明该变量的类型传播在当前方法上
+	 * 不收敛；继续为它尝试其它候选类型只会重复烧满预算（重试风暴）。
+	 * 记录后由 [FixTypesVisitor] 在候选循环里早退，跳过后续候选。
+	 *
+	 * 注意：[TypeUpdate] 是 per-RootNode 单例，多类并行处理会并发访问，故用并发集合。
+	 */
+	private val budgetExhaustedVars: MutableSet<SSAVar> = ConcurrentHashMap.newKeySet()
+
+	/** 该变量的类型更新预算是否已耗尽（应跳过后续候选类型）。 */
+	fun isBudgetExhausted(ssaVar: SSAVar): Boolean = ssaVar in budgetExhaustedVars
 
 	/**
 	 * 执行类型检查与传播。
@@ -90,6 +105,8 @@ class TypeUpdate(private val root: RootNode) {
 			// 提额 10 倍也无法收敛）。walk 无部分副作用（更新统一在 applyUpdates 落盘），
 			// 直接放弃本次候选——变量保持当前类型，推断继续尝试其他路径，
 			// 避免整个方法因一个变量反编译失败。
+			// 同时标记该变量：后续候选类型不再重复烧满预算（消除重试风暴）。
+			budgetExhaustedVars.add(ssaVar)
 			mth.addWarn("Type inference budget exceeded for " + ssaVar.toShortString() + ", keeping current type")
 			return TypeUpdateResult.REJECT
 		} catch (e: Exception) {
