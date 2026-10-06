@@ -10,6 +10,8 @@ import java.awt.event.KeyEvent
 import javax.swing.ActionMap
 import javax.swing.InputMap
 import javax.swing.JComponent
+import javax.swing.JScrollPane
+import javax.swing.SwingUtilities
 import javax.swing.KeyStroke
 
 /**
@@ -38,13 +40,24 @@ class ZoomActions private constructor(
 		actionMap.put(zoomIn, ActionHandler(Runnable { textZoom(1) }))
 		actionMap.put(zoomOut, ActionHandler(Runnable { textZoom(-1) }))
 
+		val zoomReset = "TextZoomReset"
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_0, ctrlButton), zoomReset)
+		actionMap.put(zoomReset, ActionHandler(Runnable { textReset() }))
+
 		component.addMouseWheelListener { e ->
-			// 仅在按住 Ctrl 时缩放（位掩码判断，兼容系统附加修饰位）；
-			// 普通滚轮完全不拦截——不消费即由 Swing 原生冒泡给 JScrollPane 滚动内容，
-			// 不再手动向父组件重派发（旧实现会造成重复派发/滚动异常）
 			if (e.getModifiersEx() and UiUtils.ctrlButton() != 0) {
+				// Ctrl+滚轮：缩放字号并消费事件
 				textZoom(if (e.getWheelRotation() < 0) 1 else -1)
 				e.consume()
+			} else {
+				// 普通滚轮：转发给最近的 JScrollPane 滚动内容。
+				// AWT 不会自动把滚轮事件冒泡给带滚轮监听器的祖先，必须手动转发；
+				// 转发后消费本事件，避免 AWT 父链冒泡造成重复滚动
+				val scrollPane = SwingUtilities.getAncestorOfClass(JScrollPane::class.java, component)
+				if (scrollPane != null) {
+					scrollPane.dispatchEvent(e)
+					e.consume()
+				}
 			}
 		}
 	}
@@ -59,6 +72,18 @@ class ZoomActions private constructor(
 		}
 		fontAdapter.setFont(changeFontSize(fontAdapter.getFont(), change))
 
+		settings.sync()
+		update.run()
+	}
+
+	private fun textReset() {
+		val fontSettings = settings.getFontSettings()
+		val fontAdapter: FontAdapter = if (component is SmaliArea) {
+			fontSettings.getSmaliFontAdapter()
+		} else {
+			fontSettings.getCodeFontAdapter()
+		}
+		fontAdapter.setFont(null) // 恢复默认字号
 		settings.sync()
 		update.run()
 	}
