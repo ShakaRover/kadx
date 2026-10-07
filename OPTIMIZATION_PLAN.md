@@ -261,6 +261,25 @@ P3（磁盘 sources 的 id→类名索引 + 重复搜索 grep 加速）为可选
   `b3a99b706` 修复：取消时保留游标，仅真正耗尽才置已完。
 - 门禁：1170 tests 全绿（--rerun-tasks 真实全量）；CLI 零改动 + 有界子集冒烟一致。
 
+## 会话 11（2026-10-07）：源码非确定性猎杀成功（ba7cc4672）
+
+**根因**：finally 提取链路（MarkFinallyVisitor / TryCatchBlockAttr / TryEdgeScopeGroupMap /
+TryCatchEdgeBlockMap）用身份哈希对象（BlockNode）为键的 HashMap/HashSet，迭代顺序逐进程变化；
+而 `candidateInsns.size != handlerScopes.size - 1 → return false` 的早退让「提取 finally」还是
+「catch+rethrow」变成逐进程抛硬币——这就是 game-killer 上 ~0.07-0.21%/对 的 sources 噪声来源。
+
+**修法（最小化）**：4 文件 8 处容器改 LinkedHashMap（保持插入顺序，插入源是确定性的边/块
+列表），各处注释「不能改回 HashMap」。
+
+**验证**：
+- game-killer -j 1 ×2：差异文件 **9 → 1**；唯一剩余是 `NalUnitUtil.java` 内
+  StackOverflowError 堆栈转储（栈帧数随 JVM 栈深变化，固有非确定，与 pass 无关）。
+  **噪声集协议从 52 文件收窄为 1 文件**（src-noise-fixed.txt）。
+- 修复相对旧基线的输出变化 9 个文件全部落在旧 52 文件噪声集内（0 溢出）= 修对源头的证据。
+- 微信有界子集 -j 20：差异文件 3867 → 651（显著改善未归零——WeChat 还有其他非确定源，
+  本轮未追，记录在案）。
+- 1170 tests 全绿；failed methods 0 保持。
+
 ## 会话 9 后的累计状态（四轮协作总账）
 
 master 净 20 个 commit（性能/修复 16 + 数据文档 4+）；测试 1034 → 1163 全绿。
