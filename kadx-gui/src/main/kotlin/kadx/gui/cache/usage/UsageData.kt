@@ -81,8 +81,11 @@ internal class UsageData(
 	@Suppress("UNCHECKED_CAST")
 	private fun resolveClsList(clsList: List<String>?): List<ClassNode> = Utils.collectionMap(clsList) { root.resolveRawClass(it) } as List<ClassNode>
 
-	/** 方法引用列表 -> 方法节点列表（解析失败时 `resolveDirectMethod` 会抛异常）。 */
-	private fun resolveMthList(mthRefList: List<MthRef>?): List<MethodNode> = Utils.collectionMap(mthRefList) { root.resolveDirectMethod(it.cls, it.shortId) }
+	/** 方法引用列表 -> 方法节点列表（解析失败时 [MthRef.resolve] 会抛异常）。
+	 *
+	 * 解析结果缓存在 [MthRef] 实例上（S7-c）：同一引用在多个列表里重复出现时只解析一次。
+	 */
+	private fun resolveMthList(mthRefList: List<MthRef>?): List<MethodNode> = Utils.collectionMap(mthRefList) { it.resolve(root) }
 
 	/** 未解析方法引用列表 -> 方法签名列表。 */
 	private fun resolveMthInfoList(mthRefList: List<IMethodRef>?): List<MethodInfo> = Utils.collectionMap(mthRefList) { MethodInfo.fromRef(root, it) }
