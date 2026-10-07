@@ -39,9 +39,15 @@ class MergedSearchProvider : ISearchProvider {
 			if (next != null) {
 				return next
 			}
+			if (cancelable.isCanceled) {
+				// 取消/暂停：**保留 current**，续跑时从同一个子提供者继续。
+				// 原来这里把 current 置为 -1（等同于“已耗尽”），会让用户按一次 Stop 之后
+				// 的“加载更多”对类/方法/字段搜索永久返回空。
+				return null
+			}
 			current++
-			if (current >= list.size || cancelable.isCanceled) {
-				// 搜索完成
+			if (current >= list.size) {
+				// 真正搜完
 				current = -1
 				return null
 			}
