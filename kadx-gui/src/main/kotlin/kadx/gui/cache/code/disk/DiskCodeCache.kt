@@ -21,7 +21,9 @@ import java.nio.file.Paths
 import java.util.BitSet
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * 磁盘代码缓存。
@@ -48,6 +50,15 @@ class DiskCodeCache(root: RootNode, projectCacheDir: Path) : ICodeCache {
 	private val codeMetadataAdapter: CodeMetadataAdapter
 	private val writePool: ExecutorService
 	private val clsDataMap: Map<String, CacheData>
+
+	/**
+	 * 已提交但尚未落盘的写入任务数。
+	 *
+	 * **为什么需要**：[close] 原来直接 `shutdown()` + `awaitTermination(1min)`，超时只打一条
+	 * warn 就返回 —— 全量反编译后立刻关闭工程时，队列里剩余类的写入会被**静默丢弃**，
+	 * 用户以为已缓存、二次启动却命中不足。有了这个计数，[close] 可以先等它归零。
+	 */
+	private val pendingWrites = AtomicInteger(0)
 
 	init {
 		baseDir = projectCacheDir.resolve("code")
@@ -111,20 +122,28 @@ class DiskCodeCache(root: RootNode, projectCacheDir: Path) : ICodeCache {
 		val clsData = getClsData(clsFullName)
 		clsData.tmpCodeInfo = codeInfo
 		clsData.cached = true
-		writePool.execute {
-			try {
-				val clsId = clsData.clsId
-				val code = clsData.tmpCodeInfo
-				if (code != null) {
-					FileUtils.writeFile(getJavaFile(clsId), code.codeStr)
-					codeMetadataAdapter.write(getMetadataFile(clsId), code.codeMetadata)
+		pendingWrites.incrementAndGet()
+		try {
+			writePool.execute {
+				try {
+					val clsId = clsData.clsId
+					val code = clsData.tmpCodeInfo
+					if (code != null) {
+						FileUtils.writeFile(getJavaFile(clsId), code.codeStr)
+						codeMetadataAdapter.write(getMetadataFile(clsId), code.codeMetadata)
+					}
+				} catch (e: Exception) {
+					LOG.error("Failed to write code cache for $clsFullName", e)
+					remove(clsFullName)
+				} finally {
+					clsData.tmpCodeInfo = null
+					pendingWrites.decrementAndGet()
 				}
-			} catch (e: Exception) {
-				LOG.error("Failed to write code cache for $clsFullName", e)
-				remove(clsFullName)
-			} finally {
-				clsData.tmpCodeInfo = null
 			}
+		} catch (e: RejectedExecutionException) {
+			// 线程池已关闭：必须回退计数，否则 close() 会永久等待一个永远不会执行的任务
+			pendingWrites.decrementAndGet()
+			throw e
 		}
 	}
 
@@ -276,21 +295,56 @@ class DiskCodeCache(root: RootNode, projectCacheDir: Path) : ICodeCache {
 	}
 
 	/**
-	 * 关闭缓存：等待写线程池最多 1 分钟完成任务。
+	 * 关闭缓存：先等所有已提交的写入落盘，再关闭写线程池。
+	 *
 	 * 整个方法在 `this` 上加锁（[Synchronized]），与原 Java `synchronized (this)` 一致。
 	 */
 	@Synchronized
 	@Throws(IOException::class)
 	override fun close() {
 		try {
+			awaitPendingWrites()
 			writePool.shutdown()
 			val completed = writePool.awaitTermination(1, TimeUnit.MINUTES)
-			if (!completed) {
-				LOG.warn("Disk code cache closing terminated by timeout")
+			val lost = pendingWrites.get()
+			if (!completed || lost > 0) {
+				LOG.warn(
+					"Disk code cache close terminated by timeout: {} pending class writes were not flushed and are lost",
+					lost,
+				)
 			}
 		} catch (e: InterruptedException) {
 			LOG.error("Failed to close disk code cache", e)
 		}
+	}
+
+	/**
+	 * 等待 [pendingWrites] 归零，最多 [PENDING_WRITE_TIMEOUT_MS]。
+	 *
+	 * 正常路径（队列早已清空）零等待直接返回；等待期间每 [PROGRESS_LOG_INTERVAL_MS] 打一条进度日志。
+	 */
+	private fun awaitPendingWrites() {
+		if (pendingWrites.get() == 0) {
+			return
+		}
+		val start = System.currentTimeMillis()
+		var lastLog = start
+		while (pendingWrites.get() != 0) {
+			val elapsed = System.currentTimeMillis() - start
+			if (elapsed >= PENDING_WRITE_TIMEOUT_MS) {
+				return
+			}
+			if (System.currentTimeMillis() - lastLog >= PROGRESS_LOG_INTERVAL_MS) {
+				lastLog = System.currentTimeMillis()
+				LOG.info(
+					"Waiting for {} pending code cache writes to be flushed ({}s elapsed)",
+					pendingWrites.get(),
+					elapsed / 1000,
+				)
+			}
+			Thread.sleep(PENDING_POLL_INTERVAL_MS)
+		}
+		LOG.debug("All pending code cache writes flushed in {}ms", System.currentTimeMillis() - start)
 	}
 
 	/** 单个类的缓存状态：稳定 id、是否已缓存、以及未落盘时的内存副本。 */
@@ -304,5 +358,14 @@ class DiskCodeCache(root: RootNode, projectCacheDir: Path) : ICodeCache {
 
 		/** 磁盘缓存数据格式版本；改变字节布局时必须递增。 */
 		private const val DATA_FORMAT_VERSION = 15
+
+		/** 关闭时等待未落盘写入的上限（10 分钟）。 */
+		private const val PENDING_WRITE_TIMEOUT_MS = 10 * 60 * 1000L
+
+		/** 等待未落盘写入时的进度日志间隔（10 秒）。 */
+		private const val PROGRESS_LOG_INTERVAL_MS = 10 * 1000L
+
+		/** 轮询 [pendingWrites] 的间隔（1 秒）。 */
+		private const val PENDING_POLL_INTERVAL_MS = 1000L
 	}
 }
