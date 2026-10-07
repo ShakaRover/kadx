@@ -37,7 +37,24 @@ lines/annotations，**不存类名**，文件名是类 id 的十六进制。
 - 障碍：① 缓存**只含曾反编译过的类**，全量搜索仍需反编译其余类 → **grep 磁盘不能替代
   反编译**，只能加速"重复搜索"；② 需要 id→类名索引才能回报结果（现无）；
   ③ 与 `ICodeCache` 抽象不冲突（只读旁路），但需新增索引文件并纳入 `code-version` 失效。
-- 结论：作为**重复搜索加速**有价值，**但不是内存方案**。
+
+**S12 实测：P3 已否决（P3 DROPPED，未实现）**
+- **Q1 一致性**：`readAndBuild` 对 `codeStr` 是**恒等变换**（`SimpleCodeInfo(code)` /
+  `AnnotatedCodeInfo(code, lines, annotations)`），metadata 是独立的行号/位置表，**不注入文本**；
+  写盘就是 `writeFile(..., codeInfo.codeStr)`。故文件字节 == 搜索目标文本，字节偏移对
+  `getNodeAt(pos)` 依然有效 —— grep 可直接用，无需"只做预筛"。
+- **Q2 实测（有界微信子集 nd5，8,279 类全缓存命中，warm 磁盘缓存，n=2）**：
+  扫描阶段 wall_ms —— 现有路径 `codeCache.getCode` **738 / 745**，P3 直读文件 **791 / 670**
+  → **差异为 0（噪声内）**。整个扫描只占一次重复搜索运行（~27s）的 **<3%**，
+  即使完全消除也到不了 30% 门槛。
+- **原因**：`CodeSearchProvider.getClassCode` **已经**先走 `codeCache.getCode(rawName)`，
+  命中即 `DiskCodeCache.getCode` → `FileUtils.readFile` —— **不反编译、不重建 ICodeInfo**
+  （`readAndBuild` 只在 `get()` 里调，而快路径从不调它；只有命中后的
+  `getEnclosingNode` 会读 metadata）。所以 P3 只能省下缓存层的几次查表。
+- 附带发现（跨进程口径）：MEMORY 模式无持久化，**新进程**重复搜索需重新反编译
+  （8,279 类 ~8.6-9.9s vs 磁盘模式 ~0.72-0.84s）；这是 MEMORY 的设计语义
+  （"进程退出即丢失"），而 P3 是**磁盘**索引，对它无能为力。
+- 结论：**不值得实现**（新建持久格式 + 索引失效 + 回退路径的复杂度换 ~0% 收益）。
 
 ## 4. UX 约束（不得改变）
 - 可取消：`Cancelable.isCanceled` 已逐类检查；`pauseSearch` → `task.cancel()`。
