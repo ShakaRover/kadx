@@ -202,7 +202,15 @@ public class DexClassData(
 	public val classDefOffset: Int get() = sectionReader.pos(0).absPos
 
 	override val disassembledCode: String get() {
-		val dexBuf = sectionReader.dexReader.buf.array()
+		val buf = sectionReader.dexReader.buf
+		// 堆内 buffer 直接取底层数组（零拷贝）；mmap buffer 没有底层数组
+		// （.array() 会抛 UnsupportedOperationException），按需拷一份 ——
+		// 只有 smali 输出才会走到这里，不影响默认的 Java 输出路径。
+		val dexBuf = if (buf.hasArray()) {
+			buf.array()
+		} else {
+			ByteArray(buf.capacity()).also { buf.duplicate().clear().get(it) }
+		}
 		return SmaliUtils.getSmaliCode(dexBuf, classDefOffset)
 	}
 

@@ -18,17 +18,20 @@ import java.nio.ByteBuffer
 public class DexReader(
 	val uniqId: Int,
 	val inputFileName: String,
-	content: ByteArray,
+	val buf: ByteBuffer,
 	offset: Int,
 ) {
 
-	val buf: ByteBuffer
-	val header: DexHeader
+	/**
+	 * 兼容入口：堆内字节数组（默认路径）。
+	 *
+	 * mmap 路径（S3-A）走主构造器直接传入 `MappedByteBuffer`，
+	 * 使 dex 字节不再占用堆内存，且成为可回收的 file-backed clean page。
+	 */
+	public constructor(uniqId: Int, inputFileName: String, content: ByteArray, offset: Int) :
+		this(uniqId, inputFileName, ByteBuffer.wrap(content), offset)
 
-	init {
-		buf = ByteBuffer.wrap(content)
-		header = DexHeader(SectionReader(this, offset))
-	}
+	val header: DexHeader = DexHeader(SectionReader(this, offset))
 
 	/**
 	 * 遍历本 DEX 文件中的全部 class，逐个回调 [consumer]。

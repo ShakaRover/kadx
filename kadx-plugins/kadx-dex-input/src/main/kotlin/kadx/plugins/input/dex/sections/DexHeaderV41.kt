@@ -1,6 +1,7 @@
 package kadx.plugins.input.dex.sections
 
 import kadx.plugins.input.dex.utils.DataReader
+import java.nio.ByteBuffer
 
 /**
  * DEX v4.1（"dex container"）文件头：一个容器内可打包多个子 DEX。
@@ -36,6 +37,20 @@ public class DexHeaderV41(
 		}
 
 		/**
+		 * [ByteBuffer] 版本（mmap 路径）：语义与 [readIfPresent] 完全一致。
+		 */
+		public fun readIfPresent(buf: ByteBuffer): DexHeaderV41? {
+			val headerSize = DataReader.readU4(buf, 36)
+			if (headerSize < 120) {
+				return null
+			}
+			val fileSize = DataReader.readU4(buf, 32)
+			val containerSize = DataReader.readU4(buf, 112)
+			val headerOffset = DataReader.readU4(buf, 116)
+			return DexHeaderV41(fileSize, containerSize, headerOffset)
+		}
+
+		/**
 		 * 计算容器内所有子 DEX 的起始偏移列表。
 		 *
 		 * **算法**：从 offset=0 开始，每次读取当前位置子 DEX 的 file_size（header +32 处），
@@ -53,6 +68,26 @@ public class DexHeaderV41(
 					break
 				}
 				val nextFileSize = DataReader.readU4(content, start + 32)
+				end = start + nextFileSize
+			}
+			return list
+		}
+
+		/**
+		 * [ByteBuffer] 版本（mmap 路径）：语义与 [readSubDexOffsets] 完全一致。
+		 */
+		public fun readSubDexOffsets(buf: ByteBuffer, header: DexHeaderV41): List<Int> {
+			var start = 0
+			var end = header.fileSize
+			val limit = minOf(header.containerSize, buf.capacity())
+			val list = ArrayList<Int>()
+			while (true) {
+				list.add(start)
+				start = end
+				if (start >= limit) {
+					break
+				}
+				val nextFileSize = DataReader.readU4(buf, start + 32)
 				end = start + nextFileSize
 			}
 			return list

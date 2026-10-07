@@ -8,6 +8,8 @@ import kadx.api.plugins.input.KadxCodeInput
 import kadx.api.plugins.input.data.impl.EmptyCodeLoader
 import kadx.api.plugins.utils.CommonFileUtils
 import kadx.plugins.input.dex.utils.IDexData
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.io.Closeable
 import java.io.InputStream
 import java.nio.file.Path
@@ -41,6 +43,12 @@ public class DexInputPlugin : KadxPlugin {
 			}
 		})
 		loader.setZipReader(context.getZipReader())
+		// S3-A：mmap 路径需要临时目录把解压后的 dex 落盘；取不到就自动退回堆内路径
+		try {
+			loader.setTempDir(context.getArgs().filesGetter.getTempDir())
+		} catch (e: Exception) {
+			LOG.warn("Can't resolve temp dir for dex mmap, falling back to heap buffers", e)
+		}
 	}
 
 	/**
@@ -78,5 +86,7 @@ public class DexInputPlugin : KadxPlugin {
 
 	public companion object {
 		public const val PLUGIN_ID = "dex-input"
+
+		private val LOG: Logger = LoggerFactory.getLogger(DexInputPlugin::class.java)
 	}
 }

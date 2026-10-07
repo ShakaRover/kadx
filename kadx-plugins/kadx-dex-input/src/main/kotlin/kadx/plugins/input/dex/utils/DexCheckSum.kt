@@ -1,6 +1,7 @@
 package kadx.plugins.input.dex.utils
 
 import kadx.plugins.input.dex.DexException
+import java.nio.ByteBuffer
 import java.util.zip.Adler32
 
 /**
@@ -30,6 +31,40 @@ public class DexCheckSum {
 			val checksum = DataReader.readU4(content, offset + 8)
 			val adler32 = Adler32()
 			adler32.update(content, offset + 12, len - 12)
+			val fileChecksum = adler32.value.toInt()
+			if (checksum != fileChecksum) {
+				throw DexException(
+					String.format(
+						"Bad dex file checksum: 0x%08x, expected: 0x%08x, file: %s",
+						fileChecksum,
+						checksum,
+						fileName,
+					),
+				)
+			}
+		}
+
+		/**
+		 * [ByteBuffer] 版本（mmap 路径）：语义与 [verify] 完全一致。
+		 *
+		 * 用 `Adler32.update(ByteBuffer)` 在 `[offset+12, offset+len)` 的切片上计算，
+		 * 不需要把整个 dex 拷回堆。注意用 `duplicate()` 避免改动共享 buffer 的游标。
+		 */
+		public fun verify(fileName: String, buf: ByteBuffer, offset: Int) {
+			val size = buf.capacity()
+			if (offset + 32 + 4 > size) {
+				throw DexException("Dex file truncated, can't read file length, file: $fileName")
+			}
+			val len = DataReader.readU4(buf, offset + 32)
+			if (offset + len > size) {
+				throw DexException("Dex file truncated, length in header: $len, file: $fileName")
+			}
+			val checksum = DataReader.readU4(buf, offset + 8)
+			val adler32 = Adler32()
+			val slice = buf.duplicate()
+			slice.position(offset + 12)
+			slice.limit(offset + len)
+			adler32.update(slice)
 			val fileChecksum = adler32.value.toInt()
 			if (checksum != fileChecksum) {
 				throw DexException(

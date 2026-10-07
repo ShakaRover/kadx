@@ -5,6 +5,7 @@ import kadx.core.utils.files.FileUtils
 import kadx.plugins.input.dex.sections.DexConsts
 import kadx.plugins.input.dex.sections.DexHeaderV41
 import kadx.plugins.input.dex.utils.DexCheckSum
+import kadx.zip.IZipEntry
 import kadx.zip.ZipReader
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -13,6 +14,8 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
+import java.nio.ByteBuffer
+import java.nio.MappedByteBuffer
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 
@@ -32,6 +35,17 @@ public class DexFileLoader(private val options: DexInputOptions) {
 
 	public fun setZipReader(zipReader: ZipReader) {
 		this.zipReader = zipReader
+	}
+
+	/** S3-A：mmap 路径的临时目录（由 [DexInputPlugin] 从 kadx args 注入）。为 null 时退回堆内路径。 */
+	private var tempDir: Path? = null
+
+	/** 是否启用 mmap 路径（非 Windows 默认开，可用 `KADX_DEX_MMAP` 覆盖）。 */
+	private val mmapEnabled: Boolean = DexMmap.isEnabled()
+
+	/** 注入临时目录；未注入时 mmap 路径自动退回堆内路径。 */
+	public fun setTempDir(tempDir: Path) {
+		this.tempDir = tempDir
 	}
 
 	/**
@@ -84,6 +98,16 @@ public class DexFileLoader(private val options: DexInputOptions) {
 			}
 			if (isStartWithBytes(magic, DexConsts.DEX_FILE_MAGIC)) {
 				inStream.reset()
+				if (mmapEnabled && file != null) {
+					// 已经是磁盘文件：直接映射，省掉一次 readAllBytes
+					try {
+						val buffer = DexMmap.mapFile(file)
+						DexMmap.logSummary(file.parentFile?.toPath() ?: file.toPath())
+						return loadDexReaders(fileName, buffer, 0)
+					} catch (e: Exception) {
+						LOG.warn("Failed to mmap dex file '{}', falling back to heap buffer", fileName, e)
+					}
+				}
 				val content = readAllBytes(inStream)
 				return loadDexReaders(fileName, content)
 			}
@@ -113,6 +137,37 @@ public class DexFileLoader(private val options: DexInputOptions) {
 	}
 
 	/**
+	 * mmap 路径（S3-A）：先只读 4 字节判断魔数，**是 dex 才**流式落盘 + 映射。
+	 *
+	 * 这顺带消掉了一个旧路径的浪费：原实现对**每个** zip 条目都调 `entry.bytes`
+	 * （全量 inflate）只为检查魔数；现在非 dex 条目只读 4 字节。
+	 *
+	 * 非 dex 条目返回空列表，与 [loadFromZipEntry] 的行为一致（无需回退）。
+	 */
+	private fun loadFromZipEntryMmap(entry: IZipEntry, mmapDir: Path): List<DexReader> {
+		val stream = BufferedInputStream(entry.inputStream)
+		val buffer: MappedByteBuffer
+		try {
+			stream.mark(DexConsts.MAX_MAGIC_SIZE)
+			val magic = ByteArray(DexConsts.MAX_MAGIC_SIZE)
+			val read = stream.read(magic)
+			stream.reset()
+			val isDex = read == DexConsts.MAX_MAGIC_SIZE && isStartWithBytes(magic, DexConsts.DEX_FILE_MAGIC)
+			if (!isDex && !entry.name.endsWith(".dex")) {
+				return emptyList()
+			}
+			buffer = DexMmap.mapZipEntry(entry, mmapDir, stream)
+		} catch (e: Exception) {
+			// 兜底：mmap 失败（磁盘满 / 映射限制 / 平台不支持）时回退到原有堆内字节路径
+			LOG.warn("Failed to mmap dex entry '{}', falling back to heap buffer", entry.name, e)
+			return loadFromZipEntry(entry.bytes, entry.name)
+		} finally {
+			stream.close()
+		}
+		return loadDexReaders(entry.name, buffer, 0)
+	}
+
+	/**
 	 * 从内存中的 DEX 字节数组加载。
 	 *
 	 * 先按 DEX v41 header 解析（[DexHeaderV41.readIfPresent]），命中则按子 DEX 偏移拆分为多个 [DexReader]；
@@ -138,6 +193,28 @@ public class DexFileLoader(private val options: DexInputOptions) {
 	}
 
 	/**
+	 * 从 [ByteBuffer] 加载（mmap 路径）。语义与 [loadDexReaders] 的 ByteArray 版本一致。
+	 */
+	public fun loadDexReaders(fileName: String, buf: ByteBuffer, offset: Int): List<DexReader> {
+		val dexHeaderV41: DexHeaderV41? = DexHeaderV41.readIfPresent(buf)
+		if (dexHeaderV41 != null) {
+			val readers = ArrayList<DexReader>()
+			for (subOffset in DexHeaderV41.readSubDexOffsets(buf, dexHeaderV41)) {
+				readers.add(loadSingleDex(fileName, buf, subOffset))
+			}
+			return readers
+		}
+		return listOf(loadSingleDex(fileName, buf, offset))
+	}
+
+	private fun loadSingleDex(fileName: String, buf: ByteBuffer, offset: Int): DexReader {
+		if (options.isVerifyChecksum) {
+			DexCheckSum.verify(fileName, buf, offset)
+		}
+		return DexReader(nextUniqId, fileName, buf, offset)
+	}
+
+	/**
 	 * DEX v41 开始，单个 DEX 文件容器内可以存储多个子 DEX 结构。
 	 * 请改用 [loadDexReaders]。
 	 */
@@ -146,6 +223,15 @@ public class DexFileLoader(private val options: DexInputOptions) {
 
 	private fun collectDexFromZip(file: File): List<DexReader> {
 		val result = ArrayList<DexReader>()
+		val mmapDir: Path? = if (mmapEnabled) {
+			val dir = tempDir
+			if (dir == null) {
+				LOG.warn("Dex mmap is enabled but no temp dir was injected, using heap buffers")
+			}
+			dir?.resolve(DexMmap.SUB_DIR)
+		} else {
+			null
+		}
 		val zip = zipReader.open(file)
 		try {
 			for (entry in zip.entries) {
@@ -153,7 +239,9 @@ public class DexFileLoader(private val options: DexInputOptions) {
 					continue
 				}
 				try {
-					val readers = if (entry.preferBytes()) {
+					val readers = if (mmapDir != null) {
+						loadFromZipEntryMmap(entry, mmapDir)
+					} else if (entry.preferBytes()) {
 						loadFromZipEntry(entry.bytes, entry.name)
 					} else {
 						load(null, entry.inputStream, entry.name)
@@ -170,6 +258,7 @@ public class DexFileLoader(private val options: DexInputOptions) {
 		} finally {
 			zip.close()
 		}
+		mmapDir?.let { DexMmap.logSummary(it) }
 		return result
 	}
 

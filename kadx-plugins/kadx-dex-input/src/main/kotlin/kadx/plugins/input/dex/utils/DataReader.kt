@@ -1,5 +1,7 @@
 package kadx.plugins.input.dex.utils
 
+import java.nio.ByteBuffer
+
 /**
  * 字节数组读取辅助工具。
  *
@@ -20,6 +22,20 @@ public class DataReader {
 			val b2 = data[pos + 1].toInt() and 0xFF
 			val b3 = data[pos + 2].toInt() and 0xFF
 			val b4 = data[pos + 3].toInt() and 0xFF
+			return (b4 shl 24) or (b3 shl 16) or (b2 shl 8) or b1
+		}
+
+		/**
+		 * [ByteBuffer] 版本：按小端序读取 u4。
+		 *
+		 * 用绝对读取（`get(index)`），**不改变游标位置**，因此可安全用于
+		 * 共享同一 buffer 的多个 SectionReader（mmap 路径尤其需要这一点）。
+		 */
+		public fun readU4(buf: ByteBuffer, pos: Int): Int {
+			val b1 = buf.get(pos).toInt() and 0xFF
+			val b2 = buf.get(pos + 1).toInt() and 0xFF
+			val b3 = buf.get(pos + 2).toInt() and 0xFF
+			val b4 = buf.get(pos + 3).toInt() and 0xFF
 			return (b4 shl 24) or (b3 shl 16) or (b2 shl 8) or b1
 		}
 	}
