@@ -317,6 +317,47 @@ buildInputsHash 只含 mtime 不含 size 的正确性隐患；
 **红线不变**：不回退优雅降级四项修复；不重命名；不动 NOTICE；测试全绿。
 红线 1 调整为：game-killer 全量反编译失败方法数 = 基线值（预期 0）且输出逐字节等价。
 
+## 微信全量复测执行手册（S13 就绪）
+
+一键脚本：`/tmp/kadx-perf/retest-wechat.sh`（三层：预检 → 运行 → 熔断）
+
+**a. 预检阈值（默认从严，可用环境变量覆盖）**
+
+| 闸门 | 默认 | 覆盖变量 |
+|---|---|---|
+| swap used | < 8 GB | `RETEST_MAX_SWAP_USED_MB=8192` |
+| PhysMem unused | ≥ 6 GB | `RETEST_MIN_PHYSMEM_FREE_MB=6144` |
+| Virtualization 进程 | 必须不存在 | `RETEST_REQUIRE_NO_VM=1` |
+
+**b. 执行命令**
+```bash
+/tmp/kadx-perf/retest-wechat.sh --precheck-only   # 先看闸门（退出码 3 = 拒绝，这是红线不是失败）
+/tmp/kadx-perf/retest-wechat.sh                   # 全量：kadx -j 10 -d <out> --show-bad-code
+# 首次全量建议加 RETEST_SNAPSHOT_BASELINE=1 保存基线树，供以后逐文件 diff
+```
+产物：`retest.log` / `retest-status.txt` / `retest-gc.log` / `retest.jfr` /
+`retest-samples.txt`（每 5s 采样 RSS+swap+PhysMem+堆）/ `retest-baseline.txt`（输出哈希）/ `retest-diff.txt`。
+
+**c. 熔断阈值（红线执行器，触发即 kill 并标 ABORT，退出码 4）**
+
+| 条件 | 默认 | 覆盖变量 |
+|---|---|---|
+| 进程 RSS | > 10 GB | `RETEST_RSS_LIMIT_MB=10240` |
+| 系统 swap used | > 22.5 GB | `RETEST_SWAP_ABORT_MB=23040` |
+| PhysMem unused | < 200 MB 持续 30s | `RETEST_PHYSMEM_FLOOR_MB=200` / `..._FLOOR_SECS=30` |
+
+**d. 验收清单**
+1. 退出码 0（非 3 预检拒绝 / 4 熔断）；2. `RESULT failed_methods=0`（红线，非 0 即打回）；
+3. `EQUIVALENCE`：哈希相同即通过；不同则看 `retest-diff.txt` —— **WeChat 仍有残余非确定性
+（S11 实测 -j20 下 651 文件），必须与噪声集 `comm` 取差集，不能只凭哈希判不等价**；
+4. `retest-samples.txt` 确认全程未触熔断线、无系统级内存耗尽；5. 记录 wall/CPU 与 `retest.jfr`。
+
+**e. 脚本自检状态（S13-2，已全部跑过）**
+- 预检在本机正确拒绝（swap 20.9GB / PhysMem 850MB / VM 进程在跑）→ 退出码 3；
+- 有界子集（`--subset nd5`）全流程 rc=0、failed_methods=0、哈希与基线树 diff 均就位；
+- 熔断注入（`--rss-limit-mb 500`）正确触发 ABORT：退出码 4 + 标记文件 + 进程已 kill。
+- **未跑真实微信全量**（红线：无系统级内存耗尽）。
+
 ## 红线（违反即打回）
 
 1. **零失败方法必须保持**：优化后微信全量反编译失败方法必须仍为 0。
