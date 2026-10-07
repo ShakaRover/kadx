@@ -534,7 +534,12 @@ object FileUtils {
 		}
 	}
 
-	/** 对输入文件的最后修改时间戳做哈希，用于判断输入是否变化。 */
+	/**
+	 * 对输入文件的**大小**与最后修改时间戳做哈希，用于判断输入是否变化。
+	 *
+	 * **为什么要带大小**：只哈希 mtime 时，若替换后的文件恰好保留（或时间戳被回写为）相同 mtime，
+	 * 哈希不变 → 会命中脏缓存。大小是几乎免费的额外区分位。
+	 */
 	fun buildInputsHash(inputPaths: List<Path>): String {
 		try {
 			ByteArrayOutputStream().use { bout ->
@@ -546,6 +551,7 @@ object FileUtils {
 					for (inputFile in inputFiles) {
 						val modifiedTime = Files.getLastModifiedTime(inputFile)
 						data.writeLong(modifiedTime.toMillis())
+						data.writeLong(Files.size(inputFile))
 					}
 					return md5Sum(bout.toByteArray())
 				}
