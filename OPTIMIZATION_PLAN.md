@@ -239,7 +239,30 @@ T4 已落地：`05c3c3b92` finishClassLoad 聚合加 isInfoEnabled 守卫 + 嵌�
 - `2d505966c` buildInputsHash 补 size：同 mtime 不同内容不再命中脏缓存
   （一次性失效既有磁盘缓存，正确性优先）；新增 FileUtilsTest，关键用例在旧实现下失败。
 
-**S9（进行中）**：GUI 流式/分块搜索设计（先实测搜索内存曲线，设计稿待审）。
+**S9（已完成）**：GUI 流式/分块搜索设计（S9_SEARCH_DESIGN.md，998029e37 修正稿）。
+关键修正（审查方核实）：搜索路径**本来就是流式的**（CodeSearchProvider 逐类 getCode→匹配→丢弃），
+内存峰值来源是 **MEMORY 缓存模式**下的无界 InMemoryCodeCache（外推 253k 类 ~8.5GB）——
+但 MEMORY 是**用户可选模式而非默认**（默认 DISK，KadxSettingsData:94）。grep 磁盘只能加速
+重复搜索、不能替代反编译。分期：P1 已落地；P2（结果集上限 + loadMoreResults 改续跑）、
+P3（磁盘 sources 的 id→类名索引 + 重复搜索 grep 加速）为可选后续。
+
+**S9-P1 落地（b6b79608a）**：MEMORY 模式改用 BoundedMemoryCodeCache（LRU 512，
+实测驻留从 +277MB 降为常数 ~15MB，外推 8.5GB → ~17MB）；未知/非法枚举值回退 DISK + warn
+（堵住 Gson 置 null 后 when 落 else 静默用无界缓存的隐患），when 改穷尽分支（新增枚举值
+编译期报错）。新增 14 个单测（1163 tests 全绿），两处测试均验证能区分修复前后。
+
+## 会话 9 后的累计状态（四轮协作总账）
+
+master 净 20 个 commit（性能/修复 16 + 数据文档 4+）；测试 1034 → 1163 全绿。
+三大痛点现状：
+① **慢**：GC 死亡螺旋已拆（P0 −15% CPU、P1 GC 停顿 4×、P3 -j 语义、S3-A 消 623MB 无谓
+   inflate）、GUI 二次启动 load 缓存命中 44% + apply −37-40%（S7）。
+② **内存**：dex 离堆 mmap（可回收 clean page）、GUI 冻结源清除、MEMORY 模式有界化、
+   搜索内存问题定性并加固。
+③ **二次启动**：埋点 + usage 磁盘缓存（已存在）+ MthRef memo；「关闭批量落盘」证伪，
+   剩余为可选 P2/P3。
+**唯一未验**：微信全量端到端复测——被机器阻塞（RustDesk 单进程占 28GB、swap 19.9GB），
+需用户关闭 RustDesk/虚拟机后进行。
 
 **Backlog（本轮不做）**：A3 渐进式可交互类树；A2 load 索引持久化（高风险）；
 `RootNode.loadClasses` 并行化（利好启动）；`DiskCodeCache.close()` drain 上限健壮性；
