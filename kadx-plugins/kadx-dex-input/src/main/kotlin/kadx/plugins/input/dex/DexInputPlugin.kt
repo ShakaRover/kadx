@@ -49,12 +49,6 @@ public class DexInputPlugin : KadxPlugin {
 		} catch (e: Exception) {
 			LOG.warn("Can't resolve temp dir for dex mmap, falling back to heap buffers", e)
 		}
-		// S3-B：跨会话 dex 解压持久缓存（系统缓存目录，不用临时目录——要跨会话存活）
-		try {
-			loader.setCacheDir(context.getArgs().filesGetter.getCacheDir())
-		} catch (e: Exception) {
-			LOG.warn("Can't resolve cache dir for dex disk cache, cache disabled", e)
-		}
 	}
 
 	/**
