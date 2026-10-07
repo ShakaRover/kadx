@@ -19,7 +19,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * 搜索后台任务。
@@ -42,7 +41,9 @@ class SearchTask(
 	private val jobs: MutableList<SearchJob> = ArrayList()
 	private val taskProgressState = TaskProgress()
 
-	private val resultsCount = AtomicInteger(0)
+	/** 结果数量策略：分页上限 + [MAX_RESULTS_LIMIT] 硬上限。 */
+	private val resultsLimiter = SearchResultsLimiter()
+
 	private var resultsLimit = 0
 	private var deferred: Deferred<TaskStatus>? = null
 
@@ -64,7 +65,7 @@ class SearchTask(
 			throw IllegalStateException("Previous task not yet finished")
 		}
 		resetCancel()
-		resultsCount.set(0)
+		resultsLimiter.resetPage()
 		taskProgressState.updateTotal(jobs.sumOf { it.getProvider().total() })
 		deferred = backgroundExecutor.executeAsync(this)
 	}
@@ -72,21 +73,35 @@ class SearchTask(
 	/**
 	 * 接收一个搜索结果。
 	 *
-	 * @return `true` 表示应停止搜索（已取消或达到结果上限）
+	 * @return `true` 表示应停止搜索（已取消、已暂停或达到结果上限）
 	 */
 	@Synchronized
 	fun addResult(resultNode: JNode): Boolean {
 		if (isCanceled) {
-			// 取消后忽略新结果
+			// 取消/暂停后忽略新结果
 			return true
 		}
 		resultsListener(resultNode)
-		if (resultsLimit != 0 && resultsCount.incrementAndGet() >= resultsLimit) {
-			cancel()
+		if (resultsLimiter.onResult(resultsLimit)) {
+			pause()
 			return true
 		}
 		return false
 	}
+
+	/**
+	 * 达到结果上限时**暂停**搜索（而非用户主动取消）。
+	 *
+	 * provider 只通过 [Cancelable.isCanceled] 观察停止信号（[ISearchProvider.next] 的入参），
+	 * 所以这里必须置位取消标志；区别在于**原因被单独记录**（[isHardLimitReached]），
+	 * 且 [fetchResults] 会清除标志，因此“加载更多”能从 provider 游标续跑而不是重跑。
+	 */
+	private fun pause() {
+		cancel()
+	}
+
+	/** 是否因触达 [MAX_RESULTS_LIMIT] 硬上限而停止（应提示用户细化搜索）。 */
+	val isHardLimitReached: Boolean get() = resultsLimiter.isHardLimitReached
 
 	/** 等待当前搜索任务结束（最多 200ms），并清空 deferred。 */
 	@Synchronized
@@ -134,5 +149,14 @@ class SearchTask(
 
 	companion object {
 		private val LOG: Logger = LoggerFactory.getLogger(SearchTask::class.java)
+
+		/**
+		 * 单次搜索的结果数硬上限。
+		 *
+		 * “加载全部”会把 `resultsLimit` 设为 0（无限制），此时结果集（`ResultsModel.rows`
+		 * 与随之增长的 `JNodeCache`）会无界增长。实测单个 `JNode` + 其关联 Java 节点
+		 * 量级不小，50k 条已足够覆盖“真想全部看完”的场景，再多应引导用户细化搜索。
+		 */
+		const val MAX_RESULTS_LIMIT = 50_000
 	}
 }

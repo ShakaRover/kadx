@@ -758,8 +758,14 @@ class SearchDialog private constructor(
 	private fun searchFinished(status: ITaskInfo, complete: Boolean) {
 		UiUtils.uiThreadGuard()
 		LOG.debug("Search complete: {}, complete: {}", status, complete)
-		loadAllButton.isEnabled = !complete
-		loadMoreButton.isEnabled = !complete
+		val hardLimitReached = searchTask?.isHardLimitReached == true
+		if (hardLimitReached) {
+			// 触达硬上限：继续“加载更多”也没有意义，提示用户细化搜索
+			warnLabel.setText(NLS.str("search_dialog.too_many_results", SearchTask.MAX_RESULTS_LIMIT))
+			warnLabel.setVisible(true)
+		}
+		loadAllButton.isEnabled = !complete && !hardLimitReached
+		loadMoreButton.isEnabled = !complete && !hardLimitReached
 		stopBtn.isEnabled = false
 		progressFinishedCommon()
 		updateTable()

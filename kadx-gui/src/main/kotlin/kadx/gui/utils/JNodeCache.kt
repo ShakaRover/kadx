@@ -23,6 +23,15 @@ import java.util.concurrent.ConcurrentHashMap
  * **做什么**：保证同一个 Java 节点只对应一个界面节点实例，避免树里出现重复节点。
  *
  * **为什么不是 `data class`**：持有缓存、以身份语义使用。
+ *
+ * **为什么没有容量上限（S9-P2 结论）**：本缓存承担的是**身份稳定性**契约 —— 同一个
+ * [ICodeNodeRef] 必须始终映射到同一个 [JNode] 实例（树节点、选中与展开状态、结果表格行
+ * 都按身份比较；`makeFrom` 里就靠 `getJavaNode()?.getCodeNodeRef() === nodeRef` 判断能否复用）。
+ * 若改成 LRU 淘汰，被淘汰的节点再次访问会造出第二个实例，同一节点在树里出现两份、
+ * 选中/展开状态错乱。而且淘汰也**省不下内存**：结果行（`ResultsModel.rows`）与树模型
+ * 本身就持有这些 JNode 的强引用。
+ * 因此这里不加上限；搜索路径的增长改由 [kadx.gui.search.SearchTask.MAX_RESULTS_LIMIT]
+ * 在源头限制结果条数。
  */
 class JNodeCache(private val wrapper: KadxWrapper) {
 
