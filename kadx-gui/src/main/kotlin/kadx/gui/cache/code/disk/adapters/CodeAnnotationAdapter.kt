@@ -2,6 +2,7 @@ package kadx.gui.cache.code.disk.adapters
 
 import kadx.api.metadata.ICodeAnnotation
 import kadx.api.metadata.ICodeAnnotation.AnnType
+import kadx.api.metadata.annotations.VarRef
 import kadx.core.dex.nodes.RootNode
 import java.io.DataInput
 import java.io.DataOutput
@@ -61,7 +62,8 @@ class CodeAnnotationAdapter(root: RootNode) : DataAdapter<ICodeAnnotation?> {
 
 	@Throws(IOException::class)
 	override fun write(out: DataOutput, value: ICodeAnnotation?) {
-		if (value == null) {
+		if (value == null || isUnresolvableVarRef(value)) {
+			// null 与“位置未知的 VarRef”都写成空标签：后者无法在缓存里表达（见 VarRefAdapter）
 			out.writeByte(0)
 			return
 		}
@@ -70,6 +72,13 @@ class CodeAnnotationAdapter(root: RootNode) : DataAdapter<ICodeAnnotation?> {
 		out.writeByte(typeInfo.tag)
 		typeInfo.adapter.write(out, value)
 	}
+
+	/**
+	 * 位置为 0 的变量引用无法持久化：读取侧表示不了（`VarRef.fromPos` 拒绝 0）。
+	 * 位置 0 意味着该变量的声明位置未知，这种引用也无法解析，丢掉不影响语义。
+	 */
+	private fun isUnresolvableVarRef(value: ICodeAnnotation): Boolean =
+		value is VarRef && !VarRefAdapter.canPersist(value)
 
 	@Throws(IOException::class)
 	override fun read(input: DataInput): ICodeAnnotation? {
