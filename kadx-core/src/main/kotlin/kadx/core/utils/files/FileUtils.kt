@@ -554,4 +554,31 @@ object FileUtils {
 			throw KadxRuntimeException("Failed to build hash for inputs", e)
 		}
 	}
+
+	/**
+	 * 对输入文件的**大小 + 最后修改时间**做哈希（S3-B dex 持久缓存的版本键用）。
+	 *
+	 * 与 [buildInputsHash] 的区别：后者只含 mtime，若文件被替换但 mtime 未变
+	 * （复制/还原/同秒写入）会命中陈旧缓存。新缓存不沿用这个隐患，
+	 * 因此单独提供本函数；[buildInputsHash] 的行为保持不变，以免影响既有磁盘缓存。
+	 */
+	fun buildInputsHashWithSize(inputPaths: List<Path>): String {
+		try {
+			ByteArrayOutputStream().use { bout ->
+				DataOutputStream(bout).use { data ->
+					val inputFiles = ArrayList(expandDirs(inputPaths))
+					Collections.sort(inputFiles)
+					data.write(inputPaths.size)
+					data.write(inputFiles.size)
+					for (inputFile in inputFiles) {
+						data.writeLong(Files.size(inputFile))
+						data.writeLong(Files.getLastModifiedTime(inputFile).toMillis())
+					}
+					return md5Sum(bout.toByteArray())
+				}
+			}
+		} catch (e: Exception) {
+			throw KadxRuntimeException("Failed to build hash for inputs", e)
+		}
+	}
 }

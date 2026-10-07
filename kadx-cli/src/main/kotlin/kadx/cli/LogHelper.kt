@@ -82,6 +82,8 @@ class LogHelper {
 			// S3-A：dex 离堆映射的汇总日志（条目数/临时目录/总字节）需在默认 PROGRESS 模式下可见，
 			// 否则用户无法确认 mmap 路径是否生效。按 logger 名单独放开 INFO（类级配置优先于包级）。
 			setLevelForPackage("kadx.plugins.input.dex.DexMmap", Level.INFO)
+			// S3-B：dex 持久缓存的命中/未命中汇总同样需要默认可见
+			setLevelForPackage("kadx.plugins.input.dex.DexDiskCache", Level.INFO)
 		}
 
 		private fun applyLogLevel(logLevel: LogLevelEnum) {

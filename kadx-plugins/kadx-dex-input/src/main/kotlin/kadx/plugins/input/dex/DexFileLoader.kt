@@ -1,6 +1,7 @@
 package kadx.plugins.input.dex
 
 import kadx.api.plugins.utils.CommonFileUtils
+import kadx.core.Kadx
 import kadx.core.utils.files.FileUtils
 import kadx.plugins.input.dex.sections.DexConsts
 import kadx.plugins.input.dex.sections.DexHeaderV41
@@ -15,7 +16,6 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
 import java.nio.ByteBuffer
-import java.nio.MappedByteBuffer
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 
@@ -48,6 +48,17 @@ public class DexFileLoader(private val options: DexInputOptions) {
 		this.tempDir = tempDir
 	}
 
+	/** S3-B：跨会话持久缓存根目录（`<cacheDir>/dex-cache`），由 [DexInputPlugin] 注入。 */
+	private var cacheDir: Path? = null
+
+	/** 本次运行使用的持久缓存；null 表示不落盘（只用会话临时目录）。 */
+	private var diskCache: DexDiskCache? = null
+
+	/** 注入缓存目录；未注入或初始化失败时自动退回会话临时目录。 */
+	public fun setCacheDir(cacheDir: Path) {
+		this.cacheDir = cacheDir
+	}
+
 	/**
 	 * 批量加载 DEX 文件。
 	 *
@@ -56,18 +67,51 @@ public class DexFileLoader(private val options: DexInputOptions) {
 	 */
 	public fun collectDexFiles(pathsList: List<Path>): List<DexReader> {
 		val result = ArrayList<DexReader>()
-		for (path in pathsList) {
-			val file = path.toFile()
-			val readers = loadDexFromFile(file)
-			if (readers.isEmpty()) {
-				continue
+		diskCache = buildDiskCache(pathsList)
+		try {
+			for (path in pathsList) {
+				val file = path.toFile()
+				val readers = loadDexFromFile(file)
+				if (readers.isEmpty()) {
+					continue
+				}
+				for (reader in readers) {
+					LOG.debug("Loading dex: {}", reader)
+					result.add(reader)
+				}
 			}
-			for (reader in readers) {
-				LOG.debug("Loading dex: {}", reader)
-				result.add(reader)
-			}
+		} finally {
+			diskCache?.logSummary()
+			DexMmap.logSummary(tempDir?.resolve(DexMmap.SUB_DIR))
+			diskCache = null
 		}
 		return result
+	}
+
+	/**
+	 * 构建跨会话的 dex 解压持久缓存（S3-B）。
+	 *
+	 * 版本键 = `格式版本:kadx.version:inputsHash`，inputsHash 用 **size + mtime**
+	 * （[FileUtils.buildInputsHashWithSize]），不用既有 mtime-only 版本。
+	 * 拿不到缓存目录或任何异常都只降级为「不落盘」，不影响反编译。
+	 */
+	private fun buildDiskCache(pathsList: List<Path>): DexDiskCache? {
+		if (!mmapEnabled) {
+			return null
+		}
+		val root = cacheDir
+		if (root == null) {
+			LOG.warn("Dex mmap is enabled but no cache dir was injected, using session temp dir")
+			return null
+		}
+		return try {
+			val inputsHash = FileUtils.buildInputsHashWithSize(pathsList)
+			val versionKey = "$DEX_CACHE_FORMAT_VERSION:${Kadx.version}:$inputsHash"
+			DexDiskCache(root.resolve(DexDiskCache.SUB_DIR), versionKey)
+		} catch (e: Exception) {
+			LOG.warn("Failed to init dex disk cache, continuing without it", e)
+			null
+		}
 	}
 
 	private fun loadDexFromFile(file: File): List<DexReader> {
@@ -144,27 +188,63 @@ public class DexFileLoader(private val options: DexInputOptions) {
 	 *
 	 * 非 dex 条目返回空列表，与 [loadFromZipEntry] 的行为一致（无需回退）。
 	 */
-	private fun loadFromZipEntryMmap(entry: IZipEntry, mmapDir: Path): List<DexReader> {
+	private fun loadFromZipEntryMmap(entry: IZipEntry, mmapDir: Path, inputLabel: String): List<DexReader> {
+		// 1) 先只读 4 字节判魔数（非 dex 直接返回，避免为每个条目全量 inflate）
+		if (!isDexEntry(entry)) {
+			return emptyList()
+		}
+		// 2) 取得一个离堆 buffer（缓存命中 -> 写缓存 -> 会话临时文件 -> 堆内兜底）
+		val buffer = obtainDexBuffer(entry, mmapDir, inputLabel)
+		// 3) 解析放在 try/catch **之外**：条目本身解析失败（例如 packer 放的假 dex，
+		//    带 dex\n 魔数但头部是垃圾）必须按解析错误上报，不能被误报成「写缓存失败」
+		//    并白白重试三次；这也与改动前的行为一致（由调用方的 per-entry catch 处理）。
+		return loadDexReaders(entry.name, buffer, 0)
+	}
+
+	/** 只读 4 字节判断该条目是否为 dex（或名字以 .dex 结尾，保持原行为）。 */
+	private fun isDexEntry(entry: IZipEntry): Boolean {
 		val stream = BufferedInputStream(entry.inputStream)
-		val buffer: MappedByteBuffer
-		try {
+		return try {
 			stream.mark(DexConsts.MAX_MAGIC_SIZE)
 			val magic = ByteArray(DexConsts.MAX_MAGIC_SIZE)
 			val read = stream.read(magic)
 			stream.reset()
-			val isDex = read == DexConsts.MAX_MAGIC_SIZE && isStartWithBytes(magic, DexConsts.DEX_FILE_MAGIC)
-			if (!isDex && !entry.name.endsWith(".dex")) {
-				return emptyList()
-			}
-			buffer = DexMmap.mapZipEntry(entry, mmapDir, stream)
+			(read == DexConsts.MAX_MAGIC_SIZE && isStartWithBytes(magic, DexConsts.DEX_FILE_MAGIC)) ||
+				entry.name.endsWith(".dex")
 		} catch (e: Exception) {
-			// 兜底：mmap 失败（磁盘满 / 映射限制 / 平台不支持）时回退到原有堆内字节路径
-			LOG.warn("Failed to mmap dex entry '{}', falling back to heap buffer", entry.name, e)
-			return loadFromZipEntry(entry.bytes, entry.name)
+			LOG.warn("Failed to probe dex entry '{}', skipping", entry.name, e)
+			false
 		} finally {
 			stream.close()
 		}
-		return loadDexReaders(entry.name, buffer, 0)
+	}
+
+	/**
+	 * 取得一个 dex 数据源：优先缓存命中（直接映射，跳过解压），否则解压落盘后映射；
+	 * 落盘/映射全部失败时兜底回堆内字节。
+	 *
+	 * 注意：本方法只负责「拿到数据」，**不解析** —— 解析失败不是这里的错误。
+	 */
+	private fun obtainDexBuffer(entry: IZipEntry, mmapDir: Path, inputLabel: String): ByteBuffer {
+		val cache = diskCache
+		if (cache != null) {
+			val hit = cache.lookup(inputLabel, entry.name)
+			if (hit != null) {
+				return DexMmap.mapFile(hit.toFile())
+			}
+			try {
+				return DexMmap.mapFile(cache.store(inputLabel, entry.name, entry.inputStream).toFile())
+			} catch (e: Exception) {
+				LOG.warn("Failed to write dex cache for '{}', falling back to temp file", entry.name, e)
+			}
+		}
+		try {
+			return DexMmap.mapFile(DexMmap.writeStreamToFile(entry.inputStream, mmapDir, entry.name))
+		} catch (e: Exception) {
+			// 兜底：mmap 全部失败（磁盘满 / 映射限制 / 平台不支持）时回退到原有堆内字节路径
+			LOG.warn("Failed to mmap dex entry '{}', falling back to heap buffer", entry.name, e)
+		}
+		return ByteBuffer.wrap(entry.bytes)
 	}
 
 	/**
@@ -240,7 +320,7 @@ public class DexFileLoader(private val options: DexInputOptions) {
 				}
 				try {
 					val readers = if (mmapDir != null) {
-						loadFromZipEntryMmap(entry, mmapDir)
+						loadFromZipEntryMmap(entry, mmapDir, file.name)
 					} else if (entry.preferBytes()) {
 						loadFromZipEntry(entry.bytes, entry.name)
 					} else {
@@ -258,12 +338,15 @@ public class DexFileLoader(private val options: DexInputOptions) {
 		} finally {
 			zip.close()
 		}
-		mmapDir?.let { DexMmap.logSummary(it) }
+		// 汇总日志统一在 collectDexFiles 的 finally 里打（同时覆盖 .dex 直读路径）
 		return result
 	}
 
 	private companion object {
 		private val LOG: Logger = LoggerFactory.getLogger(DexFileLoader::class.java)
+
+		/** dex 持久缓存的数据格式版本；字节布局或命名规则变化时必须递增。 */
+		private const val DEX_CACHE_FORMAT_VERSION = 1
 
 		// sharing between all instances (can be used in other plugins) // TODO:
 		private var dexUniqId = 1
