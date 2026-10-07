@@ -156,9 +156,14 @@ class RootNode private constructor(
 		}
 		classes = ArrayList(clsMap.values)
 
-		val mthCount = classes.sumOf { it.methods.size }
-		val insnsCount = classes.flatMap { it.methods }.sumOf { it.insnsCount }
-		LOG.info("Loaded classes: {}, methods: {}, instructions: {}", classes.size, mthCount, insnsCount)
+		// 仅在日志真的启用时才统计。CLI 默认 PROGRESS 模式下本 logger 是 OFF，
+		// 而原实现无条件 `flatMap { it.methods }`（微信会物化一个 939k 元素的列表）
+		// 再 sumOf —— 日志被屏蔽时这份分配与遍历纯属浪费。
+		if (LOG.isInfoEnabled) {
+			val mthCount = classes.sumOf { it.methods.size }
+			val insnsCount = classes.sumOf { cls -> cls.methods.sumOf { it.insnsCount } }
+			LOG.info("Loaded classes: {}, methods: {}, instructions: {}", classes.size, mthCount, insnsCount)
+		}
 
 		java.util.Collections.sort(classes, java.util.Comparator.comparing({ cn -> cn.rawName }))
 
