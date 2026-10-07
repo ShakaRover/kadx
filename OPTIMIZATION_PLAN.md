@@ -113,6 +113,55 @@
 ③ **二次启动**：埋点已就位可归因；代码缓存是写穿设计、批量落盘是空操作（已证）；
    真正的解法（渐进式树/load 索引/load 并行化）在 backlog，按 ROI 排序待下轮。
 
+## 会话 3（2026-10-07）：换思路啃微信——mmap + 数据缓存 + 自适应线程
+
+用户定向：线程数按当前机器定；微信这块骨头必须想办法啃下（本机 M4/16GB 不差）；
+思路不设限，点名 mmap / 磁盘缓存 / 数据缓存；可联网调研。
+
+**调研结论（已联网核实 + 代码落点确认）**：
+- dex 解析栈全建立在 ByteBuffer 游标抽象上（DexReader.buf → SectionReader duplicate），
+  **换 mmap 不需要动解析代码**，只改加载路径（DexFileLoader.readAllBytes / loadFromZipEntry /
+  loadSingleDex + DexHeaderV41 头检查的 ByteBuffer 变体）。
+- APK 内 dex 是 DEFLATE，不能直接 map：先流式解压到文件再 `FileChannel.map(READ_ONLY)`。
+  单 dex <2GB 无需 MemorySegment（Java 21 FFM 仍是 preview）；unmap 用
+  Unsafe.invokeCleaner 或交给 GC。
+- **定性收益**：file-backed clean page 在内存紧张时被 OS 直接回收、不写 swap——
+  直击上次微信搞崩系统的「anonymous heap 换页死亡螺旋」；定量收益：堆上少 ~600MB
+  （byte[] 516MB + HeapByteBuffer 93MB）。
+- **dex 解压持久缓存**（数据缓存）：`<cacheDir>/dex/<inputsHash>/`，版本戳复用
+  buildInputsHash 思路；命中则跳过解压直接 mmap，二次启动省 272MB zip 的 inflate。
+- 行业先例：dexlib2 的 dexbacked 层即「文件 buffer + 惰性解析」，kadx 架构同构，
+  差距只在 buffer 位置；dexlib2 #576 的字符串标识符堆膨胀与我们的 String 175MB 画像一致
+  （StringDedup 方向有据）。上游 jadx 2026-04 的 #2842（16-32GB 内存占用）无解决方案——
+  kadx 有机会领先。
+- 线程默认值已是自适应（max(1, cores/2)），P3 后语义诚实；是否提到满核数用数据决定。
+
+**S3 任务**：A=dex mmap（默认开+回退）→ B=解压持久缓存 → D=StringDedup 实验 →
+C=线程默认值数据采集。门禁照旧（噪声集协议/单类等价/测试全绿），
+度量新增：maxRSS、GC log 堆峰值、load 相位耗时、（B）二次启动 load 差值。
+
+**S3-A 结果（4c81d9990，已合入并通过审查）**：zip 条目流式解压到 `<tempDir>/dex-mmap/` 后
+`FileChannel.map(READ_ONLY)`，`DexReader.buf` 持有 MappedByteBuffer；同时绕开 `entry.bytes`
+getter（顺带发现旧路径为查魔数会 inflate 整个 APK 的 623MB——含全部非 dex 资源）。
+非 Windows 默认开启，`KADX_DEX_MMAP=on|off` 覆盖，失败回退堆路径。
+实测（有界微信子集 nd5，n=2）：堆存活峰值 −392MB（4394/4047 → 3837/3820 MB）；
+load-only 中位 29.3s（ON，稳）vs 38.8s（OFF，噪声大）；maxRSS 持平（符合预期，
+收益是 clean-page 可回收性而非 RSS）。门禁 4/4 全过（含回退路径）。
+
+**S3-C/D/B 结果（全部数据驱动闭环）**：
+- C 线程默认值：**保持 cores/2**。-j 10 相对 5 仅 −2.1%，小于点内噪声（0.2–6.8%）且无单调性；
+  与 Step 1 平坦曲线、P3 A/B、JFR GC 主因三证一致——该负载 5 线程饱和，默认公式已按机器自适应。
+- D StringDedup：**负结果，未合入**。flag 确认生效（PrintFlagsFinal）但墙钟反而 51.7s vs 40.9s；
+  去重只覆盖存活 ≥3 次 GC 的重复 String，本负载堆峰值由类树/指令结构主导。
+- B dex 解压持久缓存（89efda61f → 已回退 079b55309）：**决定性数字 262ms**——inflate 微信
+  18 个 dex（181MB）的全部成本，缓存收益上限 <2%（噪声内），代价 218MB/输入持久磁盘 +
+  缓存失效逻辑维护。「dex 解压不是启动瓶颈」被钉死，启动优化应指向 ClassNode 构造
+  （loadClasses 并行化，backlog 优先级提升）。
+
+**会话 3 净价值**：打通 mmap 路线（唯一有实测收益项：堆峰值 −392MB + 拆掉匿名页换页死亡
+螺旋引信 + load 稳定提速），两个「看似合理」的想法（解压缓存/字符串去重）被数字否决，
+未来不再走弯路。
+
 **Backlog（本轮不做）**：A3 渐进式可交互类树；A2 load 索引持久化（高风险）；
 `RootNode.loadClasses` 并行化（利好启动）；`DiskCodeCache.close()` drain 上限健壮性；
 buildInputsHash 只含 mtime 不含 size 的正确性隐患；
