@@ -193,6 +193,29 @@ T4 已落地：`05c3c3b92` finishClassLoad 聚合加 isInfoEnabled 守卫 + 嵌�
 
 **已否决**：dex 字符串池解码缓存（L1，4% < 10% 阈值；decode 本身便宜，mmap 后页面也热）。
 
+## 会话 5/6（2026-10-07）：backlog 执行——2 落地、2 证伪，全部数据闭环
+
+**已落地**：
+- `4729bceb1` S5-1：GUI 5 处 System.gc() 统一收口到 ExplicitGc（默认不执行，
+  `KADX_EXPLICIT_GC` 覆盖）。BackgroundExecutor 一处**有意保留默认开**——GC 后的可用内存
+  是 CANCEL_BY_MEMORY 的决策依据，去掉会误判取消（pi 有理偏离，审查方接受）。
+- `eb73612d1` S5-4：CodeStringCache 无界 → LRU 512（synchronized 访问序），淘汰回源磁盘
+  缓存不丢数据；证实旧兜底在搜索期间因 debounce 被反复重置**永不触发**；新增 LRU 单测。
+
+**数据证伪（已回滚，不留代码）**：
+- S5-2 usage-info 便宜化：CPU time 组合仅 −6.7%（< −15% 线），隔离出 singletonList 捷径
+  是负收益；memo 仅 ~1%。便宜化路子到头，**结构性重做**才可能吃下 35% 的 load 份额。
+- S6 ClassNode 哈希索引（推翻 S5-3 自己的推荐）：user CPU −0.9% 无收益，堆峰值 +5%
+  零重叠（+186MB）——**混淆 APK 由小类主导，2-5 字段的线性扫描快于 HashMap**；
+  FieldInfo/ArgType.equals 区域整体只占 ~4% CPU，天花板低。教训：先测再信推理。
+  （可选残余：size≥8-16 才建索引的混合式，需独立 A/B，预期值小。）
+
+**剩余 backlog（均为结构性工程，需独立立项）**：
+1. usage-info 结构性重做（load 35%，GUI 可交互主杠杆；先出设计再动工）
+2. GUI 流式/分块搜索（治 #2842 型内存问题；产品级改动）
+3. 源码非确定性猎杀（独立工作项）
+4. DiskCodeCache drain 上限 / buildInputsHash size（健壮性小项）
+
 **Backlog（本轮不做）**：A3 渐进式可交互类树；A2 load 索引持久化（高风险）；
 `RootNode.loadClasses` 并行化（利好启动）；`DiskCodeCache.close()` drain 上限健壮性；
 buildInputsHash 只含 mtime 不含 size 的正确性隐患；
