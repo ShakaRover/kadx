@@ -3,6 +3,7 @@ package kadx.gui.cache.code
 import kadx.api.ICodeCache
 import kadx.api.ICodeInfo
 import kadx.api.impl.DelegateCodeCache
+import kadx.gui.utils.ExplicitGc
 import kadx.gui.utils.UiUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -51,7 +52,7 @@ class CodeStringCache(backCache: ICodeCache) : DelegateCodeCache(backCache) {
 					if (!UiUtils.isFreeMemoryAvailable) {
 						LOG.warn("Free memory is low! Reset code strings cache. Cache size {}", codeCache.size)
 						codeCache.clear()
-						System.gc()
+						ExplicitGc.run("low memory: code string cache cleared")
 					}
 				}
 		}

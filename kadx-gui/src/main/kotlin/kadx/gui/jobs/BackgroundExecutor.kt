@@ -3,6 +3,7 @@ package kadx.gui.jobs
 import kadx.core.utils.exceptions.KadxRuntimeException
 import kadx.gui.settings.KadxSettings
 import kadx.gui.ui.panel.ProgressPanel
+import kadx.gui.utils.ExplicitGc
 import kadx.gui.utils.NLS
 import kadx.gui.utils.UiUtils
 import kotlinx.coroutines.CancellationException
@@ -300,7 +301,10 @@ class BackgroundExecutor(
 				} else {
 					LOG.warn("Low free memory, reduce processing threads count to 1")
 					checkNotNull(internalTask.getTaskExecutor()).setThreadsCount(1)
-					System.gc()
+					// 这里的显式 GC 是**决策依据**：下面要根据回收后的可用内存决定「继续」还是「取消任务」。
+					// 去掉它会让更多任务被误判为内存不足而取消，因此默认保留（enabledByDefault = true），
+					// 仅可用 KADX_EXPLICIT_GC=false 关闭。
+					ExplicitGc.run("low memory: re-check after reducing threads", enabledByDefault = true)
 					UiUtils.sleep(1000) // 等待 GC
 					if (!UiUtils.isFreeMemoryAvailable) {
 						LOG.error("Task '{}' memory limit reached (after GC), force cancel", task.title)

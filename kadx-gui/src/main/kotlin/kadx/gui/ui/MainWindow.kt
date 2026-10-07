@@ -97,6 +97,7 @@ import kadx.gui.update.KadxUpdate
 import kadx.gui.update.Release
 import kadx.gui.utils.CacheObject
 import kadx.gui.utils.DesktopEntryUtils
+import kadx.gui.utils.ExplicitGc
 import kadx.gui.utils.FontUtils
 import kadx.gui.utils.ILoadListener
 import kadx.gui.utils.Icons
@@ -602,7 +603,7 @@ class MainWindow(@Transient private val settings: KadxSettings) :
 					}
 					saveAll()
 					closeAll()
-					System.gc()
+					ExplicitGc.run("project reopen: before loading new project")
 					loadFiles(Runnable { reopenComplete() })
 				}
 			},

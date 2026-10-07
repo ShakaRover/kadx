@@ -9,6 +9,7 @@ import kadx.commons.app.KadxCommonEnv
 import kadx.core.utils.tasks.TaskExecutor
 import kadx.gui.KadxWrapper
 import kadx.gui.ui.MainWindow
+import kadx.gui.utils.ExplicitGc
 import kadx.gui.utils.NLS
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -109,7 +110,7 @@ class DecompileTask(private val mainWindow: MainWindow) : CancelableBackgroundTa
 
 		wrapper.unloadClasses()
 		processDecompilationResults()
-		System.gc()
+		ExplicitGc.run("after full decompilation: unloadClasses")
 
 		mainWindow.getCacheObject().setFullDecompilationFinished(skippedCls == 0)
 	}

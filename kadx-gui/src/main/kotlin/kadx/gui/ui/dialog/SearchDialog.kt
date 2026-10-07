@@ -26,6 +26,7 @@ import kadx.gui.treemodel.JNode
 import kadx.gui.treemodel.JResource
 import kadx.gui.ui.MainWindow
 import kadx.gui.utils.CacheObject
+import kadx.gui.utils.ExplicitGc
 import kadx.gui.utils.ILoadListener
 import kadx.gui.utils.Icons
 import kadx.gui.utils.JumpPosition
@@ -768,7 +769,7 @@ class SearchDialog private constructor(
 
 	private fun unloadTempData() {
 		mainWindow.getWrapper().unloadClasses()
-		System.gc()
+		ExplicitGc.run("search: after unloadClasses")
 	}
 
 	private fun makeOptionsCheckBox(name: String, opt: SearchOptions): JCheckBox {
