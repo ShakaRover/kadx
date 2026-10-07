@@ -6,9 +6,10 @@ import kadx.gui.utils.NLS
  * 代码缓存模式。
  *
  * **做什么**：决定反编译出的代码字符串存放在哪里：
- * - [MEMORY]：仅内存（默认，最快，但进程退出即丢失）；
+ * - [MEMORY]：仅内存（最快，但进程退出即丢失）；缓存在 [kadx.api.impl.BoundedMemoryCodeCache]
+ *   中有容量上限，不会随全量扫描无限增长；
  * - [DISK_WITH_CACHE]：磁盘 + 内存字符串缓存（兼顾速度与持久化）；
- * - [DISK]：仅磁盘（内存占用最低）。
+ * - [DISK]：仅磁盘（内存占用最低，也是设置默认值）。
  *
  * **为什么保留显式 `getLocalizedName()/getDesc()`**：这两个方法名被设置界面以
  * `toString()` / getter 方式使用，保留函数形态可让 Java 调用方零改动；

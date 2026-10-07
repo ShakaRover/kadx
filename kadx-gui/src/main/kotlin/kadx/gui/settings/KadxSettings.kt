@@ -96,6 +96,14 @@ class KadxSettings(private val configAdapter: KadxConfigAdapter<KadxSettingsData
 		if (settingsData.deobfuscationMaxLength < 0) {
 			settingsData.deobfuscationMaxLength = 0
 		}
+		// Gson 遇到未知枚举值会把非空字段置 null（反射绕过 Kotlin 空检查）。
+		// 不修正的话 registerCodeCache 会拿不到有效模式，args.codeCache 会静默保留
+		// KadxArgs 默认的**无界** InMemoryCodeCache。这里统一回退到 DISK。
+		val codeCacheMode: CodeCacheMode? = settingsData.codeCacheMode
+		if (codeCacheMode == null) {
+			LOG.warn("Unknown code cache mode in settings, falling back to DISK")
+			settingsData.codeCacheMode = CodeCacheMode.DISK
+		}
 	}
 
 	fun sync() {

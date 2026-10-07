@@ -7,7 +7,7 @@ import kadx.api.JavaClass
 import kadx.api.JavaNode
 import kadx.api.JavaPackage
 import kadx.api.ResourceFile
-import kadx.api.impl.InMemoryCodeCache
+import kadx.api.impl.BoundedMemoryCodeCache
 import kadx.api.metadata.ICodeNodeRef
 import kadx.api.plugins.pass.KadxPassInfo
 import kadx.api.plugins.pass.impl.SimpleKadxPassInfo
@@ -127,23 +127,34 @@ class KadxWrapper(private val mainWindow: MainWindow) {
 	 * 以便插件在启用缓存的情况下反编译。因此注册一个最后的 “prepare” pass 来初始化缓存。
 	 */
 	private fun registerCodeCache(kadxDecompiler: KadxDecompiler) {
-		val codeCacheMode = settings.codeCacheMode
+		// 按可空处理：Gson 遇到未知枚举值时会把非空字段置 null（反射绕过 Kotlin 空检查）。
+		// 若不显式处理，下面 when 会落到兜底分支，args.codeCache 会静默保留 KadxArgs 默认的
+		// **无界** InMemoryCodeCache（全量搜索下线性增长）。
+		val codeCacheMode: CodeCacheMode? = settings.codeCacheMode
+		if (codeCacheMode == null) {
+			LOG.warn("Unknown code cache mode in settings, falling back to DISK")
+		}
 		if (codeCacheMode == CodeCacheMode.MEMORY) {
-			kadxDecompiler.getArgs().codeCache = InMemoryCodeCache()
+			// 内存模式也必须有界：无界缓存在全量搜索时会线性增长（实测外推 253k 类约 8.5 GB）
+			kadxDecompiler.getArgs().codeCache = BoundedMemoryCodeCache()
 			return
 		}
+		val mode: CodeCacheMode = codeCacheMode ?: CodeCacheMode.DISK
 		kadxDecompiler.addCustomPass(object : KadxPreparePass {
 			override fun getInfo(): KadxPassInfo = SimpleKadxPassInfo("CacheInit")
 
 			override fun init(root: RootNode) {
-				when (settings.codeCacheMode) {
+				// 穷尽分支（无 else）：新增枚举值时会编译报错，而不是静默用错缓存
+				when (mode) {
 					CodeCacheMode.DISK_WITH_CACHE ->
 						root.getArgs().codeCache = CodeStringCache(buildBufferedDiskCache(root))
 
 					CodeCacheMode.DISK ->
 						root.getArgs().codeCache = buildBufferedDiskCache(root)
 
-					else -> {}
+					CodeCacheMode.MEMORY ->
+						// 已在 registerCodeCache 提前处理；保留分支使 when 穷尽
+						root.getArgs().codeCache = BoundedMemoryCodeCache()
 				}
 			}
 		})
