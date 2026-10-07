@@ -22,7 +22,10 @@ import kadx.core.utils.ListUtils
  */
 class TryCatchEdgeBlockMap : MutableMap<TryEdge, MutableList<BlockNode>> {
 
-	private val underlying: MutableMap<TryEdge, MutableList<BlockNode>> = HashMap()
+	// 必须是 LinkedHashMap（不能改回 HashMap）：`keys`/`values` 会被 MarkFinallyVisitor 按顺序
+	// 遍历来决定 finally 提取路径。TryEdge 的 hashCode 基于 BlockNode 身份哈希，
+	// HashMap 的迭代顺序在每个 JVM 进程都不同，会造成输出非确定性。
+	private val underlying: MutableMap<TryEdge, MutableList<BlockNode>> = LinkedHashMap()
 
 	override val size: Int get() = underlying.size
 

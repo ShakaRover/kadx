@@ -31,7 +31,9 @@ class TryEdgeScopeGroupMap(
 	/** 记录“被合并掉的边”与“保留的边”配对 */
 	private val mergedEdges: MutableList<Pair<TryEdge>> = ArrayList()
 
-	private val underlyingMap: HashMap<TryEdge, MutableMap<TryEdge, BlockNode?>> = HashMap(initialCapacity)
+	// 必须是 LinkedHashMap（不能改回 HashMap）：getScopeEnds/keys 的遍历顺序影响 finally
+	// 提取决策（TryEdge 的 hashCode 基于 BlockNode 身份哈希，HashMap 顺序逐进程不同）。
+	private val underlyingMap: MutableMap<TryEdge, MutableMap<TryEdge, BlockNode?>> = LinkedHashMap(initialCapacity)
 
 	/** 一条边的“边 + 其作用域起点块”组合，供两两配对时使用 */
 	private class TryEdgeScope(val edge: TryEdge, val block: BlockNode)
@@ -95,7 +97,7 @@ class TryEdgeScopeGroupMap(
 	 */
 	@Suppress("UNCHECKED_CAST")
 	fun getScopeEnds(mth: MethodNode): Map<BlockNode, List<TryEdge>> {
-		val groups = HashMap<BlockNode?, MutableList<TryEdge>>()
+		val groups = LinkedHashMap<BlockNode?, MutableList<TryEdge>>()
 
 		// 记录“两条处理器边之间没有公共干净后继”的孤立边
 		val isolatedEdgePairs = LinkedList<TryEdge>()
@@ -231,7 +233,7 @@ class TryEdgeScopeGroupMap(
 		edge: TryEdge,
 		edgeStart: BlockNode,
 	): MutableMap<TryEdge, BlockNode?> {
-		val scopeRelations = HashMap<TryEdge, BlockNode?>(edgeStartMap.size - 1)
+		val scopeRelations = LinkedHashMap<TryEdge, BlockNode?>(edgeStartMap.size - 1)
 		for (otherEdge in edgeStartMap.keys) {
 			if (edge === otherEdge) {
 				continue
@@ -302,7 +304,7 @@ class TryEdgeScopeGroupMap(
 			}
 		}
 
-		val simplifiedScopes = HashMap(handlers)
+		val simplifiedScopes = LinkedHashMap(handlers)
 
 		var i = 0
 		while (i < handlerPairs.size) {

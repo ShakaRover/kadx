@@ -322,7 +322,8 @@ class TryCatchBlockAttr(
 	/** 出口边 -> 该边的目标块 */
 	val edgeBlockMap: Map<TryEdge, BlockNode> get() {
 		val edges = tryEdges
-		val blockMap = HashMap<TryEdge, BlockNode>()
+		// 插入顺序会传递到 TryEdgeScopeGroupMap 的底层 LinkedHashMap，影响 finally 提取决策
+		val blockMap = LinkedHashMap<TryEdge, BlockNode>()
 		for (edge in edges) {
 			blockMap[edge] = edge.target
 		}

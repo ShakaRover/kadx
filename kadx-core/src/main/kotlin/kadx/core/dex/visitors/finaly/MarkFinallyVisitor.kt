@@ -247,7 +247,11 @@ class MarkFinallyVisitor : AbstractVisitor() {
 			}
 			val ignoredFinallyInsns = HashSet<InsnNode>()
 			val ignoredCandidateInsns = HashSet<InsnNode>()
-			val insnMap = HashMap<InsnNode, MutableList<InsnNode>>()
+			// 必须是 LinkedHashMap（不能改回 HashMap）：下面按此顺序遍历并**原地修改**
+			// （打 AFlag、copyCodeVars），且循环体内可能 `return false` 放弃整块 finally 提取。
+			// InsnNode 使用身份 hashCode，HashMap 的迭代顺序在每个 JVM 进程都不同 ——
+			// 曾导致同一输入两次反编译分别产出 `finally{}` 与 `catch(Throwable){ ...; throw th; }`。
+			val insnMap = LinkedHashMap<InsnNode, MutableList<InsnNode>>()
 			for ((finallyInsn, candidateInsns) in insns) {
 				// 一条指令要被认定为重复，出现的次数必须等于“除 finally 处理器外的边数”。
 				if (candidateInsns.size != tryInfo.handlerScopes.size - 1) {
@@ -325,7 +329,8 @@ class MarkFinallyVisitor : AbstractVisitor() {
 		private fun findCommonInsns(mth: MethodNode, tryInfo: TryExtractInfo): Map<InsnNode, MutableList<InsnNode>>? {
 			val allHandlerBlocks = checkNotNull(tryInfo.handlerScopes.getBlocksForHandler(tryInfo.finallyHandler))
 			val finallyScopeTerminus = getTerminusForHandler(tryInfo.finallyHandler, tryInfo) ?: return null
-			val matchingInsns = HashMap<InsnNode, MutableList<InsnNode>>()
+			// 同上：插入顺序决定 findCommonInsns 的遍历顺序，进而影响 finally 提取决策。
+			val matchingInsns = LinkedHashMap<InsnNode, MutableList<InsnNode>>()
 			for (edge in tryInfo.handlerScopes.keys) {
 				if (edge.isHandlerExit() && edge.exceptionHandler === tryInfo.finallyHandler) {
 					continue
