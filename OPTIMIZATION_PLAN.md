@@ -162,6 +162,37 @@ load-only 中位 29.3s（ON，稳）vs 38.8s（OFF，噪声大）；maxRSS 持�
 螺旋引信 + load 稳定提速），两个「看似合理」的想法（解压缓存/字符串去重）被数字否决，
 未来不再走弯路。
 
+## 会话 4（2026-10-07）：联合深挖——新优化点清单
+
+T4 已落地：`05c3c3b92` finishClassLoad 聚合加 isInfoEnabled 守卫 + 嵌套 sumOf
+（CLI 默认级别下原来每次启动都白物化 93.9 万元素列表）。门禁全过。
+
+**新发现按优先级（均经 pi 实测/我复核）**：
+
+1. **usage-info 构建 = load 相位 35%**（T1，有界子集 load-only JFR）：~120 万次
+   `sortedList()`（绝大多数集合只有 1-2 元素）+ resolveMthList 逐条解析（→resolveRawClass，
+   占 load 11%）。UsageInfoVisitor 是 CollectConstValues/ProcessMethodsForInline/
+   ProcessAnonymous 的硬依赖，只能变便宜：跳过 size≤1 排序 / 惰性排序 / UseSet 紧凑化 /
+   resolveMthList memo 化。**口径**：对 CLI 全量只有个位数收益（load 占 ~5%），对 GUI
+   「到可交互」（痛点③）是主杠杆。core 结构性改动，单独立项。
+2. **GUI 5 处无条件 System.gc()**（T5）：SearchDialog:771、MainWindow:605、
+   CodeStringCache:54、DecompileTask:112、BackgroundExecutor:303。11GB 堆上单次数秒 STW，
+   swap 压力下可达数十秒——用户点一次搜索/关一次工程就可能冻结。候选：去掉或改可配置。
+   小改动大体验收益，**下轮首选**。
+3. **搜索路径吃满内存**（T3）：SearchDialog 的全量代码搜索会把所有反编译源码装进内存
+   （同上游 #2842 场景）；且 CodeStringCache 的低内存兜底在搜索期间被自身负载打破
+   （debounce 兜底自我失效）。候选：有界 LRU + 流式/分块搜索。
+4. **ArgType.equals 10.5% 计算 CPU**（session-2 JFR，decompile 相位，T2 确认指向）：
+   经 FieldInfo.equals → Intrinsics.areEqual。若描述符字符串统一 intern（跨 dex 全局表），
+   值比较可换引用比较。与字符串池结论联动：pool 解码只值 4%，但 intern 的价值在 decompile 相位。
+5. **AttributeStorage 容器开销 ~650MB**（我方审查）：11.7M AttributeStorage + 11.7M EnumSet。
+   已有 #2433 等价优化（EMPTY_ATTRIBUTES 延迟创建 + unloadAttributes），剩的是「每节点一个
+   包装对象」的结构成本。候选：flags 用 long 字段 + attributes 可空字段内联到宿主。
+   大面积重构，收益/风险需权衡。
+6. loadClasses 并行化（~7% of load）：仍值得做但排在 usage-info 之后。
+
+**已否决**：dex 字符串池解码缓存（L1，4% < 10% 阈值；decode 本身便宜，mmap 后页面也热）。
+
 **Backlog（本轮不做）**：A3 渐进式可交互类树；A2 load 索引持久化（高风险）；
 `RootNode.loadClasses` 并行化（利好启动）；`DiskCodeCache.close()` drain 上限健壮性；
 buildInputsHash 只含 mtime 不含 size 的正确性隐患；
