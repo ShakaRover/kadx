@@ -216,6 +216,31 @@ T4 已落地：`05c3c3b92` finishClassLoad 聚合加 isInfoEnabled 守卫 + 嵌�
 3. 源码非确定性猎杀（独立工作项）
 4. DiskCodeCache drain 上限 / buildInputsHash size（健壮性小项）
 
+## 会话 7/8（2026-10-07）：usage-info 重做落地 + 健壮性修复
+
+**S7 测绘与设计（S7_USAGE_INFO_MAP.md，a7e64be98）**：
+- 全链路：3 个全局 prepare pass（CollectConstValues/ProcessAnonymous/ProcessMethodsForInline）
+  在 load 期读全类 usage → **朴素惰性 apply 是正确性 bug**（fld.useIn 为空会把被使用的
+  static final 字段错误还原成常量），方案 A 关闭。
+- 关键发现：**GUI 已有磁盘持久化 UsageInfoCache**（`<cacheDir>/usage`），缓存命中已把
+  load 降 44%；命中路径上 apply 占 30-35%。
+- apply 根因（计数器级）：resolveDirectMethod 被调 968 万次仅对应 87.2 万个不同实例
+  （91% 重复，每对平均 11 次），每次都是 253k 项 HashMap 随机访存。
+
+**S7-c 落地（d4749447e）**：MthRef 解析结果 memo（@Volatile 幂等，磁盘格式不变）。
+实测：apply 阶段 **−37-40%**（中位 4473→2779ms），JFR resolveRawClass 采样 25.6%→6.5%；
+总 user CPU −5~9%（apply 是单线程段，被 20 线程合计稀释——诚实口径）。
+门禁：warm 命中路径 on/off 输出**字节等价**、单类 IDENTICAL、1149 测试绿、堆无劣化。
+
+**S8 落地**：
+- `af7abc91e` DiskCodeCache.close() 先等 pendingWrites 归零（10min 上限 + 进度日志 +
+  明确报丢失数），修复「全量反编译后立即关闭静默丢尾部缓存写入」；含 RejectedExecution
+  回退计数的回归测试（@Timeout 防挂死，已验证能区分修复前后）。
+- `2d505966c` buildInputsHash 补 size：同 mtime 不同内容不再命中脏缓存
+  （一次性失效既有磁盘缓存，正确性优先）；新增 FileUtilsTest，关键用例在旧实现下失败。
+
+**S9（进行中）**：GUI 流式/分块搜索设计（先实测搜索内存曲线，设计稿待审）。
+
 **Backlog（本轮不做）**：A3 渐进式可交互类树；A2 load 索引持久化（高风险）；
 `RootNode.loadClasses` 并行化（利好启动）；`DiskCodeCache.close()` drain 上限健壮性；
 buildInputsHash 只含 mtime 不含 size 的正确性隐患；
