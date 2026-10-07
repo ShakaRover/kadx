@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.IOException
-import java.util.concurrent.ConcurrentHashMap
+import java.util.LinkedHashMap
 import kotlin.time.Duration.Companion.milliseconds
 
 /**
@@ -26,17 +26,27 @@ import kotlin.time.Duration.Companion.milliseconds
  * **做什么**：在真实缓存 [DelegateCodeCache.backCache] 之前再加一层 `Map<String, String>`
  * 字符串缓存，避免每次搜索都从磁盘/内存重新读取 [ICodeInfo] 并拼接字符串。
  *
- * **内存保护**：通过 Flow 的 `debounce` 操作符，在缓存发生变化后延迟 3 秒检查一次
- * 可用内存；若内存不足则清空字符串缓存并触发 GC。使用 debounce 是为了在应用空闲时
- * 减少后台检查频率。
+ * **容量与淘汰（S5-4）**：原实现是**无界** `ConcurrentHashMap`，只靠「低内存时整体清空」兜底。
+ * 但那个兜底有两个问题：(1) 微信规模下全量源码字符串是 GB 级，清空是「全有或全无」；
+ * (2) 它在搜索期间**根本不会触发** —— 内存检查挂在 `changes.debounce(3s)` 上，而搜索逐类
+ * 调用 `getCode` 会不停发变更，debounce 被反复重置，永远等不到 3 秒静默。
+ * 现在改为**按访问顺序淘汰最久未用的条目**（容量 [CACHE_SIZE]），低内存整体清空仅作最后手段。
+ *
+ * **淘汰不丢数据**：真正的代码在 [backCache]（磁盘缓存）里，被淘汰后再取会回源。
  *
  * **线程模型（N1c 协程化）**：内存检查在 [scope]（`Dispatchers.Default`）上执行，
  * 变更通知通过线程安全的 [MutableSharedFlow] 发布；[close] 取消 [scope]。
+ * 字符串缓存用 `synchronized` 保护（`LinkedHashMap` 的访问序 LRU 需要互斥）。
  */
 @OptIn(FlowPreview::class)
 class CodeStringCache(backCache: ICodeCache) : DelegateCodeCache(backCache) {
 
-	private val codeCache: MutableMap<String, String> = ConcurrentHashMap()
+	/** LRU 字符串缓存：`accessOrder = true` + [removeEldestEntry] 实现容量上限。 */
+	private val codeCache: MutableMap<String, String> =
+		object : LinkedHashMap<String, String>(CACHE_SIZE, 0.75f, true) {
+			override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, String>): Boolean =
+				size > CACHE_SIZE
+		}
 
 	/** 协程作用域：随 [close] 取消，禁止使用 GlobalScope。 */
 	private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -51,7 +61,7 @@ class CodeStringCache(backCache: ICodeCache) : DelegateCodeCache(backCache) {
 				.collect {
 					if (!UiUtils.isFreeMemoryAvailable) {
 						LOG.warn("Free memory is low! Reset code strings cache. Cache size {}", codeCache.size)
-						codeCache.clear()
+						synchronized(codeCache) { codeCache.clear() }
 						ExplicitGc.run("low memory: code string cache cleared")
 					}
 				}
@@ -60,13 +70,15 @@ class CodeStringCache(backCache: ICodeCache) : DelegateCodeCache(backCache) {
 
 	override fun getCode(clsFullName: String): String? {
 		changes.tryEmit(Unit)
-		val code = codeCache[clsFullName]
-		if (code != null) {
-			return code
+		synchronized(codeCache) {
+			val code = codeCache[clsFullName]
+			if (code != null) {
+				return code
+			}
 		}
 		val backCode = backCache.getCode(clsFullName)
 		if (backCode != null) {
-			codeCache[clsFullName] = backCode
+			synchronized(codeCache) { codeCache[clsFullName] = backCode }
 		}
 		return backCode
 	}
@@ -78,12 +90,12 @@ class CodeStringCache(backCache: ICodeCache) : DelegateCodeCache(backCache) {
 
 	override fun add(clsFullName: String, codeInfo: ICodeInfo) {
 		changes.tryEmit(Unit)
-		codeCache[clsFullName] = codeInfo.codeStr
+		synchronized(codeCache) { codeCache[clsFullName] = codeInfo.codeStr }
 		backCache.add(clsFullName, codeInfo)
 	}
 
 	override fun remove(clsFullName: String) {
-		codeCache.remove(clsFullName)
+		synchronized(codeCache) { codeCache.remove(clsFullName) }
 		backCache.remove(clsFullName)
 	}
 
@@ -92,7 +104,7 @@ class CodeStringCache(backCache: ICodeCache) : DelegateCodeCache(backCache) {
 		try {
 			backCache.close()
 		} finally {
-			codeCache.clear()
+			synchronized(codeCache) { codeCache.clear() }
 			scope.cancel()
 		}
 	}
@@ -102,5 +114,13 @@ class CodeStringCache(backCache: ICodeCache) : DelegateCodeCache(backCache) {
 
 		/** 变更后检查内存的延迟（毫秒）。 */
 		private const val CACHE_CHECK_DELAY_MS = 3000L
+
+		/**
+		 * 字符串缓存条目上限。
+		 *
+		 * 单个类的源码字符串通常在几 KB 量级，512 条约几 MB —— 对搜索加速够用，
+		 * 又不会像原来那样随全量搜索无限增长。
+		 */
+		internal const val CACHE_SIZE = 512
 	}
 }
