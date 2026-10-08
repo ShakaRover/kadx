@@ -16,9 +16,9 @@ import kadx.core.dex.attributes.nodes.FieldReplaceAttr
 import kadx.core.dex.attributes.nodes.ForceReturnAttr
 import kadx.core.dex.attributes.nodes.GenericInfoAttr
 import kadx.core.dex.attributes.nodes.InlinedAttr
+import kadx.core.dex.attributes.nodes.JumpInfo
 import kadx.core.dex.attributes.nodes.KadxCommentsAttr
 import kadx.core.dex.attributes.nodes.KadxError
-import kadx.core.dex.attributes.nodes.JumpInfo
 import kadx.core.dex.attributes.nodes.LocalVarsDebugInfoAttr
 import kadx.core.dex.attributes.nodes.LoopInfo
 import kadx.core.dex.attributes.nodes.LoopLabelAttr

@@ -32,8 +32,7 @@ class VarRefAdapterTest {
 		return buf.toByteArray()
 	}
 
-	private fun readVarRef(bytes: ByteArray): VarRef? =
-		DataInputStream(ByteArrayInputStream(bytes)).use { VarRefAdapter.INSTANCE.read(it) }
+	private fun readVarRef(bytes: ByteArray): VarRef? = DataInputStream(ByteArrayInputStream(bytes)).use { VarRefAdapter.INSTANCE.read(it) }
 
 	@Test
 	fun validRefPosRoundTrips() {

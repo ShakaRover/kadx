@@ -1,8 +1,6 @@
 package kadx.gui.settings
 
 import com.google.gson.Gson
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import kadx.api.KadxArgs
 import kadx.api.data.ICodeComment
 import kadx.api.data.ICodeRename
@@ -30,6 +28,8 @@ import kadx.gui.utils.RelativePathTypeAdapter
 import kadx.gui.utils.ui.ActionMessageBox
 import kadx.gui.utils.ui.ActionMessageBox.Action
 import org.apache.commons.lang3.StringUtils
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.io.Reader
 import java.io.Writer
 import java.nio.charset.StandardCharsets

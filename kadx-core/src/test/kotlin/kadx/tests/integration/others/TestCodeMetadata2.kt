@@ -1,9 +1,9 @@
 package kadx.tests.integration.others
 
-import kadx.api.KadxInternalAccess.convertClassNode
-import kadx.api.KadxInternalAccess.convertMethodNode
 import kadx.api.JavaClass
 import kadx.api.JavaMethod
+import kadx.api.KadxInternalAccess.convertClassNode
+import kadx.api.KadxInternalAccess.convertMethodNode
 import kadx.api.metadata.ICodeMetadata
 import kadx.core.dex.nodes.ClassNode
 import kadx.core.dex.nodes.MethodNode

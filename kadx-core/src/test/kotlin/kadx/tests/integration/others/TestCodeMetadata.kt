@@ -1,8 +1,8 @@
 package kadx.tests.integration.others
 
-import kadx.api.KadxInternalAccess
 import kadx.api.JavaClass
 import kadx.api.JavaMethod
+import kadx.api.KadxInternalAccess
 import kadx.api.metadata.ICodeAnnotation
 import kadx.api.metadata.ICodeAnnotation.AnnType
 import kadx.api.metadata.ICodeMetadata

@@ -16,8 +16,8 @@ import org.junit.jupiter.api.Test
  */
 class KadxSettingsCacheModeTest {
 
-	private fun loadFrom(json: String): KadxSettings =
-		KadxSettings(KadxSettings.buildConfigAdapter()).also { it.loadSettingsFromJsonString(json) }
+	private fun loadFrom(json: String): KadxSettings = KadxSettings(KadxSettings.buildConfigAdapter()).also { it.loadSettingsFromJsonString(json) }
+
 	@Test
 	fun unknownCodeCacheModeFallsBackToDisk() {
 		val settings = loadFrom("""{"codeCacheMode":"NOT_A_REAL_MODE"}""")

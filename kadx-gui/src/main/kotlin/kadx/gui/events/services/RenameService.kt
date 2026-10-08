@@ -1,7 +1,7 @@
 package kadx.gui.events.services
 
-import kadx.api.KadxDecompiler
 import kadx.api.JavaNode
+import kadx.api.KadxDecompiler
 import kadx.api.data.ICodeRename
 import kadx.api.data.impl.KadxCodeData
 import kadx.api.plugins.events.KadxEvents

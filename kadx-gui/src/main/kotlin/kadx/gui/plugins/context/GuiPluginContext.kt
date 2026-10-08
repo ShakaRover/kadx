@@ -1,8 +1,8 @@
 package kadx.gui.plugins.context
 
-import kadx.api.KadxDecompiler
 import kadx.api.JavaClass
 import kadx.api.JavaNode
+import kadx.api.KadxDecompiler
 import kadx.api.gui.IMainWindow
 import kadx.api.gui.plugins.KadxGuiContextExt
 import kadx.api.gui.tree.ITreeNode

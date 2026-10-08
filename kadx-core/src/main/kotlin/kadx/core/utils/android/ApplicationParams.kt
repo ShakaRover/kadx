@@ -1,7 +1,7 @@
 package kadx.core.utils.android
 
-import kadx.api.KadxDecompiler
 import kadx.api.JavaClass
+import kadx.api.KadxDecompiler
 
 /**
  * 从 AndroidManifest.xml 解析出的应用参数容器。

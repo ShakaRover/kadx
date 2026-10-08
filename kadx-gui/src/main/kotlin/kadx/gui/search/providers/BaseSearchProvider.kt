@@ -1,8 +1,8 @@
 package kadx.gui.search.providers
 
-import kadx.api.KadxDecompiler
 import kadx.api.JavaClass
 import kadx.api.JavaNode
+import kadx.api.KadxDecompiler
 import kadx.core.dex.nodes.ICodeNode
 import kadx.gui.search.ISearchMethod
 import kadx.gui.search.ISearchProvider

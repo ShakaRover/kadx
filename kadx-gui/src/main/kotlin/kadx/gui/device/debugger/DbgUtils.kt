@@ -1,7 +1,7 @@
 package kadx.gui.device.debugger
 
-import kadx.api.KadxDecompiler
 import kadx.api.JavaClass
+import kadx.api.KadxDecompiler
 import kadx.core.deobf.NameMapper
 import kadx.core.dex.info.ClassInfo
 import kadx.core.dex.nodes.ClassNode

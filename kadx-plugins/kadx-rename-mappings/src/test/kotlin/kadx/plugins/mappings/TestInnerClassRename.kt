@@ -1,7 +1,7 @@
 package kadx.plugins.mappings
 
-import kadx.api.KadxDecompiler
 import kadx.api.JavaClass
+import kadx.api.KadxDecompiler
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 

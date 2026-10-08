@@ -15,7 +15,6 @@ import kadx.core.dex.nodes.IRegion
 import kadx.core.dex.nodes.InsnContainer
 import kadx.core.dex.nodes.InsnNode
 import kadx.core.dex.nodes.MethodNode
-import java.util.BitSet
 import kadx.core.dex.regions.Region
 import kadx.core.dex.regions.conditions.IfCondition
 import kadx.core.dex.regions.conditions.IfInfo
@@ -27,6 +26,7 @@ import kadx.core.utils.blocks.BlockSet
 import kadx.core.utils.exceptions.KadxRuntimeException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.BitSet
 
 /**
  * 构建 `if` 区域。
@@ -296,7 +296,6 @@ internal class IfRegionMaker(private val mth: MethodNode, private val regionMake
 			}
 			return null
 		}
-
 
 		private fun isCandidateForOutBlock(mth: MethodNode, thenBlock: BlockNode, elseBlock: BlockNode, candidate: BlockNode): Boolean {
 			if (candidate.predecessors.size < 2) {

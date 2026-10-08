@@ -160,7 +160,9 @@ class InsnRemover {
 			// 参数的类型。
 			LOG.warn(
 				"Can't remove SSA var: {} (still in use, count: {}), unbinding uses instead in {}",
-				ssaVar, useCount, mth,
+				ssaVar,
+				useCount,
+				mth,
 			)
 			for (arg in ssaVar.useList) {
 				arg.resetSSAVar()

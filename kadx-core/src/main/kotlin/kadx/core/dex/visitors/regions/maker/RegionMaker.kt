@@ -16,6 +16,12 @@ import kadx.core.utils.BlockUtils
 import kadx.core.utils.blocks.BlockSet
 import kadx.core.utils.exceptions.KadxOverflowException
 
+/** 单块允许被纳入区域树的最大总次数（首次 + 复制）；超限后丢弃重复区域（防止重处理级联爆炸） */
+private const val MAX_BLOCK_INCLUSIONS = 6
+
+/** 单区域内同一块作为「下一块」的最大重复次数（游走无进度守卫） */
+private const val MAX_WALK_REPEATS = 6
+
 /**
  * 从 CFG 入口块出发，按深度优先顺序构建区域树。
  *
@@ -30,12 +36,6 @@ import kadx.core.utils.exceptions.KadxOverflowException
  * Kotlin 转换说明：`getStack/makeRegion` 等原包级可见方法声明为 `internal`，
  * 供同模块的 maker 类调用；对象引用比较用 `===`。
  */
-/** 单块允许被纳入区域树的最大总次数（首次 + 复制）；超限后丢弃重复区域（防止重处理级联爆炸） */
-private const val MAX_BLOCK_INCLUSIONS = 6
-
-/** 单区域内同一块作为「下一块」的最大重复次数（游走无进度守卫） */
-private const val MAX_WALK_REPEATS = 6
-
 class RegionMaker(mth: MethodNode) {
 	private val mth: MethodNode = mth
 	val stack: RegionStack = RegionStack(mth)

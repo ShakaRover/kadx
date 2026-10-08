@@ -32,8 +32,7 @@ class BoundedMemoryCodeCache(
 	/** LRU 存储：`accessOrder = true` + [LinkedHashMap.removeEldestEntry] 实现容量上限。 */
 	private val cache: MutableMap<String, ICodeInfo> =
 		object : LinkedHashMap<String, ICodeInfo>(capacity, 0.75f, true) {
-			override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, ICodeInfo>): Boolean =
-				size > capacity
+			override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, ICodeInfo>): Boolean = size > capacity
 		}
 
 	override fun add(clsFullName: String, codeInfo: ICodeInfo) {
@@ -44,14 +43,11 @@ class BoundedMemoryCodeCache(
 		synchronized(cache) { cache.remove(clsFullName) }
 	}
 
-	override fun get(clsFullName: String): ICodeInfo =
-		synchronized(cache) { cache[clsFullName] } ?: ICodeInfo.EMPTY
+	override fun get(clsFullName: String): ICodeInfo = synchronized(cache) { cache[clsFullName] } ?: ICodeInfo.EMPTY
 
-	override fun getCode(clsFullName: String): String? =
-		synchronized(cache) { cache[clsFullName] }?.codeStr
+	override fun getCode(clsFullName: String): String? = synchronized(cache) { cache[clsFullName] }?.codeStr
 
-	override fun contains(clsFullName: String): Boolean =
-		synchronized(cache) { cache.containsKey(clsFullName) }
+	override fun contains(clsFullName: String): Boolean = synchronized(cache) { cache.containsKey(clsFullName) }
 
 	@Throws(IOException::class)
 	override fun close() {

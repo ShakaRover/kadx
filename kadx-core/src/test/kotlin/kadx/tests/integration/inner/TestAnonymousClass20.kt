@@ -1,7 +1,7 @@
 package kadx.tests.integration.inner
 
-import kadx.api.KadxInternalAccess
 import kadx.api.JavaClass
+import kadx.api.KadxInternalAccess
 import kadx.core.dex.attributes.AType
 import kadx.core.dex.nodes.ClassNode
 import kadx.tests.api.IntegrationTest

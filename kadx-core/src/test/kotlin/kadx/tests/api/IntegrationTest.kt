@@ -3,12 +3,12 @@ package kadx.tests.api
 import kadx.api.CommentsLevel
 import kadx.api.DecompilationMode
 import kadx.api.ICodeInfo
-import kadx.api.KadxArgs
-import kadx.api.KadxDecompiler
-import kadx.api.KadxInternalAccess
 import kadx.api.JavaClass
 import kadx.api.JavaMethod
 import kadx.api.JavaVariable
+import kadx.api.KadxArgs
+import kadx.api.KadxDecompiler
+import kadx.api.KadxInternalAccess
 import kadx.api.ResourceFile
 import kadx.api.ResourceType
 import kadx.api.ResourcesLoader

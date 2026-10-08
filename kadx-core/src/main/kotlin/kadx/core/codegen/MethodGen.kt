@@ -16,8 +16,8 @@ import kadx.core.Kadx
 import kadx.core.codegen.utils.CodeGenUtils
 import kadx.core.dex.attributes.AFlag
 import kadx.core.dex.attributes.AType
-import kadx.core.dex.attributes.nodes.KadxError
 import kadx.core.dex.attributes.nodes.JumpInfo
+import kadx.core.dex.attributes.nodes.KadxError
 import kadx.core.dex.attributes.nodes.SkipMethodArgsAttr
 import kadx.core.dex.info.AccessInfo
 import kadx.core.dex.instructions.ConstStringNode

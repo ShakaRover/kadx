@@ -13,8 +13,8 @@ import kadx.core.dex.nodes.IRegion
 import kadx.core.dex.nodes.InsnNode
 import kadx.core.dex.nodes.MethodNode
 import kadx.core.dex.regions.Region
-import kadx.core.dex.regions.SynchronizedRegion
 import kadx.core.dex.regions.SwitchRegion
+import kadx.core.dex.regions.SynchronizedRegion
 import kadx.core.dex.visitors.AbstractVisitor
 import kadx.core.dex.visitors.KadxVisitor
 import kadx.core.dex.visitors.regions.maker.SwitchRegionMaker

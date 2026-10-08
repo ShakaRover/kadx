@@ -1393,15 +1393,11 @@ object BlockUtils {
 		return false
 	}
 
-	fun getTopSplitterForHandler(handlerBlock: BlockNode): BlockNode {
-		return getTopSplitterForHandlerOrNull(handlerBlock)
-			?: throw KadxRuntimeException("Can't find top splitter block for handler:$handlerBlock")
-	}
+	fun getTopSplitterForHandler(handlerBlock: BlockNode): BlockNode = getTopSplitterForHandlerOrNull(handlerBlock)
+		?: throw KadxRuntimeException("Can't find top splitter block for handler:$handlerBlock")
 
 	/** 同 [getTopSplitterForHandler]，但找不到时返回 null（R8 混淆 CFG 的边缘形态）。 */
-	fun getTopSplitterForHandlerOrNull(handlerBlock: BlockNode): BlockNode? {
-		return getBlockWithFlag(handlerBlock.predecessors, AFlag.EXC_TOP_SPLITTER)
-	}
+	fun getTopSplitterForHandlerOrNull(handlerBlock: BlockNode): BlockNode? = getBlockWithFlag(handlerBlock.predecessors, AFlag.EXC_TOP_SPLITTER)
 
 	/**
 	 * 返回 try/catch 的出口块：从 handler 块沿支配边界找到 try 分支与 catch 分支汇合的第一个边界。

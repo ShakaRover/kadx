@@ -1,8 +1,8 @@
 package kadx.gui.search
 
-import kadx.api.KadxDecompiler
 import kadx.api.JavaClass
 import kadx.api.JavaPackage
+import kadx.api.KadxDecompiler
 import kadx.core.utils.exceptions.InvalidDataException
 import kadx.gui.search.providers.ResourceFilter
 import kadx.gui.treemodel.JClass

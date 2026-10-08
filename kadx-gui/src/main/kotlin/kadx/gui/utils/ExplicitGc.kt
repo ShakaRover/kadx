@@ -30,8 +30,11 @@ internal object ExplicitGc {
 		val raw = KadxCommonEnv.get(ENV_VAR, null)?.trim()?.lowercase()
 		return when (raw) {
 			null, "" -> enabledByDefault
+
 			"true", "1", "on", "yes" -> true
+
 			"false", "0", "off", "no" -> false
+
 			else -> {
 				LOG.warn("Unknown {} value '{}', using default ({})", ENV_VAR, raw, enabledByDefault)
 				enabledByDefault

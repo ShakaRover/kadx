@@ -77,8 +77,7 @@ class CodeAnnotationAdapter(root: RootNode) : DataAdapter<ICodeAnnotation?> {
 	 * 位置为 0 的变量引用无法持久化：读取侧表示不了（`VarRef.fromPos` 拒绝 0）。
 	 * 位置 0 意味着该变量的声明位置未知，这种引用也无法解析，丢掉不影响语义。
 	 */
-	private fun isUnresolvableVarRef(value: ICodeAnnotation): Boolean =
-		value is VarRef && !VarRefAdapter.canPersist(value)
+	private fun isUnresolvableVarRef(value: ICodeAnnotation): Boolean = value is VarRef && !VarRefAdapter.canPersist(value)
 
 	@Throws(IOException::class)
 	override fun read(input: DataInput): ICodeAnnotation? {

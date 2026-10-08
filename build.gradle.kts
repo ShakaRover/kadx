@@ -51,7 +51,14 @@ allprojects {
 		}
 		format("misc") {
 			target("**/*.gradle", "**/*.xml", "**/.gitignore", "**/.properties")
-			targetExclude(".gradle/**", ".idea/**", "*/build/**")
+			targetExclude(
+				".gradle/**",
+				".idea/**",
+				"*/build/**",
+				// tests/ 下是 .gitignore 掉的 OSS 语料（tests/oss、tests/work 等）与临时产物，
+				// 属于第三方代码，不能被 spotless 改写
+				"tests/**",
+			)
 			commonFormatOptions()
 		}
 	}

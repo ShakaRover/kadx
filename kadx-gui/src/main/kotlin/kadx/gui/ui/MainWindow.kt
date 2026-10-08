@@ -6,9 +6,9 @@ import com.formdev.flatlaf.FlatLaf
 import com.formdev.flatlaf.extras.FlatInspector
 import com.formdev.flatlaf.extras.FlatUIDefaultsInspector
 import com.formdev.flatlaf.util.UIScale
-import kadx.api.KadxArgs
 import kadx.api.JavaClass
 import kadx.api.JavaNode
+import kadx.api.KadxArgs
 import kadx.api.ResourceFile
 import kadx.api.gui.IMainWindow
 import kadx.api.plugins.events.KadxEvents

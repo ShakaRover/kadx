@@ -14,8 +14,8 @@ import kadx.core.dex.nodes.InsnContainer
 import kadx.core.dex.nodes.InsnNode
 import kadx.core.dex.nodes.MethodNode
 import kadx.core.dex.regions.Region
-import kadx.core.dex.regions.SynchronizedRegion
 import kadx.core.dex.regions.SwitchRegion
+import kadx.core.dex.regions.SynchronizedRegion
 import kadx.core.dex.visitors.regions.AbstractRegionVisitor
 import kadx.core.dex.visitors.regions.DepthRegionTraversal
 import kadx.core.utils.BlockUtils

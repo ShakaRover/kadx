@@ -44,8 +44,7 @@ class CodeStringCache(backCache: ICodeCache) : DelegateCodeCache(backCache) {
 	/** LRU 字符串缓存：`accessOrder = true` + [removeEldestEntry] 实现容量上限。 */
 	private val codeCache: MutableMap<String, String> =
 		object : LinkedHashMap<String, String>(CACHE_SIZE, 0.75f, true) {
-			override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, String>): Boolean =
-				size > CACHE_SIZE
+			override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, String>): Boolean = size > CACHE_SIZE
 		}
 
 	/** 协程作用域：随 [close] 取消，禁止使用 GlobalScope。 */

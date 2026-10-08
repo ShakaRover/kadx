@@ -4,10 +4,10 @@ import com.formdev.flatlaf.FlatLaf
 import com.formdev.flatlaf.fonts.inter.FlatInterFont
 import com.formdev.flatlaf.fonts.jetbrains_mono.FlatJetBrainsMonoFont
 import kadx.commons.app.KadxSystemInfo
-import org.slf4j.LoggerFactory
 import kadx.gui.settings.KadxSettingsData
 import kadx.gui.utils.FontUtils
 import kadx.gui.utils.UiUtils
+import org.slf4j.LoggerFactory
 import java.awt.Font
 import javax.swing.JLabel
 import javax.swing.UIManager
@@ -94,8 +94,6 @@ class FontSettings {
 	 * **为什么不走 FlatLaf 的 flatlaf.uiScale 属性**：实测该属性需在 FlatLaf UIScale
 	 * 类初始化前设置，真实 GUI 启动时序下不生效；直接缩放字体适配器是确定性路径。
 	 */
-	private val LOG = LoggerFactory.getLogger(FontSettings::class.java)
-
 	fun applyDesktopScale(scale: Float) {
 		if (UiUtils.nearlyEqual(desktopScale, scale)) {
 			return
@@ -114,6 +112,8 @@ class FontSettings {
 	fun getSmaliFontAdapter(): FontAdapter = smaliFontAdapter
 
 	companion object {
+		private val LOG = LoggerFactory.getLogger(FontSettings::class.java)
+
 		/**
 		 * 检测 Linux 桌面缩放系数：GDK_SCALE（×GDK_DPI_SCALE 补充倍率）优先，
 		 * 其次 KDE/GNOME 的 Xft.dpi 字体缩放（xrdb）。可用 KADX_FORCE_XFT_DPI 覆盖。

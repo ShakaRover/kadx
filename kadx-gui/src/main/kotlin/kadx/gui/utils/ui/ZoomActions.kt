@@ -11,8 +11,8 @@ import javax.swing.ActionMap
 import javax.swing.InputMap
 import javax.swing.JComponent
 import javax.swing.JScrollPane
-import javax.swing.SwingUtilities
 import javax.swing.KeyStroke
+import javax.swing.SwingUtilities
 
 /**
  * 为代码区/文本区注册缩放（Ctrl + +/- 与 Ctrl + 滚轮）动作。

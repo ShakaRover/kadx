@@ -57,8 +57,11 @@ internal object DexMmap {
 		val platformDefault = !isWindows()
 		return when (raw) {
 			null, "" -> platformDefault
+
 			"on", "true", "1", "yes" -> true
+
 			"off", "false", "0", "no" -> false
+
 			else -> {
 				LOG.warn("Unknown {} value '{}', using platform default ({})", ENV_VAR, raw, platformDefault)
 				platformDefault
@@ -88,10 +91,9 @@ internal object DexMmap {
 	}
 
 	/** 映射一个已存在的文件（`.dex` 直接输入时无需先拷贝）。 */
-	fun mapFile(file: File): MappedByteBuffer =
-		RandomAccessFile(file, "r").use { raf ->
-			raf.channel.map(FileChannel.MapMode.READ_ONLY, 0, raf.length())
-		}
+	fun mapFile(file: File): MappedByteBuffer = RandomAccessFile(file, "r").use { raf ->
+		raf.channel.map(FileChannel.MapMode.READ_ONLY, 0, raf.length())
+	}
 
 	/**
 	 * 打一条 INFO 汇总（类似 `DiskCodeCache` 的命中日志），便于用户确认路径已生效。

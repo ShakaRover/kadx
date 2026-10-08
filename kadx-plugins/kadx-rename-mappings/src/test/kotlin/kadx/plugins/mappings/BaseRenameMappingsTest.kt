@@ -1,7 +1,7 @@
 package kadx.plugins.mappings
 
-import kadx.api.KadxArgs
 import kadx.api.JavaClass
+import kadx.api.KadxArgs
 import kadx.api.plugins.loader.KadxBasePluginLoader
 import kadx.core.plugins.files.SingleDirFilesGetter
 import org.assertj.core.api.Assertions.assertThat
