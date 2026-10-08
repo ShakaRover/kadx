@@ -50,18 +50,22 @@ allprojects {
 			commonFormatOptions()
 		}
 		format("misc") {
-			// 注意：子项目的 misc 任务实际匹配不到自己的 src/**（实测注入违规不报），
-			// 所以 src/**/*.xml、src/**/*.properties 这些只能由 root 的全仓模式兜住。
-			// 这里保留宽 include，只把 exclude 修对：原来的 `*/build/**` 只匹配一层，
-			// root 自己的 build/（3 万多个生成文件）和 buildSrc/.gradle/ 都没被排除。
-			target("**/*.gradle", "**/*.xml", "**/.gitignore", "**/*.properties")
-			targetExclude(
-				".idea/**",
-				"**/.gradle/**",
-				"**/build/**",
-				// tests/ 是 .gitignore 掉的 OSS 语料，属于第三方代码，不能被改写
-				"tests/**",
+			// 只覆盖 root 自己拥有的文件；子项目目录由各自 project 的同名任务覆盖
+			// （实测：往 kadx-cli/src/main/resources/logback.xml、kadx-core/src/main/resources/android/attrs.xml、
+			// kadx-gui/src/main/resources/i18n/*.properties、kadx-gui/dist/**/*.properties 注入违规，
+			// 对应子项目任务都会报）。用 `**/*.xml` 这类全仓模式会连带扫进 tests/ 里的 OSS 语料
+			// （十几万个文件）和各级 build/ 生成目录：本机单次 spotlessMisc 要 7 分钟，还会去
+			// 改写第三方/生成文件（tests/oss 下曾有断链符号链接直接把任务打挂）。
+			target(
+				"*.gradle",
+				"*.properties",
+				".gitignore",
+				".run/**/*.xml",
+				"config/**/*.xml",
+				"config/**/.gitignore",
+				"gradle/**/*.properties",
 			)
+			targetExclude("**/build/**", "**/.gradle/**")
 			commonFormatOptions()
 		}
 	}
