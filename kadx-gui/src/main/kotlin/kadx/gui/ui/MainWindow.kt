@@ -1390,7 +1390,12 @@ class MainWindow(@Transient private val settings: KadxSettings) :
 		if (Kadx.isDevVersion()) {
 			help.add(object : AbstractAction("Show sample error report") {
 				override fun actionPerformed(e: ActionEvent) {
-					ExceptionDialog.throwTestException()
+					ExceptionDialog.showTestExceptionDialog(this@MainWindow)
+				}
+			})
+			help.add(object : AbstractAction("Trigger uncaught exception (test handler)") {
+				override fun actionPerformed(e: ActionEvent) {
+					ExceptionDialog.throwTestExceptionInBackgroundThread()
 				}
 			})
 		}

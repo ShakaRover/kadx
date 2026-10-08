@@ -183,14 +183,30 @@ class ExceptionDialog private constructor(mainWindow: MainWindow?, data: Excepti
 			}
 		}
 
-		/** 触发一次测试异常并弹出错误对话框。 */
-		fun showTestExceptionDialog() {
+		/**
+		 * 触发一次测试异常并弹出错误对话框。
+		 *
+		 * 传入 [mainWindow] 可让示例对话框沿用主窗口的真实设置（如代码字体），
+		 * 使预览效果与实际报错时一致；独立启动（[main]）时传 null。
+		 */
+		fun showTestExceptionDialog(mainWindow: MainWindow? = null) {
 			try {
 				throwTestException()
 			} catch (e: Exception) {
 				val excData = ExceptionData(e, KadxExceptionHandler.MAIN_PROJECT_STRING, null)
-				ExceptionDialog.show(null, excData)
+				ExceptionDialog.show(mainWindow, excData)
 			}
+		}
+
+		/**
+		 * 在后台线程抛出测试异常，用于验证全局未捕获异常处理链路
+		 * （[KadxExceptionHandler] → [ExceptionDialog]）。
+		 *
+		 * 刻意使用裸 [Thread]：不能给线程设置自己的 `uncaughtExceptionHandler`，
+		 * 否则会像 `Utils.simpleThreadFactory` 那样绕过 JVM 默认处理器，测不到真实链路。
+		 */
+		fun throwTestExceptionInBackgroundThread() {
+			Thread({ throwTestException() }, "kadx-uncaught-exception-test").start()
 		}
 
 		/** 独立启动入口：加载设置后展示测试错误对话框。 */
