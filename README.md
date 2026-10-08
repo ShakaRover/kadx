@@ -4,12 +4,11 @@
 
 ## KADX
 
-![Build status](https://img.shields.io/github/actions/workflow/status/skylot/jadx/build-artifacts.yml)
-![GitHub contributors](https://img.shields.io/github/contributors/skylot/jadx)
-![GitHub all releases](https://img.shields.io/github/downloads/skylot/jadx/total)
-![GitHub release (latest by SemVer)](https://img.shields.io/github/downloads/skylot/jadx/latest/total)
-![Latest release](https://img.shields.io/github/release/skylot/jadx.svg)
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.skylot/jadx-core)](https://search.maven.org/search?q=g:io.github.skylot%20AND%20kadx)
+![Build status](https://img.shields.io/github/actions/workflow/status/ShakaRover/kadx/build-artifacts.yml)
+![GitHub contributors](https://img.shields.io/github/contributors/ShakaRover/kadx)
+![GitHub all releases](https://img.shields.io/github/downloads/ShakaRover/kadx/total)
+![GitHub release (latest by SemVer)](https://img.shields.io/github/downloads/ShakaRover/kadx/latest/total)
+![Latest release](https://img.shields.io/github/release/ShakaRover/kadx.svg)
 ![Java 11+](https://img.shields.io/badge/Java-11%2B-blue)
 [![License](http://img.shields.io/:license-apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 
@@ -33,16 +32,16 @@ Command line and GUI tools for producing Java source code from Android Dex and A
 - full text search
 - smali debugger, check [wiki page](https://github.com/skylot/jadx/wiki/Smali-debugger) for setup and usage
 
-Kadx-gui key bindings can be found [here](https://github.com/skylot/jadx/wiki/KADX-GUI-Key-bindings)
+kadx-gui key bindings can be found [here](https://github.com/skylot/jadx/wiki/jadx-gui-Key-bindings)
 
-See these features in action here: [kadx-gui features overview](https://github.com/skylot/jadx/wiki/kadx-gui-features-overview)
+See these features in action here: [kadx-gui features overview](https://github.com/skylot/jadx/wiki/jadx-gui-features-overview)
 
-<img src="https://user-images.githubusercontent.com/118523/142730720-839f017e-38db-423e-b53f-39f5f0a0316f.png" width="700"/>
+<img src="docs/kadx-gui-preview.png" width="900"/>
 
 ### Download
 - release
-  from [github: ![Latest release](https://img.shields.io/github/release/skylot/jadx.svg)](https://github.com/skylot/jadx/releases/latest)
-- latest [unstable build ![GitHub commits since tagged version (branch)](https://img.shields.io/github/commits-since/skylot/jadx/latest/master)](https://nightly.link/skylot/jadx/workflows/build-artifacts/master)
+  from [github: ![Latest release](https://img.shields.io/github/release/ShakaRover/kadx.svg)](https://github.com/ShakaRover/kadx/releases)
+- latest [unstable build ![GitHub commits since tagged version (branch)](https://img.shields.io/github/commits-since/ShakaRover/kadx/latest/master)](https://nightly.link/ShakaRover/kadx/workflows/build-artifacts/master)
 
 After download unpack zip file go to `bin` directory and run:
 - `kadx` - command line version
@@ -53,30 +52,18 @@ On Windows run `.bat` files with double-click\
 For Windows, you can download it from [oracle.com](https://www.oracle.com/java/technologies/downloads/#jdk17-windows) (select x64 Installer).
 
 ### Install
-- Arch Linux
-  [![Arch Linux package](https://img.shields.io/archlinux/v/extra/any/kadx)](https://archlinux.org/packages/extra/any/kadx/)
-  [![AUR Version](https://img.shields.io/aur/version/kadx-git)](https://aur.archlinux.org/packages/kadx-git)
-  ```bash
-  sudo pacman -S kadx
-  ```
-- macOS
-  [![homebrew version](https://img.shields.io/homebrew/v/kadx)](https://formulae.brew.sh/formula/kadx)
-  ```bash
-  brew install kadx
-  ```
-- Flathub
-  [![Flathub Version](https://img.shields.io/flathub/v/com.github.skylot.kadx)](https://flathub.org/apps/com.github.skylot.kadx)
-  ```bash
-  flatpak install flathub com.github.skylot.kadx
-  ```
+kadx is not packaged by any distribution yet. Use the bundle from [Download](#download) or [build from source](#build-from-source).
 
 ### Use kadx as a library
-You can use kadx in your java projects, check details on [wiki page](https://github.com/skylot/jadx/wiki/Use-kadx-as-a-library)
+No kadx release is published to Maven Central yet. The modules use the `io.github.skylot` group and the `kadx-` artifact prefix (for example `io.github.skylot:kadx-core`), so install the current sources into your local Maven repository:
+```
+./gradlew publishToMavenLocal
+```
 
 ### Build from source
 JDK 17 or higher must be installed:
 ```
-git clone https://github.com/skylot/jadx.git
+git clone https://github.com/ShakaRover/kadx.git
 cd kadx
 ./gradlew dist
 ```
@@ -88,7 +75,7 @@ and also packed to `build/kadx-<version>.zip`
 
 ### Usage
 ```
-kadx[-gui] [command] [options] <input files> (.apk, .dex, .jar, .class, .smali, .zip, .aar, .arsc, .aab, .xapk, .apkm, .kadx.kts)
+usage: kadx [command] [options] <input files> (.apk, .dex, .jar, .class, .smali, .zip, .aar, .arsc, .aab, .xapk, .apkm, .kadx.kts)
 commands (use '<command> --help' for command options):
   plugins	  - manage kadx plugins
 
@@ -98,10 +85,10 @@ options:
   -dr, --output-dir-res                         - output directory for resources
   -r, --no-res                                  - do not decode resources
   -s, --no-src                                  - do not decompile source code
-  -j, --threads-count                           - processing threads count, default: 16
+  -j, --threads-count                           - processing threads count
   --single-class                                - decompile a single class, full name, raw or alias
   --single-class-output                         - file or dir for write if decompile a single class
-  --output-format                               - can be 'java' or 'json', default: java
+  --output-format                               - can be 'java' or 'json'
   -e, --export-gradle                           - save as gradle project (set '--export-gradle-type' to 'auto')
   --export-gradle-type                          - Gradle project template for export:
                                                    'auto' - detect automatically
@@ -134,9 +121,9 @@ options:
                                                    'read-and-autosave-before-closing' - read and autosave before exiting the app or closing the project
                                                    'ignore' - don't read or save (can be used to skip loading mapping files referenced in the project file)
   --deobf                                       - activate deobfuscation
-  --deobf-min                                   - min length of name, renamed if shorter, default: 3
-  --deobf-max                                   - max length of name, renamed if longer, default: 64
-  --deobf-whitelist                             - space separated list of classes (full name) and packages (ends with '.*') to exclude from deobfuscation, default: android.support.v4.* android.support.v7.* android.support.v4.os.* android.support.annotation.Px androidx.core.os.* androidx.annotation.Px
+  --deobf-min                                   - min length of name, renamed if shorter
+  --deobf-max                                   - max length of name, renamed if longer
+  --deobf-whitelist                             - space separated list of classes (full name) and packages (ends with '.*') to exclude from deobfuscation
   --deobf-cfg-file                              - deobfuscation mappings file used for KADX auto-generated names (in the JOBF file format), default: same dir and name as input file with '.jobf' extension
   --deobf-cfg-file-mode                         - set mode for handling the KADX auto-generated names' deobfuscation map file:
                                                    'read' - read if found, don't save (default)
@@ -151,8 +138,8 @@ options:
                                                    'always' - always use source name if it's available
                                                    'if-better' - use source name if it seems better than the current one
                                                    'never' - never use source name, even if it's available
-  --source-name-repeat-limit                    - allow using source name if it appears less than a limit number, default: 10
-  --use-kotlin-methods-for-var-names            - use kotlin intrinsic methods to rename variables, values: disable, apply, apply-and-hide, default: apply
+  --source-name-repeat-limit                    - allow using source name if it appears less than a limit number
+  --use-kotlin-methods-for-var-names            - use kotlin intrinsic methods to rename variables, values: disable, apply, apply-and-hide
   --use-headers-for-detect-resource-extensions  - Use headers for detect resource extensions if resource obfuscated
   --rename-flags                                - fix options (comma-separated list of):
                                                    'case' - fix case sensitivity issues (according to --fs-case-sensitive option),
@@ -164,15 +151,15 @@ options:
                                                    'auto' - automatically select (default)
                                                    'decimal' - use decimal
                                                    'hexadecimal' - use hexadecimal
-  --type-update-limit                           - type update limit count (per one instruction), default: 10
+  --type-update-limit                           - type update limit count (per one instruction)
   --fs-case-sensitive                           - treat filesystem as case sensitive, false by default
   --cfg                                         - save methods control flow graph to dot file
   --raw-cfg                                     - save methods control flow graph (use raw instructions)
-  --call-graph                                  - save app call graph in format: 'dot' or 'json', default: none
+  --call-graph                                  - save app call graph in format: 'dot' or 'json'
   -f, --fallback                                - set '--decompilation-mode' to 'fallback' (deprecated)
   --use-dx                                      - use dx/d8 to convert java bytecode
-  --comments-level                              - set code comments level, values: error, warn, info, debug, user-only, none, default: info
-  --log-level                                   - set log level, values: quiet, progress, error, warn, info, debug, default: progress
+  --comments-level                              - set code comments level, values: error, warn, info, debug, user-only, none
+  --log-level                                   - set log level, values: quiet, progress, error, warn, info, debug
   -v, --verbose                                 - verbose output (set --log-level to DEBUG)
   -q, --quiet                                   - turn off output (set --log-level to QUIET)
   --disable-plugins                             - comma separated list of plugin ids to disable
@@ -205,7 +192,7 @@ Plugin options (-P<name>=<value>):
   kotlin-smap: Use kotlin.SourceDebugExtension annotation for rename class alias
     - kotlin-smap.class-alias-source-dbg        - rename class alias from SourceDebugExtension, values: [yes, no], default: no
   rename-mappings: various mappings support
-    - rename-mappings.format                    - mapping format, values: [AUTO, TINY_FILE, TINY_2_FILE, ENIGMA_FILE, ENIGMA_DIR, PROGUARD_FILE, SRG_FILE, XSRG_FILE, JAM_FILE, CSRG_FILE, TSRG_FILE, TSRG_2_FILE, INTELLIJ_MIGRATION_MAP_FILE, RECAF_SIMPLE_FILE, JOBF_FILE], default: AUTO
+    - rename-mappings.format                    - mapping format, values: [AUTO, Tiny file, Tiny v2 file, Enigma file, Enigma directory, ProGuard file, SRG file, XSRG file, JAM file, CSRG file, TSRG file, TSRG v2 file, IntelliJ migration map file, Recaf Simple file, JOBF file], default: AUTO
     - rename-mappings.invert                    - invert mapping on load, values: [yes, no], default: no
   smali-input: Load .smali files
     - smali-input.api-level                     - Android API level, default: 27
