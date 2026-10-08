@@ -33,10 +33,10 @@ class KadxUpdate(private val kadxVersion: String = Kadx.version) {
 	companion object {
 		private val LOG = KotlinLogging.logger {}
 
-		const val KADX_ARTIFACTS_URL = "https://nightly.link/skylot/jadx/workflows/build-artifacts/master"
-		const val KADX_RELEASES_URL = "https://github.com/skylot/jadx/releases"
+		const val KADX_ARTIFACTS_URL = "https://nightly.link/ShakaRover/kadx/workflows/build-artifacts/master"
+		const val KADX_RELEASES_URL = "https://github.com/ShakaRover/kadx/releases"
 
-		private const val GITHUB_API_URL = "https://api.github.com/repos/skylot/jadx"
+		private const val GITHUB_API_URL = "https://api.github.com/repos/ShakaRover/kadx"
 		private const val GITHUB_LATEST_ARTIFACTS_URL = "$GITHUB_API_URL/actions/artifacts?per_page=5&page=1"
 		private const val GITHUB_LATEST_RELEASE_URL = "$GITHUB_API_URL/releases/latest"
 	}

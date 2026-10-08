@@ -6,7 +6,7 @@
 
 Pattern: `github:<owner>:<repo>[:<version>][:<artifact name prefix>]`
 
-Examples: `github:skylot:kadx`, `github:skylot:kadx:sample-plugin` or `github:skylot:kadx:0.1.0`
+Examples: `github:ShakaRover:kadx`, `github:ShakaRover:kadx:sample-plugin` or `github:ShakaRover:kadx:0.1.0`
 
 `<version>` - exact version to install (optional), should be equal to release name
 

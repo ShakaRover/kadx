@@ -76,7 +76,7 @@ class KadxExceptionHandler private constructor(private val mainWindow: MainWindo
 	companion object {
 		private val LOG: Logger = LoggerFactory.getLogger(KadxExceptionHandler::class.java)
 
-		const val MAIN_PROJECT_STRING: String = "skylot/jadx"
+		const val MAIN_PROJECT_STRING: String = "ShakaRover/kadx"
 
 		/** 把本处理器安装为 JVM 默认的未捕获异常处理器。 */
 		fun register(mainWindow: MainWindow) {

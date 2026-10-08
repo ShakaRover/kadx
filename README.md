@@ -55,7 +55,7 @@ For Windows, you can download it from [oracle.com](https://www.oracle.com/java/t
 kadx is not packaged by any distribution yet. Use the bundle from [Download](#download) or [build from source](#build-from-source).
 
 ### Use kadx as a library
-No kadx release is published to Maven Central yet. The modules use the `io.github.skylot` group and the `kadx-` artifact prefix (for example `io.github.skylot:kadx-core`), so install the current sources into your local Maven repository:
+No kadx release is published to Maven Central yet. The modules use the `io.github.shakarover` group and the `kadx-` artifact prefix (for example `io.github.shakarover:kadx-core`), so install the current sources into your local Maven repository:
 ```
 ./gradlew publishToMavenLocal
 ```

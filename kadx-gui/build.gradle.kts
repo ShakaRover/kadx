@@ -170,7 +170,7 @@ launch4j {
 	jvmOptions.set(escapeJVMOptions())
 	requires64Bit.set(true)
 	downloadUrl.set("https://www.oracle.com/java/technologies/downloads/#jdk21-windows")
-	supportUrl.set("https://github.com/skylot/jadx")
+	supportUrl.set("https://github.com/ShakaRover/kadx")
 
 	bundledJrePath.set(if (project.hasProperty("bundleJRE")) "%EXEDIR%/jre" else "%JAVA_HOME%")
 	classpath.set(
@@ -215,7 +215,7 @@ runtime {
 					"--icon",
 					"$projectDir/dist/macos/kadx-logo.icns",
 					"--mac-package-identifier",
-					"io.github.skylot.kadx",
+					"io.github.shakarover.kadx",
 				) + fileAssociations
 			// jpackage on macOS requires version as up to three integers separated by dots
 			appVersion = if (kadxVersion.matches(Regex("\\d+(\\.\\d+){0,2}"))) kadxVersion else "1.0.0"

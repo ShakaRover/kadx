@@ -10,7 +10,7 @@ body:
       value: |
         **Checks before submit**
         - check [Troubleshooting Q&A](https://github.com/skylot/jadx/wiki/Troubleshooting-Q&A) section on wiki
-        - try [latest unstable build](https://nightly.link/skylot/jadx/workflows/build-artifacts/master), maybe issue already fixed
+        - try [latest unstable build](https://nightly.link/ShakaRover/kadx/workflows/build-artifacts/master), maybe issue already fixed
         - search existing issues by exception message
   - type: textarea
     id: details

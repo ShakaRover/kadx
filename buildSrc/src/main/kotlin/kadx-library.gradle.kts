@@ -7,7 +7,7 @@ plugins {
 
 val kadxVersion = rootProject.extra["kadxVersion"] as String
 
-group = "io.github.skylot"
+group = "io.github.shakarover"
 version = kadxVersion
 
 java {
@@ -31,7 +31,7 @@ publishing {
 			pom {
 				name.set(project.name)
 				description.set(project.description ?: "Dex to Java decompiler")
-				url.set("https://github.com/skylot/jadx")
+				url.set("https://github.com/ShakaRover/kadx")
 				licenses {
 					license {
 						name.set("The Apache License, Version 2.0")
@@ -40,16 +40,16 @@ publishing {
 				}
 				developers {
 					developer {
-						id.set("skylot")
-						name.set("Skylot")
+						id.set("ShakaRover")
+						name.set("ShakaRover")
 						email.set(project.findProperty("libEmail") as String? ?: "" )
-						url.set("https://github.com/skylot")
+						url.set("https://github.com/ShakaRover")
 					}
 				}
 				scm {
-					connection.set("scm:git:git://github.com/skylot/jadx.git")
-					developerConnection.set("scm:git:ssh://github.com:skylot/jadx.git")
-					url.set("https://github.com/skylot/jadx")
+					connection.set("scm:git:git://github.com/ShakaRover/kadx.git")
+					developerConnection.set("scm:git:ssh://github.com:ShakaRover/kadx.git")
+					url.set("https://github.com/ShakaRover/kadx")
 				}
 			}
 		}

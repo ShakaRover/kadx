@@ -8,7 +8,7 @@ plugins {
 val kadxVersion = rootProject.extra["kadxVersion"] as String
 val kadxBuildJavaVersion = rootProject.extra["kadxBuildJavaVersion"] as Int?
 
-group = "io.github.skylot"
+group = "io.github.shakarover"
 version = kadxVersion
 
 dependencies {

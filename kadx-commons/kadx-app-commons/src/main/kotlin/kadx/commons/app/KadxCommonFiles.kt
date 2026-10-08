@@ -101,7 +101,7 @@ private fun loadDirs(pdRef: AtomicReference<ProjectDirectories?>): ProjectDirect
 		val start = System.currentTimeMillis()
 
 		// 使用 dev.dirs 库按 (group, vendor, product) 定位目录，Windows 下用 getWinDirs() 提供实现
-		val loadedDirs = ProjectDirectories.from("io.github", "skylot", "kadx") { KadxCommonFiles.getWinDirs() }
+		val loadedDirs = ProjectDirectories.from("io.github", "shakarover", "kadx") { KadxCommonFiles.getWinDirs() }
 
 		if (KadxCommonFiles.LOG.isDebugEnabled()) {
 			KadxCommonFiles.LOG.debug(
