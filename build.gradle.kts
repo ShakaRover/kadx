@@ -50,13 +50,16 @@ allprojects {
 			commonFormatOptions()
 		}
 		format("misc") {
-			target("**/*.gradle", "**/*.xml", "**/.gitignore", "**/.properties")
+			// 注意：子项目的 misc 任务实际匹配不到自己的 src/**（实测注入违规不报），
+			// 所以 src/**/*.xml、src/**/*.properties 这些只能由 root 的全仓模式兜住。
+			// 这里保留宽 include，只把 exclude 修对：原来的 `*/build/**` 只匹配一层，
+			// root 自己的 build/（3 万多个生成文件）和 buildSrc/.gradle/ 都没被排除。
+			target("**/*.gradle", "**/*.xml", "**/.gitignore", "**/*.properties")
 			targetExclude(
-				".gradle/**",
 				".idea/**",
-				"*/build/**",
-				// tests/ 下是 .gitignore 掉的 OSS 语料（tests/oss、tests/work 等）与临时产物，
-				// 属于第三方代码，不能被 spotless 改写
+				"**/.gradle/**",
+				"**/build/**",
+				// tests/ 是 .gitignore 掉的 OSS 语料，属于第三方代码，不能被改写
 				"tests/**",
 			)
 			commonFormatOptions()
