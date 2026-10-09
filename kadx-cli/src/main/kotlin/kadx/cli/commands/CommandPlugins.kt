@@ -112,6 +112,13 @@ class CommandPlugins : ICommand {
 			return
 		}
 		if (available) {
+			if (!KadxPluginsList.isEnabled) {
+				println(
+					"Available plugins list is not configured, " +
+						"set ${KadxPluginsList.LOCATION_ENV}=github:<owner>:<repo> to enable it",
+				)
+				return
+			}
 			val availableList = KadxPluginsList.instance.get()
 			println("Available plugins: " + availableList.size)
 			for (plugin in availableList) {

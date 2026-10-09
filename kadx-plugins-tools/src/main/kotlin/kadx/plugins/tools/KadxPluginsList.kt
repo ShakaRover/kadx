@@ -1,7 +1,9 @@
 package kadx.plugins.tools
 
 import com.google.gson.reflect.TypeToken
+import kadx.commons.app.KadxCommonEnv
 import kadx.core.utils.GsonUtils.buildGson
+import kadx.core.utils.exceptions.KadxRuntimeException
 import kadx.core.utils.files.FileUtils.readFile
 import kadx.core.utils.files.FileUtils.writeFile
 import kadx.plugins.tools.data.KadxPluginListCache
@@ -25,7 +27,39 @@ class KadxPluginsList private constructor() {
 	companion object {
 		val instance = KadxPluginsList()
 
+		/**
+		 * 插件市场（kadx-plugins-list）位置，语法与插件 locationId 一致：`github:<owner>:<repo>`。
+		 *
+		 * 未设置时市场功能整体关闭（不联网、不报错）—— 因为 kadx 目前没有自己的插件列表仓，
+		 * 而上游 `jadx-decompiler/jadx-plugins-list` 里的插件是按 jadx 的包名与
+		 * `META-INF/services/jadx.api.plugins.JadxPlugin` 描述符构建的，kadx 通过
+		 * `ServiceLoader.load(KadxPlugin::class.java)` 发现不了，装了也不会生效。
+		 */
+		const val LOCATION_ENV = "KADX_PLUGINS_LIST_LOCATION"
+
 		private val LOG = LoggerFactory.getLogger(KadxPluginsList::class.java)
+
+		/** 已配置的市场位置；未配置或格式非法时为 null。 */
+		val location: LocationInfo? = parseLocation(KadxCommonEnv.get(LOCATION_ENV, null))
+
+		/** 市场是否可用（是否配置了合法位置）。 */
+		val isEnabled: Boolean get() = location != null
+
+		private fun parseLocation(raw: String?): LocationInfo? {
+			if (raw == null) {
+				return null
+			}
+			val parts = raw.trim().split(":")
+			if (parts.size != 3 || parts[0] != "github" || parts[1].isEmpty() || parts[2].isEmpty()) {
+				LOG.warn(
+					"Ignore invalid {} value: '{}' (expected 'github:<owner>:<repo>'), marketplace disabled",
+					LOCATION_ENV,
+					raw,
+				)
+				return null
+			}
+			return LocationInfo(parts[1], parts[2], "list")
+		}
 	}
 
 	private val listType: Type = object : TypeToken<List<KadxPluginListEntry>>() {}.type
@@ -84,9 +118,12 @@ class KadxPluginsList private constructor() {
 	}
 
 	private fun fetchLatestRelease(): Release {
+		val listLocation = location
+			?: throw KadxRuntimeException(
+				"Plugins marketplace location is not configured, set '$LOCATION_ENV' to 'github:<owner>:<repo>'",
+			)
 		LOG.debug("Fetching latest plugins-list release info")
-		val pluginsList = LocationInfo("kadx-decompiler", "kadx-plugins-list", "list")
-		val release = GithubTools.fetchRelease(pluginsList)
+		val release = GithubTools.fetchRelease(listLocation)
 		if (release.assets.isNullOrEmpty()) {
 			throw RuntimeException("Release don't have assets")
 		}

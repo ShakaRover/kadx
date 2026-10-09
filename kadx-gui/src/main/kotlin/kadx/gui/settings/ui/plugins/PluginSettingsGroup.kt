@@ -123,7 +123,9 @@ internal class PluginSettingsGroup(
 		nodes.sortBy { it.getTitle() }
 
 		fillListModel(listModel, nodes, emptyList())
-		loadAvailablePlugins(listModel, nodes, installedSet)
+		if (KadxPluginsList.isEnabled) {
+			loadAvailablePlugins(listModel, nodes, installedSet)
+		}
 	}
 
 	private fun fillListModel(
@@ -134,8 +136,11 @@ internal class PluginSettingsGroup(
 		listModel.clear()
 		listModel.addElement(TitleNode("Installed"))
 		nodes.filter { it.getAction() == PluginAction.UNINSTALL }.forEach { listModel.addElement(it) }
-		listModel.addElement(TitleNode("Available"))
-		listModel.addAll(available)
+		// 未配置市场地址时不显示 Available 分组：kadx 还没有自己的插件列表仓
+		if (KadxPluginsList.isEnabled) {
+			listModel.addElement(TitleNode("Available"))
+			listModel.addAll(available)
+		}
 		listModel.addElement(TitleNode("Bundled"))
 		nodes.filter { it.getAction() == PluginAction.NONE }.forEach { listModel.addElement(it) }
 	}

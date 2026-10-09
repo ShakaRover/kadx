@@ -205,6 +205,7 @@ Environment variables:
   KADX_CONFIG_DIR - custom config directory, using system by default
   KADX_CACHE_DIR - custom cache directory, using system by default
   KADX_TMP_DIR - custom temp directory, using system by default
+  KADX_PLUGINS_LIST_LOCATION - plugins marketplace location in 'github:<owner>:<repo>' form; unset by default (marketplace disabled)
 
 Examples:
   kadx -d out classes.dex
