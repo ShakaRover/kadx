@@ -26,11 +26,6 @@ interface KadxGuiContext {
 	fun uiRun(runnable: Runnable)
 
 	/**
-	 * 添加全局菜单项（"Plugins" 分组）。
-	 */
-	fun addMenuAction(name: String, action: Runnable)
-
-	/**
 	 * 添加代码查看器右键弹窗菜单项。
 	 *
 	 * @param name       菜单标题

@@ -7,7 +7,6 @@ import kadx.gui.settings.KadxSettings
 import kadx.gui.ui.MainWindow
 import kadx.gui.utils.NLS
 import org.junit.jupiter.api.Assumptions
-import javax.swing.JMenu
 
 /**
  * 测试用 [MainWindow] 桩：绕过重量级构造函数，用 `Unsafe.allocateInstance` 创建实例，
@@ -28,7 +27,6 @@ object TestMainWindowShim {
 		val mainWindow = unsafeCls.getMethod("allocateInstance", Class::class.java)
 			.invoke(unsafe, MainWindow::class.java) as MainWindow
 
-		setField(mainWindow, "pluginsMenu", JMenu("Plugins"))
 		setField(mainWindow, "settings", buildSettings())
 		setField(mainWindow, "events", KadxGuiEventsImpl())
 		mainWindow

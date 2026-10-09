@@ -296,7 +296,6 @@ class MainWindow(@Transient private val settings: KadxSettings) :
 
 	private val shortcutsController: ShortcutsController
 	private lateinit var menuBar: KadxMenuBar
-	private lateinit var pluginsMenu: JMenu
 
 	/** 十六进制查看器菜单；由 [initHexViewMenu] 填充。 */
 	lateinit var hexViewerMenu: JMenu
@@ -1369,10 +1368,6 @@ class MainWindow(@Transient private val settings: KadxSettings) :
 		nav.add(backAction)
 		nav.add(forwardAction)
 
-		pluginsMenu = KadxMenu(NLS.str("menu.plugins"), shortcutsController)
-		pluginsMenu.setMnemonic(KeyEvent.VK_P)
-		resetPluginsMenu()
-
 		val tools = KadxMenu(NLS.str("menu.tools"), shortcutsController)
 		tools.setMnemonic(KeyEvent.VK_T)
 		tools.add(decompileAllAction)
@@ -1417,7 +1412,6 @@ class MainWindow(@Transient private val settings: KadxSettings) :
 		menuBar.add(view)
 		menuBar.add(nav)
 		menuBar.add(tools)
-		menuBar.add(pluginsMenu)
 		menuBar.add(help)
 		setJMenuBar(menuBar)
 
@@ -1957,25 +1951,6 @@ class MainWindow(@Transient private val settings: KadxSettings) :
 				quickTabsTree = null
 			}
 		}
-	}
-
-	fun getPluginsMenu(): JMenu = pluginsMenu
-
-	/**
-	 * 清空插件菜单。
-	 *
-	 * kadx 不再支持外部插件，因此没有内置的「管理插件」入口；菜单内容全部由插件自己
-	 * 通过 [addToPluginsMenu] 添加。
-	 */
-	fun resetPluginsMenu() {
-		pluginsMenu.removeAll()
-	}
-
-	fun addToPluginsMenu(item: Action) {
-		if (pluginsMenu.getMenuComponentCount() == 0) {
-			pluginsMenu.addSeparator()
-		}
-		pluginsMenu.add(item)
 	}
 
 	private fun createDesktopEntry() {

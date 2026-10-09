@@ -71,10 +71,6 @@ class GuiPluginContext internal constructor(
 		UiUtils.uiRun(runnable)
 	}
 
-	override fun addMenuAction(name: String, action: Runnable) {
-		commonContext.addMenuAction(registry, name, action)
-	}
-
 	override fun addPopupMenuAction(
 		name: String,
 		enabled: Function<ICodeNodeRef, Boolean>?,
