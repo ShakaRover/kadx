@@ -8,8 +8,7 @@ dependencies {
 
 	implementation(project(":kadx-plugins:kadx-dex-input"))
 
-	implementation(libs.smali) {
-		exclude(group = "com.beust", module = "jcommander") // exclude old jcommander namespace
-	}
-	implementation(libs.guava.jre) // force the latest version for smali
+	implementation(libs.ksmali)
+	// 直接用 ksmali 的 lexer/parser（ANTLR4）完成内存内汇编，故自行声明 antlr 运行时
+	implementation(libs.antlr.runtime)
 }

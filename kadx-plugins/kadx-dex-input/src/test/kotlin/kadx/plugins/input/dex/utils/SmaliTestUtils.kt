@@ -1,7 +1,7 @@
 package kadx.plugins.input.dex.utils
 
-import com.android.tools.smali.smali.Smali
 import com.android.tools.smali.smali.SmaliOptions
+import com.android.tools.smali.smali.assemble
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -41,7 +41,10 @@ public class SmaliTestUtils {
 				val options = SmaliOptions()
 				options.outputDexFile = output.toAbsolutePath().toString()
 				val inputFileNames = inputFiles.map { it.toAbsolutePath().toString() }
-				Smali.assemble(options, inputFileNames)
+				// ksmali 4.x 起 Smali 变成顶层函数（原来 Google 的 3.0.x 是 Smali 类的静态方法）
+				if (!assemble(options, inputFileNames)) {
+					throw AssertionError("Smali assemble failed: $inputFileNames")
+				}
 			} catch (e: Exception) {
 				throw AssertionError("Smali assemble error", e)
 			}

@@ -70,6 +70,12 @@ cd kadx
 
 (on Windows, use `gradlew.bat` instead of `./gradlew`)
 
+The smali/baksmali dependencies come from [ShakaRover/ksmali](https://github.com/ShakaRover/ksmali), which is only published to GitHub Packages. GitHub Packages requires authentication even for public artifacts, so the build needs a personal access token with the `read:packages` scope:
+```
+./gradlew dist -Pgpr.user=<github-user> -Pgpr.key=<read:packages-token>
+```
+The same values can come from the `GPR_USER`/`GPR_KEY` environment variables, or from `gpr.user`/`gpr.key` in `~/.gradle/gradle.properties`.
+
 Scripts for run kadx will be placed in `build/kadx/bin`
 and also packed to `build/kadx-<version>.zip`
 

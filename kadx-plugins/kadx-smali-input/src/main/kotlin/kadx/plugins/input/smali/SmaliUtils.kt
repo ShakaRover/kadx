@@ -4,72 +4,76 @@ import com.android.tools.smali.dexlib2.Opcodes
 import com.android.tools.smali.dexlib2.writer.builder.DexBuilder
 import com.android.tools.smali.dexlib2.writer.io.MemoryDataStore
 import com.android.tools.smali.smali.SmaliOptions
-import com.android.tools.smali.smali.smaliFlexLexer
+import com.android.tools.smali.smali.smaliLexer
 import com.android.tools.smali.smali.smaliParser
-import com.android.tools.smali.smali.smaliTreeWalker
-import org.antlr.runtime.CommonTokenStream
-import org.antlr.runtime.RecognitionException
-import org.antlr.runtime.TokenStream
-import org.antlr.runtime.tree.CommonTreeNodeStream
-import org.antlr.runtime.tree.TreeNodeStream
+import org.antlr.v4.runtime.BaseErrorListener
+import org.antlr.v4.runtime.CharStreams
+import org.antlr.v4.runtime.CommonTokenStream
+import org.antlr.v4.runtime.RecognitionException
+import org.antlr.v4.runtime.Recognizer
 import java.io.File
 import java.io.FileInputStream
-import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
 
 /**
  * 把 smali 文件汇编成 dex 字节数组的工具。
  *
- * **背景**：直接复用 smali 库内部的 ANTLR 解析器（smaliFlexLexer / smaliParser /
- * smaliTreeWalker）和 dexlib2 的 DexBuilder，在内存中完成 smali → dex 转换。
- * 两个私有 Wrapper 类覆写 emitErrorMessage()，把语法错误收集到 StringBuilder
- * 而不是打印到控制台，出错时统一抛出带完整错误信息的 RuntimeException。
+ * **背景**：ksmali（smali 的 fork）从 4.x 起把前端重写成单趟 ANTLR4 语法 —— 原来的
+ * smaliFlexLexer + smaliParser + smaliTreeWalker 三段式被合并，语义动作直接写在 parser 规则里
+ * （`smaliTreeWalker` 已不存在）。这里因此直接调用 [smaliLexer] / [smaliParser]，把
+ * [DexBuilder] 交给 parser，在内存中完成 smali → dex 转换，不落盘。
+ *
+ * **错误收集**：ANTLR4 默认把语法错误打到 stderr；这里换掉默认的 error listener，
+ * 把消息收进 StringBuilder，出错时统一抛出带完整错误信息的 RuntimeException。
  */
 public object SmaliUtils {
 
 	public fun assemble(smaliFile: File, options: SmaliOptions): ByteArray {
 		val errors = StringBuilder()
-		FileInputStream(smaliFile).use { fis ->
-			InputStreamReader(fis, StandardCharsets.UTF_8).use { reader ->
-				val lexer = smaliFlexLexer(reader, options.apiLevel)
-				lexer.setSourceFile(smaliFile)
-				val tokens = CommonTokenStream(lexer)
-				val parser = ParserWrapper(tokens, errors)
-				parser.setVerboseErrors(options.verboseErrors)
-				parser.setAllowOdex(options.allowOdexOpcodes)
-				parser.setApiLevel(options.apiLevel)
-				val parseResult = parser.smali_file()
-				if (parser.numberOfSyntaxErrors > 0 || lexer.numberOfSyntaxErrors > 0) {
-					throw RuntimeException("Smali parse error: $errors")
-				}
-				val treeStream = CommonTreeNodeStream(parseResult.getTree())
-				treeStream.setTokenStream(tokens)
-
-				val dexBuilder = DexBuilder(Opcodes.forApi(options.apiLevel))
-				val dexGen = TreeWalkerWrapper(treeStream, errors)
-				dexGen.setApiLevel(options.apiLevel)
-				dexGen.setVerboseErrors(options.verboseErrors)
-				dexGen.setDexBuilder(dexBuilder)
-				dexGen.smali_file()
-				if (dexGen.numberOfSyntaxErrors > 0) {
-					throw RuntimeException("Smali compile error: $errors")
-				}
-				val dataStore = MemoryDataStore()
-				dexBuilder.writeTo(dataStore)
-				return dataStore.getData()
+		val errorListener = object : BaseErrorListener() {
+			override fun syntaxError(
+				recognizer: Recognizer<*, *>?,
+				offendingSymbol: Any?,
+				line: Int,
+				charPositionInLine: Int,
+				msg: String?,
+				e: RecognitionException?,
+			) {
+				errors
+					.append('\n')
+					.append("line ")
+					.append(line)
+					.append(':')
+					.append(charPositionInLine)
+					.append(' ')
+					.append(msg)
 			}
 		}
-	}
-
-	private class ParserWrapper(input: TokenStream, private val errors: StringBuilder) : smaliParser(input) {
-		override fun emitErrorMessage(msg: String) {
-			errors.append('\n').append(msg)
-		}
-	}
-
-	private class TreeWalkerWrapper(input: TreeNodeStream, private val errors: StringBuilder) : smaliTreeWalker(input) {
-		override fun emitErrorMessage(msg: String) {
-			errors.append('\n').append(msg)
+		FileInputStream(smaliFile).use { fis ->
+			val lexer = smaliLexer(CharStreams.fromStream(fis, StandardCharsets.UTF_8)).apply {
+				setApiLevel(options.apiLevel)
+				setSourceFile(smaliFile)
+				removeErrorListeners()
+				addErrorListener(errorListener)
+			}
+			val tokens = CommonTokenStream(lexer)
+			val dexBuilder = DexBuilder(Opcodes.forApi(options.apiLevel))
+			val parser = smaliParser(tokens).apply {
+				setBuildParseTree(false)
+				setVerboseErrors(options.verboseErrors)
+				setAllowOdex(options.allowOdexOpcodes)
+				setApiLevel(options.apiLevel)
+				setDexBuilder(dexBuilder)
+				removeErrorListeners()
+				addErrorListener(errorListener)
+			}
+			parser.smali_file()
+			if (parser.numberOfSyntaxErrors > 0 || lexer.numberOfSyntaxErrors > 0) {
+				throw RuntimeException("Smali parse error: $errors")
+			}
+			val dataStore = MemoryDataStore()
+			dexBuilder.writeTo(dataStore)
+			return dataStore.data
 		}
 	}
 }

@@ -1,4 +1,6 @@
 [versions]
+# ksmali 把 antlr4-runtime 声明为 implementation，我们直接用它的 lexer/parser 时要自己声明
+antlr = "4.13.2"
 bined = "0.2.2"
 #noinspection UnusedVersionCatalogEntry
 # @pin from version 11 require Java 17
@@ -8,8 +10,9 @@ flatlaf = "3.7.2"
 j2v8 = "4.6.0"
 kotlin = "2.4.20"
 kotlinx-coroutines = "1.10.2"
+# smali/baksmali 用 ShakaRover/ksmali 的 fork（4.x 起 ANTLR4 + Kotlin），只发到 GitHub Packages
+ksmali = "5.0.0"
 raung = "0.1.1"
-smali = "3.0.10"
 
 [plugins]
 beryx-runtime = "org.beryx.runtime:2.0.1"
@@ -21,6 +24,7 @@ shadow = "com.gradleup.shadow:9.6.1"
 [libraries]
 # @pin from 9.3 compiled with Java 17
 aapt2-proto = "com.android.tools.build:aapt2-proto:9.2.1-15009934"
+antlr-runtime = { module = "org.antlr:antlr4-runtime", version.ref = "antlr" }
 apksig = "com.android.tools.build:apksig:9.4.1"
 asm = "org.ow2.asm:asm:9.10.1"
 #noinspection UnusedVersionCatalogEntry
@@ -51,7 +55,6 @@ flatlaf-intellij-themes = { module = "com.formdev:flatlaf-intellij-themes", vers
 fontchooser = "org.drjekyll:fontchooser:3.1.0"
 graphviz = "guru.nidi:graphviz-java:0.18.1"
 gson = "com.google.code.gson:gson:2.14.0"
-guava-jre = "com.google.guava:guava:23.0"
 image-viewer = "hu.kazocsaba:image-viewer:1.2.3"
 imageio-webp = "com.twelvemonkeys.imageio:imageio-webp:3.15.2"
 j2v8-linux = { module = "com.eclipsesource.j2v8:j2v8_linux_x86_64", version.ref = "j2v8" }
@@ -67,6 +70,9 @@ junit = "org.junit.jupiter:junit-jupiter:5.14.4"
 kotlin-metadata-jvm = { module = "org.jetbrains.kotlin:kotlin-metadata-jvm", version.ref = "kotlin" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
+# ShakaRover/ksmali 的制品（artifact 名沿用上游的 smali/smali-baksmali）
+ksmali = { module = "io.github.shakarover.ksmali:smali", version.ref = "ksmali" }
+ksmali-baksmali = { module = "io.github.shakarover.ksmali:smali-baksmali", version.ref = "ksmali" }
 logback-classic = "ch.qos.logback:logback-classic:1.6.4"
 mapping-io = "net.fabricmc:mapping-io:0.9.1"
 mockwebserver = "com.squareup.okhttp3:mockwebserver3:5.5.0"
@@ -84,8 +90,6 @@ rxjava = "io.reactivex.rxjava3:rxjava:3.1.12"
 rxjava-swing = "com.github.akarnokd:rxjava3-swing:3.1.1"
 #noinspection UnusedVersionCatalogEntry
 slf4j-api = "org.slf4j:slf4j-api:2.0.20"
-smali = { module = "com.android.tools.smali:smali", version.ref = "smali" }
-smali-baksmali = { module = "com.android.tools.smali:smali-baksmali", version.ref = "smali" }
 
 [bundles]
 bined = [

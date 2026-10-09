@@ -11,6 +11,13 @@ on:
 permissions:
   contents: write
 
+# ksmali（smali/baksmali 的 fork）只发布在 GitHub Packages 上，公开制品也要认证。
+# 优先用仓库 secret GPR_KEY（read:packages 的 PAT），没有就退回工作流自带的 GITHUB_TOKEN
+# （那需要先在 ksmali 的 package 设置里把本仓库加进 Actions 访问列表）。
+env:
+  GPR_USER: ${{ github.actor }}
+  GPR_KEY: ${{ secrets.GPR_KEY || secrets.GITHUB_TOKEN }}
+
 jobs:
   build-release-win-bundle:
     runs-on: windows-latest
