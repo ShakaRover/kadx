@@ -4,12 +4,13 @@ on:
   push:
     branches: [ master, build-test, build-artifacts ]
 
-# ksmali（smali/baksmali 的 fork）只发布在 GitHub Packages 上，公开制品也要认证。
-# 优先用仓库 secret GPR_KEY（read:packages 的 PAT），没有就退回工作流自带的 GITHUB_TOKEN
-# （那需要先在 ksmali 的 package 设置里把本仓库加进 Actions 访问列表）。
+# ksmali（smali/baksmali 的 fork）只发布在 GitHub Packages 上。Maven 注册表不支持匿名拉取
+# （公开制品也要认证），也不支持“给其它仓库开 Actions 访问”那种 granular 设置（只有
+# container/npm/nuget/rubygems 有），所以 GITHUB_TOKEN 读不了别的仓库的 Maven 包 ——
+# 必须用带 read:packages 的 classic PAT：仓库 secret GPR_KEY。
 env:
   GPR_USER: ${{ github.actor }}
-  GPR_KEY: ${{ secrets.GPR_KEY || secrets.GITHUB_TOKEN }}
+  GPR_KEY: ${{ secrets.GPR_KEY }}
 
 jobs:
   build:
