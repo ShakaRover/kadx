@@ -310,10 +310,19 @@ object UiUtils {
 
 	/** Ctrl（macOS 上为 Command）修饰键的掩码。 */
 	@field:MagicConstant(flagsFromClass = InputEvent::class)
-	val CTRL_BNT_KEY: Int = ctrlButton()
+	val CTRL_BNT_KEY: Int = getCtrlButtonMask()
 
+	/**
+	 * 计算平台上的 Ctrl（macOS 上为 Command）修饰键掩码。
+	 *
+	 * 注意：这里必须用一个与 [ctrlButton] 不同名的函数。原 Java 是 `getCtrlButton()`（算掩码）
+	 * 加 `ctrlButton()`（返回常量），Kotlin 转换时把前者改名成了 `ctrlButton` 属性，于是
+	 * [CTRL_BNT_KEY] 的初始化表达式 `ctrlButton()` 绑到了返回 [CTRL_BNT_KEY] 的那个函数上，
+	 * 读到尚未初始化的 0 —— 结果所有带 Ctrl 的快捷键都退化成不带 Ctrl（Ctrl+O 显示成 O、
+	 * Ctrl+Shift+O 显示成 Shift+O），[isCtrlDown] 也永远为 false。
+	 */
 	@Suppress("DEPRECATION")
-	private val ctrlButton: Int get() = if (KadxSystemInfo.IS_MAC) {
+	private fun getCtrlButtonMask(): Int = if (KadxSystemInfo.IS_MAC) {
 		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()
 	} else {
 		InputEvent.CTRL_DOWN_MASK
