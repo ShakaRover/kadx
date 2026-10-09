@@ -167,6 +167,9 @@ jobs:
           merge-multiple: true
           path: build
 
+      - name: Collect fat jar
+        run: cp build/kadx/lib/kadx-*-all.jar build/
+
       - run: |
           cd build
           ls -l
@@ -179,5 +182,6 @@ jobs:
           fail_on_unmatched_files: true
           files: |
             build/kadx-*.zip
+            build/kadx-*-all.jar
             build/kadx-gui-*.msi
             build/kadx-gui-*-mac-*.dmg

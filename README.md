@@ -47,6 +47,10 @@ After download unpack zip file go to `bin` directory and run:
 - `kadx` - command line version
 - `kadx-gui` - UI version
 
+Or download the standalone fat jar `kadx-<version>-all.jar` (all dependencies included, GUI and CLI):
+- `java -jar kadx-<version>-all.jar` - UI version
+- `java -cp kadx-<version>-all.jar kadx.cli.KadxCLI` - command line version
+
 On Windows run `.bat` files with double-click\
 **Note:** ensure you have installed Java 11 or later 64-bit version.
 For Windows, you can download it from [oracle.com](https://www.oracle.com/java/technologies/downloads/#jdk17-windows) (select x64 Installer).
