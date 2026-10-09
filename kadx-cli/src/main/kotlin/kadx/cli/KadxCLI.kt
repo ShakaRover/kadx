@@ -6,12 +6,12 @@ import kadx.api.KadxDecompiler
 import kadx.api.impl.AnnotatedCodeWriter
 import kadx.api.impl.NoOpCodeCache
 import kadx.api.impl.SimpleCodeWriter
+import kadx.api.plugins.loader.KadxBasePluginLoader
 import kadx.api.usage.impl.EmptyUsageInfoCache
 import kadx.cli.config.KadxConfigAdapter
 import kadx.cli.plugins.KadxFilesGetter
 import kadx.core.utils.exceptions.KadxArgsValidateException
 import kadx.core.utils.exceptions.KadxRuntimeException
-import kadx.plugins.tools.KadxExternalPluginsLoader
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
@@ -67,7 +67,7 @@ class KadxCLI {
 			val kadxArgs = cliArgs.toKadxArgs()
 			kadxArgs.codeCache = NoOpCodeCache()
 			kadxArgs.usageInfoCache = EmptyUsageInfoCache()
-			kadxArgs.pluginLoader = KadxExternalPluginsLoader()
+			kadxArgs.pluginLoader = KadxBasePluginLoader()
 			kadxArgs.filesGetter = KadxFilesGetter.INSTANCE
 			initCodeWriterProvider(kadxArgs)
 			KadxAppCommon.applyEnvVars(kadxArgs)

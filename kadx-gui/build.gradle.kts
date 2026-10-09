@@ -13,7 +13,6 @@ dependencies {
 	implementation(project(":kadx-core"))
 	implementation(project(":kadx-gui-api"))
 	implementation(project(":kadx-cli"))
-	implementation(project(":kadx-plugins-tools"))
 	implementation(project(":kadx-commons:kadx-app-commons"))
 
 	// import mappings

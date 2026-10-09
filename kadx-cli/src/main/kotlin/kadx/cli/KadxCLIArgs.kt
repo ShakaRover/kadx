@@ -391,11 +391,8 @@ open class KadxCLIArgs : IKadxConfig {
 	 */
 	fun processArgs(args: Array<String>): Boolean = KadxCLIArgs.processArgs(args, this, null) != null
 
-	/** 处理子命令与提前退出标志。返回 false 表示无需继续执行。 */
+	/** 处理提前退出标志。返回 false 表示无需继续执行。 */
 	fun process(jcw: JCommanderWrapper): Boolean {
-		if (jcw.processCommands()) {
-			return false
-		}
 		if (printHelp) {
 			jcw.printUsage()
 			return false

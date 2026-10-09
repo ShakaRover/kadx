@@ -9,7 +9,6 @@ plugins {
 
 dependencies {
 	implementation(project(":kadx-core"))
-	implementation(project(":kadx-plugins-tools"))
 	implementation(project(":kadx-commons:kadx-app-commons"))
 	implementation(project(":kadx-commons:kadx-analysis"))
 

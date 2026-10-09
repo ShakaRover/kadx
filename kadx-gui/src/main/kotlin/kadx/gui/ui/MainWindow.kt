@@ -1961,16 +1961,18 @@ class MainWindow(@Transient private val settings: KadxSettings) :
 
 	fun getPluginsMenu(): JMenu = pluginsMenu
 
+	/**
+	 * 清空插件菜单。
+	 *
+	 * kadx 不再支持外部插件，因此没有内置的「管理插件」入口；菜单内容全部由插件自己
+	 * 通过 [addToPluginsMenu] 添加。
+	 */
 	fun resetPluginsMenu() {
 		pluginsMenu.removeAll()
-		pluginsMenu.add(
-			ActionHandler(Runnable { openSettings("PluginSettingsGroup.class") })
-				.withNameAndDesc(NLS.str("preferences.plugins.manage")),
-		)
 	}
 
 	fun addToPluginsMenu(item: Action) {
-		if (pluginsMenu.getMenuComponentCount() == 1) {
+		if (pluginsMenu.getMenuComponentCount() == 0) {
 			pluginsMenu.addSeparator()
 		}
 		pluginsMenu.add(item)

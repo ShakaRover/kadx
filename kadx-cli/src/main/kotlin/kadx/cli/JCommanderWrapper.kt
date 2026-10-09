@@ -30,8 +30,7 @@ class JCommanderWrapper(private val argsObj: KadxCLIArgs) {
 
 	init {
 		val builder = JCommander.newBuilder().addObject(argsObj)
-		builder.acceptUnknownOptions(true) // 兼容未显式声明的 "default" 命令
-		KadxCLICommands.append(builder)
+		builder.acceptUnknownOptions(true) // 未知选项统一当作输入文件
 		this.jc = builder.build()
 	}
 
@@ -54,12 +53,6 @@ class JCommanderWrapper(private val argsObj: KadxCLIArgs) {
 				overrideProperty(obj, parameter)
 			}
 		}
-	}
-
-	/** 处理已解析出的子命令。返回 false 表示没有子命令。 */
-	fun processCommands(): Boolean {
-		val parsedCommand = jc.getParsedCommand() ?: return false
-		return KadxCLICommands.process(this, jc, parsedCommand)
 	}
 
 	/**
@@ -134,13 +127,7 @@ class JCommanderWrapper(private val argsObj: KadxCLIArgs) {
 		out.println()
 		out.println("kadx - dex to java decompiler, version: " + KadxDecompiler.getVersion())
 		out.println()
-		out.println("usage: kadx [command] [options] " + jc.getMainParameterDescription())
-
-		out.println("commands (use '<command> --help' for command options):")
-		for (command in jc.getCommands().keys) {
-			out.println("  " + command + "\t  - " + jc.getUsageFormatter().getCommandDescription(command))
-		}
-		out.println()
+		out.println("usage: kadx [options] " + jc.getMainParameterDescription())
 
 		val maxNamesLen = printOptions(jc, out, true)
 		out.println(appendPluginOptions(maxNamesLen))
@@ -153,7 +140,6 @@ class JCommanderWrapper(private val argsObj: KadxCLIArgs) {
 		out.println("  KADX_CONFIG_DIR - custom config directory, using system by default")
 		out.println("  KADX_CACHE_DIR - custom cache directory, using system by default")
 		out.println("  KADX_TMP_DIR - custom temp directory, using system by default")
-		out.println("  KADX_PLUGINS_LIST_LOCATION - plugins marketplace location in 'github:<owner>:<repo>' form; unset by default (marketplace disabled)")
 		out.println()
 		out.println("Examples:")
 		out.println("  kadx -d out classes.dex")
@@ -161,13 +147,6 @@ class JCommanderWrapper(private val argsObj: KadxCLIArgs) {
 		out.println("  kadx --rename-flags \"valid, printable\" classes.dex")
 		out.println("  kadx --log-level ERROR app.apk")
 		out.println("  kadx -Pdex-input.verify-checksum=no app.apk")
-	}
-
-	/** 打印子命令的帮助信息。 */
-	fun printUsage(subCommander: JCommander) {
-		val out = System.out
-		out.println("usage: " + subCommander.getProgramName() + " [options]")
-		printOptions(subCommander, out, false)
 	}
 
 	private fun printOptions(jc: JCommander, out: PrintStream, addDefaults: Boolean): Int {

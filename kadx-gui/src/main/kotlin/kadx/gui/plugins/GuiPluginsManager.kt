@@ -6,6 +6,7 @@ import kadx.api.gui.plugins.KadxGlobalGuiPlugin
 import kadx.api.gui.plugins.KadxGuiContextExt
 import kadx.api.plugins.events.types.ReloadSettingsWindow
 import kadx.api.plugins.gui.KadxGuiContext
+import kadx.api.plugins.loader.KadxBasePluginLoader
 import kadx.api.plugins.loader.KadxPluginLoader
 import kadx.cli.KadxAppCommon
 import kadx.cli.plugins.KadxFilesGetter
@@ -15,7 +16,6 @@ import kadx.core.plugins.PluginRuntime
 import kadx.gui.plugins.context.CommonGuiPluginsContext
 import kadx.gui.settings.KadxSettings
 import kadx.gui.ui.MainWindow
-import kadx.plugins.tools.KadxExternalPluginsLoader
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.SortedSet
@@ -51,7 +51,7 @@ open class GuiPluginsManager(private val mainWindow: MainWindow) {
 
 			initGuiPluginsContextForGlobalScope()
 			globalPluginManager.load(
-				KadxExternalPluginsLoader { cls -> KadxGlobalGuiPlugin::class.java.isAssignableFrom(cls) },
+				KadxBasePluginLoader { cls -> KadxGlobalGuiPlugin::class.java.isAssignableFrom(cls) },
 			)
 			val globalPlugins = globalPluginManager.resolvedPlugins
 			runGlobalInit(globalPlugins)
@@ -72,7 +72,7 @@ open class GuiPluginsManager(private val mainWindow: MainWindow) {
 		}
 	}
 
-	open fun buildProjectPluginLoader(): KadxPluginLoader = KadxExternalPluginsLoader { cls -> !KadxGlobalGuiPlugin::class.java.isAssignableFrom(cls) }
+	open fun buildProjectPluginLoader(): KadxPluginLoader = KadxBasePluginLoader { cls -> !KadxGlobalGuiPlugin::class.java.isAssignableFrom(cls) }
 
 	fun initGuiPluginsContextForGlobalScope() {
 		initGuiPluginsContext(globalPluginManager, globalArgs, true)

@@ -12,6 +12,8 @@ import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import java.util.function.Consumer
 import java.util.function.Predicate
+import javax.swing.JMenu
+import javax.swing.JMenuItem
 
 class GuiPluginsScopeTest {
 
@@ -58,12 +60,20 @@ class GuiPluginsScopeTest {
 		KadxDecompiler().use { globalDecompiler ->
 			buildContext(context, globalDecompiler, "global-plugin", true)
 				.addMenuAction("global-menu") { }
+			// 插件菜单里已没有内置项，只剩插件自己加的项；重置工程作用域不应把它丢掉
+			val pluginsMenu = mainWindow.getPluginsMenu()
+			assertThat(menuItemNames(pluginsMenu)).containsExactly("global-menu")
 			context.resetProjectScope()
-			assertThat(mainWindow.getPluginsMenu().getMenuComponentCount()).isEqualTo(3)
+			assertThat(menuItemNames(pluginsMenu)).containsExactly("global-menu")
 			context.resetProjectScope()
-			assertThat(mainWindow.getPluginsMenu().getMenuComponentCount()).isEqualTo(3)
+			assertThat(menuItemNames(pluginsMenu)).containsExactly("global-menu")
 		}
 	}
+
+	/** 取插件菜单里的菜单项名称（忽略分隔线）。 */
+	private fun menuItemNames(menu: JMenu): List<String> = (0 until menu.getMenuComponentCount())
+		.mapNotNull { menu.getMenuComponent(it) as? JMenuItem }
+		.map { it.text }
 
 	private fun buildContext(
 		context: CommonGuiPluginsContext,

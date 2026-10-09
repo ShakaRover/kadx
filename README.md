@@ -75,10 +75,7 @@ and also packed to `build/kadx-<version>.zip`
 
 ### Usage
 ```
-usage: kadx [command] [options] <input files> (.apk, .dex, .jar, .class, .smali, .zip, .aar, .arsc, .aab, .xapk, .apkm, .kadx.kts)
-commands (use '<command> --help' for command options):
-  plugins	  - manage kadx plugins
-
+usage: kadx [options] <input files> (.apk, .dex, .jar, .class, .smali, .zip, .aar, .arsc, .aab, .xapk, .apkm, .kadx.kts)
 options:
   -d, --output-dir                              - output directory
   -ds, --output-dir-src                         - output directory for sources
@@ -205,7 +202,6 @@ Environment variables:
   KADX_CONFIG_DIR - custom config directory, using system by default
   KADX_CACHE_DIR - custom cache directory, using system by default
   KADX_TMP_DIR - custom temp directory, using system by default
-  KADX_PLUGINS_LIST_LOCATION - plugins marketplace location in 'github:<owner>:<repo>' form; unset by default (marketplace disabled)
 
 Examples:
   kadx -d out classes.dex
@@ -215,24 +211,6 @@ Examples:
   kadx -Pdex-input.verify-checksum=no app.apk
 ```
 These options also work in kadx-gui running from command line and override options from preferences' dialog
-
-Usage for `plugins` command
-```
-usage: plugins [options]
-options:
-  -i, --install <locationId>      - install plugin with locationId
-  -j, --install-jar <path-to.jar> - install plugin from jar file
-  -l, --list                      - list installed plugins
-  -a, --available                 - list available plugins from kadx-plugins-list (aka marketplace)
-  -u, --update                    - update installed plugins
-  --uninstall <pluginId>          - uninstall plugin with pluginId
-  --disable <pluginId>            - disable plugin with pluginId
-  --enable <pluginId>             - enable plugin with pluginId
-  --list-all                      - list all plugins including bundled and dropins
-  --list-versions <locationId>    - fetch latest versions of plugin from locationId (will download all artefacts, limited to 10)
-  -h, --help                      - print this help
-```
-
 
 ### Troubleshooting
 Please check wiki page [Troubleshooting Q&A](https://github.com/skylot/jadx/wiki/Troubleshooting-Q&A)

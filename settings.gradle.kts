@@ -30,8 +30,6 @@ include("kadx-cli")
 include("kadx-gui-api")
 include("kadx-gui")
 
-include("kadx-plugins-tools")
-
 include("kadx-commons:kadx-app-commons")
 include("kadx-commons:kadx-zip")
 include("kadx-commons:kadx-analysis")

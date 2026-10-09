@@ -1,7 +1,5 @@
 package kadx.gui.settings.ui.plugins
 
-import ch.qos.logback.classic.Level
-import kadx.api.plugins.events.types.ReloadProject
 import kadx.api.plugins.gui.ISettingsGroup
 import kadx.api.plugins.gui.KadxGuiContext
 import kadx.api.plugins.options.OptionDescription
@@ -9,8 +7,6 @@ import kadx.api.plugins.options.OptionFlag
 import kadx.api.plugins.options.OptionType
 import kadx.core.plugins.AppContext
 import kadx.core.plugins.PluginRuntime
-import kadx.core.utils.Utils
-import kadx.gui.logs.LogOptions
 import kadx.gui.plugins.context.GuiPluginContext
 import kadx.gui.settings.KadxSettings
 import kadx.gui.settings.ui.SettingsGroup
@@ -19,87 +15,36 @@ import kadx.gui.utils.NLS
 import kadx.gui.utils.plugins.CollectPlugins
 import kadx.gui.utils.plugins.SettingsGroupPluginWrap
 import kadx.gui.utils.ui.DocumentUpdateListener
-import kadx.plugins.tools.KadxPluginsTools
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.awt.event.ItemEvent
 import javax.swing.JCheckBox
 import javax.swing.JComboBox
 import javax.swing.JComponent
-import javax.swing.JLabel
 import javax.swing.JSpinner
 import javax.swing.JTextField
 
 /**
- * 插件设置的业务逻辑：构建插件设置组、安装/卸载/禁用插件，以及为插件选项生成编辑器。
+ * 插件设置：为每个内置插件生成选项编辑页。
  *
- * **线程模型**：安装、卸载、更新等耗时操作统一交给 `BackgroundExecutor` 后台执行，
- * 完成后回到 UI 线程请求重载，保持原 Swing 线程模型。
+ * **做什么**：[build] 收集当前加载的插件，为每个带选项（或自带自定义设置页）的插件
+ * 生成一个子设置组；[addOptions] 把插件的选项描述渲染成「标签 + 编辑器」行。
+ *
+ * **为什么没有安装/卸载/更新**：改版后的 kadx 不再支持外部插件，插件全部随发行包内置，
+ * 因此这里只保留设置界面，不涉及任何下载或文件操作。
  */
 class PluginSettings(private val mainWindow: MainWindow, private val settings: KadxSettings) {
 
 	fun build(): ISettingsGroup {
 		val collectedPlugins: List<PluginRuntime> = CollectPlugins(mainWindow).build()
-		val pluginsGroup = PluginSettingsGroup(this, mainWindow, collectedPlugins)
+		val pluginsGroup = PluginSettingsGroup()
 		for (plugin in collectedPlugins) {
 			val pluginGroup = addPluginGroup(plugin)
 			if (pluginGroup != null) {
-				pluginsGroup.getSubGroups().add(SettingsGroupPluginWrap(plugin.pluginId, pluginGroup))
+				pluginsGroup.addSubGroup(SettingsGroupPluginWrap(plugin.pluginId, pluginGroup))
 			}
 		}
 		return pluginsGroup
-	}
-
-	fun addPlugin() {
-		InstallPluginDialog(mainWindow, this).isVisible = true
-	}
-
-	private fun requestReload() {
-		mainWindow.events().send(ReloadProject.EVENT)
-	}
-
-	fun install(locationId: String) {
-		mainWindow.getBackgroundExecutor().execute(NLS.str("preferences.plugins.task.installing")) {
-			try {
-				val metadata = KadxPluginsTools.instance.install(locationId)
-				LOG.info("Plugin installed: {}", metadata)
-				requestReload()
-			} catch (e: Exception) {
-				LOG.error("Plugin install failed", e)
-				mainWindow.showLogViewer(LogOptions.forLevel(Level.ERROR))
-			}
-		}
-	}
-
-	fun uninstall(pluginId: String) {
-		mainWindow.getBackgroundExecutor().execute(NLS.str("preferences.plugins.task.uninstalling")) {
-			val success = KadxPluginsTools.instance.uninstall(pluginId)
-			if (success) {
-				LOG.info("Uninstall complete")
-				requestReload()
-			} else {
-				LOG.warn("Uninstall failed")
-			}
-		}
-	}
-
-	fun changeDisableStatus(pluginId: String, disabled: Boolean) {
-		mainWindow.getBackgroundExecutor().execute(
-			NLS.str("preferences.plugins.task.status"),
-			Runnable { KadxPluginsTools.instance.changeDisabledStatus(pluginId, disabled) },
-		) { requestReload() }
-	}
-
-	internal fun updateAll() {
-		mainWindow.getBackgroundExecutor().execute(NLS.str("preferences.plugins.task.updating")) {
-			val updates = KadxPluginsTools.instance.updateAll()
-			if (updates.isNotEmpty()) {
-				LOG.info("Updates: {}\n  ", Utils.listToString(updates, "\n  "))
-				requestReload()
-			} else {
-				LOG.info("No updates found")
-			}
-		}
 	}
 
 	private fun addPluginGroup(plugin: PluginRuntime): ISettingsGroup? {
