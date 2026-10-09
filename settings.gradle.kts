@@ -11,43 +11,10 @@ dependencyResolutionManagement {
 		mavenCentral()
 		// required for: aapt-proto, R8
 		google()
-		// smali/baksmali 用的是 ShakaRover/ksmali（google/smali 的 fork，4.x 起改成
-		// ANTLR4 + Kotlin），它只发布到 GitHub Packages 的 io.github.shakarover.ksmali 组。
-		// GitHub Packages 即使对公开制品也要求认证：需要 read:packages 的 PAT，
-		// 通过 -Pgpr.user/-Pgpr.key（或环境变量 GPR_USER/GPR_KEY）提供。
-		maven {
-			name = "ksmali"
-			url = uri("https://maven.pkg.github.com/ShakaRover/ksmali")
-			content {
-				includeGroup("io.github.shakarover.ksmali")
-			}
-			credentials {
-				username = providers.gradleProperty("gpr.user").orNull
-					?: System.getenv("GPR_USER")
-					?: System.getenv("GITHUB_ACTOR")
-					?: ""
-				password = providers.gradleProperty("gpr.key").orNull
-					?: System.getenv("GPR_KEY")
-					?: System.getenv("GITHUB_TOKEN")
-					?: ""
-			}
-		}
+		// smali/baksmali 来自 ShakaRover/ksmali（google/smali 的 fork，4.x 起改成 ANTLR4 + Kotlin），
+		// 它发布在 Maven Central 上，无需任何凭据。
 	}
 	repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
-}
-
-// 缺凭据时依赖会以 401 失败，先给一句能看懂的提示，省得去猜 "Could not resolve ... smali:5.0.0"
-val hasKsmaliCredentials =
-	providers.gradleProperty("gpr.key").orNull != null ||
-		System.getenv("GPR_KEY") != null ||
-		System.getenv("GITHUB_TOKEN") != null
-if (!hasKsmaliCredentials) {
-	gradle.rootProject {
-		logger.lifecycle(
-			"WARN: 未提供 GitHub Packages 凭据，io.github.shakarover.ksmali:* 将无法解析。" +
-				"请用 -Pgpr.user=<user> -Pgpr.key=<read:packages token>（或环境变量 GPR_USER/GPR_KEY）重试。",
-		)
-	}
 }
 
 plugins {
