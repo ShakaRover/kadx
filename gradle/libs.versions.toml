@@ -10,7 +10,8 @@ flatlaf = "3.7.2"
 j2v8 = "4.6.0"
 kotlin = "2.4.20"
 kotlinx-coroutines = "1.10.2"
-# smali/baksmali 用 ShakaRover/ksmali 的 fork（4.x 起 ANTLR4 + Kotlin），只发到 GitHub Packages
+# smali/baksmali 用 ShakaRover/ksmali 的 fork（4.x 起 ANTLR4 + Kotlin）；
+# 它发布在 Maven Central（io.github.shakarover.ksmali），消费端不需要任何凭据
 ksmali = "5.0.0"
 raung = "0.1.1"
 
