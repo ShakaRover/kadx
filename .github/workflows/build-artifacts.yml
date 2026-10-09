@@ -9,7 +9,8 @@ on:
 # container/npm/nuget/rubygems 有），所以 GITHUB_TOKEN 读不了别的仓库的 Maven 包 ——
 # 必须用带 read:packages 的 classic PAT：仓库 secret GPR_KEY。
 env:
-  GPR_USER: ${{ github.actor }}
+  # 用户名必须与 PAT 的属主一致（token 属主是仓库 owner，不是每次触发的 actor）
+  GPR_USER: ${{ github.repository_owner }}
   GPR_KEY: ${{ secrets.GPR_KEY }}
 
 jobs:
